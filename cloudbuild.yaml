@@ -26,14 +26,18 @@ steps:
       - '-c'
       - |
         if [ "$BRANCH_NAME" = "main" ]; then
-          SERVICE_NAME="fashion-web"
+          SERVICE_NAME="fashion-web-dev"
+          echo "🚀 Deploying ${SHORT_SHA} to DEV environment ($$SERVICE_NAME)..."
         elif [ "$BRANCH_NAME" = "staging" ]; then
           SERVICE_NAME="fashion-web-staging"
-        else
+          echo "🚀 Deploying ${SHORT_SHA} to STAGING environment ($$SERVICE_NAME)..."
+        elif [ "$BRANCH_NAME" = "develop" ]; then
           SERVICE_NAME="fashion-web-dev"
+          echo "🚀 Deploying ${SHORT_SHA} to DEV environment ($$SERVICE_NAME)..."
+        else
+          echo "⚠️  Branch $BRANCH_NAME is not configured for deployment. Skipping..."
+          exit 0
         fi
-
-        echo "🚀 Deploying ${SHORT_SHA} to $$SERVICE_NAME..."
 
         # Only update the image, preserve all other Terraform-managed settings
         gcloud run services update $$SERVICE_NAME \
