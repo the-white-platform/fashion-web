@@ -34,7 +34,7 @@ steps:
           # Verify this is a tag-based deployment or manual trigger
           if [ -n "$TAG_NAME" ]; then
             echo "🏷️  Tag-based deployment: $TAG_NAME"
-          elif [ "$${_ENVIRONMENT:-}" = "production" ]; then
+          elif [ "${_ENVIRONMENT}" = "production" ]; then
             echo "👤 Manual deployment to production"
           else
             echo "⚠️  Production deployments require a version tag (e.g., v1.0.0) or manual trigger"
@@ -48,11 +48,11 @@ steps:
           ENVIRONMENT="DEV"
 
           # Log the trigger type
-          if [ -n "$${_PR_NUMBER:-}" ]; then
-            echo "🔀 PR #$${_PR_NUMBER} deployment"
+          if [ -n "${_PR_NUMBER}" ]; then
+            echo "🔀 PR #${_PR_NUMBER} deployment"
           elif [ "$BRANCH_NAME" = "develop" ]; then
             echo "🌿 Branch deployment: develop"
-          elif [ "$${_ENVIRONMENT:-}" = "dev" ]; then
+          elif [ "${_ENVIRONMENT}" = "dev" ]; then
             echo "👤 Manual deployment to dev"
           else
             echo "ℹ️  Dev deployment"
