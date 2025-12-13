@@ -25,25 +25,55 @@ steps:
     args:
       - '-c'
       - |
-        if [ "$BRANCH_NAME" = "main" ]; then
+        # Determine service name and environment based on project and trigger
+        if [ "${PROJECT_ID}" = "the-white-prod" ]; then
+          # Production project
+          SERVICE_NAME="fashion-web"
+          ENVIRONMENT="PRODUCTION"
+
+          # Verify this is a tag-based deployment or manual trigger
+          if [ -n "$TAG_NAME" ]; then
+            echo "🏷️  Tag-based deployment: $TAG_NAME"
+          elif [ "${_ENVIRONMENT}" = "production" ]; then
+            echo "👤 Manual deployment to production"
+          else
+            echo "⚠️  Production deployments require a version tag (e.g., v1.0.0) or manual trigger"
+            echo "⚠️  Skipping deployment..."
+            exit 0
+          fi
+
+        elif [ "${PROJECT_ID}" = "the-white-dev" ]; then
+          # Dev project
           SERVICE_NAME="fashion-web-dev"
-          echo "🚀 Deploying ${SHORT_SHA} to DEV environment ($$SERVICE_NAME)..."
-        elif [ "$BRANCH_NAME" = "staging" ]; then
-          SERVICE_NAME="fashion-web-staging"
-          echo "🚀 Deploying ${SHORT_SHA} to STAGING environment ($$SERVICE_NAME)..."
-        elif [ "$BRANCH_NAME" = "develop" ]; then
-          SERVICE_NAME="fashion-web-dev"
-          echo "🚀 Deploying ${SHORT_SHA} to DEV environment ($$SERVICE_NAME)..."
+          ENVIRONMENT="DEV"
+
+          # Log the trigger type
+          if [ -n "$_PR_NUMBER" ]; then
+            echo "🔀 PR #${_PR_NUMBER} deployment"
+          elif [ "$BRANCH_NAME" = "develop" ]; then
+            echo "🌿 Branch deployment: develop"
+          elif [ "${_ENVIRONMENT}" = "dev" ]; then
+            echo "👤 Manual deployment to dev"
+          else
+            echo "ℹ️  Dev deployment"
+          fi
+
         else
-          echo "⚠️  Branch $BRANCH_NAME is not configured for deployment. Skipping..."
+          echo "⚠️  Unknown project ${PROJECT_ID}. Skipping deployment..."
           exit 0
         fi
+
+        echo "🚀 Deploying ${SHORT_SHA} to $ENVIRONMENT environment ($$SERVICE_NAME) in ${PROJECT_ID}..."
 
         # Only update the image, preserve all other Terraform-managed settings
         gcloud run services update $$SERVICE_NAME \
           --image europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
           --region europe-north1 \
+          --project ${PROJECT_ID} \
           --quiet
+
+        echo "✅ Deployment complete!"
+        echo "📊 Service URL: https://$$SERVICE_NAME-$(gcloud run services describe $$SERVICE_NAME --region=europe-north1 --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)"
 
 timeout: 1800s
 
