@@ -26,17 +26,17 @@ steps:
       - '-c'
       - |
         if [ "$BRANCH_NAME" = "main" ]; then
-          export SERVICE_NAME="fashion-web"
+          SERVICE_NAME="fashion-web"
         elif [ "$BRANCH_NAME" = "staging" ]; then
-          export SERVICE_NAME="fashion-web-staging"
+          SERVICE_NAME="fashion-web-staging"
         else
-          export SERVICE_NAME="fashion-web-dev"
+          SERVICE_NAME="fashion-web-dev"
         fi
 
-        echo "🚀 Deploying ${SHORT_SHA} to ${SERVICE_NAME}..."
+        echo "🚀 Deploying ${SHORT_SHA} to $$SERVICE_NAME..."
 
         # Only update the image, preserve all other Terraform-managed settings
-        gcloud run services update ${SERVICE_NAME} \
+        gcloud run services update $$SERVICE_NAME \
           --image europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
           --region europe-north1 \
           --quiet
