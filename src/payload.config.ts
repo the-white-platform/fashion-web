@@ -20,6 +20,16 @@ import { defaultLexical } from '@/fields/defaultLexical'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+// SECURITY CHECK: Ensure we are not using the default secret in production
+if (
+  process.env.NODE_ENV === 'production' &&
+  process.env.PAYLOAD_SECRET === 'your-secret-key-change-in-production'
+) {
+  throw new Error(
+    'FATAL: Production environment detected with insecure default PAYLOAD_SECRET. You MUST change this value.',
+  )
+}
+
 export default buildConfig({
   admin: {
     components: {
