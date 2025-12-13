@@ -209,56 +209,30 @@ To run Payload in production, you need to build and start the Admin panel. To do
 1. Finally run `pnpm start` or `npm run start` to run Node in production and serve Payload from the `.build` directory.
 1. When you're ready to go live, see [Deployment](#deployment) for more details.
 
-### Deploying to Payload Cloud
+### Deploying to Google Cloud Platform (GCP)
 
-The easiest way to deploy your project is to use [Payload Cloud](https://payloadcms.com/new/import), a one-click hosting solution to deploy production-ready instances of your Payload apps directly from your GitHub repo.
+This project is configured to deploy to Google Cloud Run using Cloud Build.
 
-### Deploying to Vercel
+1.  **Infrastructure**: The infrastructure (Cloud Run, Cloud SQL, Secret Manager) is managed via Terraform in the `../infrastructure` directory.
+2.  **Deployment**: Pushing to the following branches triggers a deployment via Cloud Build:
+    - `main` -> Deploys to Production (`thewhite.cool`)
+    - `staging` -> Deploys to Staging
+    - `develop` -> Deploys to Development
 
-This template can also be deployed to Vercel for free. You can get started by choosing the Vercel DB adapter during the setup of the template or by manually installing and configuring it:
+The build configuration is determined by `cloudbuild.yaml`.
 
-```bash
-pnpm add @payloadcms/db-vercel-postgres
-```
+#### Manual Deployment
 
-```ts
-// payload.config.ts
-import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
-
-export default buildConfig({
-  // ...
-  db: vercelPostgresAdapter({
-    pool: {
-      connectionString: process.env.POSTGRES_URL || '',
-    },
-  }),
-  // ...
-```
-
-We also support Vercel's blob storage:
+To trigger a manual deployment from your local machine (bypassing git triggers):
 
 ```bash
-pnpm add @payloadcms/storage-vercel-blob
+gcloud builds submit --config cloudbuild.yaml \
+  --substitutions=BRANCH_NAME=main,SHORT_SHA=$(git rev-parse --short HEAD) \
+  --project the-white-dev \
+  --region europe-north1 \
+  --gcs-source-staging-dir=gs://the-white-dev-build-source/source \
+  .
 ```
-
-```ts
-// payload.config.ts
-import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
-
-export default buildConfig({
-  // ...
-  plugins: [
-    vercelBlobStorage({
-      collections: {
-        [Media.slug]: true,
-      },
-      token: process.env.BLOB_READ_WRITE_TOKEN || '',
-    }),
-  ],
-  // ...
-```
-
-There is also a simplified [one click deploy](https://github.com/payloadcms/payload/tree/beta/templates/with-vercel-postgres) to Vercel should you need it.
 
 ### Self-hosting
 
