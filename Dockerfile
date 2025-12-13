@@ -7,7 +7,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9.7.1 --activate
 
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
@@ -20,7 +20,7 @@ FROM base AS builder
 WORKDIR /app
 
 # Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@9.7.1 --activate
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
@@ -31,7 +31,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
 # Generate Payload types and build Next.js
-RUN pnpm run generate:types || true
+RUN pnpm run generate:types || echo "⚠️ WARNING: Type generation failed. This is often expected during Docker build as the database is not available. Continuing..."
 RUN pnpm run build
 
 # Production image, copy all the files and run next

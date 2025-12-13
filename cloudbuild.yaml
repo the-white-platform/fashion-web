@@ -47,4 +47,4 @@ options:
   logging: CLOUD_LOGGING_ONLY
 
 substitutions:
-  _NEXT_PUBLIC_SERVER_URL: 'https://thewhite.cool' # Default fallback
+  _NEXT_PUBLIC_SERVER_URL: '' # Must be provided by trigger or CLI
