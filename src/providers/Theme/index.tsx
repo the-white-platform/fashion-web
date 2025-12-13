@@ -16,9 +16,7 @@ const initialContext: ThemeContextType = {
 const ThemeContext = createContext(initialContext)
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setThemeState] = useState<Theme | undefined>(
-    canUseDOM ? (document.documentElement.getAttribute('data-theme') as Theme) : undefined,
-  )
+  const [theme, setThemeState] = useState<Theme | undefined>(undefined)
 
   const setTheme = useCallback((themeToSet: Theme | null) => {
     if (themeToSet === null) {

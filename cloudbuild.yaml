@@ -1,0 +1,50 @@
+steps:
+  # 1. Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker build -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
+                     -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
+                     --build-arg NEXT_PUBLIC_SERVER_URL=${_NEXT_PUBLIC_SERVER_URL} \
+                     .
+
+  # 2. Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        docker push europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA}
+        docker push europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest
+
+  # 3. Deploy to Cloud Run (Update existing service)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        if [ "$BRANCH_NAME" = "main" ]; then
+          SERVICE_NAME="fashion-web"
+        elif [ "$BRANCH_NAME" = "staging" ]; then
+          SERVICE_NAME="fashion-web-staging"
+        else
+          SERVICE_NAME="fashion-web-dev"
+        fi
+
+        echo "🚀 Deploying ${SHORT_SHA} to $$SERVICE_NAME..."
+
+        # Only update the image, preserve all other Terraform-managed settings
+        gcloud run services update $$SERVICE_NAME \
+          --image europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
+          --region europe-north1 \
+          --quiet
+
+timeout: 1800s
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _NEXT_PUBLIC_SERVER_URL: '' # Must be provided by trigger or CLI
