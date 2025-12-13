@@ -215,7 +215,7 @@ This project is configured to deploy to Google Cloud Run using Cloud Build.
 
 1.  **Infrastructure**: The infrastructure (Cloud Run, Cloud SQL, Secret Manager) is managed via Terraform in the `../infrastructure` directory.
 2.  **Deployment**: Pushing to the following branches triggers a deployment via Cloud Build:
-    - `main` -> Deploys to Production (`thewhite.cool`)
+    - `main` -> Deploys to Production
     - `staging` -> Deploys to Staging
     - `develop` -> Deploys to Development
 
