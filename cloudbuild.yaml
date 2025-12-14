@@ -19,11 +19,38 @@ steps:
 
         # Get secrets from Secret Manager
         echo "🔐 Fetching secrets from Secret Manager..."
-        PAYLOAD_SECRET=$(gcloud secrets versions access latest --secret=$$PAYLOAD_SECRET_NAME --project=${PROJECT_ID} 2>/dev/null || echo "")
-        DATABASE_URI=$(gcloud secrets versions access latest --secret=$$DATABASE_URI_NAME --project=${PROJECT_ID} 2>/dev/null || echo "")
+        echo "   Project: ${PROJECT_ID}"
+        echo "   Looking for: $$PAYLOAD_SECRET_NAME"
 
-        if [ -z "$$PAYLOAD_SECRET" ]; then
-          echo "⚠️  WARNING: PAYLOAD_SECRET not found. Build may fail."
+        # Try to fetch PAYLOAD_SECRET - show error if it fails
+        PAYLOAD_SECRET_OUTPUT=$(gcloud secrets versions access latest --secret=$$PAYLOAD_SECRET_NAME --project=${PROJECT_ID} 2>&1)
+        PAYLOAD_SECRET_EXIT=$?
+
+        if [ $PAYLOAD_SECRET_EXIT -eq 0 ]; then
+          PAYLOAD_SECRET="$$PAYLOAD_SECRET_OUTPUT"
+          if [ -n "$$PAYLOAD_SECRET" ]; then
+            echo "✅ PAYLOAD_SECRET fetched successfully ($${#PAYLOAD_SECRET} chars)"
+          else
+            echo "❌ ERROR: PAYLOAD_SECRET is empty!"
+            exit 1
+          fi
+        else
+          echo "❌ ERROR: Failed to fetch PAYLOAD_SECRET:"
+          echo "$$PAYLOAD_SECRET_OUTPUT"
+          echo ""
+          echo "Possible issues:"
+          echo "  1. Secret '$$PAYLOAD_SECRET_NAME' doesn't exist in ${PROJECT_ID}"
+          echo "  2. Cloud Build service account lacks permission"
+          echo "  3. Secret name is incorrect"
+          exit 1
+        fi
+
+        # DATABASE_URI is optional for build
+        DATABASE_URI=$(gcloud secrets versions access latest --secret=$$DATABASE_URI_NAME --project=${PROJECT_ID} 2>/dev/null || echo "")
+        if [ -n "$$DATABASE_URI" ]; then
+          echo "✅ DATABASE_URI fetched successfully"
+        else
+          echo "⚠️  DATABASE_URI not found (optional for build)"
         fi
 
         docker build -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
