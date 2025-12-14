@@ -29,7 +29,7 @@ steps:
         if [ "${PROJECT_ID}" = "the-white-prod" ]; then
           # Production project - only deploy on tag creation
           SERVICE_NAME="fashion-web"
-          ENVIRONMENT="PRODUCTION"
+          ENV_NAME="PRODUCTION"
 
           # Verify this is a tag-based deployment
           if [ -n "$TAG_NAME" ]; then
@@ -43,7 +43,7 @@ steps:
         elif [ "${PROJECT_ID}" = "the-white-dev" ]; then
           # Dev project - deploy on PR to main or manual trigger
           SERVICE_NAME="fashion-web-dev"
-          ENVIRONMENT="DEV"
+          ENV_NAME="DEV"
 
           # Log the trigger type
           if [ -n "${_PR_NUMBER:-}" ]; then
@@ -59,7 +59,7 @@ steps:
           exit 0
         fi
 
-        echo "🚀 Deploying ${SHORT_SHA} to $ENVIRONMENT environment ($SERVICE_NAME) in ${PROJECT_ID}..."
+        echo "🚀 Deploying ${SHORT_SHA} to $ENV_NAME environment ($SERVICE_NAME) in ${PROJECT_ID}..."
 
         # Only update the image, preserve all other Terraform-managed settings
         gcloud run services update $SERVICE_NAME \
