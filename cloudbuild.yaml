@@ -28,8 +28,7 @@ steps:
         # Determine service name and environment based on project and trigger
         if [ "${PROJECT_ID}" = "the-white-prod" ]; then
           # Production project - only deploy on tag creation
-          SERVICE_NAME="fashion-web"
-          ENV_NAME="PRODUCTION"
+          service_name="fashion-web"
 
           # Verify this is a tag-based deployment
           if [ -n "$TAG_NAME" ]; then
@@ -42,8 +41,7 @@ steps:
 
         elif [ "${PROJECT_ID}" = "the-white-dev" ]; then
           # Dev project - deploy on PR to main or manual trigger
-          SERVICE_NAME="fashion-web-dev"
-          ENV_NAME="DEV"
+          service_name="fashion-web-dev"
 
           # Log the trigger type
           if [ -n "${_PR_NUMBER:-}" ]; then
@@ -59,17 +57,17 @@ steps:
           exit 0
         fi
 
-        echo "🚀 Deploying ${SHORT_SHA} to $ENV_NAME environment ($SERVICE_NAME) in ${PROJECT_ID}..."
+        echo "🚀 Deploying ${SHORT_SHA} to $service_name in ${PROJECT_ID}..."
 
         # Only update the image, preserve all other Terraform-managed settings
-        gcloud run services update $SERVICE_NAME \
+        gcloud run services update $service_name \
           --image europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
           --region europe-north1 \
           --project ${PROJECT_ID} \
           --quiet
 
         echo "✅ Deployment complete!"
-        echo "📊 Service URL: https://$SERVICE_NAME-$(gcloud run services describe $SERVICE_NAME --region=europe-north1 --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)"
+        echo "📊 Service URL: https://$service_name-$(gcloud run services describe $service_name --region=europe-north1 --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)"
 
 timeout: 1800s
 
