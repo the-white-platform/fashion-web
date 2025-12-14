@@ -1,30 +1,40 @@
+# syntax=docker/dockerfile:1.4
 FROM node:20-alpine AS base
+
+# Install system dependencies
+RUN apk add --no-cache libc6-compat
+
+# Install pnpm globally in base image (reused across stages)
+RUN corepack enable && corepack prepare pnpm@9.7.1 --activate
 
 # Install dependencies only when needed
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
-
 WORKDIR /app
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@9.7.1 --activate
 
 # Copy package files
 COPY package.json pnpm-lock.yaml* ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies with cache mount for faster rebuilds
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@9.7.1 --activate
-
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
+
+# Copy source code (only what's needed for build)
+COPY package.json pnpm-lock.yaml* ./
+COPY next.config.js ./
+COPY tsconfig.json ./
+COPY postcss.config.js ./
+COPY tailwind.config.mjs ./
+COPY components.json ./
+COPY redirects.js ./
+COPY src ./src
+COPY public ./public
 
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -40,8 +50,10 @@ ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
 ENV DATABASE_URI=${DATABASE_URI}
 ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
 
+# Skip type generation in Docker (not needed, saves time)
 # Generate Payload types and build Next.js
-RUN pnpm run generate:types || echo "⚠️ WARNING: Type generation failed. This is often expected during Docker build as the database is not available. Continuing..."
+# Using || true to ensure build continues even if type generation fails
+RUN pnpm run generate:types || true
 RUN pnpm run build
 
 # Production image, copy all the files and run next
