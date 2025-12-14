@@ -1,0 +1,72 @@
+name: Auto Version Bump and Tag
+
+on:
+  push:
+    branches:
+      - main
+    # Only run if the commit doesn't already have a tag (avoid infinite loops)
+    tags-ignore:
+      - 'v*'
+
+permissions:
+  contents: write # Required to push tags and commits
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    # Only run if not already a version commit (to avoid infinite loops)
+    if: "!contains(github.event.head_commit.message, 'chore(release)') && github.event.head_commit.author.name != 'GitHub Action'"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Bump version and create tag
+        id: version
+        run: |
+          # Run standard-version to bump version based on commit messages
+          # This will:
+          # 1. Bump version in package.json
+          # 2. Create/update CHANGELOG.md
+          # 3. Create a git tag (e.g., v1.0.1)
+          # 4. Create a commit with message like "chore(release): 1.0.1"
+          pnpm run release -- --skip.changelog=false --skip.commit=false --skip.tag=false
+
+          # Get the new version from package.json
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Bumped version to $NEW_VERSION"
+
+      - name: Push changes and tag
+        run: |
+          git push origin main --follow-tags
+          echo "✅ Pushed version bump commit and tag"
+
+      - name: Output version info
+        run: |
+          echo "🚀 Version bumped to: ${{ steps.version.outputs.version }}"
+          echo "🏷️  Tag created: ${{ steps.version.outputs.tag }}"
+          echo "📦 This tag will trigger production deployment"
