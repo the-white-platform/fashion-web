@@ -97,10 +97,6 @@
       "@types/react-dom": "^19.0.3"
     }
   },
-  "overrides": {
-    "@types/react": "^19.0.3",
-    "@types/react-dom": "^19.0.3"
-  },
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
