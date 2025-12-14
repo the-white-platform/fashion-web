@@ -27,13 +27,13 @@ steps:
       - |
         # Determine service name and environment based on project and trigger
         if [ "${PROJECT_ID}" = "the-white-prod" ]; then
-          # Production project
+          # Production project - only deploy on tag creation
           SERVICE_NAME="fashion-web"
           ENVIRONMENT="PRODUCTION"
 
           # Verify this is a tag-based deployment
           if [ -n "$TAG_NAME" ]; then
-            echo "🏷️  Tag-based deployment: $TAG_NAME"
+            echo "🏷️  Tag-based deployment to PRODUCTION: $TAG_NAME"
           else
             echo "⚠️  Production deployments require a version tag (e.g., v1.0.0)"
             echo "⚠️  Skipping deployment..."
@@ -41,15 +41,17 @@ steps:
           fi
 
         elif [ "${PROJECT_ID}" = "the-white-dev" ]; then
-          # Dev project
+          # Dev project - deploy on PR to main or manual trigger
           SERVICE_NAME="fashion-web-dev"
           ENVIRONMENT="DEV"
 
           # Log the trigger type
-          if [ "$BRANCH_NAME" = "develop" ]; then
-            echo "🌿 Branch deployment: develop"
+          if [ -n "$_PR_NUMBER" ] || [ -n "$PR_NUMBER" ]; then
+            echo "🔀 PR deployment to DEV: PR #${_PR_NUMBER:-$PR_NUMBER} targeting main branch"
+          elif [ -n "$BRANCH_NAME" ]; then
+            echo "🌿 Branch deployment to DEV: $BRANCH_NAME"
           else
-            echo "ℹ️  Dev deployment (PR or manual trigger)"
+            echo "ℹ️  Manual deployment to DEV"
           fi
 
         else
