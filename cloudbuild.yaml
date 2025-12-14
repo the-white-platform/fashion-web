@@ -5,9 +5,32 @@ steps:
     args:
       - '-c'
       - |
+        # Determine secret names based on project
+        if [ "${PROJECT_ID}" = "the-white-prod" ]; then
+          PAYLOAD_SECRET_NAME="PAYLOAD_SECRET"
+          DATABASE_URI_NAME="DATABASE_URI"
+        elif [ "${PROJECT_ID}" = "the-white-dev" ]; then
+          PAYLOAD_SECRET_NAME="PAYLOAD_SECRET_DEV"
+          DATABASE_URI_NAME="DATABASE_URI_DEV"
+        else
+          PAYLOAD_SECRET_NAME="PAYLOAD_SECRET"
+          DATABASE_URI_NAME="DATABASE_URI"
+        fi
+
+        # Get secrets from Secret Manager
+        echo "🔐 Fetching secrets from Secret Manager..."
+        PAYLOAD_SECRET=$(gcloud secrets versions access latest --secret=$$PAYLOAD_SECRET_NAME --project=${PROJECT_ID} 2>/dev/null || echo "")
+        DATABASE_URI=$(gcloud secrets versions access latest --secret=$$DATABASE_URI_NAME --project=${PROJECT_ID} 2>/dev/null || echo "")
+
+        if [ -z "$$PAYLOAD_SECRET" ]; then
+          echo "⚠️  WARNING: PAYLOAD_SECRET not found. Build may fail."
+        fi
+
         docker build -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
                      -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
                      --build-arg NEXT_PUBLIC_SERVER_URL=${_NEXT_PUBLIC_SERVER_URL} \
+                     --build-arg PAYLOAD_SECRET="$$PAYLOAD_SECRET" \
+                     --build-arg DATABASE_URI="$$DATABASE_URI" \
                      .
 
   # 2. Push the container image to Artifact Registry

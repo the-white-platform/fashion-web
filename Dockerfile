@@ -30,6 +30,16 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
+# Accept build arguments for secrets
+ARG PAYLOAD_SECRET
+ARG DATABASE_URI
+ARG NEXT_PUBLIC_SERVER_URL
+
+# Set as environment variables for build
+ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
+ENV DATABASE_URI=${DATABASE_URI}
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
+
 # Generate Payload types and build Next.js
 RUN pnpm run generate:types || echo "⚠️ WARNING: Type generation failed. This is often expected during Docker build as the database is not available. Continuing..."
 RUN pnpm run build
