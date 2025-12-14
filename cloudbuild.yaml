@@ -1,6 +1,6 @@
 steps:
-  # 1. Build the container image
-  - name: 'gcr.io/cloud-builders/docker'
+  # 0. Fetch secrets from Secret Manager
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
       - '-c'
@@ -23,7 +23,6 @@ steps:
         echo "   Looking for: $$PAYLOAD_SECRET_NAME"
 
         # Try to fetch PAYLOAD_SECRET - show error if it fails
-        # Use $$ to escape $ so Cloud Build doesn't treat it as a substitution
         PAYLOAD_SECRET_OUTPUT=$$(gcloud secrets versions access latest --secret=$$PAYLOAD_SECRET_NAME --project=${PROJECT_ID} 2>&1)
         PAYLOAD_SECRET_EXIT=$$?
 
@@ -32,6 +31,8 @@ steps:
           if [ -n "$$PAYLOAD_SECRET" ]; then
             PAYLOAD_SECRET_LEN=$${#PAYLOAD_SECRET}
             echo "✅ PAYLOAD_SECRET fetched successfully ($$PAYLOAD_SECRET_LEN chars)"
+            # Write to file for next step
+            echo -n "$$PAYLOAD_SECRET" > /workspace/payload_secret.txt
           else
             echo "❌ ERROR: PAYLOAD_SECRET is empty!"
             exit 1
@@ -51,9 +52,25 @@ steps:
         DATABASE_URI=$$(gcloud secrets versions access latest --secret=$$DATABASE_URI_NAME --project=${PROJECT_ID} 2>/dev/null || echo "")
         if [ -n "$$DATABASE_URI" ]; then
           echo "✅ DATABASE_URI fetched successfully"
+          echo -n "$$DATABASE_URI" > /workspace/database_uri.txt
         else
           echo "⚠️  DATABASE_URI not found (optional for build)"
+          echo -n "" > /workspace/database_uri.txt
         fi
+
+  # 1. Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Read secrets from files created in previous step
+        PAYLOAD_SECRET=$$(cat /workspace/payload_secret.txt)
+        DATABASE_URI=$$(cat /workspace/database_uri.txt)
+
+        echo "🔨 Building Docker image..."
+        echo "   PAYLOAD_SECRET length: $${#PAYLOAD_SECRET} chars"
+        echo "   DATABASE_URI length: $${#DATABASE_URI} chars"
 
         docker build -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
                      -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
