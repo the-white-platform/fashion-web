@@ -23,13 +23,15 @@ steps:
         echo "   Looking for: $$PAYLOAD_SECRET_NAME"
 
         # Try to fetch PAYLOAD_SECRET - show error if it fails
-        PAYLOAD_SECRET_OUTPUT=$(gcloud secrets versions access latest --secret=$$PAYLOAD_SECRET_NAME --project=${PROJECT_ID} 2>&1)
-        PAYLOAD_SECRET_EXIT=$?
+        # Use $$ to escape $ so Cloud Build doesn't treat it as a substitution
+        PAYLOAD_SECRET_OUTPUT=$$(gcloud secrets versions access latest --secret=$$PAYLOAD_SECRET_NAME --project=${PROJECT_ID} 2>&1)
+        PAYLOAD_SECRET_EXIT=$$?
 
-        if [ $PAYLOAD_SECRET_EXIT -eq 0 ]; then
+        if [ $$PAYLOAD_SECRET_EXIT -eq 0 ]; then
           PAYLOAD_SECRET="$$PAYLOAD_SECRET_OUTPUT"
           if [ -n "$$PAYLOAD_SECRET" ]; then
-            echo "✅ PAYLOAD_SECRET fetched successfully ($${#PAYLOAD_SECRET} chars)"
+            PAYLOAD_SECRET_LEN=$${#PAYLOAD_SECRET}
+            echo "✅ PAYLOAD_SECRET fetched successfully ($$PAYLOAD_SECRET_LEN chars)"
           else
             echo "❌ ERROR: PAYLOAD_SECRET is empty!"
             exit 1
@@ -46,7 +48,7 @@ steps:
         fi
 
         # DATABASE_URI is optional for build
-        DATABASE_URI=$(gcloud secrets versions access latest --secret=$$DATABASE_URI_NAME --project=${PROJECT_ID} 2>/dev/null || echo "")
+        DATABASE_URI=$$(gcloud secrets versions access latest --secret=$$DATABASE_URI_NAME --project=${PROJECT_ID} 2>/dev/null || echo "")
         if [ -n "$$DATABASE_URI" ]; then
           echo "✅ DATABASE_URI fetched successfully"
         else
@@ -81,8 +83,8 @@ steps:
           service_name="fashion-web"
 
           # Verify this is a tag-based deployment
-          if [ -n "$TAG_NAME" ]; then
-            echo "🏷️  Tag-based deployment to PRODUCTION: $TAG_NAME"
+          if [ -n "${TAG_NAME}" ]; then
+            echo "🏷️  Tag-based deployment to PRODUCTION: ${TAG_NAME}"
           else
             echo "⚠️  Production deployments require a version tag (e.g., v1.0.0)"
             echo "⚠️  Skipping deployment..."
@@ -107,17 +109,18 @@ steps:
           exit 0
         fi
 
-        echo "🚀 Deploying ${SHORT_SHA} to $service_name in ${PROJECT_ID}..."
+        echo "🚀 Deploying ${SHORT_SHA} to $$service_name in ${PROJECT_ID}..."
 
         # Only update the image, preserve all other Terraform-managed settings
-        gcloud run services update $service_name \
+        gcloud run services update $$service_name \
           --image europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
           --region europe-north1 \
           --project ${PROJECT_ID} \
           --quiet
 
         echo "✅ Deployment complete!"
-        echo "📊 Service URL: https://$service_name-$(gcloud run services describe $service_name --region=europe-north1 --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)"
+        SERVICE_URL=$$(gcloud run services describe $$service_name --region=europe-north1 --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)
+        echo "📊 Service URL: https://$$SERVICE_URL"
 
 timeout: 1800s
 
