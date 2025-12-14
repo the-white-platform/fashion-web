@@ -21,6 +21,20 @@ const nextConfig = {
   reactStrictMode: true,
   redirects,
   output: 'standalone',
+  // Optimize build performance
+  swcMinify: true,
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === 'production'
+        ? {
+            exclude: ['error', 'warn'],
+          }
+        : false,
+  },
+  // Enable experimental features for faster builds
+  experimental: {
+    optimizePackageImports: ['@payloadcms/ui', 'lucide-react'],
+  },
 }
 
 export default withPayload(nextConfig)

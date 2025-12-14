@@ -51,3 +51,21 @@ docs/
 .editorconfig
 .eslintcache
 
+# GitHub
+.github/
+
+# Scripts (not needed in production)
+scripts/
+
+# Cloud Build
+cloudbuild.yaml
+.gcloudignore
+
+# CI/CD
+*.yml
+!docker-compose.yml
+
+# Build artifacts
+*.log
+*.cache
+

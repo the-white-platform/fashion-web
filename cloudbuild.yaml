@@ -72,11 +72,16 @@ steps:
         echo "   PAYLOAD_SECRET length: $${#PAYLOAD_SECRET} chars"
         echo "   DATABASE_URI length: $${#DATABASE_URI} chars"
 
+        # Enable BuildKit for faster builds with cache mounts
+        export DOCKER_BUILDKIT=1
+        export BUILDKIT_PROGRESS=plain
+
         docker build -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
                      -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
                      --build-arg NEXT_PUBLIC_SERVER_URL=${_NEXT_PUBLIC_SERVER_URL} \
                      --build-arg PAYLOAD_SECRET="$$PAYLOAD_SECRET" \
                      --build-arg DATABASE_URI="$$DATABASE_URI" \
+                     --cache-from ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
                      .
 
   # 2. Push the container image to Artifact Registry

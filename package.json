@@ -16,7 +16,7 @@
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
-    "prepare": "husky",
+    "prepare": "node -e \"try { require('fs').accessSync('.git'); require('child_process').execSync('husky', { stdio: 'inherit' }); } catch(e) { console.log('Skipping husky: .git not found (Docker/CI environment)'); }\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "commit": "cz",
