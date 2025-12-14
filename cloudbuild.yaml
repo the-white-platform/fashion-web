@@ -59,17 +59,17 @@ steps:
           exit 0
         fi
 
-        echo "🚀 Deploying ${SHORT_SHA} to $ENVIRONMENT environment ($$SERVICE_NAME) in ${PROJECT_ID}..."
+        echo "🚀 Deploying ${SHORT_SHA} to $ENVIRONMENT environment ($SERVICE_NAME) in ${PROJECT_ID}..."
 
         # Only update the image, preserve all other Terraform-managed settings
-        gcloud run services update $$SERVICE_NAME \
+        gcloud run services update $SERVICE_NAME \
           --image europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
           --region europe-north1 \
           --project ${PROJECT_ID} \
           --quiet
 
         echo "✅ Deployment complete!"
-        echo "📊 Service URL: https://$$SERVICE_NAME-$(gcloud run services describe $$SERVICE_NAME --region=europe-north1 --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)"
+        echo "📊 Service URL: https://$SERVICE_NAME-$(gcloud run services describe $SERVICE_NAME --region=europe-north1 --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)"
 
 timeout: 1800s
 
