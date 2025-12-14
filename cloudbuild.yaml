@@ -6,10 +6,10 @@ steps:
       - '-c'
       - |
         # Determine secret names based on project
-        if [ "${PROJECT_ID}" = "the-white-prod" ]; then
+        if [ "${PROJECT_ID}" = "the-white-prod-481217" ]; then
           PAYLOAD_SECRET_NAME="PAYLOAD_SECRET"
           DATABASE_URI_NAME="DATABASE_URI"
-        elif [ "${PROJECT_ID}" = "the-white-dev" ]; then
+        elif [ "${PROJECT_ID}" = "the-white-dev-481217" ]; then
           PAYLOAD_SECRET_NAME="PAYLOAD_SECRET_DEV"
           DATABASE_URI_NAME="DATABASE_URI_DEV"
         else
@@ -72,8 +72,8 @@ steps:
         echo "   PAYLOAD_SECRET length: $${#PAYLOAD_SECRET} chars"
         echo "   DATABASE_URI length: $${#DATABASE_URI} chars"
 
-        docker build -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
-                     -t europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
+        docker build -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
+                     -t ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
                      --build-arg NEXT_PUBLIC_SERVER_URL=${_NEXT_PUBLIC_SERVER_URL} \
                      --build-arg PAYLOAD_SECRET="$$PAYLOAD_SECRET" \
                      --build-arg DATABASE_URI="$$DATABASE_URI" \
@@ -85,8 +85,8 @@ steps:
     args:
       - '-c'
       - |
-        docker push europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA}
-        docker push europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest
+        docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA}
+        docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest
 
   # 3. Deploy to Cloud Run (Update existing service)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -95,7 +95,7 @@ steps:
       - '-c'
       - |
         # Determine service name and environment based on project and trigger
-        if [ "${PROJECT_ID}" = "the-white-prod" ]; then
+        if [ "${PROJECT_ID}" = "the-white-prod-481217" ]; then
           # Production project - only deploy on tag creation
           service_name="fashion-web"
 
@@ -108,7 +108,7 @@ steps:
             exit 0
           fi
 
-        elif [ "${PROJECT_ID}" = "the-white-dev" ]; then
+        elif [ "${PROJECT_ID}" = "the-white-dev-481217" ]; then
           # Dev project - deploy on PR to main or manual trigger
           service_name="fashion-web-dev"
 
@@ -130,13 +130,13 @@ steps:
 
         # Only update the image, preserve all other Terraform-managed settings
         gcloud run services update $$service_name \
-          --image europe-north1-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
-          --region europe-north1 \
+          --image ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA} \
+          --region ${_REGION} \
           --project ${PROJECT_ID} \
           --quiet
 
         echo "✅ Deployment complete!"
-        SERVICE_URL=$$(gcloud run services describe $$service_name --region=europe-north1 --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)
+        SERVICE_URL=$$(gcloud run services describe $$service_name --region=${_REGION} --project=${PROJECT_ID} --format='value(status.url)' | cut -d'/' -f3)
         echo "📊 Service URL: https://$$SERVICE_URL"
 
 timeout: 1800s
@@ -146,3 +146,4 @@ options:
 
 substitutions:
   _NEXT_PUBLIC_SERVER_URL: '' # Must be provided by trigger or CLI
+  _REGION: 'asia-southeast1' # Singapore - closest to Vietnam
