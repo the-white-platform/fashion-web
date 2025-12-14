@@ -46,10 +46,10 @@ steps:
           ENVIRONMENT="DEV"
 
           # Log the trigger type
-          if [ -n "$_PR_NUMBER" ] || [ -n "$PR_NUMBER" ]; then
-            echo "🔀 PR deployment to DEV: PR #${_PR_NUMBER:-$PR_NUMBER} targeting main branch"
-          elif [ -n "$BRANCH_NAME" ]; then
-            echo "🌿 Branch deployment to DEV: $BRANCH_NAME"
+          if [ -n "${_PR_NUMBER:-}" ]; then
+            echo "🔀 PR deployment to DEV: PR #${_PR_NUMBER} targeting main branch"
+          elif [ -n "${BRANCH_NAME:-}" ]; then
+            echo "🌿 Branch deployment to DEV: ${BRANCH_NAME}"
           else
             echo "ℹ️  Manual deployment to DEV"
           fi
