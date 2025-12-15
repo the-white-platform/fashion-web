@@ -137,7 +137,14 @@ jobs:
           fi
 
           git add package.json pnpm-lock.yaml
-          git commit -m "chore(release): $NEW_VERSION" || echo "Commit may have already been made"
+          if ! git commit -m "chore(release): $NEW_VERSION"; then
+            if git status | grep -q "nothing to commit"; then
+              echo "No changes to commit (version may have already been bumped)"
+            else
+              echo "Commit failed due to an unexpected error"
+              exit 1
+            fi
+          fi
           git push origin HEAD:${{ github.head_ref }}
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT

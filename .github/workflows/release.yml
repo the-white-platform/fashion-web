@@ -13,7 +13,6 @@ permissions:
 jobs:
   bump-and-tag:
     runs-on: ubuntu-latest
-    if: "!startsWith(github.ref, 'refs/tags/v')"
 
     steps:
       - name: Generate GitHub App Token

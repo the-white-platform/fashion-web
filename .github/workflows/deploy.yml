@@ -80,9 +80,9 @@ jobs:
           PROJECT_ID="${{ steps.params.outputs.project_id }}"
           REGION="${{ steps.params.outputs.region }}"
           SHORT_SHA="${{ steps.commit.outputs.short_sha }}"
-          NEXT_PUBLIC_SERVER_URL="${{ github.event.inputs.environment == 'prod' && 'https://fashion-web-XXXXXX.run.app' || 'https://fashion-web-dev-XXXXXX.run.app' }}"
 
           if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            NEXT_PUBLIC_SERVER_URL="https://fashion-web-XXXXXX.run.app"
             TAG_NAME="${{ steps.params.outputs.tag }}"
             TAG_FOR_BUILD=${TAG_NAME#v}
             gcloud builds submit \
@@ -92,6 +92,7 @@ jobs:
               --substitutions _NEXT_PUBLIC_SERVER_URL="$NEXT_PUBLIC_SERVER_URL",SHORT_SHA="$SHORT_SHA",TAG_NAME="$TAG_FOR_BUILD" \
               --git-source-tag="$TAG_NAME"
           else
+            NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app"
             gcloud builds submit \
               --config cloudbuild.yaml \
               --project "$PROJECT_ID" \
