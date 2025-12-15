@@ -91,7 +91,14 @@ jobs:
           export SKIP_COMMIT=true
           export SKIP_TAG=true
 
-          npx standard-version --skip.commit --skip.tag --skip.changelog=false || true
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "No tags found, using first release"
+            npx standard-version --first-release --skip.commit --skip.tag --skip.changelog || true
+          else
+            echo "Analyzing commits since $LAST_TAG to determine bump type (feat=minor, fix=patch, BREAKING=major)"
+            npx standard-version --skip.commit --skip.tag --skip.changelog || true
+          fi
 
           NEW_VERSION=$(node -p "require('./package.json').version")
           TAG_NAME="v$NEW_VERSION"
@@ -101,7 +108,7 @@ jobs:
             git tag -d "$TAG_NAME" 2>/dev/null || true
           fi
 
-          git add package.json pnpm-lock.yaml CHANGELOG.md
+          git add package.json pnpm-lock.yaml
           git commit -m "chore(release): $NEW_VERSION" || echo "Commit may have already been made"
           git push origin HEAD:${{ github.head_ref }}
 
