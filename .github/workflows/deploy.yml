@@ -11,7 +11,7 @@ on:
           - dev
           - prod
       tag:
-        description: 'Tag/version to deploy (required for prod, optional for dev)'
+        description: 'Tag/version to deploy (required for prod)'
         required: false
         type: string
       branch:
@@ -22,7 +22,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # Required for Google Cloud authentication
+  id-token: write
 
 jobs:
   deploy:
@@ -34,47 +34,26 @@ jobs:
         id: params
         run: |
           if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            PROJECT_ID="the-white-prod-481217"
-            SERVICE_NAME="fashion-web"
-            SERVICE_ACCOUNT="github-actions-deployer@the-white-prod-481217.iam.gserviceaccount.com"
-            WORKLOAD_IDENTITY_PROVIDER="projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"
-            
-            # For prod, require a tag
             if [ -z "${{ github.event.inputs.tag }}" ]; then
               echo "❌ Error: Tag is required for production deployment"
               exit 1
             fi
-            
             TAG_NAME="${{ github.event.inputs.tag }}"
-            # Ensure tag has 'v' prefix for git operations
-            if [[ ! "$TAG_NAME" =~ ^v ]]; then
-              TAG_NAME="v$TAG_NAME"
-            fi
+            [[ ! "$TAG_NAME" =~ ^v ]] && TAG_NAME="v$TAG_NAME"
             echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
-            echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
-            echo "service_name=$SERVICE_NAME" >> $GITHUB_OUTPUT
-            echo "service_account=$SERVICE_ACCOUNT" >> $GITHUB_OUTPUT
-            echo "workload_identity_provider=$WORKLOAD_IDENTITY_PROVIDER" >> $GITHUB_OUTPUT
-            echo "trigger_type=tag" >> $GITHUB_OUTPUT
+            echo "project_id=the-white-prod-481217" >> $GITHUB_OUTPUT
+            echo "service_name=fashion-web" >> $GITHUB_OUTPUT
+            echo "service_account=github-actions-deployer@the-white-prod-481217.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
+            echo "workload_identity_provider=projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
             echo "checkout_ref=refs/tags/$TAG_NAME" >> $GITHUB_OUTPUT
-            
           else
-            PROJECT_ID="the-white-dev-481217"
-            SERVICE_NAME="fashion-web-dev"
-            SERVICE_ACCOUNT="github-actions-deployer@the-white-dev-481217.iam.gserviceaccount.com"
-            WORKLOAD_IDENTITY_PROVIDER="projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"
-            BRANCH_NAME="${{ github.event.inputs.branch }}"
-            echo "project_id=$PROJECT_ID" >> $GITHUB_OUTPUT
-            echo "service_name=$SERVICE_NAME" >> $GITHUB_OUTPUT
-            echo "service_account=$SERVICE_ACCOUNT" >> $GITHUB_OUTPUT
-            echo "workload_identity_provider=$WORKLOAD_IDENTITY_PROVIDER" >> $GITHUB_OUTPUT
-            echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
-            echo "trigger_type=branch" >> $GITHUB_OUTPUT
-            echo "checkout_ref=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "project_id=the-white-dev-481217" >> $GITHUB_OUTPUT
+            echo "service_name=fashion-web-dev" >> $GITHUB_OUTPUT
+            echo "service_account=github-actions-deployer@the-white-dev-481217.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
+            echo "workload_identity_provider=projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
+            echo "checkout_ref=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
           fi
-
-          REGION="asia-southeast1"
-          echo "region=$REGION" >> $GITHUB_OUTPUT
+          echo "region=asia-southeast1" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -89,16 +68,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.params.outputs.checkout_ref }}
-          fetch-depth: 0
 
       - name: Get commit SHA
         id: commit
         run: |
-          COMMIT_SHA=$(git rev-parse HEAD)
-          SHORT_SHA=$(echo $COMMIT_SHA | cut -c1-7)
-          echo "sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          SHORT_SHA=$(git rev-parse --short HEAD)
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-          echo "✅ Commit SHA: $SHORT_SHA"
 
       - name: Trigger Cloud Build
         run: |
@@ -106,25 +81,10 @@ jobs:
           REGION="${{ steps.params.outputs.region }}"
           SHORT_SHA="${{ steps.commit.outputs.short_sha }}"
 
-          # Set default NEXT_PUBLIC_SERVER_URL based on environment
           if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
             NEXT_PUBLIC_SERVER_URL="https://fashion-web-XXXXXX.run.app"
-          else
-            NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app"
-          fi
-
-          echo "🚀 Triggering Cloud Build..."
-          echo "   Project: $PROJECT_ID"
-          echo "   Region: $REGION"
-          echo "   Commit: $SHORT_SHA"
-
-          if [ "${{ steps.params.outputs.trigger_type }}" = "tag" ]; then
             TAG_NAME="${{ steps.params.outputs.tag }}"
-            echo "   Tag: $TAG_NAME"
-            
-            # For tag-based builds, use the tag name (without v prefix for Cloud Build)
             TAG_FOR_BUILD=${TAG_NAME#v}
-            
             gcloud builds submit \
               --config cloudbuild.yaml \
               --project "$PROJECT_ID" \
@@ -132,54 +92,30 @@ jobs:
               --substitutions _NEXT_PUBLIC_SERVER_URL="$NEXT_PUBLIC_SERVER_URL",SHORT_SHA="$SHORT_SHA",TAG_NAME="$TAG_FOR_BUILD" \
               --git-source-tag="$TAG_NAME"
           else
-            BRANCH_NAME="${{ steps.params.outputs.branch_name }}"
-            echo "   Branch: $BRANCH_NAME"
-            
+            NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app"
             gcloud builds submit \
               --config cloudbuild.yaml \
               --project "$PROJECT_ID" \
               --region "$REGION" \
               --substitutions _NEXT_PUBLIC_SERVER_URL="$NEXT_PUBLIC_SERVER_URL",SHORT_SHA="$SHORT_SHA" \
-              --git-source-branch="$BRANCH_NAME"
+              --git-source-branch="${{ github.event.inputs.branch }}"
           fi
-
-          echo "✅ Cloud Build triggered successfully"
 
       - name: Get deployment URL
         id: url
         run: |
-          PROJECT_ID="${{ steps.params.outputs.project_id }}"
-          SERVICE_NAME="${{ steps.params.outputs.service_name }}"
-          REGION="${{ steps.params.outputs.region }}"
-
-          echo "⏳ Waiting for deployment to complete..."
           sleep 10
-
-          SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" \
-            --region="$REGION" \
-            --project="$PROJECT_ID" \
+          SERVICE_URL=$(gcloud run services describe "${{ steps.params.outputs.service_name }}" \
+            --region="${{ steps.params.outputs.region }}" \
+            --project="${{ steps.params.outputs.project_id }}" \
             --format='value(status.url)' 2>/dev/null || echo "")
-
-          if [ -n "$SERVICE_URL" ]; then
-            echo "✅ Deployment URL: $SERVICE_URL"
-            echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️  Could not retrieve service URL. Check Cloud Run console."
-          fi
+          [ -n "$SERVICE_URL" ] && echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
 
       - name: Deployment summary
         run: |
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           echo "- **Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Project:** ${{ steps.params.outputs.project_id }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Service:** ${{ steps.params.outputs.service_name }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Commit:** ${{ steps.commit.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ steps.params.outputs.trigger_type }}" = "tag" ]; then
-            echo "- **Tag:** ${{ steps.params.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "- **Branch:** ${{ steps.params.outputs.branch_name }}" >> $GITHUB_STEP_SUMMARY
-          fi
-          if [ -n "${{ steps.url.outputs.url }}" ]; then
-            echo "- **URL:** ${{ steps.url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
-          fi
+          [ -n "${{ steps.url.outputs.url }}" ] && echo "- **URL:** ${{ steps.url.outputs.url }}" >> $GITHUB_STEP_SUMMARY

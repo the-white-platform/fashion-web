@@ -1,0 +1,167 @@
+name: PR Version Check and Auto-Bump
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-bump-and-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+          installation-id: ${{ secrets.RELEASE_BOT_INSTALLATION_ID }}
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Fetch main branch
+        run: |
+          git fetch origin main:main || true
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Get versions and compare
+        id: compare
+        run: |
+          PR_VERSION=$(node -p "require('./package.json').version")
+          MAIN_VERSION=$(git show main:package.json 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).version" || echo "0.0.0")
+
+          echo "pr_version=$PR_VERSION" >> $GITHUB_OUTPUT
+          echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+
+          COMPARISON=$(node -e "
+            const pr = '$PR_VERSION'.split('.').map(Number);
+            const main = '$MAIN_VERSION'.split('.').map(Number);
+            for (let i = 0; i < 3; i++) {
+              if (pr[i] > main[i]) { console.log('newer'); process.exit(0); }
+              if (pr[i] < main[i]) { console.log('older'); process.exit(0); }
+            }
+            console.log('same');
+          ")
+
+          echo "comparison=$COMPARISON" >> $GITHUB_OUTPUT
+
+          if [ "$COMPARISON" = "newer" ]; then
+            echo "✅ PR version ($PR_VERSION) is newer than main ($MAIN_VERSION)"
+            echo "needs_bump=false" >> $GITHUB_ENV
+          else
+            echo "⚠️  PR version ($PR_VERSION) is not newer than main ($MAIN_VERSION)"
+            echo "needs_bump=true" >> $GITHUB_ENV
+          fi
+
+      - name: Auto-bump version
+        id: bump
+        if: env.needs_bump == 'true'
+        run: |
+          echo "Auto-bumping version..."
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          export HUSKY=0
+          export SKIP_COMMIT=true
+          export SKIP_TAG=true
+
+          MAIN_VERSION="${{ steps.compare.outputs.main_version }}"
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "Main version: $MAIN_VERSION"
+
+          PR_COMMITS=$(git log main..HEAD --oneline || echo "")
+          echo "PR commits:"
+          echo "$PR_COMMITS"
+
+          HAS_FEAT=$(echo "$PR_COMMITS" | grep -iE "^[a-f0-9]+.*feat" || echo "")
+          HAS_BREAKING=$(echo "$PR_COMMITS" | grep -iE "BREAKING" || echo "")
+
+          if [ -n "$HAS_BREAKING" ]; then
+            echo "Found BREAKING CHANGE, bumping major"
+            npx standard-version --release-as major --skip.commit --skip.tag --skip.changelog || true
+          elif [ -n "$HAS_FEAT" ]; then
+            echo "Found feat commits, bumping minor"
+            npx standard-version --release-as minor --skip.commit --skip.tag --skip.changelog || true
+          else
+            echo "No feat/BREAKING found, bumping patch"
+            npx standard-version --release-as patch --skip.commit --skip.tag --skip.changelog || true
+          fi
+
+          NEW_VERSION=$(node -p "require('./package.json').version")
+
+          if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
+            echo "Version didn't change, manually incrementing patch..."
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+              const [major, minor, patch] = pkg.version.split('.').map(Number);
+              pkg.version = \`\${major}.\${minor}.\${patch + 1}\`;
+              fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            "
+            NEW_VERSION=$(node -p "require('./package.json').version")
+          fi
+
+          TAG_NAME="v$NEW_VERSION"
+
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Removing tag $TAG_NAME (tags should only be created on main)"
+            git tag -d "$TAG_NAME" 2>/dev/null || true
+          fi
+
+          git add package.json pnpm-lock.yaml
+          if ! git commit -m "chore(release): $NEW_VERSION"; then
+            if git status | grep -q "nothing to commit"; then
+              echo "No changes to commit (version may have already been bumped)"
+            else
+              echo "Commit failed due to an unexpected error"
+              exit 1
+            fi
+          fi
+          git push origin HEAD:${{ github.head_ref }}
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "bumped=true" >> $GITHUB_ENV
+          echo "✅ Auto-bumped version to $NEW_VERSION"
+
+      - name: Comment on PR
+        if: env.bumped == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const newVersion = '${{ steps.bump.outputs.version }}';
+            const message = `## ✅ Version Auto-Bumped\n\nVersion has been automatically bumped to \`${newVersion}\` based on your commits.\n\nThis PR is now ready to merge!`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });
