@@ -87,11 +87,22 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-          pnpm run release -- --skip.commit=true --skip.tag=true
+          export HUSKY=0
+          export SKIP_COMMIT=true
+          export SKIP_TAG=true
+
+          npx standard-version --skip.commit --skip.tag --skip.changelog=false || true
+
           NEW_VERSION=$(node -p "require('./package.json').version")
+          TAG_NAME="v$NEW_VERSION"
+
+          if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
+            echo "Removing tag $TAG_NAME (tags should only be created on main)"
+            git tag -d "$TAG_NAME" 2>/dev/null || true
+          fi
 
           git add package.json pnpm-lock.yaml CHANGELOG.md
-          git commit -m "chore(release): $NEW_VERSION"
+          git commit -m "chore(release): $NEW_VERSION" || echo "Commit may have already been made"
           git push origin HEAD:${{ github.head_ref }}
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
