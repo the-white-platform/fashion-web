@@ -91,16 +91,44 @@ jobs:
           export SKIP_COMMIT=true
           export SKIP_TAG=true
 
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -z "$LAST_TAG" ]; then
-            echo "No tags found, using first release"
-            npx standard-version --first-release --skip.commit --skip.tag --skip.changelog || true
+          MAIN_VERSION="${{ steps.compare.outputs.main_version }}"
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Current version: $CURRENT_VERSION"
+          echo "Main version: $MAIN_VERSION"
+
+          PR_COMMITS=$(git log main..HEAD --oneline || echo "")
+          echo "PR commits:"
+          echo "$PR_COMMITS"
+
+          HAS_FEAT=$(echo "$PR_COMMITS" | grep -iE "^[a-f0-9]+.*feat" || echo "")
+          HAS_BREAKING=$(echo "$PR_COMMITS" | grep -iE "BREAKING" || echo "")
+
+          if [ -n "$HAS_BREAKING" ]; then
+            echo "Found BREAKING CHANGE, bumping major"
+            npx standard-version --release-as major --skip.commit --skip.tag --skip.changelog || true
+          elif [ -n "$HAS_FEAT" ]; then
+            echo "Found feat commits, bumping minor"
+            npx standard-version --release-as minor --skip.commit --skip.tag --skip.changelog || true
           else
-            echo "Analyzing commits since $LAST_TAG to determine bump type (feat=minor, fix=patch, BREAKING=major)"
-            npx standard-version --skip.commit --skip.tag --skip.changelog || true
+            echo "No feat/BREAKING found, bumping patch"
+            npx standard-version --release-as patch --skip.commit --skip.tag --skip.changelog || true
           fi
 
           NEW_VERSION=$(node -p "require('./package.json').version")
+
+          if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
+            echo "Version didn't change, manually incrementing patch..."
+            node -e "
+              const fs = require('fs');
+              const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+              const [major, minor, patch] = pkg.version.split('.').map(Number);
+              pkg.version = \`\${major}.\${minor}.\${patch + 1}\`;
+              fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+            "
+            NEW_VERSION=$(node -p "require('./package.json').version")
+          fi
+
           TAG_NAME="v$NEW_VERSION"
 
           if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
