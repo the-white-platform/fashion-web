@@ -24,7 +24,8 @@
     "release:minor": "standard-version --release-as minor",
     "release:patch": "standard-version --release-as patch",
     "release:major": "standard-version --release-as major",
-    "release:first": "standard-version --first-release"
+    "release:first": "standard-version --first-release",
+    "prepare-release": "./scripts/prepare-release.sh"
   },
   "dependencies": {
     "@google-cloud/tasks": "^6.2.1",

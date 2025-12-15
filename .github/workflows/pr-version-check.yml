@@ -1,0 +1,87 @@
+name: PR Version Check
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
+
+      - name: Get versions
+        id: versions
+        run: |
+          PR_VERSION=$(node -p "require('./package.json').version")
+          MAIN_VERSION=$(node -p "require('./main-branch/package.json').version")
+
+          echo "pr_version=$PR_VERSION" >> $GITHUB_OUTPUT
+          echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Compare versions
+        id: compare
+        run: |
+          PR_VERSION="${{ steps.versions.outputs.pr_version }}"
+          MAIN_VERSION="${{ steps.versions.outputs.main_version }}"
+
+          COMPARISON=$(node -e "
+            const pr = '$PR_VERSION'.split('.').map(Number);
+            const main = '$MAIN_VERSION'.split('.').map(Number);
+            for (let i = 0; i < 3; i++) {
+              if (pr[i] > main[i]) { console.log('newer'); process.exit(0); }
+              if (pr[i] < main[i]) { console.log('older'); process.exit(0); }
+            }
+            console.log('same');
+          ")
+
+          echo "comparison=$COMPARISON" >> $GITHUB_OUTPUT
+
+          if [ "$COMPARISON" != "newer" ]; then
+            echo "❌ PR version ($PR_VERSION) is not newer than main ($MAIN_VERSION)"
+            exit 1
+          fi
+
+      - name: Comment on PR
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prVersion = '${{ steps.versions.outputs.pr_version }}';
+            const mainVersion = '${{ steps.versions.outputs.main_version }}';
+            const comparison = '${{ steps.compare.outputs.comparison }}';
+
+            let message = `## ⚠️ Version Check Failed\n\n`;
+            message += `- **Main version**: \`${mainVersion}\`\n`;
+            message += `- **PR version**: \`${prVersion}\`\n\n`;
+
+            if (comparison === 'same') {
+              message += `The PR version is the same as main. Please bump the version before merging.\n\n`;
+              message += `**To fix:**\n\`\`\`bash\npnpm run prepare-release\n\`\`\`\n`;
+            } else {
+              message += `The PR version is older than main. Please ensure it's newer than \`${mainVersion}\`.\n`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });

@@ -3,10 +3,10 @@ name: Create GitHub Release
 on:
   push:
     tags:
-      - 'v*' # Triggers on tags starting with 'v'
+      - 'v*'
 
 permissions:
-  contents: write # Required to create releases
+  contents: write
 
 jobs:
   create-release:
@@ -22,38 +22,17 @@ jobs:
         id: version
         run: |
           TAG_NAME=${GITHUB_REF#refs/tags/}
-          # Remove 'v' prefix if present
           VERSION=${TAG_NAME#v}
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "✅ Tag: $TAG_NAME, Version: $VERSION"
 
       - name: Get changelog
         id: changelog
         run: |
-          TAG_NAME="${{ steps.version.outputs.tag }}"
-
-          # Try to get changelog from CHANGELOG.md if it exists
           if [ -f "CHANGELOG.md" ]; then
-            # Extract changelog for this version
-            # Look for the section starting with the version
             VERSION="${{ steps.version.outputs.version }}"
             CHANGELOG=$(awk "/^## \[?$VERSION\]?/,/^## \[?[0-9]/ {if (!/^## \[?[0-9]/) print}" CHANGELOG.md | sed '1d' | sed '$d' || echo "")
-            
-            if [ -n "$CHANGELOG" ]; then
-              echo "✅ Found changelog for version $VERSION"
-              # Escape for JSON
-              CHANGELOG_ESCAPED=$(echo "$CHANGELOG" | jq -Rs .)
-              echo "changelog<<EOF" >> $GITHUB_OUTPUT
-              echo "$CHANGELOG" >> $GITHUB_OUTPUT
-              echo "EOF" >> $GITHUB_OUTPUT
-            else
-              echo "⚠️  No changelog found for version $VERSION"
-              echo "changelog=" >> $GITHUB_OUTPUT
-            fi
-          else
-            echo "ℹ️  CHANGELOG.md not found"
-            echo "changelog=" >> $GITHUB_OUTPUT
+            [ -n "$CHANGELOG" ] && echo "changelog<<EOF" >> $GITHUB_OUTPUT && echo "$CHANGELOG" >> $GITHUB_OUTPUT && echo "EOF" >> $GITHUB_OUTPUT
           fi
 
       - name: Create GitHub Release
@@ -67,12 +46,3 @@ jobs:
             ${{ steps.changelog.outputs.changelog }}
 
             **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ steps.version.outputs.tag }}
-          draft: false
-          prerelease: false
-
-      - name: Output release info
-        run: |
-          echo "✅ GitHub Release created successfully!"
-          echo "🏷️  Tag: ${{ steps.version.outputs.tag }}"
-          echo "📦 Version: ${{ steps.version.outputs.version }}"
-          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.version.outputs.tag }}"
