@@ -50,32 +50,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Get versions
-        id: versions
+      - name: Get versions and compare
+        id: compare
         run: |
           PR_VERSION=$(node -p "require('./package.json').version")
           MAIN_VERSION=$(git show main:package.json 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).version" || echo "0.0.0")
 
           echo "pr_version=$PR_VERSION" >> $GITHUB_OUTPUT
           echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
-
-      - name: Check if version already bumped in PR
-        id: check-bumped
-        run: |
-          if git diff main...HEAD --name-only | grep -q "^package.json$"; then
-            echo "already_bumped=true" >> $GITHUB_ENV
-            echo "✅ package.json was already modified in this PR"
-          else
-            echo "already_bumped=false" >> $GITHUB_ENV
-            echo "ℹ️  package.json not modified in this PR yet"
-          fi
-
-      - name: Compare and auto-bump if needed
-        id: bump
-        if: env.already_bumped != 'true'
-        run: |
-          PR_VERSION="${{ steps.versions.outputs.pr_version }}"
-          MAIN_VERSION="${{ steps.versions.outputs.main_version }}"
 
           COMPARISON=$(node -e "
             const pr = '$PR_VERSION'.split('.').map(Number);
@@ -89,59 +71,60 @@ jobs:
 
           echo "comparison=$COMPARISON" >> $GITHUB_OUTPUT
 
-          if [ "$COMPARISON" != "newer" ]; then
-            echo "Version not newer, auto-bumping..."
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            
-            pnpm run release -- --skip.commit=true --skip.tag=true
-            NEW_VERSION=$(node -p "require('./package.json').version")
-            
-            git add package.json pnpm-lock.yaml CHANGELOG.md
-            git commit -m "chore(release): $NEW_VERSION"
-            git push origin HEAD:${{ github.head_ref }}
-            
-            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-            echo "bumped=true" >> $GITHUB_ENV
-            echo "✅ Auto-bumped version to $NEW_VERSION"
+          if [ "$COMPARISON" = "newer" ]; then
+            echo "✅ PR version ($PR_VERSION) is newer than main ($MAIN_VERSION)"
+            echo "needs_bump=false" >> $GITHUB_ENV
           else
-            echo "version=$PR_VERSION" >> $GITHUB_OUTPUT
-            echo "bumped=false" >> $GITHUB_ENV
-            echo "✅ Version already newer: $PR_VERSION"
+            echo "⚠️  PR version ($PR_VERSION) is not newer than main ($MAIN_VERSION)"
+            echo "needs_bump=true" >> $GITHUB_ENV
           fi
 
-      - name: Verify version if already bumped
-        id: verify
-        if: env.already_bumped == 'true'
+      - name: Check if package.json was modified in PR
+        id: check-modified
+        if: env.needs_bump == 'true'
         run: |
-          PR_VERSION="${{ steps.versions.outputs.pr_version }}"
-          MAIN_VERSION="${{ steps.versions.outputs.main_version }}"
-
-          COMPARISON=$(node -e "
-            const pr = '$PR_VERSION'.split('.').map(Number);
-            const main = '$MAIN_VERSION'.split('.').map(Number);
-            for (let i = 0; i < 3; i++) {
-              if (pr[i] > main[i]) { console.log('newer'); process.exit(0); }
-              if (pr[i] < main[i]) { console.log('older'); process.exit(0); }
-            }
-            console.log('same');
-          ")
-
-          if [ "$COMPARISON" != "newer" ]; then
-            echo "❌ Version was bumped but is not newer than main"
-            echo "PR version: $PR_VERSION, Main version: $MAIN_VERSION"
-            exit 1
+          if git diff main...HEAD --name-only | grep -q "^package.json$"; then
+            echo "package_modified=true" >> $GITHUB_ENV
+            echo "⚠️  package.json was modified but version is not newer"
+          else
+            echo "package_modified=false" >> $GITHUB_ENV
+            echo "ℹ️  package.json not modified, will auto-bump"
           fi
 
-          echo "version=$PR_VERSION" >> $GITHUB_OUTPUT
-          echo "✅ Version already bumped and is newer: $PR_VERSION"
+      - name: Error if version modified but not newer
+        if: env.needs_bump == 'true' && env.package_modified == 'true'
+        run: |
+          echo "❌ package.json was modified but version is not newer than main"
+          echo "PR version: ${{ steps.compare.outputs.pr_version }}"
+          echo "Main version: ${{ steps.compare.outputs.main_version }}"
+          echo "Please ensure the version in package.json is newer than main before merging."
+          exit 1
+
+      - name: Auto-bump version
+        id: bump
+        if: env.needs_bump == 'true' && env.package_modified != 'true'
+        run: |
+          echo "Auto-bumping version..."
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          pnpm run release -- --skip.commit=true --skip.tag=true
+          NEW_VERSION=$(node -p "require('./package.json').version")
+
+          git add package.json pnpm-lock.yaml CHANGELOG.md
+          git commit -m "chore(release): $NEW_VERSION"
+          git push origin HEAD:${{ github.head_ref }}
+
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "bumped=true" >> $GITHUB_ENV
+          echo "✅ Auto-bumped version to $NEW_VERSION"
 
       - name: Comment on PR
         if: env.bumped == 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            const newVersion = '${{ steps.bump.outputs.version || steps.verify.outputs.version }}';
+            const newVersion = '${{ steps.bump.outputs.version }}';
             const message = `## ✅ Version Auto-Bumped\n\nVersion has been automatically bumped to \`${newVersion}\` based on your commits.\n\nThis PR is now ready to merge!`;
 
             github.rest.issues.createComment({
