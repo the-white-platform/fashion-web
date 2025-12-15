@@ -50,30 +50,17 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-      - name: Auto-bump version if needed
-        id: bump
+      - name: Get version
+        id: version
         run: |
-          if git diff-tree --no-commit-id --name-only -r HEAD | grep -q "package.json"; then
-            CURRENT_VERSION=$(node -p "require('./package.json').version")
-            echo "Version already bumped to $CURRENT_VERSION"
-            echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-            echo "bumped=false" >> $GITHUB_ENV
-          else
-            echo "Version not bumped, auto-bumping based on commits..."
-            pnpm run release -- --skip.commit=true --skip.tag=true
-            NEW_VERSION=$(node -p "require('./package.json').version")
-            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-            echo "bumped=true" >> $GITHUB_ENV
-            
-            git add package.json pnpm-lock.yaml CHANGELOG.md
-            git commit -m "chore(release): $NEW_VERSION" || echo "Commit failed"
-            git push origin main || echo "Push failed (branch protection)"
-          fi
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Version: $VERSION"
 
       - name: Create and push tag
         id: tag
         run: |
-          VERSION="${{ steps.bump.outputs.version }}"
+          VERSION="${{ steps.version.outputs.version }}"
           TAG_NAME="v$VERSION"
 
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
@@ -85,10 +72,6 @@ jobs:
 
       - name: Summary
         run: |
-          echo "Version: ${{ steps.bump.outputs.version }}"
+          echo "Version: ${{ steps.version.outputs.version }}"
           echo "Tag: ${{ steps.tag.outputs.tag }}"
-          if [ "${{ env.bumped }}" = "true" ]; then
-            echo "✅ Version auto-bumped and tag created"
-          else
-            echo "✅ Tag created for existing version bump"
-          fi
+          echo "✅ Tag created for version bump"
