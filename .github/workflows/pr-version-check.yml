@@ -79,30 +79,9 @@ jobs:
             echo "needs_bump=true" >> $GITHUB_ENV
           fi
 
-      - name: Check if package.json was modified in PR
-        id: check-modified
-        if: env.needs_bump == 'true'
-        run: |
-          if git diff main...HEAD --name-only | grep -q "^package.json$"; then
-            echo "package_modified=true" >> $GITHUB_ENV
-            echo "⚠️  package.json was modified but version is not newer"
-          else
-            echo "package_modified=false" >> $GITHUB_ENV
-            echo "ℹ️  package.json not modified, will auto-bump"
-          fi
-
-      - name: Error if version modified but not newer
-        if: env.needs_bump == 'true' && env.package_modified == 'true'
-        run: |
-          echo "❌ package.json was modified but version is not newer than main"
-          echo "PR version: ${{ steps.compare.outputs.pr_version }}"
-          echo "Main version: ${{ steps.compare.outputs.main_version }}"
-          echo "Please ensure the version in package.json is newer than main before merging."
-          exit 1
-
       - name: Auto-bump version
         id: bump
-        if: env.needs_bump == 'true' && env.package_modified != 'true'
+        if: env.needs_bump == 'true'
         run: |
           echo "Auto-bumping version..."
           git config --local user.email "action@github.com"
