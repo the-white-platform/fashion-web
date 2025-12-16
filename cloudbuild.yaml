@@ -1,113 +1,5 @@
 steps:
-  # 0. Cancel previous builds for the same branch/commit
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        echo "🛑 Canceling previous builds for this branch..."
-
-        # Get current build ID and source information
-        CURRENT_BUILD_ID="${BUILD_ID}"
-        CURRENT_BRANCH="${BRANCH_NAME:-${TAG_NAME:-main}}"
-        CURRENT_SHA="${COMMIT_SHA:-${SHORT_SHA}}"
-
-        echo "Current build: $${CURRENT_BUILD_ID}"
-        echo "Branch/Tag: $${CURRENT_BRANCH}"
-        echo "Commit SHA: $${CURRENT_SHA}"
-
-        # First, prioritize canceling QUEUED builds (they haven't started yet)
-        echo "Checking for QUEUED builds first (highest priority)..."
-        QUEUED_BUILDS=$(gcloud builds list \
-          --region=${_REGION} \
-          --project=${PROJECT_ID} \
-          --filter="status=QUEUED" \
-          --format="value(id)" \
-          --limit=50 2>/dev/null || echo "")
-
-        CANCELED_COUNT=0
-
-        if [ -n "$$QUEUED_BUILDS" ]; then
-          for BUILD_ID in $$QUEUED_BUILDS; do
-            if [ "$$BUILD_ID" = "$$CURRENT_BUILD_ID" ]; then
-              continue
-            fi
-            
-            # Quickly check if it's from the same branch/tag
-            BUILD_INFO=$(gcloud builds describe "$$BUILD_ID" \
-              --region=${_REGION} \
-              --project=${PROJECT_ID} \
-              --format="json" 2>/dev/null || echo "{}")
-            
-            BUILD_BRANCH=$(echo "$$BUILD_INFO" | grep -o '"branchName":"[^"]*"' | head -1 | sed 's/"branchName":"\([^"]*\)"/\1/' || echo "")
-            BUILD_TAG=$(echo "$$BUILD_INFO" | grep -o '"tagName":"[^"]*"' | head -1 | sed 's/"tagName":"\([^"]*\)"/\1/' || echo "")
-            
-            SHOULD_CANCEL=false
-            if [ -n "$${TAG_NAME:-}" ]; then
-              [ "$$BUILD_TAG" = "$${TAG_NAME}" ] && SHOULD_CANCEL=true
-            else
-              [ "$$BUILD_BRANCH" = "$$CURRENT_BRANCH" ] && SHOULD_CANCEL=true
-            fi
-            
-            if [ "$$SHOULD_CANCEL" = "true" ]; then
-              echo "🚨 Canceling QUEUED build: $${BUILD_ID}"
-              gcloud builds cancel "$$BUILD_ID" \
-                --region=${_REGION} \
-                --project=${PROJECT_ID} \
-                --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
-            fi
-          done
-        fi
-
-        # Then check WORKING builds (they're already running, but cancel if same branch)
-        echo "Checking for WORKING builds from same branch..."
-        WORKING_BUILDS=$(gcloud builds list \
-          --region=${_REGION} \
-          --project=${PROJECT_ID} \
-          --filter="status=WORKING" \
-          --format="value(id)" \
-          --limit=20 2>/dev/null || echo "")
-
-        if [ -n "$$WORKING_BUILDS" ]; then
-          for BUILD_ID in $$WORKING_BUILDS; do
-            if [ "$$BUILD_ID" = "$$CURRENT_BUILD_ID" ]; then
-              continue
-            fi
-            
-            BUILD_BRANCH=$(gcloud builds describe "$$BUILD_ID" \
-              --region=${_REGION} \
-              --project=${PROJECT_ID} \
-              --format="value(source.repoSource.branchName)" 2>/dev/null || echo "")
-            
-            BUILD_TAG=$(gcloud builds describe "$$BUILD_ID" \
-              --region=${_REGION} \
-              --project=${PROJECT_ID} \
-              --format="value(source.repoSource.tagName)" 2>/dev/null || echo "")
-            
-            SHOULD_CANCEL=false
-            if [ -n "$${TAG_NAME:-}" ]; then
-              [ "$$BUILD_TAG" = "$${TAG_NAME}" ] && SHOULD_CANCEL=true
-            else
-              [ "$$BUILD_BRANCH" = "$$CURRENT_BRANCH" ] && SHOULD_CANCEL=true
-            fi
-            
-            if [ "$$SHOULD_CANCEL" = "true" ]; then
-              echo "⚠️  Canceling WORKING build: $${BUILD_ID}"
-              gcloud builds cancel "$$BUILD_ID" \
-                --region=${_REGION} \
-                --project=${PROJECT_ID} \
-                --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
-            fi
-          done
-        fi
-
-        if [ $$CANCELED_COUNT -gt 0 ]; then
-          echo "✅ Canceled $${CANCELED_COUNT} previous build(s) for same branch/tag"
-        else
-          echo "ℹ️  No previous builds found for same branch/tag"
-        fi
-
-  # 1. Fetch secrets from Secret Manager
+  # 0. Fetch secrets from Secret Manager
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
@@ -166,7 +58,7 @@ steps:
           echo -n "" > /workspace/database_uri.txt
         fi
 
-  # 2. Build the container image
+  # 1. Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
     args:
@@ -192,7 +84,7 @@ steps:
                      --cache-from ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
                      .
 
-  # 3. Push the container image to Artifact Registry
+  # 2. Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
     args:
@@ -201,7 +93,7 @@ steps:
         docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA}
         docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest
 
-  # 4. Deploy to Cloud Run (Update existing service)
+  # 3. Deploy to Cloud Run (Update existing service)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
