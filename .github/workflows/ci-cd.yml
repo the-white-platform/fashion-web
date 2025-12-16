@@ -261,7 +261,26 @@ jobs:
           VERSION=${GITHUB_REF_NAME#v}
           TAG_SHA=$(git rev-parse ${{ github.ref_name }})
           SHORT_SHA=$(git rev-parse --short $TAG_SHA)
-          DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+          
+          # Try to find the dev image - check SHA tag first (most reliable), then version tag
+          DEV_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          DEV_IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+          
+          DEV_IMAGE=""
+          if gcloud artifacts docker images describe $DEV_IMAGE_SHA --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            DEV_IMAGE=$DEV_IMAGE_SHA
+            echo "✅ Found dev image with SHA tag: $DEV_IMAGE"
+          elif gcloud artifacts docker images describe $DEV_IMAGE_VERSION --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            DEV_IMAGE=$DEV_IMAGE_VERSION
+            echo "✅ Found dev image with version tag: $DEV_IMAGE"
+          else
+            echo "❌ Error: Dev image not found!"
+            echo "   Checked SHA tag: $DEV_IMAGE_SHA"
+            echo "   Checked version tag: $DEV_IMAGE_VERSION"
+            echo "   Make sure the image was built and deployed to dev first."
+            exit 1
+          fi
+          
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
           PROD_IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:latest"
           PROD_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
@@ -270,12 +289,6 @@ jobs:
           echo "   Version: $VERSION"
           echo "   Source: $DEV_IMAGE"
           echo "   Targets: $PROD_IMAGE, $PROD_IMAGE_LATEST, $PROD_IMAGE_SHA"
-
-          if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
-            echo "❌ Error: Dev image $DEV_IMAGE not found!"
-            echo "   Make sure the image was built and deployed to dev first."
-            exit 1
-          fi
 
           gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE \
             --project="${{ env.PROD_PROJECT }}" \
