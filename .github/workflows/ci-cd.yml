@@ -28,6 +28,7 @@ jobs:
   cancel-cloud-builds:
     name: Cancel Cloud Builds
     runs-on: ubuntu-latest
+    # Only run on push events (not PRs) because PRs don't trigger Cloud Build deployments
     if: github.event_name == 'push'
     steps:
       - name: Determine environment
