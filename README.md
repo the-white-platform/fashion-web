@@ -211,27 +211,54 @@ To run Payload in production, you need to build and start the Admin panel. To do
 
 ### Deploying to Google Cloud Platform (GCP)
 
-This project is configured to deploy to Google Cloud Run using Cloud Build.
+This project uses **GitHub Actions** for all CI/CD operations (build, test, deploy).
 
 1.  **Infrastructure**: The infrastructure (Cloud Run, Cloud SQL, Secret Manager) is managed via Terraform in the `../infrastructure` directory.
-2.  **Deployment**: Pushing to the following branches triggers a deployment via Cloud Build:
-    - `main` -> Deploys to Production
-    - `staging` -> Deploys to Staging
-    - `develop` -> Deploys to Development
+2.  **Deployment**:
+    - **PRs**: Fast validation build (`pnpm build`) - no deployment
+    - **Push to main**: Version bump, changelog generation, tag creation
+    - **Tag push (v\*)**: Docker build and deployment to dev/prod
 
-The build configuration is determined by `cloudbuild.yaml`.
+#### Important Notes
+
+- **Cloud Build triggers MUST be DISABLED** - All deployments happen via GitHub Actions only
+- Docker images are built directly in GitHub Actions and pushed to Artifact Registry
+- The `cloudbuild.yaml` file is kept for reference but not actively used
+
+#### Disable Cloud Build Triggers
+
+To prevent Cloud Build from running automatically, disable all triggers:
+
+```bash
+# List all triggers
+gcloud builds triggers list \
+  --region=asia-southeast1 \
+  --project=the-white-dev-481217
+
+# Disable a specific trigger
+gcloud builds triggers update TRIGGER_ID \
+  --region=asia-southeast1 \
+  --project=the-white-dev-481217 \
+  --disabled
+```
+
+Or disable via GCP Console: Cloud Build > Triggers > Select trigger > Edit > Disable
 
 #### Manual Deployment
 
-To trigger a manual deployment from your local machine (bypassing git triggers):
+Use the GitHub Actions workflow dispatch or push a tag to trigger deployment.
 
+#### Skip CI/CD
+
+To skip CI/CD workflows (e.g., when updating documentation), include one of these in your commit message:
+- `[skip ci]`
+- `[ci skip]`
+- `[skip actions]`
+- `[actions skip]`
+
+Example:
 ```bash
-gcloud builds submit --config cloudbuild.yaml \
-  --substitutions=BRANCH_NAME=main,SHORT_SHA=$(git rev-parse --short HEAD) \
-  --project the-white-dev \
-  --region europe-north1 \
-  --gcs-source-staging-dir=gs://the-white-dev-build-source/source \
-  .
+git commit -m "docs: update README [skip ci]"
 ```
 
 ### Self-hosting
