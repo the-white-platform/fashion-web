@@ -9,7 +9,27 @@ permissions:
   contents: write
 
 jobs:
+  check-skip:
+    name: Check if CI should be skipped
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Check commit message
+        id: check
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message || github.event.commits[0].message }}"
+          if echo "$COMMIT_MSG" | grep -qiE "\[skip ci\]|\[ci skip\]|\[skip actions\]|\[actions skip\]"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️  CI/CD skipped due to commit message"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "✅ CI/CD will run"
+          fi
+
   create-release:
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

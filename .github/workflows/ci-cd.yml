@@ -25,9 +25,33 @@ env:
   PROD_PROJECT: the-white-prod-481217
 
 jobs:
+  check-skip:
+    name: Check if CI should be skipped
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.check.outputs.skip }}
+    steps:
+      - name: Check commit message
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            COMMIT_MSG="${{ github.event.pull_request.title }}"
+          else
+            COMMIT_MSG="${{ github.event.head_commit.message || github.event.commits[0].message }}"
+          fi
+          if echo "$COMMIT_MSG" | grep -qiE "\[skip ci\]|\[ci skip\]|\[skip actions\]|\[actions skip\]"; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "⏭️  CI/CD skipped due to commit message"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "✅ CI/CD will run"
+          fi
+
   cancel-cloud-builds:
     name: Cancel Cloud Builds
     runs-on: ubuntu-latest
+    needs: check-skip
+    if: needs.check-skip.outputs.skip != 'true'
     # Note: This cancels any old Cloud Build runs (if triggers are still active).
     # Cloud Build triggers should be disabled - all builds happen in GitHub Actions.
     steps:
@@ -205,7 +229,8 @@ jobs:
   quality:
     name: Quality Checks
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    needs: check-skip
+    if: github.event_name == 'pull_request' && needs.check-skip.outputs.skip != 'true'
     steps:
       - name: Generate GitHub App Token
         id: app-token
@@ -270,8 +295,8 @@ jobs:
   build:
     name: Build (CI Validation)
     runs-on: ubuntu-latest
-    needs: [quality]
-    if: github.event_name == 'pull_request'
+    needs: [check-skip, quality]
+    if: github.event_name == 'pull_request' && needs.check-skip.outputs.skip != 'true'
     # Note: This is a fast CI validation build (pnpm build) that doesn't create Docker images.
     # Docker builds and deployments happen in the deploy job (GitHub Actions only, no Cloud Build).
     steps:
@@ -303,8 +328,8 @@ jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    needs: [cancel-cloud-builds]
-    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: [check-skip, cancel-cloud-builds]
+    if: github.event_name == 'push' && github.ref_type == 'tag' && needs.check-skip.outputs.skip != 'true'
     environment:
       name: ${{ startsWith(github.ref_name, 'v') && 'prod' || 'dev' }}
     steps:
@@ -473,7 +498,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: check-skip
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true'
     permissions:
       contents: write
     steps:
@@ -555,8 +581,8 @@ jobs:
   health-check:
     name: Health Check
     runs-on: ubuntu-latest
-    needs: [deploy]
-    if: github.event_name == 'push'
+    needs: [check-skip, deploy]
+    if: github.event_name == 'push' && needs.check-skip.outputs.skip != 'true'
     steps:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2

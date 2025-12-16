@@ -248,6 +248,19 @@ Or disable via GCP Console: Cloud Build > Triggers > Select trigger > Edit > Dis
 
 Use the GitHub Actions workflow dispatch or push a tag to trigger deployment.
 
+#### Skip CI/CD
+
+To skip CI/CD workflows (e.g., when updating documentation), include one of these in your commit message:
+- `[skip ci]`
+- `[ci skip]`
+- `[skip actions]`
+- `[actions skip]`
+
+Example:
+```bash
+git commit -m "docs: update README [skip ci]"
+```
+
 ### Self-hosting
 
 Before deploying your app, you need to:
