@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
+* cancel previous builds when new commit is pushed ([4703e9d](https://github.com/the-white-platform/fashion-web/commit/4703e9d4b1ec6a05ee9851ac7196ad5c599c3d42))
+* setup automatic changelog generation and release workflow ([e3f20ff](https://github.com/the-white-platform/fashion-web/commit/e3f20ff2b41fcf815c9591d9d002cfd1c9159730))
+
+
+### Bug Fixes
+
+* add manual deployment workflows and fix pnpm setup ([#5](https://github.com/the-white-platform/fashion-web/issues/5)) ([3aa41b1](https://github.com/the-white-platform/fashion-web/commit/3aa41b107ae39ff3c3fd3f9c2728673e645defb2))
+* escape Cloud Build substitution variables with double dollar signs ([c28909c](https://github.com/the-white-platform/fashion-web/commit/c28909c6a19c985f0fc140a288f9e1bfe092b4e5))
+* handle protected branch when pushing version bump ([#7](https://github.com/the-white-platform/fashion-web/issues/7)) ([fbd6e2e](https://github.com/the-white-platform/fashion-web/commit/fbd6e2e9c8915b111969ce178e16f483e347bbe5))
+* prevent infinite version bump loop in PR workflow ([4356349](https://github.com/the-white-platform/fashion-web/commit/4356349ee657e40f909ea7be722b553255a046ab))
+* remove unused Cloud Build substitution variables ([9f71731](https://github.com/the-white-platform/fashion-web/commit/9f71731d5a5f26e098b48c5f18318276494a2c6d))
+* reset version to 0.0.1 ([e10dfe4](https://github.com/the-white-platform/fashion-web/commit/e10dfe4d15b3f7acc8a39761d8b0f7b87885b62c))
+* resolve pnpm lockfile mismatch and update pnpm version ([#6](https://github.com/the-white-platform/fashion-web/issues/6)) ([f65df81](https://github.com/the-white-platform/fashion-web/commit/f65df81a477cdadffb0aa532040ca565f275573e))
+* use Cloud Build substitution variables correctly without double dollar signs ([574dd0f](https://github.com/the-white-platform/fashion-web/commit/574dd0fd57232cf7bc5d4cc22eabc5fc7eaacf36))
+
+### 0.0.1 (2025-12-16)
+
+
+### Features
+
 * setup automatic changelog generation and release workflow ([e3f20ff](https://github.com/the-white-platform/fashion-web/commit/e3f20ff2b41fcf815c9591d9d002cfd1c9159730))
 
 
