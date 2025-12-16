@@ -117,39 +117,58 @@ jobs:
             fi
             
             # Extract branch, tag, and commit SHA from build
+            # Try repoSource first (for gcloud builds submit)
             BUILD_BRANCH=$(echo "$BUILD_INFO" | grep -o '"branchName": "[^"]*"' | cut -d'"' -f4 || echo "")
             BUILD_TAG=$(echo "$BUILD_INFO" | grep -o '"tagName": "[^"]*"' | cut -d'"' -f4 || echo "")
             BUILD_SHA=$(echo "$BUILD_INFO" | grep -o '"commitSha": "[^"]*"' | cut -d'"' -f4 || echo "")
+            
+            # If no commit SHA from repoSource, try gitSource.revision (for Cloud Build triggers)
+            if [ -z "$BUILD_SHA" ]; then
+              BUILD_SHA=$(echo "$BUILD_INFO" | grep -o '"revision": "[^"]*"' | cut -d'"' -f4 || echo "")
+            fi
+            
             BUILD_SHORT_SHA="${BUILD_SHA:0:7}"
             
             # Check if build matches our filter
             SHOULD_CANCEL=false
+            MATCH_REASON=""
             
             if [ "$FILTER_TYPE" = "branch" ] && [ "$BUILD_BRANCH" = "$FILTER_VALUE" ]; then
               SHOULD_CANCEL=true
+              MATCH_REASON="branch match ($BUILD_BRANCH)"
             elif [ "$FILTER_TYPE" = "tag" ] && [ "$BUILD_TAG" = "$FILTER_VALUE" ]; then
               SHOULD_CANCEL=true
+              MATCH_REASON="tag match ($BUILD_TAG)"
             elif [ -n "$BUILD_SHORT_SHA" ] && [ "$BUILD_SHORT_SHA" = "$SHORT_SHA" ]; then
               SHOULD_CANCEL=true
+              MATCH_REASON="commit SHA match ($BUILD_SHORT_SHA)"
             fi
             
+            # Debug: show all builds being checked
+            echo "   Build $BUILD_ID: branch=$BUILD_BRANCH, tag=$BUILD_TAG, sha=$BUILD_SHORT_SHA"
+            
             if [ "$SHOULD_CANCEL" = "true" ]; then
-              echo "🛑 Canceling build: $BUILD_ID (branch: $BUILD_BRANCH, tag: $BUILD_TAG, sha: $BUILD_SHORT_SHA)"
+              echo "🛑 Canceling build: $BUILD_ID (reason: $MATCH_REASON)"
               if gcloud builds cancel "$BUILD_ID" \
                 --region="${{ env.REGION }}" \
                 --project="${{ steps.env.outputs.project_id }}" \
                 --quiet 2>/dev/null; then
                 CANCEL_COUNT=$((CANCEL_COUNT + 1))
+                echo "   ✅ Successfully canceled"
               else
-                echo "⚠️  Failed to cancel $BUILD_ID (may have already finished)"
+                echo "   ⚠️  Failed to cancel (may have already finished)"
               fi
+            else
+              echo "   ⏭️  Skipping (doesn't match filter)"
             fi
           done
 
+          echo ""
           if [ $CANCEL_COUNT -gt 0 ]; then
             echo "✅ Canceled $CANCEL_COUNT previous build(s)"
           else
             echo "ℹ️  No matching builds to cancel"
+            echo "   (Checked all queued/working builds but none matched the filter)"
           fi
 
   quality:
