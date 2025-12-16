@@ -54,18 +54,26 @@ jobs:
 
       - name: Cancel previous builds
         run: |
+          FILTER="${{ steps.env.outputs.filter }}"
           RUNNING_BUILDS=$(gcloud builds list \
             --region="${{ env.REGION }}" \
             --project="${{ steps.env.outputs.project_id }}" \
-            --filter="status=WORKING OR status=QUEUED AND ${{ steps.env.outputs.filter }}" \
+            --filter="(status=WORKING OR status=QUEUED) AND $FILTER" \
             --format="value(id)" \
             --limit=50 2>/dev/null || echo "")
-          for BUILD_ID in $RUNNING_BUILDS; do
-            gcloud builds cancel "$BUILD_ID" \
-              --region="${{ env.REGION }}" \
-              --project="${{ steps.env.outputs.project_id }}" \
-              --quiet 2>/dev/null || true
-          done
+          if [ -n "$RUNNING_BUILDS" ]; then
+            echo "Found $(echo "$RUNNING_BUILDS" | wc -l) build(s) to cancel"
+            for BUILD_ID in $RUNNING_BUILDS; do
+              echo "Canceling build: $BUILD_ID"
+              gcloud builds cancel "$BUILD_ID" \
+                --region="${{ env.REGION }}" \
+                --project="${{ steps.env.outputs.project_id }}" \
+                --quiet 2>/dev/null || true
+            done
+            echo "✅ Canceled previous builds"
+          else
+            echo "ℹ️  No running/queued builds to cancel"
+          fi
 
   quality:
     name: Quality Checks
