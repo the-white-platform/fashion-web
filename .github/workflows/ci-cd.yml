@@ -56,57 +56,86 @@ jobs:
         run: |
           FILTER="${{ steps.env.outputs.filter }}"
           COMMIT_SHA="${{ github.sha }}"
+          SHORT_SHA="${COMMIT_SHA:0:7}"
           echo "🔍 Looking for builds to cancel..."
           echo "   Filter: $FILTER"
-          echo "   Commit: $COMMIT_SHA"
+          echo "   Commit SHA: $SHORT_SHA"
 
-          # Get all queued/working builds first
-          ALL_BUILDS=$(gcloud builds list \
+          # Extract filter value (branch or tag name)
+          if echo "$FILTER" | grep -q "branchName="; then
+            FILTER_VALUE=$(echo "$FILTER" | sed 's/.*branchName=//')
+            FILTER_TYPE="branch"
+          elif echo "$FILTER" | grep -q "tagName="; then
+            FILTER_VALUE=$(echo "$FILTER" | sed 's/.*tagName=//')
+            FILTER_TYPE="tag"
+          else
+            FILTER_VALUE=""
+            FILTER_TYPE="unknown"
+          fi
+
+          echo "   Filter type: $FILTER_TYPE"
+          echo "   Filter value: $FILTER_VALUE"
+
+          # Get all queued/working builds
+          RUNNING_BUILDS=$(gcloud builds list \
             --region="${{ env.REGION }}" \
             --project="${{ steps.env.outputs.project_id }}" \
             --filter="status=WORKING OR status=QUEUED" \
-            --format="json" \
-            --limit=100 2>/dev/null || echo "[]")
+            --format="value(id)" \
+            --limit=100 2>/dev/null || echo "")
 
-          if [ "$ALL_BUILDS" = "[]" ] || [ -z "$ALL_BUILDS" ]; then
+          if [ -z "$RUNNING_BUILDS" ]; then
             echo "ℹ️  No running/queued builds found"
             exit 0
           fi
 
-          # Filter builds by branch/tag or commit SHA
-          RUNNING_BUILDS=$(echo "$ALL_BUILDS" | jq -r --arg filter "$FILTER" --arg sha "$COMMIT_SHA" '
-            .[] | 
-            select(
-              (.source.repoSource.branchName // "" | ascii_downcase) as $branch |
-              (.source.repoSource.tagName // "" | ascii_downcase) as $tag |
-              (.source.repoSource.commitSha // "" | ascii_downcase) as $buildSha |
-              ($filter | ascii_downcase | split("=") | .[1]) as $filterValue |
-              (
-                ($filter | contains("branchName")) and ($branch == $filterValue) or
-                ($filter | contains("tagName")) and ($tag == $filterValue) or
-                ($buildSha | startswith($sha[0:7]))
-              )
-            ) | .id
-          ' 2>/dev/null || echo "")
-
-          if [ -z "$RUNNING_BUILDS" ]; then
-            echo "ℹ️  No matching builds to cancel"
-            exit 0
-          fi
-
-          BUILD_COUNT=$(echo "$RUNNING_BUILDS" | grep -c . || echo "0")
-          echo "Found $BUILD_COUNT build(s) to cancel"
-
+          CANCEL_COUNT=0
           for BUILD_ID in $RUNNING_BUILDS; do
-            if [ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ]; then
-              echo "🛑 Canceling build: $BUILD_ID"
-              gcloud builds cancel "$BUILD_ID" \
+            # Get build details
+            BUILD_INFO=$(gcloud builds describe "$BUILD_ID" \
+              --region="${{ env.REGION }}" \
+              --project="${{ steps.env.outputs.project_id }}" \
+              --format="json" 2>/dev/null || echo "{}")
+            
+            if [ "$BUILD_INFO" = "{}" ]; then
+              continue
+            fi
+            
+            # Extract branch, tag, and commit SHA from build
+            BUILD_BRANCH=$(echo "$BUILD_INFO" | grep -o '"branchName": "[^"]*"' | cut -d'"' -f4 || echo "")
+            BUILD_TAG=$(echo "$BUILD_INFO" | grep -o '"tagName": "[^"]*"' | cut -d'"' -f4 || echo "")
+            BUILD_SHA=$(echo "$BUILD_INFO" | grep -o '"commitSha": "[^"]*"' | cut -d'"' -f4 || echo "")
+            BUILD_SHORT_SHA="${BUILD_SHA:0:7}"
+            
+            # Check if build matches our filter
+            SHOULD_CANCEL=false
+            
+            if [ "$FILTER_TYPE" = "branch" ] && [ "$BUILD_BRANCH" = "$FILTER_VALUE" ]; then
+              SHOULD_CANCEL=true
+            elif [ "$FILTER_TYPE" = "tag" ] && [ "$BUILD_TAG" = "$FILTER_VALUE" ]; then
+              SHOULD_CANCEL=true
+            elif [ -n "$BUILD_SHORT_SHA" ] && [ "$BUILD_SHORT_SHA" = "$SHORT_SHA" ]; then
+              SHOULD_CANCEL=true
+            fi
+            
+            if [ "$SHOULD_CANCEL" = "true" ]; then
+              echo "🛑 Canceling build: $BUILD_ID (branch: $BUILD_BRANCH, tag: $BUILD_TAG, sha: $BUILD_SHORT_SHA)"
+              if gcloud builds cancel "$BUILD_ID" \
                 --region="${{ env.REGION }}" \
                 --project="${{ steps.env.outputs.project_id }}" \
-                --quiet 2>/dev/null || echo "⚠️  Failed to cancel $BUILD_ID"
+                --quiet 2>/dev/null; then
+                CANCEL_COUNT=$((CANCEL_COUNT + 1))
+              else
+                echo "⚠️  Failed to cancel $BUILD_ID (may have already finished)"
+              fi
             fi
           done
-          echo "✅ Canceled $BUILD_COUNT previous build(s)"
+
+          if [ $CANCEL_COUNT -gt 0 ]; then
+            echo "✅ Canceled $CANCEL_COUNT previous build(s)"
+          else
+            echo "ℹ️  No matching builds to cancel"
+          fi
 
   quality:
     name: Quality Checks
