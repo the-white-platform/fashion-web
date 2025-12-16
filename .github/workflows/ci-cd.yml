@@ -282,36 +282,35 @@ jobs:
           echo "✅ Dev image tagged: $DEV_IMAGE_VERSION"
 
       - name: Authenticate to dev for image copy
-        if: github.ref_type == 'tag'
+        if: steps.params.outputs.environment == 'prod'
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
           service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK for image copy
-        if: github.ref_type == 'tag'
+        if: steps.params.outputs.environment == 'prod'
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Copy image from dev to prod
-        if: github.ref_type == 'tag'
+        if: steps.params.outputs.environment == 'prod'
         run: |
           VERSION=${GITHUB_REF_NAME#v}
           TAG_SHA=$(git rev-parse ${{ github.ref_name }})
           SHORT_SHA=$(git rev-parse --short $TAG_SHA)
-          DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
           PROD_IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:latest"
           PROD_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
 
           echo "🔄 Copying image from dev to prod..."
-          echo "   Tag: ${{ github.ref_name }}"
-          echo "   Commit SHA: $SHORT_SHA"
+          echo "   Version: $VERSION"
           echo "   Source: $DEV_IMAGE"
           echo "   Targets: $PROD_IMAGE, $PROD_IMAGE_LATEST, $PROD_IMAGE_SHA"
 
           if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
             echo "❌ Error: Dev image $DEV_IMAGE not found!"
-            echo "   Make sure the image was built in dev before creating the tag."
+            echo "   Make sure the image was built and deployed to dev first."
             exit 1
           fi
 
@@ -329,19 +328,8 @@ jobs:
 
           echo "✅ Image copy completed"
 
-      - name: Authenticate to prod for deployment
-        if: github.ref_type == 'tag'
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
-          service_account: github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com
-
-      - name: Set up Cloud SDK for prod deployment
-        if: github.ref_type == 'tag'
-        uses: google-github-actions/setup-gcloud@v2
-
       - name: Deploy to prod
-        if: github.ref_type == 'tag'
+        if: steps.params.outputs.environment == 'prod'
         run: |
           VERSION=${GITHUB_REF_NAME#v}
           TAG_SHA=$(git rev-parse ${{ github.ref_name }})
