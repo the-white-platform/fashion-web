@@ -31,12 +31,40 @@ jobs:
         run: |
           if [ -f "CHANGELOG.md" ]; then
             VERSION="${{ steps.version.outputs.version }}"
-            CHANGELOG=$(awk "/^## \[?$VERSION\]?/,/^## \[?[0-9]/ {if (!/^## \[?[0-9]/) print}" CHANGELOG.md | sed '1d' | sed '$d' || echo "")
+            echo "Extracting changelog for version: $VERSION"
+            
+            # Extract changelog section for this version
+            # standard-version format: ## [1.0.0] - 2025-12-16
+            # Match from version header until next version or end of file
+            CHANGELOG=$(awk -v version="$VERSION" '
+              BEGIN { found=0; in_section=0 }
+              /^## \[/ {
+                # Check if this is our version
+                if (match($0, "\\[" version "\\]")) {
+                  found=1
+                  in_section=1
+                  next
+                }
+                # If we found our section and hit next version, stop
+                if (in_section && /^## \[/) {
+                  exit
+                }
+              }
+              # Print content when in our section (skip the header line)
+              in_section && !/^## \[/ { print }
+            ' CHANGELOG.md | sed '/^$/d' || echo "")
+            
             if [ -n "$CHANGELOG" ]; then
+              echo "✅ Found changelog entries for version $VERSION"
               echo "changelog<<EOF" >> $GITHUB_OUTPUT
               echo "$CHANGELOG" >> $GITHUB_OUTPUT
               echo "EOF" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️  No changelog entries found for version $VERSION"
+              echo "Will use default release notes"
             fi
+          else
+            echo "⚠️  CHANGELOG.md not found"
           fi
 
       - name: Create GitHub Release
@@ -49,4 +77,8 @@ jobs:
 
             ${{ steps.changelog.outputs.changelog }}
 
+            ---
+
             **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ steps.version.outputs.tag }}
+
+            **View CHANGELOG.md:** [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)

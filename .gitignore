@@ -10,3 +10,4 @@ node_modules
 public/media/
 .env*.local
 docs/
+gcp-sa-key.json
