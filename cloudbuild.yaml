@@ -7,12 +7,14 @@ steps:
       - |
         echo "🛑 Canceling previous builds for this branch..."
 
-        # Get current build ID and branch
+        # Get current build ID and source information
         CURRENT_BUILD_ID="${BUILD_ID}"
-        BRANCH_NAME="${BRANCH_NAME:-${TAG_NAME:-main}}"
+        CURRENT_BRANCH="${BRANCH_NAME:-${TAG_NAME:-main}}"
+        CURRENT_SHA="${COMMIT_SHA:-${SHORT_SHA}}"
 
         echo "Current build: $${CURRENT_BUILD_ID}"
-        echo "Branch/Tag: $${BRANCH_NAME}"
+        echo "Branch/Tag: $${CURRENT_BRANCH}"
+        echo "Commit SHA: $${CURRENT_SHA}"
 
         # List all running builds for this project and region
         RUNNING_BUILDS=$(gcloud builds list \
@@ -23,22 +25,73 @@ steps:
           --limit=50 2>/dev/null || echo "")
 
         if [ -n "$$RUNNING_BUILDS" ]; then
-          echo "Found running/queued builds:"
-          echo "$$RUNNING_BUILDS"
+          echo "Checking running/queued builds for same branch..."
+          CANCELED_COUNT=0
           
-          # Cancel each build except the current one
+          # Check each build to see if it's from the same branch
           for BUILD_ID in $$RUNNING_BUILDS; do
-            if [ "$$BUILD_ID" != "$$CURRENT_BUILD_ID" ]; then
-              echo "Canceling build: $${BUILD_ID}"
-              gcloud builds cancel "$$BUILD_ID" \
+            if [ "$$BUILD_ID" = "$$CURRENT_BUILD_ID" ]; then
+              continue
+            fi
+            
+            # Get build source information
+            BUILD_BRANCH=$(gcloud builds describe "$$BUILD_ID" \
+              --region=${_REGION} \
+              --project=${PROJECT_ID} \
+              --format="value(source.repoSource.branchName)" 2>/dev/null || echo "")
+            
+            BUILD_TAG=$(gcloud builds describe "$$BUILD_ID" \
+              --region=${_REGION} \
+              --project=${PROJECT_ID} \
+              --format="value(source.repoSource.tagName)" 2>/dev/null || echo "")
+            
+            # Also check substitutions as fallback
+            if [ -z "$$BUILD_BRANCH" ] && [ -z "$$BUILD_TAG" ]; then
+              BUILD_BRANCH=$(gcloud builds describe "$$BUILD_ID" \
                 --region=${_REGION} \
                 --project=${PROJECT_ID} \
-                --quiet 2>/dev/null || echo "Failed to cancel $${BUILD_ID} (may have already finished)"
+                --format="value(substitutions.BRANCH_NAME)" 2>/dev/null || echo "")
+              
+              BUILD_TAG=$(gcloud builds describe "$$BUILD_ID" \
+                --region=${_REGION} \
+                --project=${PROJECT_ID} \
+                --format="value(substitutions.TAG_NAME)" 2>/dev/null || echo "")
+            fi
+            
+            # Check if this build is from the same branch/tag
+            SHOULD_CANCEL=false
+            if [ -n "$${TAG_NAME:-}" ]; then
+              # Tag-based build - cancel if same tag
+              if [ "$$BUILD_TAG" = "$${TAG_NAME}" ]; then
+                SHOULD_CANCEL=true
+              fi
+            else
+              # Branch-based build - cancel if same branch
+              if [ "$$BUILD_BRANCH" = "$$CURRENT_BRANCH" ]; then
+                SHOULD_CANCEL=true
+              fi
+            fi
+            
+            if [ "$$SHOULD_CANCEL" = "true" ]; then
+              echo "Canceling build from same branch/tag: $${BUILD_ID} (branch: $${BUILD_BRANCH:-N/A}, tag: $${BUILD_TAG:-N/A})"
+              if gcloud builds cancel "$$BUILD_ID" \
+                --region=${_REGION} \
+                --project=${PROJECT_ID} \
+                --quiet 2>/dev/null; then
+                CANCELED_COUNT=$((CANCELED_COUNT + 1))
+              else
+                echo "  (Build may have already finished)"
+              fi
             fi
           done
-          echo "✅ Previous builds canceled"
+          
+          if [ $$CANCELED_COUNT -gt 0 ]; then
+            echo "✅ Canceled $${CANCELED_COUNT} previous build(s) for same branch/tag"
+          else
+            echo "ℹ️  No previous builds found for same branch/tag"
+          fi
         else
-          echo "ℹ️  No previous builds to cancel"
+          echo "ℹ️  No running/queued builds to check"
         fi
 
   # 1. Fetch secrets from Secret Manager
