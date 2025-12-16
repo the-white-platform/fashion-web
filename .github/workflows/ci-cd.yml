@@ -224,16 +224,26 @@ jobs:
     needs: [build, cancel-cloud-builds]
     if: github.event_name == 'push' && github.ref_type == 'tag'
     environment:
-      name: prod
+      name: ${{ startsWith(github.ref_name, 'v') && 'prod' || 'dev' }}
     steps:
       - name: Determine deployment parameters
         id: params
         run: |
-          echo "project_id=${{ env.PROD_PROJECT }}" >> $GITHUB_OUTPUT
-          echo "service_name=fashion-web" >> $GITHUB_OUTPUT
-          echo "service_account=github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
-          echo "workload_identity_provider=projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
-          echo "next_public_server_url=https://fashion-web-XXXXXX.run.app" >> $GITHUB_OUTPUT
+          if [ "${{ startsWith(github.ref_name, 'v') }}" = "true" ]; then
+            echo "project_id=${{ env.PROD_PROJECT }}" >> $GITHUB_OUTPUT
+            echo "service_name=fashion-web" >> $GITHUB_OUTPUT
+            echo "service_account=github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
+            echo "workload_identity_provider=projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
+            echo "next_public_server_url=https://fashion-web-XXXXXX.run.app" >> $GITHUB_OUTPUT
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          else
+            echo "project_id=${{ env.DEV_PROJECT }}" >> $GITHUB_OUTPUT
+            echo "service_name=fashion-web-dev" >> $GITHUB_OUTPUT
+            echo "service_account=github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
+            echo "workload_identity_provider=projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
+            echo "next_public_server_url=https://fashion-web-dev-XXXXXX.run.app" >> $GITHUB_OUTPUT
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
           echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
@@ -249,6 +259,27 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ format('refs/tags/{0}', github.ref_name) }}
+
+      - name: Build and deploy to dev
+        if: steps.params.outputs.environment == 'dev'
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          VERSION=$(node -p "require('./package.json').version")
+          echo "🔨 Building and deploying to dev (version: $VERSION)..."
+          gcloud builds submit --config cloudbuild.yaml \
+            --project "${{ steps.params.outputs.project_id }}" \
+            --region="${{ env.REGION }}" \
+            --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA" \
+            --git-source-tag="${{ github.ref_name }}"
+          echo "✅ Dev deployment complete"
+
+          echo "🏷️  Tagging dev image with version $VERSION..."
+          DEV_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$SHORT_SHA"
+          DEV_IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$VERSION"
+          gcloud artifacts docker images add-tag $DEV_IMAGE_SHA $DEV_IMAGE_VERSION \
+            --project="${{ steps.params.outputs.project_id }}" \
+            --quiet || echo "⚠️  Failed to tag image (may already exist)"
+          echo "✅ Dev image tagged: $DEV_IMAGE_VERSION"
 
       - name: Authenticate to dev for image copy
         if: github.ref_type == 'tag'
@@ -391,52 +422,6 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "needs_release=true" >> $GITHUB_ENV
-
-      - name: Authenticate to dev for build and deploy
-        if: env.needs_release == 'true'
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
-          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
-
-      - name: Set up Cloud SDK
-        if: env.needs_release == 'true'
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Build and deploy to dev
-        if: env.needs_release == 'true'
-        run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          echo "🔨 Building and deploying to dev..."
-          gcloud builds submit --config cloudbuild.yaml \
-            --project "${{ env.DEV_PROJECT }}" \
-            --region="${{ env.REGION }}" \
-            --substitutions _NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app",SHORT_SHA="$SHORT_SHA" \
-            --git-source-branch="main"
-          echo "✅ Dev deployment complete"
-
-      - name: Tag dev image with version
-        if: env.needs_release == 'true'
-        run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          VERSION="${{ steps.release.outputs.version }}"
-          DEV_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
-          DEV_IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
-
-          echo "🏷️  Tagging dev image with version $VERSION..."
-          echo "   Source: $DEV_IMAGE_SHA"
-          echo "   Target: $DEV_IMAGE_VERSION"
-
-          if ! gcloud artifacts docker images describe $DEV_IMAGE_SHA --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
-            echo "❌ Error: Dev image $DEV_IMAGE_SHA not found!"
-            exit 1
-          fi
-
-          gcloud artifacts docker images add-tag $DEV_IMAGE_SHA $DEV_IMAGE_VERSION \
-            --project="${{ env.DEV_PROJECT }}" \
-            --quiet || echo "⚠️  Failed to tag image (may already exist)"
-
-          echo "✅ Dev image tagged: $DEV_IMAGE_VERSION"
 
       - name: Commit version and changelog
         if: env.needs_release == 'true'
