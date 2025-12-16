@@ -10,7 +10,7 @@ import { Logo } from '@/components/Logo/Logo'
 import { HeaderNav } from './Nav'
 
 interface HeaderClientProps {
-  header: Header
+  header: Header | null
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
@@ -37,7 +37,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
       <Link href="/">
         <Logo />
       </Link>
-      <HeaderNav header={header} />
+      {header && <HeaderNav header={header} />}
     </header>
   )
 }

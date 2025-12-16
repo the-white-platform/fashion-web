@@ -21,8 +21,7 @@ const nextConfig = {
   reactStrictMode: true,
   redirects,
   output: 'standalone',
-  // Optimize build performance
-  swcMinify: true,
+  // Optimize build performance (swcMinify is enabled by default in Next.js 15)
   compiler: {
     removeConsole:
       process.env.NODE_ENV === 'production'
@@ -33,7 +32,25 @@ const nextConfig = {
   },
   // Enable experimental features for faster builds
   experimental: {
-    optimizePackageImports: ['@payloadcms/ui', 'lucide-react'],
+    // Optimize package imports to reduce bundle size and build time
+    optimizePackageImports: [
+      '@payloadcms/ui',
+      '@payloadcms/richtext-lexical',
+      '@payloadcms/plugin-form-builder',
+      '@payloadcms/plugin-search',
+      '@payloadcms/plugin-seo',
+      '@payloadcms/plugin-nested-docs',
+      'lucide-react',
+      '@radix-ui/react-checkbox',
+      '@radix-ui/react-label',
+      '@radix-ui/react-select',
+      '@radix-ui/react-slot',
+      'react-hook-form',
+      'prism-react-renderer',
+      'swr',
+    ],
+    // Enable server-side minification
+    serverMinification: true,
   },
 }
 

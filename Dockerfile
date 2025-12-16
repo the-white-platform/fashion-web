@@ -39,6 +39,7 @@ COPY public ./public
 # Set environment variables for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV NODE_OPTIONS=--max-old-space-size=4096
 
 # Accept build arguments for secrets
 ARG PAYLOAD_SECRET
@@ -51,10 +52,12 @@ ENV DATABASE_URI=${DATABASE_URI}
 ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
 
 # Skip type generation in Docker (not needed, saves time)
-# Generate Payload types and build Next.js
+# Generate Payload types and build Next.js with cache mounts
 # Using || true to ensure build continues even if type generation fails
-RUN pnpm run generate:types || true
-RUN pnpm run build
+# Cache mounts for faster rebuilds when source code changes
+RUN --mount=type=cache,target=/app/.next/cache,id=nextjs-cache \
+    pnpm run generate:types || true && \
+    pnpm run build
 
 # Production image, copy all the files and run next
 FROM base AS runner

@@ -108,6 +108,14 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
+      - name: Cache TypeScript build info
+        uses: actions/cache@v4
+        with:
+          path: .next/cache/.tsbuildinfo
+          key: ${{ runner.os }}-tsbuildinfo-${{ hashFiles('**/tsconfig.json', '**/*.ts', '**/*.tsx') }}
+          restore-keys: |
+            ${{ runner.os }}-tsbuildinfo-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -162,6 +170,16 @@ jobs:
         with:
           node-version: '20'
           cache: 'pnpm'
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+            .next/cache/.tsbuildinfo
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.ts', '**/*.tsx', '**/next.config.js') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -438,6 +456,7 @@ jobs:
 
           echo "🔨 Building Docker image (version: $VERSION)..."
           export DOCKER_BUILDKIT=1
+          export BUILDKIT_PROGRESS=plain
           docker build \
             -t $IMAGE_SHA \
             -t $IMAGE_VERSION \
@@ -446,6 +465,7 @@ jobs:
             --build-arg PAYLOAD_SECRET="${{ steps.secrets.outputs.payload_secret }}" \
             --build-arg DATABASE_URI="${{ steps.secrets.outputs.database_uri }}" \
             --cache-from $IMAGE_LATEST \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
             .
 
           echo "📤 Pushing images..."
