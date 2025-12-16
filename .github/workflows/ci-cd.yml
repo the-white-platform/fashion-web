@@ -1,0 +1,680 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+env:
+  REGION: asia-southeast1
+  DEV_PROJECT: the-white-dev-481217
+  PROD_PROJECT: the-white-prod-481217
+
+jobs:
+  # Stage 1: Validation
+  check-commit-message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit message
+        uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: commitlint.config.js
+
+  # Stage 2: Setup and Quality Checks
+  setup-and-quality:
+    name: Setup and Quality Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App Token (for PR commits)
+        id: app-token
+        if: github.event_name == 'pull_request'
+        uses: actions/create-github-app-token@v1
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+          installation-id: ${{ secrets.RELEASE_BOT_INSTALLATION_ID }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Auto-fix formatting
+        id: format
+        run: |
+          echo "🔧 Auto-fixing formatting issues..."
+
+          # Run prettier to auto-fix
+          pnpm format || true
+
+          # Check if prettier made any changes
+          if ! git diff --quiet; then
+            echo "⚠️  Prettier made changes. Staging for commit..."
+            git diff --stat
+            git add -A
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "✅ Formatting auto-fixed"
+          else
+            echo "✅ No formatting issues found"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit auto-fixed formatting (PR only)
+        if: github.event_name == 'pull_request' && steps.format.outputs.has_changes == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          # Check if there are actually staged changes
+          if git diff --staged --quiet; then
+            echo "ℹ️  No staged changes to commit"
+            exit 0
+          fi
+
+          git commit -m "style: auto-fix formatting issues" || exit 0
+          git push origin HEAD:${{ github.head_ref }} || echo "Push failed (may already be up to date)"
+          echo "✅ Auto-fixed formatting committed to PR"
+
+      - name: Check formatting (verify no remaining issues)
+        run: |
+          echo "🔍 Verifying formatting after auto-fix..."
+          if ! pnpm format:check; then
+            echo "❌ Formatting issues remain after auto-fix that require manual intervention"
+            echo "Please run 'pnpm format' locally and commit the changes"
+            exit 1
+          fi
+          echo "✅ All formatting issues resolved"
+
+      - name: Run linter
+        run: pnpm lint
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+  # Stage 3: Build
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [setup-and-quality]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_SERVER_URL: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'https://fashion-web-dev-XXXXXX.run.app' || 'http://localhost:3000' }}
+          PAYLOAD_SECRET: dummy-secret-for-build
+          DATABASE_URI: dummy-uri-for-build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: .next
+          retention-days: 1
+
+  # Stage 4: Cancel Previous Builds (only on push)
+  cancel-builds:
+    name: Cancel Previous Builds
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push'
+    steps:
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to Google Cloud (Dev)
+        if: steps.env.outputs.environment == 'dev'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Authenticate to Google Cloud (Prod)
+        if: steps.env.outputs.environment == 'prod'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Cancel previous builds
+        run: |
+          if [ "${{ steps.env.outputs.environment }}" = "prod" ]; then
+            PROJECT_ID="${{ env.PROD_PROJECT }}"
+            TAG_NAME="${{ github.ref_name }}"
+            FILTER="source.repoSource.tagName=$TAG_NAME"
+          else
+            PROJECT_ID="${{ env.DEV_PROJECT }}"
+            BRANCH="${{ github.ref_name }}"
+            FILTER="source.repoSource.branchName=$BRANCH"
+          fi
+
+          echo "🛑 Canceling previous builds..."
+          RUNNING_BUILDS=$(gcloud builds list \
+            --region="${{ env.REGION }}" \
+            --project="$$PROJECT_ID" \
+            --filter="status=WORKING OR status=QUEUED AND $$FILTER" \
+            --format="value(id)" \
+            --limit=50 2>/dev/null || echo "")
+
+          if [ -n "$$RUNNING_BUILDS" ]; then
+            for BUILD_ID in $$RUNNING_BUILDS; do
+              echo "🚨 Canceling build: $${BUILD_ID}"
+              gcloud builds cancel "$$BUILD_ID" \
+                --region="${{ env.REGION }}" \
+                --project="$$PROJECT_ID" \
+                --quiet 2>/dev/null || true
+            done
+            echo "✅ Canceled previous builds"
+          else
+            echo "ℹ️  No previous builds to cancel"
+          fi
+
+  # Stage 5: Deploy
+  deploy:
+    name: Deploy to Cloud Run
+    runs-on: ubuntu-latest
+    needs: [build, cancel-builds]
+    if: github.event_name == 'push'
+    environment:
+      name: ${{ github.ref_type == 'tag' && 'prod' || 'dev' }}
+    steps:
+      - name: Determine deployment parameters
+        id: params
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "project_id=${{ env.PROD_PROJECT }}" >> $GITHUB_OUTPUT
+            echo "service_name=fashion-web" >> $GITHUB_OUTPUT
+            echo "service_account=github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
+            echo "workload_identity_provider=projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
+            echo "next_public_server_url=https://fashion-web-XXXXXX.run.app" >> $GITHUB_OUTPUT
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "project_id=${{ env.DEV_PROJECT }}" >> $GITHUB_OUTPUT
+            echo "service_name=fashion-web-dev" >> $GITHUB_OUTPUT
+            echo "service_account=github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
+            echo "workload_identity_provider=projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
+            echo "next_public_server_url=https://fashion-web-dev-XXXXXX.run.app" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ steps.params.outputs.workload_identity_provider }}
+          service_account: ${{ steps.params.outputs.service_account }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_type == 'tag' && format('refs/tags/{0}', github.ref_name) || github.ref }}
+
+      - name: Get commit SHA
+        id: commit
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+
+      - name: Trigger Cloud Build
+        run: |
+          PROJECT_ID="${{ steps.params.outputs.project_id }}"
+          REGION="${{ env.REGION }}"
+          SHORT_SHA="${{ steps.commit.outputs.short_sha }}"
+          NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}"
+
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG_NAME="${{ steps.params.outputs.tag }}"
+            TAG_FOR_BUILD=${TAG_NAME#v}
+            gcloud builds submit \
+              --config cloudbuild.yaml \
+              --project "$PROJECT_ID" \
+              --region "$REGION" \
+              --substitutions _NEXT_PUBLIC_SERVER_URL="$NEXT_PUBLIC_SERVER_URL",SHORT_SHA="$SHORT_SHA",TAG_NAME="$TAG_FOR_BUILD" \
+              --git-source-tag="$TAG_NAME"
+          else
+            gcloud builds submit \
+              --config cloudbuild.yaml \
+              --project "$PROJECT_ID" \
+              --region "$REGION" \
+              --substitutions _NEXT_PUBLIC_SERVER_URL="$NEXT_PUBLIC_SERVER_URL",SHORT_SHA="$SHORT_SHA" \
+              --git-source-branch="${{ github.ref_name }}"
+          fi
+
+      - name: Get deployment URL
+        id: url
+        run: |
+          sleep 10
+          SERVICE_URL=$(gcloud run services describe "${{ steps.params.outputs.service_name }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ steps.params.outputs.project_id }}" \
+            --format='value(status.url)' 2>/dev/null || echo "")
+          if [ -n "$SERVICE_URL" ]; then
+            echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+            echo "✅ Service deployed at: $SERVICE_URL"
+          else
+            echo "⚠️  Could not retrieve service URL"
+          fi
+
+  # Stage 6: Health Check (runs in parallel with notification)
+  health-check:
+    name: Health Check
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.event_name == 'push'
+    steps:
+      - name: Determine service URL
+        id: service
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            PROJECT_ID="${{ env.PROD_PROJECT }}"
+            SERVICE_NAME="fashion-web"
+          else
+            PROJECT_ID="${{ env.DEV_PROJECT }}"
+            SERVICE_NAME="fashion-web-dev"
+          fi
+
+          # Authenticate to get service URL
+          echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "SERVICE_NAME=$SERVICE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ github.ref_type == 'tag' && 'projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' || 'projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' }}
+          service_account: github-actions-deployer@${{ steps.service.outputs.PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Wait for service to be ready
+        run: sleep 30
+
+      - name: Get service URL and health check
+        run: |
+          SERVICE_URL=$(gcloud run services describe "${{ steps.service.outputs.SERVICE_NAME }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ steps.service.outputs.PROJECT_ID }}" \
+            --format='value(status.url)' 2>/dev/null || echo "")
+
+          if [ -z "$SERVICE_URL" ]; then
+            echo "⚠️  Could not retrieve service URL, skipping health check"
+            exit 0
+          fi
+
+          echo "🔍 Checking health of $SERVICE_URL"
+
+          # Try to access the service
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$SERVICE_URL" || echo "000")
+
+          if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "301" ] || [ "$HTTP_CODE" = "302" ]; then
+            echo "✅ Service is healthy (HTTP $HTTP_CODE)"
+            exit 0
+          else
+            echo "❌ Service health check failed (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+  # Stage 7: Notification (runs in parallel with health check)
+  notify:
+    name: Send Notification
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.event_name == 'push'
+    steps:
+      - name: Get service URL
+        id: service
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            PROJECT_ID="${{ env.PROD_PROJECT }}"
+            SERVICE_NAME="fashion-web"
+          else
+            PROJECT_ID="${{ env.DEV_PROJECT }}"
+            SERVICE_NAME="fashion-web-dev"
+          fi
+          echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "SERVICE_NAME=$SERVICE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ github.ref_type == 'tag' && 'projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' || 'projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' }}
+          service_account: github-actions-deployer@${{ steps.service.outputs.PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get deployment URL
+        id: url
+        run: |
+          SERVICE_URL=$(gcloud run services describe "${{ steps.service.outputs.SERVICE_NAME }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ steps.service.outputs.PROJECT_ID }}" \
+            --format='value(status.url)' 2>/dev/null || echo "")
+          [ -n "$SERVICE_URL" ] && echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
+      - name: Create deployment summary
+        run: |
+          ENV="${{ github.ref_type == 'tag' && 'Production' || 'Development' }}"
+          COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+          URL="${{ steps.url.outputs.url }}"
+
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** $ENV" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** $COMMIT" >> $GITHUB_STEP_SUMMARY
+          [ -n "$URL" ] && echo "- **URL:** $URL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** ✅ Deployed successfully" >> $GITHUB_STEP_SUMMARY
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ CI/CD pipeline completed successfully!'
+            });
+
+  # Stage 8: Version Check and Auto-Bump (only on PR, after all checks pass)
+  version-check-and-bump:
+    name: Version Check and Auto-Bump
+    runs-on: ubuntu-latest
+    needs: [setup-and-quality, build]
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+          installation-id: ${{ secrets.RELEASE_BOT_INSTALLATION_ID }}
+
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Fetch main branch
+        run: |
+          git fetch origin main:main || true
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check if last commit is from workflow
+        id: check_workflow_commit
+        run: |
+          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+
+          if echo "$LAST_COMMIT_MSG" | grep -qE "^chore\(release\):"; then
+            echo "⚠️  Last commit is from workflow: $LAST_COMMIT_MSG"
+            NON_WORKFLOW_COMMITS=$(git log --oneline -10 --grep="^chore(release):" --invert-grep | wc -l | tr -d ' ')
+            
+            if [ "$NON_WORKFLOW_COMMITS" -eq 0 ]; then
+              echo "❌ Last commit is from workflow and no other commits found - skipping to prevent loop"
+              echo "should_skip=true" >> $GITHUB_ENV
+            else
+              echo "✅ Found $NON_WORKFLOW_COMMITS non-workflow commit(s) - proceeding"
+              echo "should_skip=false" >> $GITHUB_ENV
+            fi
+          else
+            echo "✅ Last commit is not from workflow - proceeding"
+            echo "should_skip=false" >> $GITHUB_ENV
+          fi
+
+      - name: Exit early if should skip
+        if: env.should_skip == 'true'
+        run: |
+          echo "❌ Skipping workflow to prevent infinite loop"
+          exit 0
+
+      - name: Get versions and compare
+        id: compare
+        if: env.should_skip != 'true'
+        run: |
+          PR_VERSION=$(node -p "require('./package.json').version")
+          MAIN_VERSION=$(git show main:package.json 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).version" || echo "0.0.0")
+
+          echo "pr_version=$PR_VERSION" >> $GITHUB_OUTPUT
+          echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+
+          COMPARISON=$(node -e "
+            const pr = '$PR_VERSION'.split('.').map(Number);
+            const main = '$MAIN_VERSION'.split('.').map(Number);
+            for (let i = 0; i < 3; i++) {
+              if (pr[i] > main[i]) { console.log('newer'); process.exit(0); }
+              if (pr[i] < main[i]) { console.log('older'); process.exit(0); }
+            }
+            console.log('same');
+          ")
+
+          echo "comparison=$COMPARISON" >> $GITHUB_OUTPUT
+
+          if [ "$COMPARISON" = "newer" ]; then
+            echo "✅ PR version ($PR_VERSION) is newer than main ($MAIN_VERSION)"
+            echo "needs_bump=false" >> $GITHUB_ENV
+          elif [ "$COMPARISON" = "same" ]; then
+            echo "ℹ️  PR version ($PR_VERSION) is same as main ($MAIN_VERSION)"
+            echo "needs_bump=false" >> $GITHUB_ENV
+          else
+            PR_MAJOR=$(echo "$PR_VERSION" | cut -d. -f1)
+            if [ "$PR_MAJOR" = "0" ] && [ "$(echo "$MAIN_VERSION" | cut -d. -f1)" != "0" ]; then
+              echo "ℹ️  PR version ($PR_VERSION) appears to be an intentional reset"
+              echo "needs_bump=false" >> $GITHUB_ENV
+            else
+              echo "⚠️  PR version ($PR_VERSION) is older than main ($MAIN_VERSION)"
+              echo "needs_bump=true" >> $GITHUB_ENV
+            fi
+          fi
+
+      - name: Update changelog and version
+        id: bump
+        if: env.should_skip != 'true'
+        run: |
+          echo "Updating changelog and version..."
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          export HUSKY=0
+          export SKIP_COMMIT=true
+          export SKIP_TAG=true
+
+          MAIN_VERSION="${{ steps.compare.outputs.main_version }}"
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          # Get commits in this PR, excluding workflow commits
+          PR_COMMITS=$(git log main..HEAD --oneline --grep="^chore(release):" --invert-grep || echo "")
+
+          if [ -z "$PR_COMMITS" ]; then
+            echo "No new commits found, skipping changelog update"
+            echo "needs_update=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          # Check if changelog was already updated
+          LAST_CHANGELOG_COMMIT=$(git log -1 --format="%H" -- CHANGELOG.md 2>/dev/null || echo "")
+
+          if [ -n "$LAST_CHANGELOG_COMMIT" ]; then
+            LAST_CHANGELOG_MSG=$(git log -1 --format="%B" "$LAST_CHANGELOG_COMMIT" 2>/dev/null || echo "")
+            
+            if echo "$LAST_CHANGELOG_MSG" | grep -qE "^chore\(release\):"; then
+              COMMITS_SINCE_CHANGELOG=$(git log "$LAST_CHANGELOG_COMMIT"..HEAD --oneline --grep="^chore(release):" --invert-grep | wc -l | tr -d ' ')
+              
+              if [ "$COMMITS_SINCE_CHANGELOG" -eq 0 ]; then
+                echo "⚠️  Last changelog update was from workflow and no new commits since then - skipping"
+                echo "needs_update=false" >> $GITHUB_ENV
+                exit 0
+              fi
+            else
+              LATEST_CHANGELOG_VERSION=$(grep -E "^## \[?[0-9]" CHANGELOG.md | head -1 | sed -E 's/^## \[?([0-9]+\.[0-9]+\.[0-9]+).*/\1/' || echo "")
+              
+              if [ -n "$LATEST_CHANGELOG_VERSION" ] && [ "$LATEST_CHANGELOG_VERSION" = "$CURRENT_VERSION" ]; then
+                PR_COMMIT_SHAS=$(echo "$PR_COMMITS" | awk '{print $1}' || echo "")
+                for SHA in $PR_COMMIT_SHAS; do
+                  if grep -q "$SHA" CHANGELOG.md 2>/dev/null; then
+                    echo "✅ PR commits are already in changelog - skipping update"
+                    echo "needs_update=false" >> $GITHUB_ENV
+                    exit 0
+                  fi
+                done
+              fi
+            fi
+          fi
+
+          # Determine version bump type
+          HAS_BREAKING=$(echo "$PR_COMMITS" | grep -iE "BREAKING" || echo "")
+          HAS_FEAT=$(echo "$PR_COMMITS" | grep -iE "^[a-f0-9]+.*feat" || echo "")
+
+          if [ "${{ env.needs_bump }}" = "true" ]; then
+            if [ -n "$HAS_BREAKING" ]; then
+              npx standard-version --release-as major --skip.commit --skip.tag || true
+            elif [ -n "$HAS_FEAT" ]; then
+              npx standard-version --release-as minor --skip.commit --skip.tag || true
+            else
+              npx standard-version --release-as patch --skip.commit --skip.tag || true
+            fi
+
+            NEW_VERSION=$(node -p "require('./package.json').version")
+
+            if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
+              node -e "
+                const fs = require('fs');
+                const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+                const [major, minor, patch] = pkg.version.split('.').map(Number);
+                pkg.version = \`\${major}.\${minor}.\${patch + 1}\`;
+                fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+              "
+              NEW_VERSION=$(node -p "require('./package.json').version")
+            fi
+          else
+            CHANGELOG_BEFORE=$(cat CHANGELOG.md 2>/dev/null || echo "")
+            npx standard-version --skip.commit --skip.tag --skip.bump || true
+            CHANGELOG_AFTER=$(cat CHANGELOG.md 2>/dev/null || echo "")
+            
+            if [ "$CHANGELOG_BEFORE" = "$CHANGELOG_AFTER" ]; then
+              echo "ℹ️  Changelog is already up to date"
+              echo "$CHANGELOG_BEFORE" > CHANGELOG.md 2>/dev/null || true
+            fi
+            
+            NEW_VERSION="$CURRENT_VERSION"
+          fi
+
+          git add package.json pnpm-lock.yaml CHANGELOG.md 2>/dev/null || true
+
+          if git diff --staged --quiet; then
+            echo "✅ No changes to commit"
+            echo "needs_update=false" >> $GITHUB_ENV
+            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          if ! git commit -m "chore(release): $NEW_VERSION"; then
+            echo "❌ Commit failed"
+            exit 1
+          fi
+
+          git push origin HEAD:${{ github.head_ref }}
+          echo "needs_update=true" >> $GITHUB_ENV
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Updated changelog and version to $NEW_VERSION"
+
+      - name: Comment on PR
+        if: env.needs_update == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const newVersion = '${{ steps.bump.outputs.version }}';
+            const wasBumped = '${{ env.needs_bump }}' === 'true';
+            let message;
+
+            if (wasBumped) {
+              message = `## ✅ Version & Changelog Auto-Updated\n\n- Version has been automatically bumped to \`${newVersion}\`\n- CHANGELOG.md has been updated with your commits\n\nThis PR is now ready to merge!`;
+            } else {
+              message = `## ✅ Changelog Auto-Updated\n\n- CHANGELOG.md has been updated with your commits\n- Version remains at \`${newVersion}\` (already bumped)\n\nThis PR is now ready to merge!`;
+            }
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });

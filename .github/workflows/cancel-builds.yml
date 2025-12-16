@@ -1,0 +1,180 @@
+name: Cancel Previous Builds
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to cancel builds for'
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+          - both
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  cancel-builds:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          elif [ -n "${{ github.ref_type }}" ] && [ "${{ github.ref_type }}" = "tag" ]; then
+            ENV="prod"
+          else
+            ENV="dev"
+          fi
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+
+          if [ "$ENV" = "both" ]; then
+            echo "dev_project=the-white-dev-481217" >> $GITHUB_OUTPUT
+            echo "prod_project=the-white-prod-481217" >> $GITHUB_OUTPUT
+          elif [ "$ENV" = "prod" ]; then
+            echo "prod_project=the-white-prod-481217" >> $GITHUB_OUTPUT
+          else
+            echo "dev_project=the-white-dev-481217" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to Google Cloud (Dev)
+        if: steps.env.outputs.environment == 'dev' || steps.env.outputs.environment == 'both'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@the-white-dev-481217.iam.gserviceaccount.com
+
+      - name: Authenticate to Google Cloud (Prod)
+        if: steps.env.outputs.environment == 'prod' || steps.env.outputs.environment == 'both'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@the-white-prod-481217.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Cancel builds for dev
+        if: steps.env.outputs.environment == 'dev' || steps.env.outputs.environment == 'both'
+        run: |
+          PROJECT_ID="the-white-dev-481217"
+          REGION="asia-southeast1"
+
+          # Determine branch or tag
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG_NAME="${{ github.ref_name }}"
+            SOURCE_REF="tag:$$TAG_NAME"
+            echo "🛑 Canceling previous builds for tag: $${TAG_NAME} in dev..."
+          else
+            BRANCH="${{ github.ref_name }}"
+            SOURCE_REF="branch:$$BRANCH"
+            echo "🛑 Canceling previous builds for branch: $${BRANCH} in dev..."
+          fi
+
+          # List all queued/running builds
+          RUNNING_BUILDS=$(gcloud builds list \
+            --region="$$REGION" \
+            --project="$$PROJECT_ID" \
+            --filter="status=WORKING OR status=QUEUED" \
+            --format="value(id)" \
+            --limit=50 2>/dev/null || echo "")
+
+          if [ -n "$$RUNNING_BUILDS" ]; then
+            CANCELED_COUNT=0
+            for BUILD_ID in $$RUNNING_BUILDS; do
+              # Get build source info
+              if [ "${{ github.ref_type }}" = "tag" ]; then
+                BUILD_TAG=$(gcloud builds describe "$$BUILD_ID" \
+                  --region="$$REGION" \
+                  --project="$$PROJECT_ID" \
+                  --format="value(source.repoSource.tagName)" 2>/dev/null || echo "")
+                
+                if [ "$$BUILD_TAG" = "$$TAG_NAME" ]; then
+                  echo "🚨 Canceling build for same tag: $${BUILD_ID}"
+                  gcloud builds cancel "$$BUILD_ID" \
+                    --region="$$REGION" \
+                    --project="$$PROJECT_ID" \
+                    --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
+                fi
+              else
+                BUILD_BRANCH=$(gcloud builds describe "$$BUILD_ID" \
+                  --region="$$REGION" \
+                  --project="$$PROJECT_ID" \
+                  --format="value(source.repoSource.branchName)" 2>/dev/null || echo "")
+                
+                if [ "$$BUILD_BRANCH" = "$$BRANCH" ]; then
+                  echo "🚨 Canceling build for same branch: $${BUILD_ID}"
+                  gcloud builds cancel "$$BUILD_ID" \
+                    --region="$$REGION" \
+                    --project="$$PROJECT_ID" \
+                    --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
+                fi
+              fi
+            done
+            
+            if [ $$CANCELED_COUNT -gt 0 ]; then
+              echo "✅ Canceled $${CANCELED_COUNT} previous build(s) in dev"
+            else
+              echo "ℹ️  No previous builds found for same branch/tag in dev"
+            fi
+          else
+            echo "ℹ️  No running/queued builds to cancel in dev"
+          fi
+
+      - name: Cancel builds for prod
+        if: steps.env.outputs.environment == 'prod' || steps.env.outputs.environment == 'both'
+        run: |
+          PROJECT_ID="the-white-prod-481217"
+          REGION="asia-southeast1"
+
+          # For prod, we only cancel tag-based builds
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG_NAME="${{ github.ref_name }}"
+            echo "🛑 Canceling previous builds for tag: $${TAG_NAME} in prod..."
+            
+            # List all queued/running builds
+            RUNNING_BUILDS=$(gcloud builds list \
+              --region="$$REGION" \
+              --project="$$PROJECT_ID" \
+              --filter="status=WORKING OR status=QUEUED" \
+              --format="value(id)" \
+              --limit=50 2>/dev/null || echo "")
+            
+            if [ -n "$$RUNNING_BUILDS" ]; then
+              CANCELED_COUNT=0
+              for BUILD_ID in $$RUNNING_BUILDS; do
+                BUILD_TAG=$(gcloud builds describe "$$BUILD_ID" \
+                  --region="$$REGION" \
+                  --project="$$PROJECT_ID" \
+                  --format="value(source.repoSource.tagName)" 2>/dev/null || echo "")
+                
+                if [ "$$BUILD_TAG" = "$$TAG_NAME" ]; then
+                  echo "🚨 Canceling build for same tag: $${BUILD_ID}"
+                  gcloud builds cancel "$$BUILD_ID" \
+                    --region="$$REGION" \
+                    --project="$$PROJECT_ID" \
+                    --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
+                fi
+              done
+              
+              if [ $$CANCELED_COUNT -gt 0 ]; then
+                echo "✅ Canceled $${CANCELED_COUNT} previous build(s) in prod"
+              else
+                echo "ℹ️  No previous builds found for same tag in prod"
+              fi
+            else
+              echo "ℹ️  No running/queued builds to cancel in prod"
+            fi
+          else
+            echo "ℹ️  Prod builds are only triggered on tags, skipping cancellation"
+          fi
