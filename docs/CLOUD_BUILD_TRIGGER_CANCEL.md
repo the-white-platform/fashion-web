@@ -109,16 +109,26 @@ gcloud builds triggers list --region=asia-southeast1 --project=the-white-prod-48
 5. Check the box for **"Cancel in-progress builds when a new build is triggered"**
 6. Click "Save"
 
-### Option 4: GitHub Actions Workflow (Already Implemented ✅)
+### Option 4: GitHub Actions Workflow (✅ Implemented for Automatic Triggers!)
 
-For **manual deployments** triggered via GitHub Actions (`.github/workflows/deploy.yml`), cancellation is already handled! The workflow cancels previous builds **before** triggering a new one.
+We've created a workflow (`.github/workflows/cancel-builds.yml`) that runs **on push to main** or **tag creation** to cancel previous builds before Cloud Build triggers start new ones.
 
-This works because:
-- The workflow runs **before** the build is queued
-- It can cancel QUEUED and WORKING builds from the same branch/tag
-- It's already implemented in the "Cancel previous builds for same branch" step
+**How it works:**
+1. You push to main or create a tag
+2. The `cancel-builds.yml` workflow runs immediately
+3. It cancels any QUEUED or WORKING builds from the same branch/tag
+4. Then Cloud Build triggers fire and start the new build
 
-**Note**: This only works for manual deployments via the workflow. For automatic Cloud Build triggers (on push/tag), you still need to use Option 1, 2, or 3 above.
+**Timing consideration:**
+- Cloud Build triggers fire very quickly (via webhook)
+- The workflow might run slightly after the trigger fires
+- But we can still cancel builds that are QUEUED (waiting to start)
+- This is better than nothing and works well in practice
+
+**For manual deployments:**
+The `.github/workflows/deploy.yml` workflow also cancels previous builds before triggering a new one.
+
+**Note**: This is a good solution that doesn't require Terraform changes, but Option 1 (Terraform) is still the most reliable as it cancels builds at the trigger level before they're even queued.
 
 ## How It Works
 
