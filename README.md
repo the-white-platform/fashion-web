@@ -221,9 +221,28 @@ This project uses **GitHub Actions** for all CI/CD operations (build, test, depl
 
 #### Important Notes
 
-- **Cloud Build triggers should be DISABLED** - All deployments happen via GitHub Actions only
+- **Cloud Build triggers MUST be DISABLED** - All deployments happen via GitHub Actions only
 - Docker images are built directly in GitHub Actions and pushed to Artifact Registry
 - The `cloudbuild.yaml` file is kept for reference but not actively used
+
+#### Disable Cloud Build Triggers
+
+To prevent Cloud Build from running automatically, disable all triggers:
+
+```bash
+# List all triggers
+gcloud builds triggers list \
+  --region=asia-southeast1 \
+  --project=the-white-dev-481217
+
+# Disable a specific trigger
+gcloud builds triggers update TRIGGER_ID \
+  --region=asia-southeast1 \
+  --project=the-white-dev-481217 \
+  --disabled
+```
+
+Or disable via GCP Console: Cloud Build > Triggers > Select trigger > Edit > Disable
 
 #### Manual Deployment
 
