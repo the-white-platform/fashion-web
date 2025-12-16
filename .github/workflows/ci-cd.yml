@@ -28,6 +28,8 @@ jobs:
   cancel-cloud-builds:
     name: Cancel Cloud Builds
     runs-on: ubuntu-latest
+    # Note: This cancels any old Cloud Build runs (if triggers are still active).
+    # Cloud Build triggers should be disabled - all builds happen in GitHub Actions.
     steps:
       - name: Determine environment
         id: env
