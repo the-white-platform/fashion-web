@@ -271,7 +271,7 @@ jobs:
     needs: [quality]
     if: github.event_name == 'pull_request'
     # Note: This is a fast CI validation build (pnpm build) that doesn't create Docker images.
-    # Actual Docker builds and deployments happen via Cloud Build (triggered separately).
+    # Docker builds and deployments happen in the deploy job (GitHub Actions only, no Cloud Build).
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -340,26 +340,61 @@ jobs:
         with:
           ref: ${{ format('refs/tags/{0}', github.ref_name) }}
 
-      - name: Build and deploy to dev
+      - name: Configure Docker for Artifact Registry
+        if: steps.params.outputs.environment == 'dev'
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Fetch secrets for Docker build
+        if: steps.params.outputs.environment == 'dev'
+        id: secrets
+        run: |
+          PAYLOAD_SECRET=$(gcloud secrets versions access latest --secret=PAYLOAD_SECRET_DEV --project="${{ steps.params.outputs.project_id }}" 2>/dev/null || echo "")
+          DATABASE_URI=$(gcloud secrets versions access latest --secret=DATABASE_URI_DEV --project="${{ steps.params.outputs.project_id }}" 2>/dev/null || echo "")
+          echo "::add-mask::$PAYLOAD_SECRET"
+          echo "::add-mask::$DATABASE_URI"
+          echo "payload_secret=$PAYLOAD_SECRET" >> $GITHUB_OUTPUT
+          echo "database_uri=$DATABASE_URI" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to dev
         if: steps.params.outputs.environment == 'dev'
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
           VERSION=$(node -p "require('./package.json').version")
-          echo "🔨 Building and deploying to dev (version: $VERSION)..."
-          gcloud builds submit --config cloudbuild.yaml \
-            --project "${{ steps.params.outputs.project_id }}" \
-            --region="${{ env.REGION }}" \
-            --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA" \
-            --git-source-tag="${{ github.ref_name }}"
-          echo "✅ Dev deployment complete"
+          IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$SHORT_SHA"
+          IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$VERSION"
+          IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:latest"
 
-          echo "🏷️  Tagging dev image with version $VERSION..."
-          DEV_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$SHORT_SHA"
-          DEV_IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$VERSION"
-          gcloud artifacts docker images add-tag $DEV_IMAGE_SHA $DEV_IMAGE_VERSION \
+          echo "🔨 Building Docker image (version: $VERSION)..."
+          export DOCKER_BUILDKIT=1
+          docker build \
+            -t $IMAGE_SHA \
+            -t $IMAGE_VERSION \
+            -t $IMAGE_LATEST \
+            --build-arg NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}" \
+            --build-arg PAYLOAD_SECRET="${{ steps.secrets.outputs.payload_secret }}" \
+            --build-arg DATABASE_URI="${{ steps.secrets.outputs.database_uri }}" \
+            --cache-from $IMAGE_LATEST \
+            .
+
+          echo "📤 Pushing images..."
+          docker push $IMAGE_SHA
+          docker push $IMAGE_VERSION
+          docker push $IMAGE_LATEST
+          echo "✅ Images pushed: $IMAGE_SHA, $IMAGE_VERSION, $IMAGE_LATEST"
+
+      - name: Deploy to dev
+        if: steps.params.outputs.environment == 'dev'
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$SHORT_SHA"
+          echo "🚀 Deploying to dev..."
+          gcloud run services update ${{ steps.params.outputs.service_name }} \
+            --image $IMAGE \
+            --region="${{ env.REGION }}" \
             --project="${{ steps.params.outputs.project_id }}" \
-            --quiet || echo "⚠️  Failed to tag image (may already exist)"
-          echo "✅ Dev image tagged: $DEV_IMAGE_VERSION"
+            --quiet
+          echo "✅ Dev deployment complete"
 
       - name: Authenticate to dev for image copy
         if: steps.params.outputs.environment == 'prod'
@@ -407,6 +442,11 @@ jobs:
             --quiet || echo "⚠️  Failed to copy SHA tag"
 
           echo "✅ Image copy completed"
+
+      - name: Configure Docker for Artifact Registry (prod)
+        if: steps.params.outputs.environment == 'prod'
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Deploy to prod
         if: steps.params.outputs.environment == 'prod'
