@@ -21,6 +21,71 @@ env:
   PROD_PROJECT: the-white-prod-481217
 
 jobs:
+  # Stage 0: Cancel Previous Builds (runs first, in parallel with other early stages)
+  cancel-builds:
+    name: Cancel Previous Builds
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            echo "environment=prod" >> $GITHUB_OUTPUT
+          else
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to Google Cloud (Dev)
+        if: steps.env.outputs.environment == 'dev'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Authenticate to Google Cloud (Prod)
+        if: steps.env.outputs.environment == 'prod'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Cancel previous builds
+        run: |
+          if [ "${{ steps.env.outputs.environment }}" = "prod" ]; then
+            PROJECT_ID="${{ env.PROD_PROJECT }}"
+            TAG_NAME="${{ github.ref_name }}"
+            FILTER="source.repoSource.tagName=$TAG_NAME"
+          else
+            PROJECT_ID="${{ env.DEV_PROJECT }}"
+            BRANCH="${{ github.ref_name }}"
+            FILTER="source.repoSource.branchName=$BRANCH"
+          fi
+
+          echo "🛑 Canceling previous builds..."
+          RUNNING_BUILDS=$(gcloud builds list \
+            --region="${{ env.REGION }}" \
+            --project="$$PROJECT_ID" \
+            --filter="status=WORKING OR status=QUEUED AND $$FILTER" \
+            --format="value(id)" \
+            --limit=50 2>/dev/null || echo "")
+
+          if [ -n "$$RUNNING_BUILDS" ]; then
+            for BUILD_ID in $$RUNNING_BUILDS; do
+              echo "🚨 Canceling build: $${BUILD_ID}"
+              gcloud builds cancel "$$BUILD_ID" \
+                --region="${{ env.REGION }}" \
+                --project="$$PROJECT_ID" \
+                --quiet 2>/dev/null || true
+            done
+            echo "✅ Canceled previous builds"
+          else
+            echo "ℹ️  No previous builds to cancel"
+          fi
+
   # Stage 1: Validation
   check-commit-message:
     name: Check Commit Message
@@ -162,73 +227,7 @@ jobs:
           path: .next
           retention-days: 1
 
-  # Stage 4: Cancel Previous Builds (only on push)
-  cancel-builds:
-    name: Cancel Previous Builds
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.event_name == 'push'
-    steps:
-      - name: Determine environment
-        id: env
-        run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            echo "environment=prod" >> $GITHUB_OUTPUT
-          else
-            echo "environment=dev" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Authenticate to Google Cloud (Dev)
-        if: steps.env.outputs.environment == 'dev'
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
-          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
-
-      - name: Authenticate to Google Cloud (Prod)
-        if: steps.env.outputs.environment == 'prod'
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
-          service_account: github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Cancel previous builds
-        run: |
-          if [ "${{ steps.env.outputs.environment }}" = "prod" ]; then
-            PROJECT_ID="${{ env.PROD_PROJECT }}"
-            TAG_NAME="${{ github.ref_name }}"
-            FILTER="source.repoSource.tagName=$TAG_NAME"
-          else
-            PROJECT_ID="${{ env.DEV_PROJECT }}"
-            BRANCH="${{ github.ref_name }}"
-            FILTER="source.repoSource.branchName=$BRANCH"
-          fi
-
-          echo "🛑 Canceling previous builds..."
-          RUNNING_BUILDS=$(gcloud builds list \
-            --region="${{ env.REGION }}" \
-            --project="$$PROJECT_ID" \
-            --filter="status=WORKING OR status=QUEUED AND $$FILTER" \
-            --format="value(id)" \
-            --limit=50 2>/dev/null || echo "")
-
-          if [ -n "$$RUNNING_BUILDS" ]; then
-            for BUILD_ID in $$RUNNING_BUILDS; do
-              echo "🚨 Canceling build: $${BUILD_ID}"
-              gcloud builds cancel "$$BUILD_ID" \
-                --region="${{ env.REGION }}" \
-                --project="$$PROJECT_ID" \
-                --quiet 2>/dev/null || true
-            done
-            echo "✅ Canceled previous builds"
-          else
-            echo "ℹ️  No previous builds to cancel"
-          fi
-
-  # Stage 5: Deploy
+  # Stage 4: Deploy
   deploy:
     name: Deploy to Cloud Run
     runs-on: ubuntu-latest
