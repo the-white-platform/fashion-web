@@ -406,13 +406,17 @@ jobs:
 
           echo "✅ Production deployment complete"
 
+  # Stage 4: Create release and deploy to prod
   create-github-release:
-    name: Create GitHub Release
+    name: Stage 4: Create Release & Deploy Prod
     runs-on: ubuntu-latest
     needs: check-skip
     if: github.event_name == 'push' && github.ref_type == 'tag' && needs.check-skip.outputs.skip != 'true'
+    environment:
+      name: prod
     permissions:
       contents: write
+      id-token: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -449,6 +453,80 @@ jobs:
             fi
           fi
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Authenticate to dev for image copy
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Copy image from dev to prod
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          
+          DEV_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          DEV_IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+          
+          DEV_IMAGE=""
+          if gcloud artifacts docker images describe $DEV_IMAGE_SHA --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            DEV_IMAGE=$DEV_IMAGE_SHA
+            echo "✅ Found dev image with SHA tag: $DEV_IMAGE"
+          elif gcloud artifacts docker images describe $DEV_IMAGE_VERSION --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            DEV_IMAGE=$DEV_IMAGE_VERSION
+            echo "✅ Found dev image with version tag: $DEV_IMAGE"
+          else
+            echo "❌ Error: Dev image not found!"
+            echo "   Checked SHA tag: $DEV_IMAGE_SHA"
+            echo "   Checked version tag: $DEV_IMAGE_VERSION"
+            exit 1
+          fi
+          
+          PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
+          PROD_IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:latest"
+          PROD_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+
+          echo "🔄 Copying image from dev to prod..."
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy version tag (may already exist)"
+
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_LATEST \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy latest tag"
+
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_SHA \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy SHA tag"
+
+          echo "✅ Image copy completed"
+
+      - name: Configure Docker for Artifact Registry (prod)
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Deploy to prod
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+
+          echo "🚀 Deploying to production..."
+          gcloud run services update fashion-web \
+            --image $PROD_IMAGE \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet
+          echo "✅ Production deployment complete"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
@@ -466,14 +544,22 @@ jobs:
             **View CHANGELOG.md:** [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
           draft: false
           prerelease: false
+      
+      - name: Stage 4 complete
+        run: |
+          echo "✅ Stage 4 complete: Release created and prod deployed"
 
+  # Stage 1: Bump version and commit
   release:
-    name: Release
+    name: Stage 1: Bump Version
     runs-on: ubuntu-latest
     needs: check-skip
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true'
     permissions:
       contents: write
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      needs_release: ${{ steps.release.outputs.needs_release }}
     steps:
       - name: Generate GitHub App Token
         id: app-token
@@ -516,7 +602,8 @@ jobs:
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           COMMITS=$(if [ -n "$LAST_TAG" ]; then git log ${LAST_TAG}..HEAD --oneline --grep="^chore(release):" --invert-grep || echo ""; else git log --oneline --grep="^chore(release):" --invert-grep || echo ""; fi)
           if [ -z "$COMMITS" ]; then
-            echo "needs_release=false" >> $GITHUB_ENV
+            echo "needs_release=false" >> $GITHUB_OUTPUT
+            echo "version=" >> $GITHUB_OUTPUT
             exit 0
           fi
           if echo "$COMMITS" | grep -qiE "BREAKING"; then
@@ -528,33 +615,140 @@ jobs:
           fi
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "needs_release=true" >> $GITHUB_ENV
+          echo "needs_release=true" >> $GITHUB_OUTPUT
 
       - name: Commit version and changelog
-        if: env.needs_release == 'true'
+        if: steps.release.outputs.needs_release == 'true'
         run: |
           git add package.json pnpm-lock.yaml CHANGELOG.md
           if ! git diff --staged --quiet; then
             git commit -m "chore(release): ${{ steps.release.outputs.version }}"
             git push origin main
-            echo "✅ Version and changelog committed"
+            echo "✅ Stage 1 complete: Version ${{ steps.release.outputs.version }} committed"
           else
             echo "⚠️  No changes to commit"
-            echo "needs_release=false" >> $GITHUB_ENV
+            echo "needs_release=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create and push git tag
-        if: env.needs_release == 'true'
+  # Stage 2: Build and deploy to dev
+  build-dev:
+    name: Stage 2: Build & Deploy Dev
+    runs-on: ubuntu-latest
+    needs: [check-skip, release]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true' && needs.release.outputs.needs_release == 'true'
+    environment:
+      name: dev
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Configure Docker for Artifact Registry
         run: |
-          git tag -a "v${{ steps.release.outputs.version }}" -m "chore(release): ${{ steps.release.outputs.version }}"
-          git push origin "v${{ steps.release.outputs.version }}"
-          echo "✅ Git tag v${{ steps.release.outputs.version }} created and pushed"
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Fetch secrets for Docker build
+        id: secrets
+        run: |
+          PAYLOAD_SECRET=$(gcloud secrets versions access latest --secret=PAYLOAD_SECRET_DEV --project="${{ env.DEV_PROJECT }}" 2>/dev/null || echo "")
+          DATABASE_URI=$(gcloud secrets versions access latest --secret=DATABASE_URI_DEV --project="${{ env.DEV_PROJECT }}" 2>/dev/null || echo "")
+          echo "::add-mask::$PAYLOAD_SECRET"
+          echo "::add-mask::$DATABASE_URI"
+          echo "payload_secret=$PAYLOAD_SECRET" >> $GITHUB_OUTPUT
+          echo "database_uri=$DATABASE_URI" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to dev
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          VERSION=${{ needs.release.outputs.version }}
+          IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+          IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
+
+          echo "🔨 Building Docker image (version: $VERSION)..."
+          export DOCKER_BUILDKIT=1
+          docker build \
+            -t $IMAGE_SHA \
+            -t $IMAGE_VERSION \
+            -t $IMAGE_LATEST \
+            --build-arg NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app" \
+            --build-arg PAYLOAD_SECRET="${{ steps.secrets.outputs.payload_secret }}" \
+            --build-arg DATABASE_URI="${{ steps.secrets.outputs.database_uri }}" \
+            --cache-from $IMAGE_LATEST \
+            .
+
+          echo "📤 Pushing images..."
+          docker push $IMAGE_SHA
+          docker push $IMAGE_VERSION
+          docker push $IMAGE_LATEST
+          echo "✅ Images pushed: $IMAGE_SHA, $IMAGE_VERSION, $IMAGE_LATEST"
+
+      - name: Deploy to dev
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          echo "🚀 Deploying to dev..."
+          gcloud run services update fashion-web-dev \
+            --image $IMAGE \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.DEV_PROJECT }}" \
+            --quiet
+          echo "✅ Stage 2 complete: Dev deployment complete"
+
+  # Stage 3: Create tag
+  create-tag:
+    name: Stage 3: Create Tag
+    runs-on: ubuntu-latest
+    needs: [check-skip, release, build-dev]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true' && needs.release.outputs.needs_release == 'true'
+    permissions:
+      contents: write
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+          installation-id: ${{ secrets.RELEASE_BOT_INSTALLATION_ID }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Create and push git tag
+        run: |
+          VERSION=${{ needs.release.outputs.version }}
+          git tag -a "v$VERSION" -m "chore(release): $VERSION"
+          git push origin "v$VERSION"
+          echo "✅ Stage 3 complete: Git tag v$VERSION created and pushed"
 
   health-check:
     name: Health Check
     runs-on: ubuntu-latest
-    needs: [check-skip, deploy]
-    if: github.event_name == 'push' && needs.check-skip.outputs.skip != 'true'
+    needs: [check-skip, create-github-release]
+    if: github.event_name == 'push' && github.ref_type == 'tag' && needs.check-skip.outputs.skip != 'true'
     steps:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
