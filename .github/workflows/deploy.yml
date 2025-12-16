@@ -75,6 +75,71 @@ jobs:
           SHORT_SHA=$(git rev-parse --short HEAD)
           echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
 
+      - name: Cancel previous builds for same branch
+        run: |
+          PROJECT_ID="${{ steps.params.outputs.project_id }}"
+          REGION="${{ steps.params.outputs.region }}"
+
+          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            TAG_NAME="${{ steps.params.outputs.tag }}"
+            SOURCE_REF="tag:$$TAG_NAME"
+          else
+            BRANCH="${{ github.event.inputs.branch }}"
+            SOURCE_REF="branch:$$BRANCH"
+          fi
+
+          echo "🛑 Canceling previous builds for $${SOURCE_REF}..."
+
+          # List all queued/running builds
+          RUNNING_BUILDS=$(gcloud builds list \
+            --region="$$REGION" \
+            --project="$$PROJECT_ID" \
+            --filter="status=WORKING OR status=QUEUED" \
+            --format="value(id)" \
+            --limit=50 2>/dev/null || echo "")
+
+          if [ -n "$$RUNNING_BUILDS" ]; then
+            CANCELED_COUNT=0
+            for BUILD_ID in $$RUNNING_BUILDS; do
+              # Get build source info
+              if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+                BUILD_TAG=$(gcloud builds describe "$$BUILD_ID" \
+                  --region="$$REGION" \
+                  --project="$$PROJECT_ID" \
+                  --format="value(source.repoSource.tagName)" 2>/dev/null || echo "")
+                
+                if [ "$$BUILD_TAG" = "$$TAG_NAME" ]; then
+                  echo "Canceling build for same tag: $${BUILD_ID}"
+                  gcloud builds cancel "$$BUILD_ID" \
+                    --region="$$REGION" \
+                    --project="$$PROJECT_ID" \
+                    --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
+                fi
+              else
+                BUILD_BRANCH=$(gcloud builds describe "$$BUILD_ID" \
+                  --region="$$REGION" \
+                  --project="$$PROJECT_ID" \
+                  --format="value(source.repoSource.branchName)" 2>/dev/null || echo "")
+                
+                if [ "$$BUILD_BRANCH" = "$$BRANCH" ]; then
+                  echo "Canceling build for same branch: $${BUILD_ID}"
+                  gcloud builds cancel "$$BUILD_ID" \
+                    --region="$$REGION" \
+                    --project="$$PROJECT_ID" \
+                    --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
+                fi
+              fi
+            done
+            
+            if [ $$CANCELED_COUNT -gt 0 ]; then
+              echo "✅ Canceled $${CANCELED_COUNT} previous build(s)"
+            else
+              echo "ℹ️  No previous builds found for same branch/tag"
+            fi
+          else
+            echo "ℹ️  No running/queued builds to cancel"
+          fi
+
       - name: Trigger Cloud Build
         run: |
           PROJECT_ID="${{ steps.params.outputs.project_id }}"
