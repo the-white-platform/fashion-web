@@ -26,6 +26,8 @@ permissions:
 
 env:
   REGION: asia-southeast1
+  DEV_PROJECT: the-white-dev-481217
+  PROD_PROJECT: the-white-prod-481217
 
 jobs:
   deploy:
@@ -43,16 +45,16 @@ jobs:
             TAG_NAME="${{ github.event.inputs.tag }}"
             [[ ! "$TAG_NAME" =~ ^v ]] && TAG_NAME="v$TAG_NAME"
             echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
-            echo "project_id=the-white-prod-481217" >> $GITHUB_OUTPUT
+            echo "project_id=${{ env.PROD_PROJECT }}" >> $GITHUB_OUTPUT
             echo "service_name=fashion-web" >> $GITHUB_OUTPUT
-            echo "service_account=github-actions-deployer@the-white-prod-481217.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
+            echo "service_account=github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
             echo "workload_identity_provider=projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
             echo "next_public_server_url=https://fashion-web-XXXXXX.run.app" >> $GITHUB_OUTPUT
             echo "checkout_ref=refs/tags/$TAG_NAME" >> $GITHUB_OUTPUT
           else
-            echo "project_id=the-white-dev-481217" >> $GITHUB_OUTPUT
+            echo "project_id=${{ env.DEV_PROJECT }}" >> $GITHUB_OUTPUT
             echo "service_name=fashion-web-dev" >> $GITHUB_OUTPUT
-            echo "service_account=github-actions-deployer@the-white-dev-481217.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
+            echo "service_account=github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
             echo "workload_identity_provider=projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
             echo "next_public_server_url=https://fashion-web-dev-XXXXXX.run.app" >> $GITHUB_OUTPUT
             echo "checkout_ref=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
@@ -67,95 +69,151 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Cancel previous builds
-        run: |
-          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            FILTER_TYPE="tag"
-            FILTER_VALUE="${{ steps.params.outputs.tag }}"
-          else
-            FILTER_TYPE="branch"
-            FILTER_VALUE="${{ github.event.inputs.branch }}"
-          fi
-          echo "🔍 Looking for builds to cancel..."
-          echo "   Filter type: $FILTER_TYPE"
-          echo "   Filter value: $FILTER_VALUE"
-
-          RUNNING_BUILDS=$(gcloud builds list \
-            --region="${{ env.REGION }}" \
-            --project="${{ steps.params.outputs.project_id }}" \
-            --filter="status=WORKING OR status=QUEUED" \
-            --format="value(id)" \
-            --limit=100 2>/dev/null || echo "")
-
-          if [ -z "$RUNNING_BUILDS" ]; then
-            echo "ℹ️  No running/queued builds found"
-            exit 0
-          fi
-
-          CANCEL_COUNT=0
-          for BUILD_ID in $RUNNING_BUILDS; do
-            BUILD_INFO=$(gcloud builds describe "$BUILD_ID" \
-              --region="${{ env.REGION }}" \
-              --project="${{ steps.params.outputs.project_id }}" \
-              --format="json" 2>/dev/null || echo "{}")
-            
-            if [ "$BUILD_INFO" = "{}" ]; then
-              continue
-            fi
-            
-            BUILD_BRANCH=$(echo "$BUILD_INFO" | grep -o '"branchName": "[^"]*"' | cut -d'"' -f4 || echo "")
-            BUILD_TAG=$(echo "$BUILD_INFO" | grep -o '"tagName": "[^"]*"' | cut -d'"' -f4 || echo "")
-            
-            SHOULD_CANCEL=false
-            if [ "$FILTER_TYPE" = "branch" ] && [ "$BUILD_BRANCH" = "$FILTER_VALUE" ]; then
-              SHOULD_CANCEL=true
-            elif [ "$FILTER_TYPE" = "tag" ] && [ "$BUILD_TAG" = "$FILTER_VALUE" ]; then
-              SHOULD_CANCEL=true
-            fi
-            
-            if [ "$SHOULD_CANCEL" = "true" ]; then
-              echo "🛑 Canceling build: $BUILD_ID (branch: $BUILD_BRANCH, tag: $BUILD_TAG)"
-              if gcloud builds cancel "$BUILD_ID" \
-                --region="${{ env.REGION }}" \
-                --project="${{ steps.params.outputs.project_id }}" \
-                --quiet 2>/dev/null; then
-                CANCEL_COUNT=$((CANCEL_COUNT + 1))
-              else
-                echo "⚠️  Failed to cancel $BUILD_ID (may have already finished)"
-              fi
-            fi
-          done
-
-          if [ $CANCEL_COUNT -gt 0 ]; then
-            echo "✅ Canceled $CANCEL_COUNT previous build(s)"
-          else
-            echo "ℹ️  No matching builds to cancel"
-          fi
-
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.params.outputs.checkout_ref }}
 
-      - name: Trigger Cloud Build
+      - name: Configure Docker for Artifact Registry
+        if: steps.params.outputs.project_id == env.DEV_PROJECT
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Fetch secrets for Docker build
+        if: steps.params.outputs.project_id == env.DEV_PROJECT
+        id: secrets
+        run: |
+          PAYLOAD_SECRET=$(gcloud secrets versions access latest --secret=PAYLOAD_SECRET_DEV --project="${{ steps.params.outputs.project_id }}" 2>/dev/null || echo "")
+          DATABASE_URI=$(gcloud secrets versions access latest --secret=DATABASE_URI_DEV --project="${{ steps.params.outputs.project_id }}" 2>/dev/null || echo "")
+          echo "::add-mask::$PAYLOAD_SECRET"
+          echo "::add-mask::$DATABASE_URI"
+          echo "payload_secret=$PAYLOAD_SECRET" >> $GITHUB_OUTPUT
+          echo "database_uri=$DATABASE_URI" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to dev
+        if: steps.params.outputs.project_id == env.DEV_PROJECT
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            TAG_FOR_BUILD=${GITHUB_REF_NAME#v}
-            gcloud builds submit \
-              --config cloudbuild.yaml \
-              --project "${{ steps.params.outputs.project_id }}" \
-              --region="${{ env.REGION }}" \
-              --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA",TAG_NAME="$TAG_FOR_BUILD" \
-              --git-source-tag="${{ steps.params.outputs.tag }}"
-          else
-            gcloud builds submit \
-              --config cloudbuild.yaml \
-              --project "${{ steps.params.outputs.project_id }}" \
-              --region="${{ env.REGION }}" \
-              --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA" \
-              --git-source-branch="${{ github.event.inputs.branch }}"
+          VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "latest")
+          IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$SHORT_SHA"
+          IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$VERSION"
+          IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:latest"
+
+          echo "🔨 Building Docker image (version: $VERSION)..."
+          export DOCKER_BUILDKIT=1
+          docker build \
+            -t $IMAGE_SHA \
+            -t $IMAGE_VERSION \
+            -t $IMAGE_LATEST \
+            --build-arg NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}" \
+            --build-arg PAYLOAD_SECRET="${{ steps.secrets.outputs.payload_secret }}" \
+            --build-arg DATABASE_URI="${{ steps.secrets.outputs.database_uri }}" \
+            --cache-from $IMAGE_LATEST \
+            .
+
+          echo "📤 Pushing images..."
+          docker push $IMAGE_SHA
+          docker push $IMAGE_VERSION
+          docker push $IMAGE_LATEST
+          echo "✅ Images pushed: $IMAGE_SHA, $IMAGE_VERSION, $IMAGE_LATEST"
+          echo "image=$IMAGE_SHA" >> $GITHUB_OUTPUT
+
+      - name: Deploy to dev
+        if: steps.params.outputs.project_id == env.DEV_PROJECT
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$SHORT_SHA"
+          echo "🚀 Deploying to dev..."
+          gcloud run services update ${{ steps.params.outputs.service_name }} \
+            --image $IMAGE \
+            --region="${{ env.REGION }}" \
+            --project="${{ steps.params.outputs.project_id }}" \
+            --quiet
+          echo "✅ Dev deployment complete"
+
+      - name: Authenticate to dev for image copy
+        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK for image copy
+        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Copy image from dev to prod
+        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          TAG_SHA=$(git rev-parse ${{ steps.params.outputs.tag }})
+          SHORT_SHA=$(git rev-parse --short $TAG_SHA)
+          DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+          PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
+          PROD_IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:latest"
+          PROD_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+
+          echo "🔄 Copying image from dev to prod..."
+          echo "   Version: $VERSION"
+          echo "   Source: $DEV_IMAGE"
+          echo "   Targets: $PROD_IMAGE, $PROD_IMAGE_LATEST, $PROD_IMAGE_SHA"
+
+          if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            echo "❌ Error: Dev image $DEV_IMAGE not found!"
+            echo "   Make sure the image was built and deployed to dev first."
+            exit 1
           fi
+
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy version tag (may already exist)"
+
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_LATEST \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy latest tag"
+
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_SHA \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy SHA tag"
+
+          echo "✅ Image copy completed"
+          echo "image=$PROD_IMAGE_SHA" >> $GITHUB_OUTPUT
+
+      - name: Configure Docker for Artifact Registry (prod)
+        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Authenticate to prod for deployment
+        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ steps.params.outputs.workload_identity_provider }}
+          service_account: ${{ steps.params.outputs.service_account }}
+
+      - name: Set up Cloud SDK for prod deployment
+        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to prod
+        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          TAG_SHA=$(git rev-parse ${{ steps.params.outputs.tag }})
+          SHORT_SHA=$(git rev-parse --short $TAG_SHA)
+          PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+
+          echo "🚀 Deploying to production..."
+          echo "   Version: $VERSION"
+          echo "   Image: $PROD_IMAGE"
+
+          gcloud run services update fashion-web \
+            --image $PROD_IMAGE \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet
+
+          echo "✅ Production deployment complete"
 
       - name: Get deployment URL
         id: url

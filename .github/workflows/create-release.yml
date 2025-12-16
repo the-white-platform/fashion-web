@@ -62,3 +62,5 @@ jobs:
             **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ steps.version.outputs.tag }}
 
             **View CHANGELOG.md:** [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
+          draft: false
+          prerelease: false
