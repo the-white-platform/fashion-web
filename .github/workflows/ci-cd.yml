@@ -10,6 +10,12 @@ on:
     branches:
       - main
 
+# Cancel previous workflow runs for the same PR/branch/tag
+# This handles GitHub Actions workflow cancellation automatically
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
   id-token: write
@@ -21,7 +27,9 @@ env:
   PROD_PROJECT: the-white-prod-481217
 
 jobs:
-  # Stage 0: Cancel Previous Builds (runs first, in parallel with other early stages)
+  # Stage 0: Cancel Previous Cloud Builds (runs first, in parallel with other early stages)
+  # Note: GitHub Actions workflow cancellation is handled by concurrency above
+  # This step only cancels GCP Cloud Build runs
   cancel-builds:
     name: Cancel Previous Builds
     runs-on: ubuntu-latest
