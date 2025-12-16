@@ -69,10 +69,18 @@ jobs:
           COMMIT_SHA="${{ github.sha }}"
           SHORT_SHA="${COMMIT_SHA:0:7}"
           BRANCH_NAME="${{ steps.env.outputs.branch_name }}"
+
           echo "🔍 Looking for builds to cancel..."
           echo "   Filter: $FILTER"
           echo "   Commit SHA: $SHORT_SHA"
           echo "   Branch: $BRANCH_NAME"
+          echo "   Event: ${{ github.event_name }}"
+
+          # For branch-based cancellation, we'll cancel all builds that:
+          # 1. Match the branch name (if available), OR
+          # 2. Are trigger-based builds (no branch name) from the same branch context
+          # Since trigger-based builds don't have branch info, we cancel all that aren't current commit
+          # when we're filtering by branch (safe because we know the context)
 
           # Extract filter value (branch or tag name)
           if echo "$FILTER" | grep -q "branchName="; then
@@ -154,12 +162,14 @@ jobs:
               # Don't cancel the current build
               SHOULD_CANCEL=false
             elif [ "$FILTER_TYPE" = "branch" ] && [ -z "$BUILD_BRANCH" ] && [ -n "$BUILD_SHA" ] && [ -n "$BRANCH_NAME" ]; then
-              # For trigger-based builds without branch info, we need to check if the commit belongs to the branch
-              # Since we're filtering by branch, cancel all builds that aren't the current commit
-              # This is safe because we only want the latest build for this branch to run
+              # For trigger-based builds without branch info, cancel all builds that aren't the current commit
+              # This is safe when filtering by branch because:
+              # 1. We know the branch context from the PR/push event
+              # 2. Trigger-based builds from the same branch won't have branch name set
+              # 3. We only want the latest build for this branch to run
               if [ "$BUILD_SHORT_SHA" != "$SHORT_SHA" ]; then
                 SHOULD_CANCEL=true
-                MATCH_REASON="older commit from branch $BRANCH_NAME ($BUILD_SHORT_SHA != $SHORT_SHA)"
+                MATCH_REASON="trigger-based build from branch $BRANCH_NAME (older commit: $BUILD_SHORT_SHA)"
               fi
             fi
             
