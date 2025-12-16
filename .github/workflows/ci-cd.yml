@@ -42,8 +42,21 @@ jobs:
     name: Setup and Quality Checks
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App Token (for PR commits)
+        id: app-token
+        if: github.event_name == 'pull_request'
+        uses: actions/create-github-app-token@v1
+        continue-on-error: true
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+          installation-id: ${{ secrets.RELEASE_BOT_INSTALLATION_ID }}
+
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -84,8 +97,16 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+
+          # Check if there are actually staged changes
+          if git diff --staged --quiet; then
+            echo "ℹ️  No staged changes to commit"
+            exit 0
+          fi
+
           git commit -m "style: auto-fix formatting issues" || exit 0
           git push origin HEAD:${{ github.head_ref }} || echo "Push failed (may already be up to date)"
+          echo "✅ Auto-fixed formatting committed to PR"
 
       - name: Check formatting (verify no remaining issues)
         run: |
