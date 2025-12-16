@@ -287,8 +287,8 @@ jobs:
         if: steps.params.outputs.environment == 'prod'
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          TAG_SHA=$(git rev-parse ${{ github.ref_name }})
-          SHORT_SHA=$(git rev-parse --short $TAG_SHA)
+          # Use HEAD since we checked out at the tag - this matches the SHA used in dev build
+          SHORT_SHA=$(git rev-parse --short HEAD)
           
           # Try to find the dev image - check SHA tag first (most reliable), then version tag
           DEV_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
@@ -341,8 +341,8 @@ jobs:
         if: steps.params.outputs.environment == 'prod'
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          TAG_SHA=$(git rev-parse ${{ github.ref_name }})
-          SHORT_SHA=$(git rev-parse --short $TAG_SHA)
+          # Use HEAD since we checked out at the tag - this matches the SHA used in dev build
+          SHORT_SHA=$(git rev-parse --short HEAD)
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
 
           echo "🚀 Deploying to production..."
