@@ -258,23 +258,94 @@ jobs:
         with:
           ref: ${{ github.ref_type == 'tag' && format('refs/tags/{0}', github.ref_name) || github.ref }}
 
-      - name: Trigger Cloud Build
+      - name: Deploy to dev
+        if: github.ref_type != 'tag'
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            TAG_FOR_BUILD=${GITHUB_REF_NAME#v}
-            gcloud builds submit --config cloudbuild.yaml \
-              --project "${{ steps.params.outputs.project_id }}" \
-              --region="${{ env.REGION }}" \
-              --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA",TAG_NAME="$TAG_FOR_BUILD" \
-              --git-source-tag="${{ github.ref_name }}"
-          else
-            gcloud builds submit --config cloudbuild.yaml \
-              --project "${{ steps.params.outputs.project_id }}" \
-              --region="${{ env.REGION }}" \
-              --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA" \
-              --git-source-branch="${{ github.ref_name }}"
+          gcloud builds submit --config cloudbuild.yaml \
+            --project "${{ steps.params.outputs.project_id }}" \
+            --region="${{ env.REGION }}" \
+            --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA" \
+            --git-source-branch="${{ github.ref_name }}"
+
+      - name: Authenticate to dev for image copy
+        if: github.ref_type == 'tag'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK for image copy
+        if: github.ref_type == 'tag'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Copy image from dev to prod
+        if: github.ref_type == 'tag'
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          TAG_SHA=$(git rev-parse ${{ github.ref_name }})
+          SHORT_SHA=$(git rev-parse --short $TAG_SHA)
+          DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
+          PROD_IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:latest"
+          PROD_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+
+          echo "🔄 Copying image from dev to prod..."
+          echo "   Tag: ${{ github.ref_name }}"
+          echo "   Commit SHA: $SHORT_SHA"
+          echo "   Source: $DEV_IMAGE"
+          echo "   Targets: $PROD_IMAGE, $PROD_IMAGE_LATEST, $PROD_IMAGE_SHA"
+
+          if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            echo "❌ Error: Dev image $DEV_IMAGE not found!"
+            echo "   Make sure the image was built in dev before creating the tag."
+            exit 1
           fi
+
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy version tag (may already exist)"
+
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_LATEST \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy latest tag"
+
+          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_SHA \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to copy SHA tag"
+
+          echo "✅ Image copy completed"
+
+      - name: Authenticate to prod for deployment
+        if: github.ref_type == 'tag'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK for prod deployment
+        if: github.ref_type == 'tag'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to prod
+        if: github.ref_type == 'tag'
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          TAG_SHA=$(git rev-parse ${{ github.ref_name }})
+          SHORT_SHA=$(git rev-parse --short $TAG_SHA)
+          PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+
+          echo "🚀 Deploying to production..."
+          echo "   Version: $VERSION"
+          echo "   Image: $PROD_IMAGE"
+
+          gcloud run services update fashion-web \
+            --image $PROD_IMAGE \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.PROD_PROJECT }}" \
+            --quiet
+
+          echo "✅ Production deployment complete"
 
   release:
     name: Release
@@ -338,6 +409,35 @@ jobs:
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "needs_release=true" >> $GITHUB_ENV
+
+      - name: Authenticate to dev for image tagging
+        if: env.needs_release == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
+          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK for tagging
+        if: env.needs_release == 'true'
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Tag dev image with version
+        if: env.needs_release == 'true'
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          VERSION="${{ steps.release.outputs.version }}"
+          DEV_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          DEV_IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+
+          echo "🏷️  Tagging dev image with version $VERSION..."
+          echo "   Source: $DEV_IMAGE_SHA"
+          echo "   Target: $DEV_IMAGE_VERSION"
+
+          gcloud artifacts docker images add-tag $DEV_IMAGE_SHA $DEV_IMAGE_VERSION \
+            --project="${{ env.DEV_PROJECT }}" \
+            --quiet || echo "⚠️  Failed to tag image (may already exist)"
+
+          echo "✅ Dev image tagged: $DEV_IMAGE_VERSION"
 
       - name: Commit and tag
         if: env.needs_release == 'true'
