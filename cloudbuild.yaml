@@ -1,5 +1,47 @@
 steps:
-  # 0. Fetch secrets from Secret Manager
+  # 0. Cancel previous builds for the same branch/commit
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🛑 Canceling previous builds for this branch..."
+
+        # Get current build ID and branch
+        CURRENT_BUILD_ID="${BUILD_ID}"
+        BRANCH_NAME="${BRANCH_NAME:-${TAG_NAME:-main}}"
+
+        echo "Current build: $${CURRENT_BUILD_ID}"
+        echo "Branch/Tag: $${BRANCH_NAME}"
+
+        # List all running builds for this project and region
+        RUNNING_BUILDS=$(gcloud builds list \
+          --region=${_REGION} \
+          --project=${PROJECT_ID} \
+          --filter="status=WORKING OR status=QUEUED" \
+          --format="value(id)" \
+          --limit=50 2>/dev/null || echo "")
+
+        if [ -n "$$RUNNING_BUILDS" ]; then
+          echo "Found running/queued builds:"
+          echo "$$RUNNING_BUILDS"
+          
+          # Cancel each build except the current one
+          for BUILD_ID in $$RUNNING_BUILDS; do
+            if [ "$$BUILD_ID" != "$$CURRENT_BUILD_ID" ]; then
+              echo "Canceling build: $${BUILD_ID}"
+              gcloud builds cancel "$$BUILD_ID" \
+                --region=${_REGION} \
+                --project=${PROJECT_ID} \
+                --quiet 2>/dev/null || echo "Failed to cancel $${BUILD_ID} (may have already finished)"
+            fi
+          done
+          echo "✅ Previous builds canceled"
+        else
+          echo "ℹ️  No previous builds to cancel"
+        fi
+
+  # 1. Fetch secrets from Secret Manager
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
@@ -58,7 +100,7 @@ steps:
           echo -n "" > /workspace/database_uri.txt
         fi
 
-  # 1. Build the container image
+  # 2. Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
     args:
@@ -84,7 +126,7 @@ steps:
                      --cache-from ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest \
                      .
 
-  # 2. Push the container image to Artifact Registry
+  # 3. Push the container image to Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     entrypoint: 'bash'
     args:
@@ -93,7 +135,7 @@ steps:
         docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:${SHORT_SHA}
         docker push ${_REGION}-docker.pkg.dev/${PROJECT_ID}/app-images/fashion-web:latest
 
-  # 3. Deploy to Cloud Run (Update existing service)
+  # 4. Deploy to Cloud Run (Update existing service)
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'bash'
     args:
