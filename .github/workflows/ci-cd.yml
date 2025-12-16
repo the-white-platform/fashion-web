@@ -239,28 +239,21 @@ jobs:
       - name: Copy image from dev to prod
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          SHORT_SHA=$(git rev-parse --short HEAD)
           
-          DEV_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
-          DEV_IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+          # Use version tag since we now tag images with version in Stage 2
+          DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           
-          DEV_IMAGE=""
-          if gcloud artifacts docker images describe $DEV_IMAGE_SHA --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
-            DEV_IMAGE=$DEV_IMAGE_SHA
-            echo "✅ Found dev image with SHA tag: $DEV_IMAGE"
-          elif gcloud artifacts docker images describe $DEV_IMAGE_VERSION --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
-            DEV_IMAGE=$DEV_IMAGE_VERSION
-            echo "✅ Found dev image with version tag: $DEV_IMAGE"
-          else
+          if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
             echo "❌ Error: Dev image not found!"
-            echo "   Checked SHA tag: $DEV_IMAGE_SHA"
-            echo "   Checked version tag: $DEV_IMAGE_VERSION"
+            echo "   Expected: $DEV_IMAGE"
+            echo "   Make sure Stage 2 (Build & Deploy Dev) completed successfully."
             exit 1
           fi
           
+          echo "✅ Found dev image: $DEV_IMAGE"
+          
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
           PROD_IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:latest"
-          PROD_IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
 
           echo "🔄 Copying image from dev to prod..."
           gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE \
@@ -271,10 +264,6 @@ jobs:
             --project="${{ env.PROD_PROJECT }}" \
             --quiet || echo "⚠️  Failed to copy latest tag"
 
-          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_SHA \
-            --project="${{ env.PROD_PROJECT }}" \
-            --quiet || echo "⚠️  Failed to copy SHA tag"
-
           echo "✅ Image copy completed"
 
       - name: Configure Docker for Artifact Registry (prod)
@@ -284,10 +273,11 @@ jobs:
       - name: Deploy to prod
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
 
           echo "🚀 Deploying to production..."
+          echo "   Version: $VERSION"
+          echo "   Image: $PROD_IMAGE"
           gcloud run services update fashion-web \
             --image $PROD_IMAGE \
             --region="${{ env.REGION }}" \
