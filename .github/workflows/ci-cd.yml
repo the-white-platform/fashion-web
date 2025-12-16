@@ -266,10 +266,12 @@ jobs:
         run: npx tsc --noEmit
 
   build:
-    name: Build
+    name: Build (CI Validation)
     runs-on: ubuntu-latest
     needs: [quality]
     if: github.event_name == 'pull_request'
+    # Note: This is a fast CI validation build (pnpm build) that doesn't create Docker images.
+    # Actual Docker builds and deployments happen via Cloud Build (triggered separately).
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
