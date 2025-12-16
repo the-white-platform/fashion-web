@@ -55,14 +55,14 @@ jobs:
           else
             COMMIT_MSG="${{ github.event.head_commit.message || github.event.commits[0].message }}"
           fi
-          
+
           # Check for skip patterns
           if echo "$COMMIT_MSG" | grep -qiE "\[skip ci\]|\[ci skip\]|\[skip actions\]|\[actions skip\]"; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "⏭️  CI/CD skipped due to commit message"
             exit 0
           fi
-          
+
           # Check if this is a release commit (chore(release): X.X.X)
           if echo "$COMMIT_MSG" | grep -qE "^chore\(release\):"; then
             echo "skip=true" >> $GITHUB_OUTPUT
@@ -70,7 +70,7 @@ jobs:
             echo "⏭️  Release commit detected - skipping workflow (tag will trigger deploy)"
             exit 0
           fi
-          
+
           echo "skip=false" >> $GITHUB_OUTPUT
           echo "is-release-commit=false" >> $GITHUB_OUTPUT
           echo "✅ CI/CD will run"
@@ -176,7 +176,7 @@ jobs:
 
   # Stage 4: Create release and deploy to prod
   create-github-release:
-    name: Stage 4: Create Release & Deploy Prod
+    name: 'Stage 4: Create Release & Deploy Prod'
     runs-on: ubuntu-latest
     needs: check-skip
     if: github.event_name == 'push' && github.ref_type == 'tag' && needs.check-skip.outputs.skip != 'true'
@@ -239,19 +239,19 @@ jobs:
       - name: Copy image from dev to prod
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          
+
           # Use version tag since we now tag images with version in Stage 2
           DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
-          
+
           if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
             echo "❌ Error: Dev image not found!"
             echo "   Expected: $DEV_IMAGE"
             echo "   Make sure Stage 2 (Build & Deploy Dev) completed successfully."
             exit 1
           fi
-          
+
           echo "✅ Found dev image: $DEV_IMAGE"
-          
+
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
           PROD_IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:latest"
 
@@ -302,14 +302,14 @@ jobs:
             **View CHANGELOG.md:** [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ steps.version.outputs.tag }}/CHANGELOG.md)
           draft: false
           prerelease: false
-      
+
       - name: Stage 4 complete
         run: |
           echo "✅ Stage 4 complete: Release created and prod deployed"
 
   # Stage 1: Bump version and commit
   release:
-    name: Stage 1: Bump Version
+    name: 'Stage 1: Bump Version'
     runs-on: ubuntu-latest
     needs: check-skip
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true'
@@ -390,7 +390,7 @@ jobs:
 
   # Stage 2: Build and deploy to dev
   build-dev:
-    name: Stage 2: Build & Deploy Dev
+    name: 'Stage 2: Build & Deploy Dev'
     runs-on: ubuntu-latest
     needs: [check-skip, release]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true' && needs.release.outputs.needs_release == 'true'
@@ -468,7 +468,7 @@ jobs:
 
   # Stage 3: Create tag
   create-tag:
-    name: Stage 3: Create Tag
+    name: 'Stage 3: Create Tag'
     runs-on: ubuntu-latest
     needs: [check-skip, release, build-dev]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true' && needs.release.outputs.needs_release == 'true'
