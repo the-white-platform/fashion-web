@@ -158,17 +158,49 @@ jobs:
             exit 0
           fi
 
-          # Also check if the last commit that changed package.json or CHANGELOG.md was a workflow commit
-          LAST_CHANGELOG_COMMIT=$(git log -1 --format="%H" -- CHANGELOG.md package.json 2>/dev/null || echo "")
+          # Check if changelog was already updated for these commits
+          # Get the last commit that modified CHANGELOG.md
+          LAST_CHANGELOG_COMMIT=$(git log -1 --format="%H" -- CHANGELOG.md 2>/dev/null || echo "")
+
           if [ -n "$LAST_CHANGELOG_COMMIT" ]; then
+            # Check if the last changelog commit is a workflow commit
             LAST_CHANGELOG_MSG=$(git log -1 --format="%B" "$LAST_CHANGELOG_COMMIT" 2>/dev/null || echo "")
+            
             if echo "$LAST_CHANGELOG_MSG" | grep -qE "^chore\(release\):"; then
-              # Check if there are any new commits since the last changelog update
+              # Check if there are any new non-workflow commits since the last changelog update
               COMMITS_SINCE_CHANGELOG=$(git log "$LAST_CHANGELOG_COMMIT"..HEAD --oneline --grep="^chore(release):" --invert-grep | wc -l | tr -d ' ')
+              
               if [ "$COMMITS_SINCE_CHANGELOG" -eq 0 ]; then
                 echo "⚠️  Last changelog update was from workflow and no new commits since then - skipping"
                 echo "needs_update=false" >> $GITHUB_ENV
                 exit 0
+              else
+                echo "✅ Found $COMMITS_SINCE_CHANGELOG new commit(s) since last changelog update - proceeding"
+              fi
+            else
+              # Last changelog commit is not from workflow, check if our PR commits are already in it
+              echo "ℹ️  Last changelog update was manual, checking if PR commits are already included..."
+              
+              # Get the latest version in changelog
+              LATEST_CHANGELOG_VERSION=$(grep -E "^## \[?[0-9]" CHANGELOG.md | head -1 | sed -E 's/^## \[?([0-9]+\.[0-9]+\.[0-9]+).*/\1/' || echo "")
+              
+              if [ -n "$LATEST_CHANGELOG_VERSION" ] && [ "$LATEST_CHANGELOG_VERSION" = "$CURRENT_VERSION" ]; then
+                # Check if any of our PR commit SHAs are in the changelog
+                PR_COMMIT_SHAS=$(echo "$PR_COMMITS" | awk '{print $1}' || echo "")
+                CHANGELOG_HAS_COMMITS=false
+                
+                for SHA in $PR_COMMIT_SHAS; do
+                  if grep -q "$SHA" CHANGELOG.md 2>/dev/null; then
+                    CHANGELOG_HAS_COMMITS=true
+                    break
+                  fi
+                done
+                
+                if [ "$CHANGELOG_HAS_COMMITS" = "true" ]; then
+                  echo "✅ PR commits are already in changelog - skipping update"
+                  echo "needs_update=false" >> $GITHUB_ENV
+                  exit 0
+                fi
               fi
             fi
           fi
@@ -204,25 +236,26 @@ jobs:
               NEW_VERSION=$(node -p "require('./package.json').version")
             fi
           else
-            # Version is already newer or same, but still update changelog if there are new commits
-            echo "Version already correct ($CURRENT_VERSION), checking if changelog needs update..."
+            # Version is already newer or same, only update changelog if needed
+            echo "Version already correct ($CURRENT_VERSION), updating changelog only if needed..."
             
-            # Check if CHANGELOG.md already has entries for commits in this PR
-            # Get the latest changelog entry version
-            LATEST_CHANGELOG_VERSION=$(grep -E "^## \[?[0-9]" CHANGELOG.md | head -1 | sed -E 's/^## \[?([0-9]+\.[0-9]+\.[0-9]+).*/\1/' || echo "")
+            # Check if we need to update changelog by comparing what standard-version would generate
+            # First, save current state
+            CHANGELOG_BEFORE=$(cat CHANGELOG.md 2>/dev/null || echo "")
             
-            if [ -n "$LATEST_CHANGELOG_VERSION" ] && [ "$LATEST_CHANGELOG_VERSION" = "$CURRENT_VERSION" ]; then
-              # Check if the changelog entry for this version includes our PR commits
-              # This is a simple check - if the changelog was just updated, it might already have our commits
-              echo "Changelog already has entry for version $CURRENT_VERSION"
-              
-              # Only update if there are definitely new commits not in the changelog
-              # For now, we'll still run standard-version but check if it makes changes
-              npx standard-version --skip.commit --skip.tag --skip.bump || true
+            # Run standard-version in dry-run mode (if supported) or check if it would make changes
+            # Since standard-version doesn't have a true dry-run, we'll run it and check if it changed anything
+            npx standard-version --skip.commit --skip.tag --skip.bump || true
+            
+            # Check if changelog actually changed
+            CHANGELOG_AFTER=$(cat CHANGELOG.md 2>/dev/null || echo "")
+            
+            if [ "$CHANGELOG_BEFORE" = "$CHANGELOG_AFTER" ]; then
+              echo "ℹ️  Changelog is already up to date, no changes needed"
+              # Restore original if it somehow changed
+              echo "$CHANGELOG_BEFORE" > CHANGELOG.md 2>/dev/null || true
             else
-              # Changelog doesn't have this version yet, update it
-              echo "Updating changelog for version $CURRENT_VERSION..."
-              npx standard-version --skip.commit --skip.tag --skip.bump || true
+              echo "✅ Changelog updated with new commits"
             fi
             
             NEW_VERSION="$CURRENT_VERSION"
@@ -235,21 +268,40 @@ jobs:
             git tag -d "$TAG_NAME" 2>/dev/null || true
           fi
 
-          # Check if there are changes to commit
+          # Check if there are actual changes to commit
+          # Only stage files that actually changed
           git add package.json pnpm-lock.yaml CHANGELOG.md 2>/dev/null || true
 
+          # Check if there are any staged changes
           if git diff --staged --quiet; then
-            echo "No changes to commit (changelog and version already up to date)"
+            echo "✅ No changes to commit (changelog and version already up to date)"
             echo "needs_update=false" >> $GITHUB_ENV
-          else
-            if ! git commit -m "chore(release): $NEW_VERSION"; then
-              echo "Commit failed due to an unexpected error"
-              exit 1
-            fi
-            git push origin HEAD:${{ github.head_ref }}
-            echo "needs_update=true" >> $GITHUB_ENV
-            echo "✅ Updated changelog and version to $NEW_VERSION"
+            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            exit 0
           fi
+
+          # Verify the changes are meaningful (not just whitespace or metadata)
+          STAGED_CHANGES=$(git diff --staged --stat)
+          echo "Staged changes:"
+          echo "$STAGED_CHANGES"
+
+          # Check if package.json actually changed (not just lockfile)
+          if git diff --staged --quiet package.json 2>/dev/null; then
+            # Only changelog changed, that's fine
+            echo "ℹ️  Only changelog changed (version unchanged)"
+          else
+            echo "ℹ️  Version changed in package.json"
+          fi
+
+          # Commit the changes
+          if ! git commit -m "chore(release): $NEW_VERSION"; then
+            echo "❌ Commit failed due to an unexpected error"
+            exit 1
+          fi
+
+          git push origin HEAD:${{ github.head_ref }}
+          echo "needs_update=true" >> $GITHUB_ENV
+          echo "✅ Committed and pushed changelog/version updates"
 
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "bumped=${{ env.needs_bump }}" >> $GITHUB_ENV
