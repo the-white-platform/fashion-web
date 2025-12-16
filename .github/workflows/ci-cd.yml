@@ -410,6 +410,26 @@ jobs:
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "needs_release=true" >> $GITHUB_ENV
 
+      - name: Commit version and changelog
+        if: env.needs_release == 'true'
+        run: |
+          git add package.json pnpm-lock.yaml CHANGELOG.md
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(release): ${{ steps.release.outputs.version }}"
+            git push origin main
+            echo "✅ Version and changelog committed"
+          else
+            echo "⚠️  No changes to commit"
+            echo "needs_release=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create and push git tag
+        if: env.needs_release == 'true'
+        run: |
+          git tag -a "v${{ steps.release.outputs.version }}" -m "chore(release): ${{ steps.release.outputs.version }}"
+          git push origin "v${{ steps.release.outputs.version }}"
+          echo "✅ Git tag v${{ steps.release.outputs.version }} created and pushed"
+
       - name: Authenticate to dev for image tagging
         if: env.needs_release == 'true'
         uses: google-github-actions/auth@v2
@@ -433,22 +453,17 @@ jobs:
           echo "   Source: $DEV_IMAGE_SHA"
           echo "   Target: $DEV_IMAGE_VERSION"
 
+          if ! gcloud artifacts docker images describe $DEV_IMAGE_SHA --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            echo "❌ Error: Dev image $DEV_IMAGE_SHA not found!"
+            echo "   Make sure the image was built and deployed to dev first."
+            exit 1
+          fi
+
           gcloud artifacts docker images add-tag $DEV_IMAGE_SHA $DEV_IMAGE_VERSION \
             --project="${{ env.DEV_PROJECT }}" \
             --quiet || echo "⚠️  Failed to tag image (may already exist)"
 
           echo "✅ Dev image tagged: $DEV_IMAGE_VERSION"
-
-      - name: Commit and tag
-        if: env.needs_release == 'true'
-        run: |
-          git add package.json pnpm-lock.yaml CHANGELOG.md
-          if ! git diff --staged --quiet; then
-            git commit -m "chore(release): ${{ steps.release.outputs.version }}"
-            git push origin main
-            git tag -a "v${{ steps.release.outputs.version }}" -m "chore(release): ${{ steps.release.outputs.version }}"
-            git push origin "v${{ steps.release.outputs.version }}"
-          fi
 
   health-check:
     name: Health Check
