@@ -28,32 +28,42 @@ jobs:
   cancel-cloud-builds:
     name: Cancel Cloud Builds
     runs-on: ubuntu-latest
-    # Only run on push events (not PRs) because PRs don't trigger Cloud Build deployments
-    if: github.event_name == 'push'
     steps:
       - name: Determine environment
         id: env
         run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # For PRs, cancel builds for the PR branch
+            BRANCH_NAME="${{ github.head_ref }}"
+            echo "environment=dev" >> $GITHUB_OUTPUT
+            echo "project_id=${{ env.DEV_PROJECT }}" >> $GITHUB_OUTPUT
+            echo "filter=source.repoSource.branchName=$BRANCH_NAME" >> $GITHUB_OUTPUT
+            echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref_type }}" = "tag" ]; then
             echo "environment=prod" >> $GITHUB_OUTPUT
             echo "project_id=${{ env.PROD_PROJECT }}" >> $GITHUB_OUTPUT
             echo "filter=source.repoSource.tagName=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "branch_name=" >> $GITHUB_OUTPUT
           else
             echo "environment=dev" >> $GITHUB_OUTPUT
             echo "project_id=${{ env.DEV_PROJECT }}" >> $GITHUB_OUTPUT
             echo "filter=source.repoSource.branchName=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "branch_name=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Authenticate to Google Cloud
+        if: steps.env.outputs.project_id != ''
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ steps.env.outputs.environment == 'prod' && 'projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' || 'projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' }}
           service_account: github-actions-deployer@${{ steps.env.outputs.project_id }}.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK
+        if: steps.env.outputs.project_id != ''
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Cancel previous builds
+        if: steps.env.outputs.project_id != ''
         run: |
           FILTER="${{ steps.env.outputs.filter }}"
           COMMIT_SHA="${{ github.sha }}"
@@ -74,8 +84,12 @@ jobs:
             FILTER_TYPE="unknown"
           fi
 
+          echo "   Event: ${{ github.event_name }}"
           echo "   Filter type: $FILTER_TYPE"
           echo "   Filter value: $FILTER_VALUE"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "   PR branch: ${{ github.head_ref }}"
+          fi
 
           # Get all queued/working builds
           RUNNING_BUILDS=$(gcloud builds list \
