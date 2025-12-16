@@ -52,17 +52,41 @@ jobs:
       - name: Check if last commit is from workflow
         id: check_workflow_commit
         run: |
+          # Check if the last commit is from the workflow
           LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
+
           if echo "$LAST_COMMIT_MSG" | grep -qE "^chore\(release\):"; then
-            echo "Last commit is from workflow, skipping to prevent loop"
-            echo "is_workflow_commit=true" >> $GITHUB_ENV
+            echo "⚠️  Last commit is from workflow: $LAST_COMMIT_MSG"
+            
+            # Check if there are any non-workflow commits after this workflow commit
+            # Count commits that are NOT workflow commits
+            NON_WORKFLOW_COMMITS=$(git log --oneline -10 --grep="^chore(release):" --invert-grep | wc -l | tr -d ' ')
+            
+            if [ "$NON_WORKFLOW_COMMITS" -eq 0 ]; then
+              echo "❌ Last commit is from workflow and no other commits found - skipping to prevent loop"
+              echo "should_skip=true" >> $GITHUB_ENV
+              echo "is_workflow_commit=true" >> $GITHUB_ENV
+            else
+              echo "✅ Found $NON_WORKFLOW_COMMITS non-workflow commit(s) - proceeding"
+              echo "should_skip=false" >> $GITHUB_ENV
+              echo "is_workflow_commit=false" >> $GITHUB_ENV
+            fi
           else
+            echo "✅ Last commit is not from workflow - proceeding"
+            echo "should_skip=false" >> $GITHUB_ENV
             echo "is_workflow_commit=false" >> $GITHUB_ENV
           fi
 
+      - name: Exit early if should skip
+        if: env.should_skip == 'true'
+        run: |
+          echo "❌ Skipping workflow to prevent infinite loop"
+          echo "The last commit was a release commit with no new changes."
+          exit 0
+
       - name: Get versions and compare
         id: compare
-        if: env.is_workflow_commit != 'true'
+        if: env.should_skip != 'true'
         run: |
           PR_VERSION=$(node -p "require('./package.json').version")
           MAIN_VERSION=$(git show main:package.json 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).version" || echo "0.0.0")
@@ -106,7 +130,7 @@ jobs:
 
       - name: Update changelog and version
         id: bump
-        if: env.is_workflow_commit != 'true'
+        if: env.should_skip != 'true'
         run: |
           echo "Updating changelog and version..."
           git config --local user.email "action@github.com"
@@ -122,16 +146,31 @@ jobs:
           echo "Current version: $CURRENT_VERSION"
           echo "Main version: $MAIN_VERSION"
 
-          # Get commits in this PR
-          PR_COMMITS=$(git log main..HEAD --oneline || echo "")
-          echo "PR commits:"
+          # Get commits in this PR, excluding workflow commits
+          PR_COMMITS=$(git log main..HEAD --oneline --grep="^chore(release):" --invert-grep || echo "")
+          echo "PR commits (excluding workflow commits):"
           echo "$PR_COMMITS"
 
           # Check if there are any commits to process
           if [ -z "$PR_COMMITS" ]; then
-            echo "No new commits found, skipping changelog update"
+            echo "No new commits found (excluding workflow commits), skipping changelog update"
             echo "needs_update=false" >> $GITHUB_ENV
             exit 0
+          fi
+
+          # Also check if the last commit that changed package.json or CHANGELOG.md was a workflow commit
+          LAST_CHANGELOG_COMMIT=$(git log -1 --format="%H" -- CHANGELOG.md package.json 2>/dev/null || echo "")
+          if [ -n "$LAST_CHANGELOG_COMMIT" ]; then
+            LAST_CHANGELOG_MSG=$(git log -1 --format="%B" "$LAST_CHANGELOG_COMMIT" 2>/dev/null || echo "")
+            if echo "$LAST_CHANGELOG_MSG" | grep -qE "^chore\(release\):"; then
+              # Check if there are any new commits since the last changelog update
+              COMMITS_SINCE_CHANGELOG=$(git log "$LAST_CHANGELOG_COMMIT"..HEAD --oneline --grep="^chore(release):" --invert-grep | wc -l | tr -d ' ')
+              if [ "$COMMITS_SINCE_CHANGELOG" -eq 0 ]; then
+                echo "⚠️  Last changelog update was from workflow and no new commits since then - skipping"
+                echo "needs_update=false" >> $GITHUB_ENV
+                exit 0
+              fi
+            fi
           fi
 
           # Determine version bump type based on commits
@@ -165,12 +204,27 @@ jobs:
               NEW_VERSION=$(node -p "require('./package.json').version")
             fi
           else
-            # Version is already newer, but still update changelog if there are new commits
-            echo "Version already bumped, updating changelog only..."
-            # Use the main branch version as the base for changelog generation
-            # standard-version will generate changelog from commits since last tag
-            # If no tags exist, it will use all commits
-            npx standard-version --skip.commit --skip.tag --skip.bump || true
+            # Version is already newer or same, but still update changelog if there are new commits
+            echo "Version already correct ($CURRENT_VERSION), checking if changelog needs update..."
+            
+            # Check if CHANGELOG.md already has entries for commits in this PR
+            # Get the latest changelog entry version
+            LATEST_CHANGELOG_VERSION=$(grep -E "^## \[?[0-9]" CHANGELOG.md | head -1 | sed -E 's/^## \[?([0-9]+\.[0-9]+\.[0-9]+).*/\1/' || echo "")
+            
+            if [ -n "$LATEST_CHANGELOG_VERSION" ] && [ "$LATEST_CHANGELOG_VERSION" = "$CURRENT_VERSION" ]; then
+              # Check if the changelog entry for this version includes our PR commits
+              # This is a simple check - if the changelog was just updated, it might already have our commits
+              echo "Changelog already has entry for version $CURRENT_VERSION"
+              
+              # Only update if there are definitely new commits not in the changelog
+              # For now, we'll still run standard-version but check if it makes changes
+              npx standard-version --skip.commit --skip.tag --skip.bump || true
+            else
+              # Changelog doesn't have this version yet, update it
+              echo "Updating changelog for version $CURRENT_VERSION..."
+              npx standard-version --skip.commit --skip.tag --skip.bump || true
+            fi
+            
             NEW_VERSION="$CURRENT_VERSION"
           fi
 
