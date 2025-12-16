@@ -272,16 +272,65 @@ jobs:
             --quiet
           echo "✅ Dev deployment complete"
 
-      - name: Authenticate to dev for image copy
+      - name: Authenticate to dev for build and copy
         if: steps.params.outputs.environment == 'prod'
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
           service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
 
-      - name: Set up Cloud SDK for image copy
+      - name: Set up Cloud SDK for dev operations
         if: steps.params.outputs.environment == 'prod'
         uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry (dev)
+        if: steps.params.outputs.environment == 'prod'
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Fetch secrets for Docker build (dev)
+        if: steps.params.outputs.environment == 'prod'
+        id: dev-secrets
+        run: |
+          PAYLOAD_SECRET=$(gcloud secrets versions access latest --secret=PAYLOAD_SECRET_DEV --project="${{ env.DEV_PROJECT }}" 2>/dev/null || echo "")
+          DATABASE_URI=$(gcloud secrets versions access latest --secret=DATABASE_URI_DEV --project="${{ env.DEV_PROJECT }}" 2>/dev/null || echo "")
+          echo "::add-mask::$PAYLOAD_SECRET"
+          echo "::add-mask::$DATABASE_URI"
+          echo "payload_secret=$PAYLOAD_SECRET" >> $GITHUB_OUTPUT
+          echo "database_uri=$DATABASE_URI" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to dev (for prod deployment)
+        if: steps.params.outputs.environment == 'prod'
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          VERSION=$(node -p "require('./package.json').version")
+          IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+          IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
+
+          # Check if image already exists (might have been built on main push)
+          if gcloud artifacts docker images describe $IMAGE_SHA --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            echo "✅ Dev image already exists: $IMAGE_SHA"
+            echo "   Skipping build - image was already built on main push"
+          else
+            echo "🔨 Building Docker image for dev (version: $VERSION)..."
+            export DOCKER_BUILDKIT=1
+            docker build \
+              -t $IMAGE_SHA \
+              -t $IMAGE_VERSION \
+              -t $IMAGE_LATEST \
+              --build-arg NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app" \
+              --build-arg PAYLOAD_SECRET="${{ steps.dev-secrets.outputs.payload_secret }}" \
+              --build-arg DATABASE_URI="${{ steps.dev-secrets.outputs.database_uri }}" \
+              --cache-from $IMAGE_LATEST \
+              .
+
+            echo "📤 Pushing images to dev..."
+            docker push $IMAGE_SHA
+            docker push $IMAGE_VERSION
+            docker push $IMAGE_LATEST
+            echo "✅ Images pushed to dev: $IMAGE_SHA, $IMAGE_VERSION, $IMAGE_LATEST"
+          fi
 
       - name: Copy image from dev to prod
         if: steps.params.outputs.environment == 'prod'
