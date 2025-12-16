@@ -252,27 +252,59 @@ jobs:
             --region="${{ env.REGION }}" \
             --project="${{ steps.params.outputs.project_id }}" \
             --format='value(status.url)' 2>/dev/null || echo "")
-          [ -n "$SERVICE_URL" ] && echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
-
-      - name: Set deployment output
-        id: deployment
-        run: |
-          echo "environment=${{ github.ref_type == 'tag' && 'prod' || 'dev' }}" >> $GITHUB_OUTPUT
-          echo "commit=${{ steps.commit.outputs.short_sha }}" >> $GITHUB_OUTPUT
+          if [ -n "$SERVICE_URL" ]; then
+            echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+            echo "✅ Service deployed at: $SERVICE_URL"
+          else
+            echo "⚠️  Could not retrieve service URL"
+          fi
 
   # Stage 6: Health Check (runs in parallel with notification)
   health-check:
     name: Health Check
     runs-on: ubuntu-latest
     needs: [deploy]
-    if: github.event_name == 'push' && steps.deployment.outputs.url != ''
+    if: github.event_name == 'push'
     steps:
+      - name: Determine service URL
+        id: service
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            PROJECT_ID="${{ env.PROD_PROJECT }}"
+            SERVICE_NAME="fashion-web"
+          else
+            PROJECT_ID="${{ env.DEV_PROJECT }}"
+            SERVICE_NAME="fashion-web-dev"
+          fi
+
+          # Authenticate to get service URL
+          echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "SERVICE_NAME=$SERVICE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ github.ref_type == 'tag' && 'projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' || 'projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' }}
+          service_account: github-actions-deployer@${{ steps.service.outputs.PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
       - name: Wait for service to be ready
         run: sleep 30
 
-      - name: Health check
+      - name: Get service URL and health check
         run: |
-          SERVICE_URL="${{ steps.url.outputs.url }}"
+          SERVICE_URL=$(gcloud run services describe "${{ steps.service.outputs.SERVICE_NAME }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ steps.service.outputs.PROJECT_ID }}" \
+            --format='value(status.url)' 2>/dev/null || echo "")
+
+          if [ -z "$SERVICE_URL" ]; then
+            echo "⚠️  Could not retrieve service URL, skipping health check"
+            exit 0
+          fi
+
           echo "🔍 Checking health of $SERVICE_URL"
 
           # Try to access the service
@@ -293,10 +325,41 @@ jobs:
     needs: [deploy]
     if: github.event_name == 'push'
     steps:
+      - name: Get service URL
+        id: service
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            PROJECT_ID="${{ env.PROD_PROJECT }}"
+            SERVICE_NAME="fashion-web"
+          else
+            PROJECT_ID="${{ env.DEV_PROJECT }}"
+            SERVICE_NAME="fashion-web-dev"
+          fi
+          echo "PROJECT_ID=$PROJECT_ID" >> $GITHUB_OUTPUT
+          echo "SERVICE_NAME=$SERVICE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ github.ref_type == 'tag' && 'projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' || 'projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' }}
+          service_account: github-actions-deployer@${{ steps.service.outputs.PROJECT_ID }}.iam.gserviceaccount.com
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get deployment URL
+        id: url
+        run: |
+          SERVICE_URL=$(gcloud run services describe "${{ steps.service.outputs.SERVICE_NAME }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ steps.service.outputs.PROJECT_ID }}" \
+            --format='value(status.url)' 2>/dev/null || echo "")
+          [ -n "$SERVICE_URL" ] && echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+
       - name: Create deployment summary
         run: |
           ENV="${{ github.ref_type == 'tag' && 'Production' || 'Development' }}"
-          COMMIT="${{ steps.deployment.outputs.commit }}"
+          COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
           URL="${{ steps.url.outputs.url }}"
 
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
