@@ -49,17 +49,80 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
 
-      - name: Get version
-        id: version
+      - name: Get current version
+        id: current_version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "✅ Version: $VERSION"
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Generate changelog and bump version
+        id: release
+        run: |
+          export HUSKY=0
+          export SKIP_COMMIT=true
+          export SKIP_TAG=true
+
+          # Get commits since last tag (or all commits if no tags)
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -n "$LAST_TAG" ]; then
+            echo "Last tag: $LAST_TAG"
+            COMMITS=$(git log ${LAST_TAG}..HEAD --oneline --grep="^chore(release):" --invert-grep || echo "")
+          else
+            echo "No previous tags found, using all commits"
+            COMMITS=$(git log --oneline --grep="^chore(release):" --invert-grep || echo "")
+          fi
+
+          if [ -z "$COMMITS" ]; then
+            echo "⚠️  No new commits found since last release"
+            echo "needs_release=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          echo "Commits to include in changelog:"
+          echo "$COMMITS"
+
+          # Determine version bump type based on commits
+          HAS_BREAKING=$(echo "$COMMITS" | grep -iE "BREAKING" || echo "")
+          HAS_FEAT=$(echo "$COMMITS" | grep -iE "^[a-f0-9]+.*feat" || echo "")
+
+          if [ -n "$HAS_BREAKING" ]; then
+            echo "Found BREAKING CHANGE, bumping major"
+            npx standard-version --release-as major --skip.commit --skip.tag || true
+          elif [ -n "$HAS_FEAT" ]; then
+            echo "Found feat commits, bumping minor"
+            npx standard-version --release-as minor --skip.commit --skip.tag || true
+          else
+            echo "Bumping patch"
+            npx standard-version --release-as patch --skip.commit --skip.tag || true
+          fi
+
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "✅ Version bumped to: $NEW_VERSION"
+          echo "needs_release=true" >> $GITHUB_ENV
+
+      - name: Commit changelog and version
+        if: env.needs_release == 'true'
+        run: |
+          git add package.json pnpm-lock.yaml CHANGELOG.md
+
+          if git diff --staged --quiet; then
+            echo "⚠️  No changes to commit"
+            echo "needs_release=false" >> $GITHUB_ENV
+            exit 0
+          fi
+
+          git commit -m "chore(release): ${{ steps.release.outputs.version }}"
+          git push origin main
+          echo "✅ Committed changelog and version update"
 
       - name: Create and push tag
         id: tag
+        if: env.needs_release == 'true'
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ steps.release.outputs.version }}"
           TAG_NAME="v$VERSION"
 
           echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
@@ -67,10 +130,18 @@ jobs:
           if ! git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
             git tag -a "$TAG_NAME" -m "chore(release): $VERSION"
             git push origin "$TAG_NAME" || echo "Tag push failed"
+            echo "✅ Tag created: $TAG_NAME"
+          else
+            echo "ℹ️  Tag $TAG_NAME already exists"
           fi
 
       - name: Summary
         run: |
-          echo "Version: ${{ steps.version.outputs.version }}"
-          echo "Tag: ${{ steps.tag.outputs.tag }}"
-          echo "✅ Tag created for version bump"
+          if [ "${{ env.needs_release }}" = "true" ]; then
+            echo "## 🎉 Release Summary" >> $GITHUB_STEP_SUMMARY
+            echo "- **Version:** ${{ steps.release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tag:** ${{ steps.tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY
+            echo "- **Changelog:** Updated with commits since last release" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️  No new commits to release"
+          fi

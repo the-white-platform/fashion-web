@@ -443,15 +443,13 @@ jobs:
               body: '✅ CI/CD pipeline completed successfully!'
             });
 
-  # Stage 8: Version Check and Auto-Bump (only on PR, after all checks pass)
-  version-check-and-bump:
-    name: Version Check and Auto-Bump
+  # Stage 8: Version Check (only on PR, after all checks pass)
+  # Note: Changelog generation happens after PR merge (see release.yml)
+  version-check:
+    name: Version Check
     runs-on: ubuntu-latest
     needs: [setup-and-quality, build]
     if: github.event_name == 'pull_request'
-    permissions:
-      contents: write
-      pull-requests: write
     steps:
       - name: Generate GitHub App Token
         id: app-token
@@ -487,42 +485,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check if last commit is from workflow
-        id: check_workflow_commit
-        run: |
-          LAST_COMMIT_MSG=$(git log -1 --pretty=%B)
-
-          if echo "$LAST_COMMIT_MSG" | grep -qE "^chore\(release\):"; then
-            echo "⚠️  Last commit is from workflow: $LAST_COMMIT_MSG"
-            NON_WORKFLOW_COMMITS=$(git log --oneline -10 --grep="^chore(release):" --invert-grep | wc -l | tr -d ' ')
-            
-            if [ "$NON_WORKFLOW_COMMITS" -eq 0 ]; then
-              echo "❌ Last commit is from workflow and no other commits found - skipping to prevent loop"
-              echo "should_skip=true" >> $GITHUB_ENV
-            else
-              echo "✅ Found $NON_WORKFLOW_COMMITS non-workflow commit(s) - proceeding"
-              echo "should_skip=false" >> $GITHUB_ENV
-            fi
-          else
-            echo "✅ Last commit is not from workflow - proceeding"
-            echo "should_skip=false" >> $GITHUB_ENV
-          fi
-
-      - name: Exit early if should skip
-        if: env.should_skip == 'true'
-        run: |
-          echo "❌ Skipping workflow to prevent infinite loop"
-          exit 0
-
-      - name: Get versions and compare
-        id: compare
-        if: env.should_skip != 'true'
+      - name: Check version compatibility
         run: |
           PR_VERSION=$(node -p "require('./package.json').version")
           MAIN_VERSION=$(git show main:package.json 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync(0, 'utf-8')).version" || echo "0.0.0")
 
-          echo "pr_version=$PR_VERSION" >> $GITHUB_OUTPUT
-          echo "main_version=$MAIN_VERSION" >> $GITHUB_OUTPUT
+          echo "PR version: $PR_VERSION"
+          echo "Main version: $MAIN_VERSION"
 
           COMPARISON=$(node -e "
             const pr = '$PR_VERSION'.split('.').map(Number);
@@ -534,154 +503,13 @@ jobs:
             console.log('same');
           ")
 
-          echo "comparison=$COMPARISON" >> $GITHUB_OUTPUT
-
-          if [ "$COMPARISON" = "newer" ]; then
-            echo "✅ PR version ($PR_VERSION) is newer than main ($MAIN_VERSION)"
-            echo "needs_bump=false" >> $GITHUB_ENV
-          elif [ "$COMPARISON" = "same" ]; then
-            echo "ℹ️  PR version ($PR_VERSION) is same as main ($MAIN_VERSION)"
-            echo "needs_bump=false" >> $GITHUB_ENV
-          else
+          if [ "$COMPARISON" = "older" ]; then
             PR_MAJOR=$(echo "$PR_VERSION" | cut -d. -f1)
-            if [ "$PR_MAJOR" = "0" ] && [ "$(echo "$MAIN_VERSION" | cut -d. -f1)" != "0" ]; then
-              echo "ℹ️  PR version ($PR_VERSION) appears to be an intentional reset"
-              echo "needs_bump=false" >> $GITHUB_ENV
-            else
-              echo "⚠️  PR version ($PR_VERSION) is older than main ($MAIN_VERSION)"
-              echo "needs_bump=true" >> $GITHUB_ENV
+            if [ "$PR_MAJOR" != "0" ] || [ "$(echo "$MAIN_VERSION" | cut -d. -f1)" = "0" ]; then
+              echo "❌ PR version ($PR_VERSION) is older than main ($MAIN_VERSION)"
+              echo "Please bump the version in package.json before merging"
+              exit 1
             fi
           fi
 
-      - name: Update changelog and version
-        id: bump
-        if: env.should_skip != 'true'
-        run: |
-          echo "Updating changelog and version..."
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-
-          export HUSKY=0
-          export SKIP_COMMIT=true
-          export SKIP_TAG=true
-
-          MAIN_VERSION="${{ steps.compare.outputs.main_version }}"
-          CURRENT_VERSION=$(node -p "require('./package.json').version")
-
-          # Get commits in this PR, excluding workflow commits
-          PR_COMMITS=$(git log main..HEAD --oneline --grep="^chore(release):" --invert-grep || echo "")
-
-          if [ -z "$PR_COMMITS" ]; then
-            echo "No new commits found, skipping changelog update"
-            echo "needs_update=false" >> $GITHUB_ENV
-            exit 0
-          fi
-
-          # Check if changelog was already updated
-          LAST_CHANGELOG_COMMIT=$(git log -1 --format="%H" -- CHANGELOG.md 2>/dev/null || echo "")
-
-          if [ -n "$LAST_CHANGELOG_COMMIT" ]; then
-            LAST_CHANGELOG_MSG=$(git log -1 --format="%B" "$LAST_CHANGELOG_COMMIT" 2>/dev/null || echo "")
-            
-            if echo "$LAST_CHANGELOG_MSG" | grep -qE "^chore\(release\):"; then
-              COMMITS_SINCE_CHANGELOG=$(git log "$LAST_CHANGELOG_COMMIT"..HEAD --oneline --grep="^chore(release):" --invert-grep | wc -l | tr -d ' ')
-              
-              if [ "$COMMITS_SINCE_CHANGELOG" -eq 0 ]; then
-                echo "⚠️  Last changelog update was from workflow and no new commits since then - skipping"
-                echo "needs_update=false" >> $GITHUB_ENV
-                exit 0
-              fi
-            else
-              LATEST_CHANGELOG_VERSION=$(grep -E "^## \[?[0-9]" CHANGELOG.md | head -1 | sed -E 's/^## \[?([0-9]+\.[0-9]+\.[0-9]+).*/\1/' || echo "")
-              
-              if [ -n "$LATEST_CHANGELOG_VERSION" ] && [ "$LATEST_CHANGELOG_VERSION" = "$CURRENT_VERSION" ]; then
-                PR_COMMIT_SHAS=$(echo "$PR_COMMITS" | awk '{print $1}' || echo "")
-                for SHA in $PR_COMMIT_SHAS; do
-                  if grep -q "$SHA" CHANGELOG.md 2>/dev/null; then
-                    echo "✅ PR commits are already in changelog - skipping update"
-                    echo "needs_update=false" >> $GITHUB_ENV
-                    exit 0
-                  fi
-                done
-              fi
-            fi
-          fi
-
-          # Determine version bump type
-          HAS_BREAKING=$(echo "$PR_COMMITS" | grep -iE "BREAKING" || echo "")
-          HAS_FEAT=$(echo "$PR_COMMITS" | grep -iE "^[a-f0-9]+.*feat" || echo "")
-
-          if [ "${{ env.needs_bump }}" = "true" ]; then
-            if [ -n "$HAS_BREAKING" ]; then
-              npx standard-version --release-as major --skip.commit --skip.tag || true
-            elif [ -n "$HAS_FEAT" ]; then
-              npx standard-version --release-as minor --skip.commit --skip.tag || true
-            else
-              npx standard-version --release-as patch --skip.commit --skip.tag || true
-            fi
-
-            NEW_VERSION=$(node -p "require('./package.json').version")
-
-            if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
-              node -e "
-                const fs = require('fs');
-                const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-                const [major, minor, patch] = pkg.version.split('.').map(Number);
-                pkg.version = \`\${major}.\${minor}.\${patch + 1}\`;
-                fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-              "
-              NEW_VERSION=$(node -p "require('./package.json').version")
-            fi
-          else
-            CHANGELOG_BEFORE=$(cat CHANGELOG.md 2>/dev/null || echo "")
-            npx standard-version --skip.commit --skip.tag --skip.bump || true
-            CHANGELOG_AFTER=$(cat CHANGELOG.md 2>/dev/null || echo "")
-            
-            if [ "$CHANGELOG_BEFORE" = "$CHANGELOG_AFTER" ]; then
-              echo "ℹ️  Changelog is already up to date"
-              echo "$CHANGELOG_BEFORE" > CHANGELOG.md 2>/dev/null || true
-            fi
-            
-            NEW_VERSION="$CURRENT_VERSION"
-          fi
-
-          git add package.json pnpm-lock.yaml CHANGELOG.md 2>/dev/null || true
-
-          if git diff --staged --quiet; then
-            echo "✅ No changes to commit"
-            echo "needs_update=false" >> $GITHUB_ENV
-            echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          if ! git commit -m "chore(release): $NEW_VERSION"; then
-            echo "❌ Commit failed"
-            exit 1
-          fi
-
-          git push origin HEAD:${{ github.head_ref }}
-          echo "needs_update=true" >> $GITHUB_ENV
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "✅ Updated changelog and version to $NEW_VERSION"
-
-      - name: Comment on PR
-        if: env.needs_update == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const newVersion = '${{ steps.bump.outputs.version }}';
-            const wasBumped = '${{ env.needs_bump }}' === 'true';
-            let message;
-
-            if (wasBumped) {
-              message = `## ✅ Version & Changelog Auto-Updated\n\n- Version has been automatically bumped to \`${newVersion}\`\n- CHANGELOG.md has been updated with your commits\n\nThis PR is now ready to merge!`;
-            } else {
-              message = `## ✅ Changelog Auto-Updated\n\n- CHANGELOG.md has been updated with your commits\n- Version remains at \`${newVersion}\` (already bumped)\n\nThis PR is now ready to merge!`;
-            }
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: message
-            });
+          echo "✅ Version check passed"
