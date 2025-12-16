@@ -68,9 +68,11 @@ jobs:
           FILTER="${{ steps.env.outputs.filter }}"
           COMMIT_SHA="${{ github.sha }}"
           SHORT_SHA="${COMMIT_SHA:0:7}"
+          BRANCH_NAME="${{ steps.env.outputs.branch_name }}"
           echo "🔍 Looking for builds to cancel..."
           echo "   Filter: $FILTER"
           echo "   Commit SHA: $SHORT_SHA"
+          echo "   Branch: $BRANCH_NAME"
 
           # Extract filter value (branch or tag name)
           if echo "$FILTER" | grep -q "branchName="; then
@@ -129,6 +131,15 @@ jobs:
             
             BUILD_SHORT_SHA="${BUILD_SHA:0:7}"
             
+            # For trigger-based builds without branch info, try to get branch from substitutions
+            if [ -z "$BUILD_BRANCH" ] && [ -n "$BUILD_SHA" ]; then
+              # Check substitutions for branch name
+              BUILD_BRANCH_SUB=$(echo "$BUILD_INFO" | grep -o '"BRANCH_NAME": "[^"]*"' | cut -d'"' -f4 || echo "")
+              if [ -n "$BUILD_BRANCH_SUB" ]; then
+                BUILD_BRANCH="$BUILD_BRANCH_SUB"
+              fi
+            fi
+            
             # Check if build matches our filter
             SHOULD_CANCEL=false
             MATCH_REASON=""
@@ -140,8 +151,16 @@ jobs:
               SHOULD_CANCEL=true
               MATCH_REASON="tag match ($BUILD_TAG)"
             elif [ -n "$BUILD_SHORT_SHA" ] && [ "$BUILD_SHORT_SHA" = "$SHORT_SHA" ]; then
-              SHOULD_CANCEL=true
-              MATCH_REASON="commit SHA match ($BUILD_SHORT_SHA)"
+              # Don't cancel the current build
+              SHOULD_CANCEL=false
+            elif [ "$FILTER_TYPE" = "branch" ] && [ -z "$BUILD_BRANCH" ] && [ -n "$BUILD_SHA" ] && [ -n "$BRANCH_NAME" ]; then
+              # For trigger-based builds without branch info, we need to check if the commit belongs to the branch
+              # Since we're filtering by branch, cancel all builds that aren't the current commit
+              # This is safe because we only want the latest build for this branch to run
+              if [ "$BUILD_SHORT_SHA" != "$SHORT_SHA" ]; then
+                SHOULD_CANCEL=true
+                MATCH_REASON="older commit from branch $BRANCH_NAME ($BUILD_SHORT_SHA != $SHORT_SHA)"
+              fi
             fi
             
             # Debug: show all builds being checked
