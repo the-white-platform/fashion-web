@@ -24,11 +24,13 @@ permissions:
   contents: read
   id-token: write
 
+env:
+  REGION: asia-southeast1
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
-
     steps:
       - name: Determine deployment parameters
         id: params
@@ -45,15 +47,16 @@ jobs:
             echo "service_name=fashion-web" >> $GITHUB_OUTPUT
             echo "service_account=github-actions-deployer@the-white-prod-481217.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
             echo "workload_identity_provider=projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
+            echo "next_public_server_url=https://fashion-web-XXXXXX.run.app" >> $GITHUB_OUTPUT
             echo "checkout_ref=refs/tags/$TAG_NAME" >> $GITHUB_OUTPUT
           else
             echo "project_id=the-white-dev-481217" >> $GITHUB_OUTPUT
             echo "service_name=fashion-web-dev" >> $GITHUB_OUTPUT
             echo "service_account=github-actions-deployer@the-white-dev-481217.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
             echo "workload_identity_provider=projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
+            echo "next_public_server_url=https://fashion-web-dev-XXXXXX.run.app" >> $GITHUB_OUTPUT
             echo "checkout_ref=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
           fi
-          echo "region=asia-southeast1" >> $GITHUB_OUTPUT
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
@@ -64,105 +67,48 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Cancel previous builds
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            FILTER="source.repoSource.tagName=${{ steps.params.outputs.tag }}"
+          else
+            FILTER="source.repoSource.branchName=${{ github.event.inputs.branch }}"
+          fi
+          RUNNING_BUILDS=$(gcloud builds list \
+            --region="${{ env.REGION }}" \
+            --project="${{ steps.params.outputs.project_id }}" \
+            --filter="status=WORKING OR status=QUEUED AND $FILTER" \
+            --format="value(id)" \
+            --limit=50 2>/dev/null || echo "")
+          for BUILD_ID in $RUNNING_BUILDS; do
+            gcloud builds cancel "$BUILD_ID" \
+              --region="${{ env.REGION }}" \
+              --project="${{ steps.params.outputs.project_id }}" \
+              --quiet 2>/dev/null || true
+          done
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ steps.params.outputs.checkout_ref }}
 
-      - name: Get commit SHA
-        id: commit
-        run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          echo "short_sha=$SHORT_SHA" >> $GITHUB_OUTPUT
-
-      - name: Cancel previous builds for same branch
-        run: |
-          PROJECT_ID="${{ steps.params.outputs.project_id }}"
-          REGION="${{ steps.params.outputs.region }}"
-
-          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            TAG_NAME="${{ steps.params.outputs.tag }}"
-            SOURCE_REF="tag:$$TAG_NAME"
-          else
-            BRANCH="${{ github.event.inputs.branch }}"
-            SOURCE_REF="branch:$$BRANCH"
-          fi
-
-          echo "🛑 Canceling previous builds for $${SOURCE_REF}..."
-
-          # List all queued/running builds
-          RUNNING_BUILDS=$(gcloud builds list \
-            --region="$$REGION" \
-            --project="$$PROJECT_ID" \
-            --filter="status=WORKING OR status=QUEUED" \
-            --format="value(id)" \
-            --limit=50 2>/dev/null || echo "")
-
-          if [ -n "$$RUNNING_BUILDS" ]; then
-            CANCELED_COUNT=0
-            for BUILD_ID in $$RUNNING_BUILDS; do
-              # Get build source info
-              if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-                BUILD_TAG=$(gcloud builds describe "$$BUILD_ID" \
-                  --region="$$REGION" \
-                  --project="$$PROJECT_ID" \
-                  --format="value(source.repoSource.tagName)" 2>/dev/null || echo "")
-                
-                if [ "$$BUILD_TAG" = "$$TAG_NAME" ]; then
-                  echo "Canceling build for same tag: $${BUILD_ID}"
-                  gcloud builds cancel "$$BUILD_ID" \
-                    --region="$$REGION" \
-                    --project="$$PROJECT_ID" \
-                    --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
-                fi
-              else
-                BUILD_BRANCH=$(gcloud builds describe "$$BUILD_ID" \
-                  --region="$$REGION" \
-                  --project="$$PROJECT_ID" \
-                  --format="value(source.repoSource.branchName)" 2>/dev/null || echo "")
-                
-                if [ "$$BUILD_BRANCH" = "$$BRANCH" ]; then
-                  echo "Canceling build for same branch: $${BUILD_ID}"
-                  gcloud builds cancel "$$BUILD_ID" \
-                    --region="$$REGION" \
-                    --project="$$PROJECT_ID" \
-                    --quiet 2>/dev/null && CANCELED_COUNT=$((CANCELED_COUNT + 1)) || true
-                fi
-              fi
-            done
-            
-            if [ $$CANCELED_COUNT -gt 0 ]; then
-              echo "✅ Canceled $${CANCELED_COUNT} previous build(s)"
-            else
-              echo "ℹ️  No previous builds found for same branch/tag"
-            fi
-          else
-            echo "ℹ️  No running/queued builds to cancel"
-          fi
-
       - name: Trigger Cloud Build
         run: |
-          PROJECT_ID="${{ steps.params.outputs.project_id }}"
-          REGION="${{ steps.params.outputs.region }}"
-          SHORT_SHA="${{ steps.commit.outputs.short_sha }}"
-
+          SHORT_SHA=$(git rev-parse --short HEAD)
           if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            NEXT_PUBLIC_SERVER_URL="https://fashion-web-XXXXXX.run.app"
-            TAG_NAME="${{ steps.params.outputs.tag }}"
-            TAG_FOR_BUILD=${TAG_NAME#v}
+            TAG_FOR_BUILD=${GITHUB_REF_NAME#v}
             gcloud builds submit \
               --config cloudbuild.yaml \
-              --project "$PROJECT_ID" \
-              --region "$REGION" \
-              --substitutions _NEXT_PUBLIC_SERVER_URL="$NEXT_PUBLIC_SERVER_URL",SHORT_SHA="$SHORT_SHA",TAG_NAME="$TAG_FOR_BUILD" \
-              --git-source-tag="$TAG_NAME"
+              --project "${{ steps.params.outputs.project_id }}" \
+              --region="${{ env.REGION }}" \
+              --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA",TAG_NAME="$TAG_FOR_BUILD" \
+              --git-source-tag="${{ steps.params.outputs.tag }}"
           else
-            NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app"
             gcloud builds submit \
               --config cloudbuild.yaml \
-              --project "$PROJECT_ID" \
-              --region "$REGION" \
-              --substitutions _NEXT_PUBLIC_SERVER_URL="$NEXT_PUBLIC_SERVER_URL",SHORT_SHA="$SHORT_SHA" \
+              --project "${{ steps.params.outputs.project_id }}" \
+              --region="${{ env.REGION }}" \
+              --substitutions _NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}",SHORT_SHA="$SHORT_SHA" \
               --git-source-branch="${{ github.event.inputs.branch }}"
           fi
 
@@ -171,7 +117,7 @@ jobs:
         run: |
           sleep 10
           SERVICE_URL=$(gcloud run services describe "${{ steps.params.outputs.service_name }}" \
-            --region="${{ steps.params.outputs.region }}" \
+            --region="${{ env.REGION }}" \
             --project="${{ steps.params.outputs.project_id }}" \
             --format='value(status.url)' 2>/dev/null || echo "")
           [ -n "$SERVICE_URL" ] && echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
@@ -182,5 +128,5 @@ jobs:
           echo "- **Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Project:** ${{ steps.params.outputs.project_id }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Service:** ${{ steps.params.outputs.service_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** ${{ steps.commit.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** $(git rev-parse --short HEAD)" >> $GITHUB_STEP_SUMMARY
           [ -n "${{ steps.url.outputs.url }}" ] && echo "- **URL:** ${{ steps.url.outputs.url }}" >> $GITHUB_STEP_SUMMARY
