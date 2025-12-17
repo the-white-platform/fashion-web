@@ -555,8 +555,64 @@ jobs:
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          # WIF: Authenticate Docker with WIF access token
-          echo $(gcloud auth print-access-token) | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+          # WIF: Authenticate Docker using access token from Application Default Credentials
+          # The google-github-actions/auth action sets up GOOGLE_APPLICATION_CREDENTIALS
+          # Use Python to get token from ADC (more reliable than gcloud auth print-access-token)
+          echo "🔐 Authenticating Docker to Artifact Registry..."
+          TOKEN=$(python3 << 'PYEOF'
+import os
+import subprocess
+import sys
+
+def get_access_token():
+    """Get access token from Application Default Credentials"""
+    try:
+        # Try using google.auth library (should be available in GitHub Actions)
+        from google.auth import default
+        from google.auth.transport.requests import Request
+        
+        credentials, project = default()
+        credentials.refresh(Request())
+        return credentials.token
+    except ImportError:
+        # Fallback: use gcloud command with ADC
+        try:
+            result = subprocess.run(
+                ['gcloud', 'auth', 'application-default', 'print-access-token'],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            return result.stdout.strip()
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            # Last resort: try regular gcloud auth print-access-token
+            try:
+                result = subprocess.run(
+                    ['gcloud', 'auth', 'print-access-token'],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                return result.stdout.strip()
+            except Exception as e:
+                print(f"Error: {e}", file=sys.stderr)
+                sys.exit(1)
+    except Exception as e:
+        print(f"Error getting access token: {e}", file=sys.stderr)
+        sys.exit(1)
+
+token = get_access_token()
+print(token)
+PYEOF
+)
+          
+          if [ -z "$TOKEN" ]; then
+            echo "❌ Failed to get access token"
+            exit 1
+          fi
+          
+          echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+          echo "✅ Docker authenticated to Artifact Registry"
 
           export DOCKER_BUILDKIT=1
           export BUILDKIT_PROGRESS=plain
