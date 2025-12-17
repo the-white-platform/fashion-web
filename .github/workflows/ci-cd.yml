@@ -271,9 +271,27 @@ jobs:
 
           echo "✅ Found dev image: $DEV_IMAGE"
 
-          # Copy using prod credentials (has read access to dev via IAM, write access to prod)
-          gcloud artifacts docker images copy "$DEV_IMAGE" "$PROD_IMAGE" \
-            --quiet
+          # Authenticate to dev registry first (prod SA has read access to dev)
+          echo "🔐 Authenticating Docker to dev Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+
+          # Pull image from dev registry
+          echo "📥 Pulling image from dev registry..."
+          docker pull "$DEV_IMAGE"
+
+          # Tag image for prod registry
+          echo "🏷️  Tagging image for prod registry..."
+          docker tag "$DEV_IMAGE" "$PROD_IMAGE"
+
+          # Re-authenticate to prod registry (prod SA has write access to prod)
+          echo "🔐 Re-authenticating Docker to prod Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+
+          # Push image to prod registry
+          echo "📤 Pushing image to prod registry..."
+          docker push "$PROD_IMAGE"
 
       - name: Deploy to prod
         run: |

@@ -150,6 +150,14 @@ jobs:
         if: steps.params.outputs.project_id == env.PROD_PROJECT
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Configure Docker for Artifact Registry (dev)
+        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        run: |
+          # Authenticate Docker to dev registry using dev credentials
+          echo "🔐 Authenticating Docker to dev Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+
       - name: Copy image from dev to prod
         if: steps.params.outputs.project_id == env.PROD_PROJECT
         run: |
@@ -166,23 +174,28 @@ jobs:
           echo "   Source: $DEV_IMAGE"
           echo "   Targets: $PROD_IMAGE, $PROD_IMAGE_LATEST, $PROD_IMAGE_SHA"
 
+          # Check if dev image exists
           if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
             echo "❌ Error: Dev image $DEV_IMAGE not found!"
             echo "   Make sure the image was built and deployed to dev first."
             exit 1
           fi
 
-          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE \
-            --project="${{ env.PROD_PROJECT }}" \
-            --quiet || echo "⚠️  Failed to copy version tag (may already exist)"
+          # Pull image from dev registry
+          echo "📥 Pulling image from dev registry..."
+          docker pull "$DEV_IMAGE"
 
-          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_LATEST \
-            --project="${{ env.PROD_PROJECT }}" \
-            --quiet || echo "⚠️  Failed to copy latest tag"
+          # Tag image for prod registry
+          echo "🏷️  Tagging image for prod registry..."
+          docker tag "$DEV_IMAGE" "$PROD_IMAGE"
+          docker tag "$DEV_IMAGE" "$PROD_IMAGE_LATEST"
+          docker tag "$DEV_IMAGE" "$PROD_IMAGE_SHA"
 
-          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_SHA \
-            --project="${{ env.PROD_PROJECT }}" \
-            --quiet || echo "⚠️  Failed to copy SHA tag"
+          # Push images to prod registry (will use prod credentials from next step)
+          echo "📤 Pushing images to prod registry..."
+          docker push "$PROD_IMAGE" || echo "⚠️  Failed to push version tag (may already exist)"
+          docker push "$PROD_IMAGE_LATEST" || echo "⚠️  Failed to push latest tag"
+          docker push "$PROD_IMAGE_SHA" || echo "⚠️  Failed to push SHA tag"
 
           echo "✅ Image copy completed"
           echo "image=$PROD_IMAGE_SHA" >> $GITHUB_OUTPUT
@@ -190,9 +203,9 @@ jobs:
       - name: Configure Docker for Artifact Registry (prod)
         if: steps.params.outputs.project_id == env.PROD_PROJECT
         run: |
-          # Authenticate Docker using WIF access token (more reliable than configure-docker with WIF)
-          # This avoids issues with credential helper file references that may not exist
-          echo "🔐 Authenticating Docker to Artifact Registry..."
+          # Authenticate Docker to prod registry using prod credentials
+          # This is needed after switching from dev to prod authentication
+          echo "🔐 Authenticating Docker to prod Artifact Registry..."
           ACCESS_TOKEN=$(gcloud auth print-access-token)
           echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
