@@ -242,69 +242,48 @@ jobs:
             fi
           fi
 
-      - name: Authenticate to Google Cloud
+      # WIF: Authenticate to prod project for deployment
+      - name: Authenticate to Google Cloud - Prod (WIF)
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
-          service_account: github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER_PROD }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_PROD }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Authenticate to dev for image copy
+      # WIF: Authenticate to dev project to copy image
+      - name: Authenticate to Google Cloud - Dev (WIF)
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
-          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER_DEV }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}
 
       - name: Copy image from dev to prod
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-
-          # Use version tag since we now tag images with version in Stage 2
           DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
-
-          if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
-            echo "❌ Error: Dev image not found!"
-            echo "   Expected: $DEV_IMAGE"
-            echo "   Make sure Stage 2 (Build & Deploy Dev) completed successfully."
-            exit 1
-          fi
-
-          echo "✅ Found dev image: $DEV_IMAGE"
-
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
-          PROD_IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:latest"
 
-          echo "🔄 Copying image from dev to prod..."
+          # Use WIF token to authenticate - switching context to prod
+          gcloud config set project "${{ env.PROD_PROJECT }}"
+
+          # Copy the same image that was built once
           gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE \
             --project="${{ env.PROD_PROJECT }}" \
-            --quiet || echo "⚠️  Failed to copy version tag (may already exist)"
-
-          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE_LATEST \
-            --project="${{ env.PROD_PROJECT }}" \
-            --quiet || echo "⚠️  Failed to copy latest tag"
-
-          echo "✅ Image copy completed"
-
-      - name: Configure Docker for Artifact Registry (prod)
-        run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+            --quiet
 
       - name: Deploy to prod
         run: |
           VERSION=${GITHUB_REF_NAME#v}
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
 
-          echo "🚀 Deploying to production..."
-          echo "   Version: $VERSION"
-          echo "   Image: $PROD_IMAGE"
+          echo "🚀 Deploying to production (same image as dev)..."
           gcloud run services update fashion-web \
-            --image $PROD_IMAGE \
+            --image "$PROD_IMAGE" \
             --region="${{ env.REGION }}" \
             --project="${{ env.PROD_PROJECT }}" \
             --quiet
-          echo "✅ Production deployment complete"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -409,91 +388,105 @@ jobs:
             echo "needs_release=false" >> $GITHUB_OUTPUT
           fi
 
-  # Stage 2: Build and deploy to dev
-  build-dev:
-    name: 'Stage 2: Build & Deploy Dev'
+  # Stage 2: Build once, deploy everywhere
+  build-image:
+    name: 'Stage 2: Build Docker Image'
     runs-on: ubuntu-latest
     needs: [check-skip, release]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true' && needs.release.outputs.needs_release == 'true'
-    environment:
-      name: dev
     permissions:
       contents: read
       id-token: write
+    outputs:
+      image_version: ${{ steps.build.outputs.version }}
+      image_sha: ${{ steps.build.outputs.sha }}
+      image_uri: ${{ steps.build.outputs.image_uri }}
     steps:
-      - name: Authenticate to Google Cloud
+      # WIF: Authenticate to dev project to build and push image
+      - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
-          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER_DEV }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: main
 
-      - name: Configure Docker for Artifact Registry
-        run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
-
-      - name: Fetch secrets for Docker build
-        id: secrets
-        run: |
-          PAYLOAD_SECRET=$(gcloud secrets versions access latest --secret=PAYLOAD_SECRET_DEV --project="${{ env.DEV_PROJECT }}" 2>/dev/null || echo "")
-          DATABASE_URI=$(gcloud secrets versions access latest --secret=DATABASE_URI_DEV --project="${{ env.DEV_PROJECT }}" 2>/dev/null || echo "")
-          echo "::add-mask::$PAYLOAD_SECRET"
-          echo "::add-mask::$DATABASE_URI"
-          echo "payload_secret=$PAYLOAD_SECRET" >> $GITHUB_OUTPUT
-          echo "database_uri=$DATABASE_URI" >> $GITHUB_OUTPUT
-
-      - name: Build and push Docker image to dev
+      - name: Build and push Docker image
+        id: build
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
           VERSION=${{ needs.release.outputs.version }}
           IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
-          IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          echo "🔨 Building Docker image (version: $VERSION)..."
+          # WIF: Use OAuth token from WIF for Docker authentication
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+
           export DOCKER_BUILDKIT=1
           export BUILDKIT_PROGRESS=plain
+
+          # Pull cache if available
+          docker pull "$IMAGE_VERSION" 2>/dev/null && CACHE_FROM="--cache-from $IMAGE_VERSION" || CACHE_FROM=""
+
+          # Build once - same image for all environments
           docker build \
-            -t $IMAGE_SHA \
-            -t $IMAGE_VERSION \
-            -t $IMAGE_LATEST \
+            -t "$IMAGE_SHA" \
+            -t "$IMAGE_VERSION" \
             --build-arg NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app" \
-            --build-arg PAYLOAD_SECRET="${{ steps.secrets.outputs.payload_secret }}" \
-            --build-arg DATABASE_URI="${{ steps.secrets.outputs.database_uri }}" \
-            --cache-from $IMAGE_LATEST \
+            --build-arg PAYLOAD_SECRET="dummy-secret-for-build" \
+            --build-arg DATABASE_URI="dummy-uri-for-build" \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
+            $CACHE_FROM \
             .
 
-          echo "📤 Pushing images..."
-          docker push $IMAGE_SHA
-          docker push $IMAGE_VERSION
-          docker push $IMAGE_LATEST
-          echo "✅ Images pushed: $IMAGE_SHA, $IMAGE_VERSION, $IMAGE_LATEST"
+          # Push image (using WIF token)
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+          docker push "$IMAGE_SHA"
+          docker push "$IMAGE_VERSION"
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "sha=$SHORT_SHA" >> $GITHUB_OUTPUT
+          echo "image_uri=$IMAGE_VERSION" >> $GITHUB_OUTPUT
+
+  deploy-dev:
+    name: 'Deploy to Dev'
+    runs-on: ubuntu-latest
+    needs: [check-skip, build-image]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true'
+    environment:
+      name: dev
+    permissions:
+      id-token: write
+    steps:
+      # WIF: Authenticate to dev project for deployment
+      - name: Authenticate to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER_DEV }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Deploy to dev
         run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
-          echo "🚀 Deploying to dev..."
+          IMAGE="${{ needs.build-image.outputs.image_uri }}"
+          echo "🚀 Deploying $IMAGE to dev..."
           gcloud run services update fashion-web-dev \
-            --image $IMAGE \
+            --image "$IMAGE" \
             --region="${{ env.REGION }}" \
             --project="${{ env.DEV_PROJECT }}" \
             --quiet
-          echo "✅ Stage 2 complete: Dev deployment complete"
 
   # Stage 3: Create tag
   create-tag:
     name: 'Stage 3: Create Tag'
     runs-on: ubuntu-latest
-    needs: [check-skip, release, build-dev]
+    needs: [check-skip, release, build-image]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check-skip.outputs.skip != 'true' && needs.release.outputs.needs_release == 'true'
     permissions:
       contents: write
@@ -531,11 +524,12 @@ jobs:
     needs: [check-skip, create-github-release]
     if: github.event_name == 'push' && github.ref_type == 'tag' && needs.check-skip.outputs.skip != 'true'
     steps:
-      - name: Authenticate to Google Cloud
+      # WIF: Authenticate based on environment
+      - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ github.ref_type == 'tag' && 'projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' || 'projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider' }}
-          service_account: github-actions-deployer@${{ github.ref_type == 'tag' && env.PROD_PROJECT || env.DEV_PROJECT }}.iam.gserviceaccount.com
+          workload_identity_provider: ${{ github.ref_type == 'tag' && secrets.WIF_PROVIDER_PROD || secrets.WIF_PROVIDER_DEV }}
+          service_account: ${{ github.ref_type == 'tag' && secrets.WIF_SERVICE_ACCOUNT_PROD || secrets.WIF_SERVICE_ACCOUNT_DEV }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
