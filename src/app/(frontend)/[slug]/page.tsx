@@ -19,7 +19,12 @@ export const dynamic = 'force-dynamic'
 
 export async function generateStaticParams() {
   // Skip database queries during build time to avoid connection errors
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
+  // Check if we're in build mode (no real database available)
+  if (
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    process.env.DATABASE_URI?.includes('dummy') ||
+    process.env.DATABASE_URI?.includes('localhost')
+  ) {
     return []
   }
 
