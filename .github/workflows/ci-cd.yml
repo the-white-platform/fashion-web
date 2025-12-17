@@ -254,40 +254,6 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # TEMPORARY: Verify WIF authentication is working
-      - name: Verify WIF Authentication
-        run: |
-          echo "🔍 Verifying WIF authentication (prod)..."
-          echo "=========================================="
-
-          # Check current authenticated account
-          echo "📋 Current authenticated account:"
-          gcloud auth list || echo "❌ Failed to list auth accounts"
-
-          # Test basic GCP access
-          echo ""
-          echo "📋 Testing GCP access..."
-          if gcloud projects describe "${{ env.PROD_PROJECT }}" --format="value(projectId)" > /dev/null 2>&1; then
-            echo "✅ Successfully accessed project: ${{ env.PROD_PROJECT }}"
-          else
-            echo "❌ Failed to access project: ${{ env.PROD_PROJECT }}"
-            exit 1
-          fi
-
-          # Test Artifact Registry access (read from dev)
-          echo ""
-          echo "📋 Testing Artifact Registry access (cross-project)..."
-          if gcloud artifacts docker images describe "${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest" --project="${{ env.DEV_PROJECT }}" --quiet > /dev/null 2>&1; then
-            echo "✅ Successfully accessed dev Artifact Registry (cross-project)"
-          else
-            echo "⚠️  Could not verify dev Artifact Registry access (image may not exist)"
-          fi
-
-          echo ""
-          echo "=========================================="
-          echo "✅ WIF Authentication Verification Complete!"
-          echo "=========================================="
-
       - name: Copy image from dev to prod
         run: |
           VERSION=${GITHUB_REF_NAME#v}
@@ -348,7 +314,6 @@ jobs:
     name: 'Stage 1: Bump Version'
     runs-on: ubuntu-latest
     needs: check-skip
-    # TEMPORARY: Allow PRs for testing (will output dummy version)
     if: needs.check-skip.outputs.skip != 'true' && (github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event_name == 'pull_request')
     permissions:
       contents: write
@@ -393,7 +358,6 @@ jobs:
       - name: Generate changelog and bump version
         id: release
         run: |
-          # TEMPORARY: For PRs, just output a test version
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             echo "needs_release=false" >> $GITHUB_OUTPUT
             CURRENT_VERSION=$(node -p "require('./package.json').version")
@@ -440,7 +404,6 @@ jobs:
     name: 'Stage 2: Build Docker Image'
     runs-on: ubuntu-latest
     needs: [check-skip, release]
-    # TEMPORARY: Allow PRs for testing WIF authentication
     if: |
       needs.check-skip.outputs.skip != 'true' && (
         (github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release.outputs.needs_release == 'true') ||
@@ -459,16 +422,6 @@ jobs:
         with:
           ref: main
 
-      # WIF: Authenticate to dev project to build and push image
-      - name: Debug GitHub Context
-        run: |
-          echo "Repository: ${{ github.repository }}"
-          echo "Repository Owner: ${{ github.repository_owner }}"
-          echo "Event Name: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
-          echo "WIF Provider: ${{ secrets.WIF_PROVIDER_DEV }}"
-          echo "Service Account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}"
-
       - name: Authenticate to Google Cloud (WIF)
         id: auth
         uses: google-github-actions/auth@v2
@@ -479,56 +432,6 @@ jobs:
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-
-      # TEMPORARY: Verify WIF authentication is working
-      - name: Verify WIF Authentication
-        run: |
-          echo "🔍 Verifying WIF authentication..."
-          echo "=========================================="
-
-          # Check current authenticated account
-          echo "📋 Current authenticated account:"
-          gcloud auth list || echo "❌ Failed to list auth accounts"
-
-          # Get current project
-          echo ""
-          echo "📋 Current project:"
-          gcloud config get-value project || echo "❌ Failed to get project"
-
-          # Test basic GCP access
-          echo ""
-          echo "📋 Testing GCP access..."
-          if gcloud projects describe "${{ env.DEV_PROJECT }}" --format="value(projectId)" > /dev/null 2>&1; then
-            echo "✅ Successfully accessed project: ${{ env.DEV_PROJECT }}"
-          else
-            echo "❌ Failed to access project: ${{ env.DEV_PROJECT }}"
-            exit 1
-          fi
-
-          # Test Artifact Registry access
-          echo ""
-          echo "📋 Testing Artifact Registry access..."
-          if gcloud artifacts repositories list --project="${{ env.DEV_PROJECT }}" --format="value(name)" > /dev/null 2>&1; then
-            echo "✅ Successfully accessed Artifact Registry"
-          else
-            echo "❌ Failed to access Artifact Registry"
-            exit 1
-          fi
-
-          # Test Cloud Run access
-          echo ""
-          echo "📋 Testing Cloud Run access..."
-          if gcloud run services list --project="${{ env.DEV_PROJECT }}" --region="${{ env.REGION }}" --format="value(name)" > /dev/null 2>&1; then
-            echo "✅ Successfully accessed Cloud Run"
-          else
-            echo "❌ Failed to access Cloud Run"
-            exit 1
-          fi
-
-          echo ""
-          echo "=========================================="
-          echo "✅ WIF Authentication Verification Complete!"
-          echo "=========================================="
 
       - name: Get dev service URL
         id: service-url
@@ -548,7 +451,6 @@ jobs:
         id: build
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          # TEMPORARY: Use test version for PRs, actual version for main branch
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             VERSION="pr-test-${SHORT_SHA}"
             echo "🧪 PR test mode: Using version $VERSION"
@@ -631,31 +533,6 @@ jobs:
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-
-      # TEMPORARY: Verify WIF authentication is working
-      - name: Verify WIF Authentication
-        run: |
-          echo "🔍 Verifying WIF authentication (deploy-dev)..."
-          echo "=========================================="
-
-          # Check current authenticated account
-          echo "📋 Current authenticated account:"
-          gcloud auth list || echo "❌ Failed to list auth accounts"
-
-          # Test Cloud Run access
-          echo ""
-          echo "📋 Testing Cloud Run access..."
-          if gcloud run services list --project="${{ env.DEV_PROJECT }}" --region="${{ env.REGION }}" --format="value(name)" > /dev/null 2>&1; then
-            echo "✅ Successfully accessed Cloud Run"
-          else
-            echo "❌ Failed to access Cloud Run"
-            exit 1
-          fi
-
-          echo ""
-          echo "=========================================="
-          echo "✅ WIF Authentication Verification Complete!"
-          echo "=========================================="
 
       - name: Deploy to dev
         run: |
