@@ -77,21 +77,26 @@ jobs:
       - name: Configure Docker for Artifact Registry
         if: steps.params.outputs.project_id == env.DEV_PROJECT
         run: |
-          # WIF: Authenticate Docker using gcloud access token
-          # The google-github-actions/auth action sets up ADC for gcloud
-          # We use gcloud to get an access token and authenticate Docker
+          # WIF: Authenticate Docker using Application Default Credentials
+          # The google-github-actions/auth action sets up ADC
+          # Use gcloud auth application-default print-access-token (uses ADC, not credential files)
           echo "🔐 Authenticating Docker to Artifact Registry..."
           
           # Ensure gcloud uses the correct project
           gcloud config set project ${{ steps.params.outputs.project_id }} --quiet
           
-          # Get access token using gcloud (works with WIF credentials)
-          TOKEN=$(gcloud auth print-access-token 2>&1)
+          # Get access token using Application Default Credentials (works with WIF)
+          TOKEN=$(gcloud auth application-default print-access-token 2>&1)
           
           if [ $? -ne 0 ] || [ -z "$TOKEN" ]; then
             echo "❌ Failed to get access token: $TOKEN"
-            echo "📋 Checking gcloud authentication..."
-            gcloud auth list
+            echo "📋 Checking GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-not set}"
+            if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+              echo "📋 Credentials file exists at: $GOOGLE_APPLICATION_CREDENTIALS"
+            else
+              echo "⚠️  Credentials file not found, checking gcloud auth..."
+              gcloud auth list
+            fi
             exit 1
           fi
           
@@ -202,21 +207,26 @@ jobs:
       - name: Configure Docker for Artifact Registry (prod)
         if: steps.params.outputs.project_id == env.PROD_PROJECT
         run: |
-          # WIF: Authenticate Docker using gcloud access token
-          # The google-github-actions/auth action sets up ADC for gcloud
-          # We use gcloud to get an access token and authenticate Docker
+          # WIF: Authenticate Docker using Application Default Credentials
+          # The google-github-actions/auth action sets up ADC
+          # Use gcloud auth application-default print-access-token (uses ADC, not credential files)
           echo "🔐 Authenticating Docker to Artifact Registry..."
           
           # Ensure gcloud uses the correct project
           gcloud config set project ${{ steps.params.outputs.project_id }} --quiet
           
-          # Get access token using gcloud (works with WIF credentials)
-          TOKEN=$(gcloud auth print-access-token 2>&1)
+          # Get access token using Application Default Credentials (works with WIF)
+          TOKEN=$(gcloud auth application-default print-access-token 2>&1)
           
           if [ $? -ne 0 ] || [ -z "$TOKEN" ]; then
             echo "❌ Failed to get access token: $TOKEN"
-            echo "📋 Checking gcloud authentication..."
-            gcloud auth list
+            echo "📋 Checking GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-not set}"
+            if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+              echo "📋 Credentials file exists at: $GOOGLE_APPLICATION_CREDENTIALS"
+            else
+              echo "⚠️  Credentials file not found, checking gcloud auth..."
+              gcloud auth list
+            fi
             exit 1
           fi
           
