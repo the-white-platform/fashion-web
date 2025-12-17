@@ -61,10 +61,12 @@ jobs:
           fi
 
       - name: Authenticate to Google Cloud
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ steps.params.outputs.workload_identity_provider }}
           service_account: ${{ steps.params.outputs.service_account }}
+          create_credentials_file: true
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -77,7 +79,11 @@ jobs:
       - name: Configure Docker for Artifact Registry
         if: steps.params.outputs.project_id == env.DEV_PROJECT
         run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          # Authenticate Docker using WIF access token (more reliable than configure-docker with WIF)
+          # This avoids issues with credential helper file references that may not exist
+          echo "🔐 Authenticating Docker to Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
       - name: Fetch secrets for Docker build
         if: steps.params.outputs.project_id == env.DEV_PROJECT
@@ -133,10 +139,12 @@ jobs:
 
       - name: Authenticate to dev for image copy
         if: steps.params.outputs.project_id == env.PROD_PROJECT
+        id: auth-dev-copy
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
           service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
+          create_credentials_file: true
 
       - name: Set up Cloud SDK for image copy
         if: steps.params.outputs.project_id == env.PROD_PROJECT
@@ -182,14 +190,20 @@ jobs:
       - name: Configure Docker for Artifact Registry (prod)
         if: steps.params.outputs.project_id == env.PROD_PROJECT
         run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          # Authenticate Docker using WIF access token (more reliable than configure-docker with WIF)
+          # This avoids issues with credential helper file references that may not exist
+          echo "🔐 Authenticating Docker to Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
       - name: Authenticate to prod for deployment
         if: steps.params.outputs.project_id == env.PROD_PROJECT
+        id: auth-prod
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ steps.params.outputs.workload_identity_provider }}
           service_account: ${{ steps.params.outputs.service_account }}
+          create_credentials_file: true
 
       - name: Set up Cloud SDK for prod deployment
         if: steps.params.outputs.project_id == env.PROD_PROJECT
