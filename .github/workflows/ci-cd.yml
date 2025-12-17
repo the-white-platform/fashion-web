@@ -555,20 +555,12 @@ jobs:
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          # WIF: Authenticate Docker using access token from Application Default Credentials
-          # The google-github-actions/auth action sets up GOOGLE_APPLICATION_CREDENTIALS
-          # Install google-auth library and use it to get token from ADC
-          echo "🔐 Authenticating Docker to Artifact Registry..."
-          pip3 install --quiet google-auth google-auth-oauthlib google-auth-httplib2
-          TOKEN=$(python3 -c "import os,subprocess,sys;exec(\"try:\\n from google.auth import default\\n from google.auth.transport.requests import Request\\n credentials, project = default()\\n credentials.refresh(Request())\\n print(credentials.token)\\nexcept Exception as e:\\n print(f'Error: {e}', file=sys.stderr)\\n sys.exit(1)\")")
-          
-          if [ -z "$TOKEN" ]; then
-            echo "❌ Failed to get access token"
-            exit 1
-          fi
-          
-          echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-          echo "✅ Docker authenticated to Artifact Registry"
+          # WIF: Configure Docker to use gcloud credential helper
+          # The google-github-actions/auth action sets up credentials for gcloud
+          # gcloud auth configure-docker will use these credentials automatically
+          echo "🔐 Configuring Docker authentication for Artifact Registry..."
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          echo "✅ Docker configured for Artifact Registry"
 
           export DOCKER_BUILDKIT=1
           export BUILDKIT_PROGRESS=plain
