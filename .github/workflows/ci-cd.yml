@@ -555,8 +555,8 @@ jobs:
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          # WIF: Use OAuth token from WIF for Docker authentication
-          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+          # WIF: Configure Docker to use WIF credentials
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
           export DOCKER_BUILDKIT=1
           export BUILDKIT_PROGRESS=plain
