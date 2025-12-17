@@ -79,26 +79,7 @@ jobs:
         run: |
           # Authenticate Docker using access token from Application Default Credentials
           echo "🔐 Authenticating Docker to Artifact Registry..."
-          TOKEN=$(python3 -c "
-import os
-import subprocess
-import sys
-try:
-    from google.auth import default
-    from google.auth.transport.requests import Request
-    credentials, project = default()
-    credentials.refresh(Request())
-    print(credentials.token)
-except ImportError:
-    try:
-        result = subprocess.run(['gcloud', 'auth', 'application-default', 'print-access-token'], capture_output=True, text=True, check=True)
-        print(result.stdout.strip())
-    except:
-        result = subprocess.run(['gcloud', 'auth', 'print-access-token'], capture_output=True, text=True, check=True)
-        print(result.stdout.strip())
-except Exception as e:
-    sys.exit(1)
-")
+          TOKEN=$(python3 -c "import os,subprocess,sys;exec(\"try:\\n from google.auth import default\\n from google.auth.transport.requests import Request\\n credentials, project = default()\\n credentials.refresh(Request())\\n print(credentials.token)\\nexcept ImportError:\\n try:\\n  result = subprocess.run(['gcloud','auth','application-default','print-access-token'],capture_output=True,text=True,check=True)\\n  print(result.stdout.strip())\\n except:\\n  result = subprocess.run(['gcloud','auth','print-access-token'],capture_output=True,text=True,check=True)\\n  print(result.stdout.strip())\\nexcept Exception:\\n sys.exit(1)\")")
           echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
           echo "✅ Docker authenticated to Artifact Registry"
 
@@ -207,26 +188,7 @@ except Exception as e:
         run: |
           # Authenticate Docker using access token from Application Default Credentials
           echo "🔐 Authenticating Docker to Artifact Registry..."
-          TOKEN=$(python3 -c "
-import os
-import subprocess
-import sys
-try:
-    from google.auth import default
-    from google.auth.transport.requests import Request
-    credentials, project = default()
-    credentials.refresh(Request())
-    print(credentials.token)
-except ImportError:
-    try:
-        result = subprocess.run(['gcloud', 'auth', 'application-default', 'print-access-token'], capture_output=True, text=True, check=True)
-        print(result.stdout.strip())
-    except:
-        result = subprocess.run(['gcloud', 'auth', 'print-access-token'], capture_output=True, text=True, check=True)
-        print(result.stdout.strip())
-except Exception as e:
-    sys.exit(1)
-")
+          TOKEN=$(python3 -c "import os,subprocess,sys;exec(\"try:\\n from google.auth import default\\n from google.auth.transport.requests import Request\\n credentials, project = default()\\n credentials.refresh(Request())\\n print(credentials.token)\\nexcept ImportError:\\n try:\\n  result = subprocess.run(['gcloud','auth','application-default','print-access-token'],capture_output=True,text=True,check=True)\\n  print(result.stdout.strip())\\n except:\\n  result = subprocess.run(['gcloud','auth','print-access-token'],capture_output=True,text=True,check=True)\\n  print(result.stdout.strip())\\nexcept Exception:\\n sys.exit(1)\")")
           echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
           echo "✅ Docker authenticated to Artifact Registry"
 
