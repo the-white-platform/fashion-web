@@ -191,21 +191,49 @@ jobs:
           docker tag "$DEV_IMAGE" "$PROD_IMAGE_LATEST"
           docker tag "$DEV_IMAGE" "$PROD_IMAGE_SHA"
 
-          # Push images to prod registry (will use prod credentials from next step)
+          # Authenticate to prod registry before pushing
+          # Prod service account has write access to prod registry
+          echo "🔐 Authenticating Docker to prod Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+
+          # Helper function to push an image and handle expected vs unexpected failures
+          push_image() {
+            local image="$1"
+            local label="$2"
+            local allow_already_exists="$3"
+
+            echo "📤 Pushing $label ($image)..."
+            # Capture output so we can inspect specific error conditions
+            if ! output=$(docker push "$image" 2>&1); then
+              echo "$output"
+              if [ "$allow_already_exists" = "true" ] && echo "$output" | grep -qi 'already exists'; then
+                echo "⚠️  $label already exists in registry; continuing."
+              else
+                echo "❌ Failed to push $label"
+                exit 1
+              fi
+            else
+              echo "$output"
+            fi
+          }
+
+          # Push images to prod registry
           echo "📤 Pushing images to prod registry..."
-          docker push "$PROD_IMAGE" || echo "⚠️  Failed to push version tag (may already exist)"
-          docker push "$PROD_IMAGE_LATEST" || echo "⚠️  Failed to push latest tag"
-          docker push "$PROD_IMAGE_SHA" || echo "⚠️  Failed to push SHA tag"
+          # Allow a non-fatal 'already exists' error only for the version tag
+          push_image "$PROD_IMAGE" "version tag" "true"
+          push_image "$PROD_IMAGE_LATEST" "latest tag" "false"
+          push_image "$PROD_IMAGE_SHA" "SHA tag" "false"
 
           echo "✅ Image copy completed"
           echo "image=$PROD_IMAGE_SHA" >> $GITHUB_OUTPUT
 
-      - name: Configure Docker for Artifact Registry (prod)
+      - name: Configure Docker for Artifact Registry (prod deployment)
         if: steps.params.outputs.project_id == env.PROD_PROJECT
         run: |
-          # Authenticate Docker to prod registry using prod credentials
-          # This is needed after switching from dev to prod authentication
-          echo "🔐 Authenticating Docker to prod Artifact Registry..."
+          # Authenticate Docker to prod registry for deployment operations
+          # This ensures Docker is authenticated for subsequent deployment steps
+          echo "🔐 Authenticating Docker to prod Artifact Registry for deployment..."
           ACCESS_TOKEN=$(gcloud auth print-access-token)
           echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
