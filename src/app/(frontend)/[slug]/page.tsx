@@ -12,12 +12,18 @@ import type { Page as PageType } from '@/payload-types'
 import { RenderBlocks } from '@/blocks/RenderBlocks'
 import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { isBuildMode } from '@/utilities/isBuildMode'
 import PageClient from './page.client'
 
 // During Docker build, database may not be available - make dynamic
 export const dynamic = 'force-dynamic'
 
 export async function generateStaticParams() {
+  // Skip database queries during build time to avoid connection errors
+  if (isBuildMode()) {
+    return []
+  }
+
   try {
     const payload = await getPayload({ config: configPromise })
     const pages = await payload.find({
@@ -38,7 +44,6 @@ export async function generateStaticParams() {
     return params || []
   } catch (error) {
     // During Docker build, database may not be available
-    console.warn('Failed to generate static params for pages, returning empty array:', error)
     return []
   }
 }

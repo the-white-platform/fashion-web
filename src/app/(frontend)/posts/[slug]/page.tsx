@@ -12,9 +12,15 @@ import type { Post } from '@/payload-types'
 
 import { PostHero } from '@/heros/PostHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { isBuildMode } from '@/utilities/isBuildMode'
 import PageClient from './page.client'
 
 export async function generateStaticParams() {
+  // Skip database queries during build time to avoid connection errors
+  if (isBuildMode()) {
+    return []
+  }
+
   try {
     const payload = await getPayload({ config: configPromise })
     const posts = await payload.find({
@@ -31,7 +37,6 @@ export async function generateStaticParams() {
     return params
   } catch (error) {
     // During Docker build, database may not be available
-    console.warn('Failed to generate static params for posts, returning empty array:', error)
     return []
   }
 }
