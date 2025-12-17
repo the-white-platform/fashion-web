@@ -98,25 +98,10 @@ jobs:
             exit 1
           fi
           
-          echo "✅ Credentials file found: $GOOGLE_APPLICATION_CREDENTIALS"
-          
-          # Use Python to read credentials and get access token (single line to avoid YAML issues)
-          python3 -c 'import os,sys;from google.oauth2 import service_account;from google.auth.transport.requests import Request;creds_file=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS");exec("sys.exit(1)" if not creds_file or not os.path.exists(creds_file) else "None");c=service_account.Credentials.from_service_account_file(creds_file,scopes=["https://www.googleapis.com/auth/cloud-platform"]);c.refresh(Request());print(c.token)' > /tmp/token_output.txt 2>&1 || true
-          TOKEN=$(cat /tmp/token_output.txt 2>/dev/null | grep -v "^ERROR\|^Traceback\|^File\|^  " | head -1 || true)
-          if [ -z "$TOKEN" ] || [ ${#TOKEN} -lt 50 ]; then
-            echo "❌ Failed to get access token"
-            cat /tmp/token_output.txt 2>/dev/null || echo "No output file"
-            exit 1
-          fi
-          
-          if [ -z "$TOKEN" ]; then
-            echo "❌ Failed to get access token"
-            exit 1
-          fi
-          
-          # Authenticate Docker using the access token
-          echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-          echo "✅ Docker authenticated to Artifact Registry"
+          # Configure Docker to use gcloud credential helper
+          # This automatically uses the WIF credentials set up by google-github-actions/auth
+          mkdir -p ~/.docker
+          echo "{\"credHelpers\":{\"${{ env.REGION }}-docker.pkg.dev\":\"gcloud\"}}" > ~/.docker/config.json
 
       - name: Fetch secrets for Docker build
         if: steps.params.outputs.project_id == env.DEV_PROJECT
@@ -242,25 +227,10 @@ jobs:
             exit 1
           fi
           
-          echo "✅ Credentials file found: $GOOGLE_APPLICATION_CREDENTIALS"
-          
-          # Use Python to read credentials and get access token (single line to avoid YAML issues)
-          python3 -c 'import os,sys;from google.oauth2 import service_account;from google.auth.transport.requests import Request;creds_file=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS");exec("sys.exit(1)" if not creds_file or not os.path.exists(creds_file) else "None");c=service_account.Credentials.from_service_account_file(creds_file,scopes=["https://www.googleapis.com/auth/cloud-platform"]);c.refresh(Request());print(c.token)' > /tmp/token_output.txt 2>&1 || true
-          TOKEN=$(cat /tmp/token_output.txt 2>/dev/null | grep -v "^ERROR\|^Traceback\|^File\|^  " | head -1 || true)
-          if [ -z "$TOKEN" ] || [ ${#TOKEN} -lt 50 ]; then
-            echo "❌ Failed to get access token"
-            cat /tmp/token_output.txt 2>/dev/null || echo "No output file"
-            exit 1
-          fi
-          
-          if [ -z "$TOKEN" ]; then
-            echo "❌ Failed to get access token"
-            exit 1
-          fi
-          
-          # Authenticate Docker using the access token
-          echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-          echo "✅ Docker authenticated to Artifact Registry"
+          # Configure Docker to use gcloud credential helper
+          # This automatically uses the WIF credentials set up by google-github-actions/auth
+          mkdir -p ~/.docker
+          echo "{\"credHelpers\":{\"${{ env.REGION }}-docker.pkg.dev\":\"gcloud\"}}" > ~/.docker/config.json
 
       - name: Authenticate to prod for deployment
         if: steps.params.outputs.project_id == env.PROD_PROJECT
