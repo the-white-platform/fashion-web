@@ -36,7 +36,8 @@ PROVIDER_NAME="github-actions-provider"
 REPO_OWNER="the-white-platform"
 
 # The correct attribute condition that allows all repos under the-white-platform
-ATTRIBUTE_CONDITION="assertion.repository_owner == '${REPO_OWNER}'"
+# Note: CEL requires single quotes for string literals, not double quotes
+ATTRIBUTE_CONDITION="assertion.repository == '${REPO_OWNER}/fashion-web'"
 
 update_wif_provider() {
     local PROJECT_ID=$1
