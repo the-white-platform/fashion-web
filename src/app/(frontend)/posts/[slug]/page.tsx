@@ -12,16 +12,12 @@ import type { Post } from '@/payload-types'
 
 import { PostHero } from '@/heros/PostHero'
 import { generateMeta } from '@/utilities/generateMeta'
+import { isBuildMode } from '@/utilities/isBuildMode'
 import PageClient from './page.client'
 
 export async function generateStaticParams() {
   // Skip database queries during build time to avoid connection errors
-  // Check if we're in build mode (no real database available)
-  if (
-    process.env.NEXT_PHASE === 'phase-production-build' ||
-    process.env.DATABASE_URI?.includes('dummy') ||
-    process.env.DATABASE_URI?.includes('localhost')
-  ) {
+  if (isBuildMode()) {
     return []
   }
 

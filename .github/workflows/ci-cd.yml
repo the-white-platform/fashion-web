@@ -447,7 +447,22 @@ jobs:
           export BUILDKIT_PROGRESS=plain
 
           # Pull cache from latest (more likely to exist than version tag)
-          docker pull "$IMAGE_LATEST" 2>/dev/null && CACHE_FROM="--cache-from $IMAGE_LATEST" || CACHE_FROM=""
+          # Better error handling to distinguish "not found" vs "pull failed"
+          CACHE_FROM=""
+          CACHE_PULL_OUTPUT=""
+          CACHE_PULL_STATUS=0
+          CACHE_PULL_OUTPUT=$(docker pull "$IMAGE_LATEST" 2>&1) || CACHE_PULL_STATUS=$?
+          if [ "$CACHE_PULL_STATUS" -eq 0 ]; then
+            CACHE_FROM="--cache-from $IMAGE_LATEST"
+            echo "✅ Using cache from $IMAGE_LATEST"
+          else
+            if echo "$CACHE_PULL_OUTPUT" | grep -qiE "not found|manifest unknown"; then
+              echo "::notice::Cache image $IMAGE_LATEST not found; proceeding without cache."
+            else
+              echo "::warning::Failed to pull cache image $IMAGE_LATEST (exit code $CACHE_PULL_STATUS); proceeding without cache."
+              echo "$CACHE_PULL_OUTPUT"
+            fi
+          fi
 
           # Build once - same image for all environments
           # Note: NEXT_PUBLIC_SERVER_URL uses actual dev service URL (build-once-deploy-anywhere limitation)
@@ -480,6 +495,7 @@ jobs:
       name: dev
     permissions:
       id-token: write
+      contents: none
     steps:
       # WIF: Authenticate to dev project for deployment
       - name: Authenticate to Google Cloud (WIF)

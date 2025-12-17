@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 import PageClient from './page.client'
 import { notFound } from 'next/navigation'
+import { isBuildMode } from '@/utilities/isBuildMode'
 
 // During Docker build, database may not be available - make dynamic
 export const dynamic = 'force-dynamic'
@@ -88,12 +89,7 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 
 export async function generateStaticParams() {
   // Skip database queries during build time to avoid connection errors
-  // Check if we're in build mode (no real database available)
-  if (
-    process.env.NEXT_PHASE === 'phase-production-build' ||
-    process.env.DATABASE_URI?.includes('dummy') ||
-    process.env.DATABASE_URI?.includes('localhost')
-  ) {
+  if (isBuildMode()) {
     return [{ pageNumber: '1' }]
   }
 
