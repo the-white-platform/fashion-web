@@ -555,27 +555,57 @@ jobs:
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          # WIF: Authenticate Docker using Application Default Credentials
-          # The google-github-actions/auth action sets up ADC via GOOGLE_APPLICATION_CREDENTIALS
-          # Project is already set by setup-gcloud@v2, so we don't need to set it again
+          # WIF: Authenticate Docker using credentials from auth action
+          # The google-github-actions/auth action creates a credentials file
+          # We use Python to read it and get an access token
           echo "🔐 Authenticating Docker to Artifact Registry..."
           
-          # Get access token using Application Default Credentials (works with WIF)
-          # This command uses ADC from GOOGLE_APPLICATION_CREDENTIALS, not gcloud config
-          TOKEN=$(gcloud auth application-default print-access-token 2>&1)
-          TOKEN_EXIT_CODE=$?
+          # Install required Python library
+          pip3 install --quiet google-auth google-auth-oauthlib google-auth-httplib2
           
-          if [ $TOKEN_EXIT_CODE -ne 0 ] || [ -z "$TOKEN" ]; then
-            echo "❌ Failed to get access token (exit code: $TOKEN_EXIT_CODE)"
-            echo "Token output: $TOKEN"
-            echo "📋 Checking GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS:-not set}"
-            if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-              if [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-                echo "✅ Credentials file exists at: $GOOGLE_APPLICATION_CREDENTIALS"
-              else
-                echo "⚠️  Credentials file not found at: $GOOGLE_APPLICATION_CREDENTIALS"
-              fi
-            fi
+          # Check if credentials file exists
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            echo "❌ GOOGLE_APPLICATION_CREDENTIALS not set"
+            exit 1
+          fi
+          
+          if [ ! -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            echo "❌ Credentials file not found: $GOOGLE_APPLICATION_CREDENTIALS"
+            echo "📋 Listing files in directory:"
+            ls -la "$(dirname "$GOOGLE_APPLICATION_CREDENTIALS")" || true
+            exit 1
+          fi
+          
+          echo "✅ Credentials file found: $GOOGLE_APPLICATION_CREDENTIALS"
+          
+          # Use Python to read credentials and get access token
+          TOKEN=$(python3 << 'EOF'
+import json
+import os
+import sys
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
+
+creds_file = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+if not creds_file or not os.path.exists(creds_file):
+    print("ERROR: Credentials file not found", file=sys.stderr)
+    sys.exit(1)
+
+try:
+    credentials = service_account.Credentials.from_service_account_file(
+        creds_file,
+        scopes=['https://www.googleapis.com/auth/cloud-platform']
+    )
+    credentials.refresh(Request())
+    print(credentials.token)
+except Exception as e:
+    print(f"ERROR: {e}", file=sys.stderr)
+    sys.exit(1)
+EOF
+)
+          
+          if [ -z "$TOKEN" ]; then
+            echo "❌ Failed to get access token"
             exit 1
           fi
           
