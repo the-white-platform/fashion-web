@@ -555,12 +555,27 @@ jobs:
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          # WIF: Configure Docker to use gcloud credential helper
-          # The google-github-actions/auth action sets up credentials for gcloud
-          # gcloud auth configure-docker will use these credentials automatically
-          echo "🔐 Configuring Docker authentication for Artifact Registry..."
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
-          echo "✅ Docker configured for Artifact Registry"
+          # WIF: Authenticate Docker using gcloud access token
+          # The google-github-actions/auth action sets up ADC for gcloud
+          # We use gcloud to get an access token and authenticate Docker
+          echo "🔐 Authenticating Docker to Artifact Registry..."
+          
+          # Ensure gcloud uses the correct project
+          gcloud config set project ${{ env.DEV_PROJECT }} --quiet
+          
+          # Get access token using gcloud (works with WIF credentials)
+          TOKEN=$(gcloud auth print-access-token 2>&1)
+          
+          if [ $? -ne 0 ] || [ -z "$TOKEN" ]; then
+            echo "❌ Failed to get access token: $TOKEN"
+            echo "📋 Checking gcloud authentication..."
+            gcloud auth list
+            exit 1
+          fi
+          
+          # Authenticate Docker using the access token
+          echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+          echo "✅ Docker authenticated to Artifact Registry"
 
           export DOCKER_BUILDKIT=1
           export BUILDKIT_PROGRESS=plain
