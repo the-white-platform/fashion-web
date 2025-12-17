@@ -271,8 +271,10 @@ jobs:
 
           echo "✅ Found dev image: $DEV_IMAGE"
 
-          # Authenticate to dev registry first (prod SA has read access to dev)
-          echo "🔐 Authenticating Docker to dev Artifact Registry..."
+          # Authenticate to Artifact Registry
+          # Prod service account has read access to dev registry and write access to prod registry
+          # Docker authentication at the registry domain level grants access to both projects
+          echo "🔐 Authenticating Docker to Artifact Registry..."
           ACCESS_TOKEN=$(gcloud auth print-access-token)
           echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
@@ -283,11 +285,6 @@ jobs:
           # Tag image for prod registry
           echo "🏷️  Tagging image for prod registry..."
           docker tag "$DEV_IMAGE" "$PROD_IMAGE"
-
-          # Re-authenticate to prod registry (prod SA has write access to prod)
-          echo "🔐 Re-authenticating Docker to prod Artifact Registry..."
-          ACCESS_TOKEN=$(gcloud auth print-access-token)
-          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
           # Push image to prod registry
           echo "📤 Pushing image to prod registry..."
