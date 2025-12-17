@@ -77,31 +77,12 @@ jobs:
       - name: Configure Docker for Artifact Registry
         if: steps.params.outputs.project_id == env.DEV_PROJECT
         run: |
-          # WIF: Authenticate Docker using credentials from auth action
-          # The google-github-actions/auth action creates a credentials file
-          # We use Python to read it and get an access token
-          echo "🔐 Authenticating Docker to Artifact Registry..."
-          
-          # Install required Python library
-          pip3 install --quiet google-auth google-auth-oauthlib google-auth-httplib2
-          
-          # Check if credentials file exists
-          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            echo "❌ GOOGLE_APPLICATION_CREDENTIALS not set"
-            exit 1
+          # Standard approach: Activate service account from credentials file created by auth action
+          # Then configure Docker using gcloud
+          if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
           fi
-          
-          if [ ! -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            echo "❌ Credentials file not found: $GOOGLE_APPLICATION_CREDENTIALS"
-            echo "📋 Listing files in directory:"
-            ls -la "$(dirname "$GOOGLE_APPLICATION_CREDENTIALS")" || true
-            exit 1
-          fi
-          
-          # Configure Docker to use gcloud credential helper
-          # This automatically uses the WIF credentials set up by google-github-actions/auth
-          mkdir -p ~/.docker
-          echo "{\"credHelpers\":{\"${{ env.REGION }}-docker.pkg.dev\":\"gcloud\"}}" > ~/.docker/config.json
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Fetch secrets for Docker build
         if: steps.params.outputs.project_id == env.DEV_PROJECT
@@ -206,31 +187,12 @@ jobs:
       - name: Configure Docker for Artifact Registry (prod)
         if: steps.params.outputs.project_id == env.PROD_PROJECT
         run: |
-          # WIF: Authenticate Docker using credentials from auth action
-          # The google-github-actions/auth action creates a credentials file
-          # We use Python to read it and get an access token
-          echo "🔐 Authenticating Docker to Artifact Registry..."
-          
-          # Install required Python library
-          pip3 install --quiet google-auth google-auth-oauthlib google-auth-httplib2
-          
-          # Check if credentials file exists
-          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            echo "❌ GOOGLE_APPLICATION_CREDENTIALS not set"
-            exit 1
+          # Standard approach: Activate service account from credentials file created by auth action
+          # Then configure Docker using gcloud
+          if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
           fi
-          
-          if [ ! -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            echo "❌ Credentials file not found: $GOOGLE_APPLICATION_CREDENTIALS"
-            echo "📋 Listing files in directory:"
-            ls -la "$(dirname "$GOOGLE_APPLICATION_CREDENTIALS")" || true
-            exit 1
-          fi
-          
-          # Configure Docker to use gcloud credential helper
-          # This automatically uses the WIF credentials set up by google-github-actions/auth
-          mkdir -p ~/.docker
-          echo "{\"credHelpers\":{\"${{ env.REGION }}-docker.pkg.dev\":\"gcloud\"}}" > ~/.docker/config.json
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Authenticate to prod for deployment
         if: steps.params.outputs.project_id == env.PROD_PROJECT

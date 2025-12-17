@@ -555,10 +555,12 @@ jobs:
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          # Configure Docker to use gcloud credential helper
-          # This automatically uses the WIF credentials set up by google-github-actions/auth
-          mkdir -p ~/.docker
-          echo "{\"credHelpers\":{\"${{ env.REGION }}-docker.pkg.dev\":\"gcloud\"}}" > ~/.docker/config.json
+          # Standard approach: Activate service account from credentials file created by auth action
+          # Then configure Docker using gcloud
+          if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
+          fi
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
           export DOCKER_BUILDKIT=1
           export BUILDKIT_PROGRESS=plain
