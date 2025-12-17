@@ -244,10 +244,12 @@ jobs:
 
       # WIF: Authenticate to prod project (prod SA has read access to dev registry via IAM)
       - name: Authenticate to Google Cloud - Prod (WIF)
+        id: auth-prod
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER_PROD }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_PROD }}
+          create_credentials_file: true
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -463,10 +465,12 @@ jobs:
           echo "Service Account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}"
 
       - name: Authenticate to Google Cloud (WIF)
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER_DEV }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}
+          create_credentials_file: true
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -555,8 +559,9 @@ jobs:
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          # Authenticate Docker using WIF access token (more reliable than configure-docker with WIF)
-          # This avoids issues with credential helper file references that may not exist
+          # Authenticate Docker using WIF access token
+          # The credentials file is created by the auth action with create_credentials_file: true
+          # GOOGLE_APPLICATION_CREDENTIALS is automatically set by the auth action
           echo "🔐 Authenticating Docker to Artifact Registry..."
           ACCESS_TOKEN=$(gcloud auth print-access-token)
           echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
@@ -617,10 +622,12 @@ jobs:
     steps:
       # WIF: Authenticate to dev project for deployment
       - name: Authenticate to Google Cloud (WIF)
+        id: auth-dev
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER_DEV }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}
+          create_credentials_file: true
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -704,10 +711,12 @@ jobs:
     steps:
       # WIF: Authenticate to prod (job only runs on tags)
       - name: Authenticate to Google Cloud (WIF)
+        id: auth-prod-health
         uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ secrets.WIF_PROVIDER_PROD }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_PROD }}
+          create_credentials_file: true
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
