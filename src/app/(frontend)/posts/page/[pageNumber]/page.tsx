@@ -87,6 +87,16 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
 }
 
 export async function generateStaticParams() {
+  // Skip database queries during build time to avoid connection errors
+  // Check if we're in build mode (no real database available)
+  if (
+    process.env.NEXT_PHASE === 'phase-production-build' ||
+    process.env.DATABASE_URI?.includes('dummy') ||
+    process.env.DATABASE_URI?.includes('localhost')
+  ) {
+    return [{ pageNumber: '1' }]
+  }
+
   try {
     const payload = await getPayload({ config: configPromise })
     const posts = await payload.find({
@@ -107,7 +117,6 @@ export async function generateStaticParams() {
   } catch (error) {
     // During Docker build, database may not be available
     // Return at least the first page so build doesn't fail
-    console.warn('Failed to generate static params for posts pages, using default:', error)
     return [{ pageNumber: '1' }]
   }
 }

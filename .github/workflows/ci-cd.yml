@@ -193,7 +193,7 @@ jobs:
           NODE_ENV: production
           NEXT_PUBLIC_SERVER_URL: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && 'https://fashion-web-dev-XXXXXX.run.app' || 'http://localhost:3000' }}
           PAYLOAD_SECRET: dummy-secret-for-build
-          DATABASE_URI: dummy-uri-for-build
+          DATABASE_URI: postgres://dummy:dummy@localhost:5432/dummy
 
   # Stage 4: Create release and deploy to prod
   create-github-release:
@@ -438,7 +438,7 @@ jobs:
             -t "$IMAGE_VERSION" \
             --build-arg NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app" \
             --build-arg PAYLOAD_SECRET="dummy-secret-for-build" \
-            --build-arg DATABASE_URI="dummy-uri-for-build" \
+            --build-arg DATABASE_URI="postgres://dummy:dummy@localhost:5432/dummy" \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             $CACHE_FROM \
             .
