@@ -100,31 +100,14 @@ jobs:
           
           echo "✅ Credentials file found: $GOOGLE_APPLICATION_CREDENTIALS"
           
-          # Use Python to read credentials and get access token
-          TOKEN=$(python3 << 'EOF'
-import json
-import os
-import sys
-from google.oauth2 import service_account
-from google.auth.transport.requests import Request
-
-creds_file = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-if not creds_file or not os.path.exists(creds_file):
-    print("ERROR: Credentials file not found", file=sys.stderr)
-    sys.exit(1)
-
-try:
-    credentials = service_account.Credentials.from_service_account_file(
-        creds_file,
-        scopes=['https://www.googleapis.com/auth/cloud-platform']
-    )
-    credentials.refresh(Request())
-    print(credentials.token)
-except Exception as e:
-    print(f"ERROR: {e}", file=sys.stderr)
-    sys.exit(1)
-EOF
-)
+          # Use Python to read credentials and get access token (single line to avoid YAML issues)
+          python3 -c 'import os,sys;from google.oauth2 import service_account;from google.auth.transport.requests import Request;creds_file=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS");exec("sys.exit(1)" if not creds_file or not os.path.exists(creds_file) else "None");c=service_account.Credentials.from_service_account_file(creds_file,scopes=["https://www.googleapis.com/auth/cloud-platform"]);c.refresh(Request());print(c.token)' > /tmp/token_output.txt 2>&1 || true
+          TOKEN=$(cat /tmp/token_output.txt 2>/dev/null | grep -v "^ERROR\|^Traceback\|^File\|^  " | head -1 || true)
+          if [ -z "$TOKEN" ] || [ ${#TOKEN} -lt 50 ]; then
+            echo "❌ Failed to get access token"
+            cat /tmp/token_output.txt 2>/dev/null || echo "No output file"
+            exit 1
+          fi
           
           if [ -z "$TOKEN" ]; then
             echo "❌ Failed to get access token"
@@ -261,31 +244,14 @@ EOF
           
           echo "✅ Credentials file found: $GOOGLE_APPLICATION_CREDENTIALS"
           
-          # Use Python to read credentials and get access token
-          TOKEN=$(python3 << 'EOF'
-import json
-import os
-import sys
-from google.oauth2 import service_account
-from google.auth.transport.requests import Request
-
-creds_file = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-if not creds_file or not os.path.exists(creds_file):
-    print("ERROR: Credentials file not found", file=sys.stderr)
-    sys.exit(1)
-
-try:
-    credentials = service_account.Credentials.from_service_account_file(
-        creds_file,
-        scopes=['https://www.googleapis.com/auth/cloud-platform']
-    )
-    credentials.refresh(Request())
-    print(credentials.token)
-except Exception as e:
-    print(f"ERROR: {e}", file=sys.stderr)
-    sys.exit(1)
-EOF
-)
+          # Use Python to read credentials and get access token (single line to avoid YAML issues)
+          python3 -c 'import os,sys;from google.oauth2 import service_account;from google.auth.transport.requests import Request;creds_file=os.environ.get("GOOGLE_APPLICATION_CREDENTIALS");exec("sys.exit(1)" if not creds_file or not os.path.exists(creds_file) else "None");c=service_account.Credentials.from_service_account_file(creds_file,scopes=["https://www.googleapis.com/auth/cloud-platform"]);c.refresh(Request());print(c.token)' > /tmp/token_output.txt 2>&1 || true
+          TOKEN=$(cat /tmp/token_output.txt 2>/dev/null | grep -v "^ERROR\|^Traceback\|^File\|^  " | head -1 || true)
+          if [ -z "$TOKEN" ] || [ ${#TOKEN} -lt 50 ]; then
+            echo "❌ Failed to get access token"
+            cat /tmp/token_output.txt 2>/dev/null || echo "No output file"
+            exit 1
+          fi
           
           if [ -z "$TOKEN" ]; then
             echo "❌ Failed to get access token"
