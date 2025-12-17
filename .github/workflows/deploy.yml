@@ -77,12 +77,11 @@ jobs:
       - name: Configure Docker for Artifact Registry
         if: steps.params.outputs.project_id == env.DEV_PROJECT
         run: |
-          # Standard approach: Activate service account from credentials file created by auth action
-          # Then configure Docker using gcloud
-          if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-          fi
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          # Authenticate Docker using WIF access token (more reliable than configure-docker with WIF)
+          # This avoids issues with credential helper file references that may not exist
+          echo "🔐 Authenticating Docker to Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
       - name: Fetch secrets for Docker build
         if: steps.params.outputs.project_id == env.DEV_PROJECT
@@ -187,12 +186,11 @@ jobs:
       - name: Configure Docker for Artifact Registry (prod)
         if: steps.params.outputs.project_id == env.PROD_PROJECT
         run: |
-          # Standard approach: Activate service account from credentials file created by auth action
-          # Then configure Docker using gcloud
-          if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-          fi
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          # Authenticate Docker using WIF access token (more reliable than configure-docker with WIF)
+          # This avoids issues with credential helper file references that may not exist
+          echo "🔐 Authenticating Docker to Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
       - name: Authenticate to prod for deployment
         if: steps.params.outputs.project_id == env.PROD_PROJECT

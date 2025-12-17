@@ -555,12 +555,11 @@ jobs:
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
-          # Standard approach: Activate service account from credentials file created by auth action
-          # Then configure Docker using gcloud
-          if [ -n "$GOOGLE_APPLICATION_CREDENTIALS" ] && [ -f "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
-            gcloud auth activate-service-account --key-file="$GOOGLE_APPLICATION_CREDENTIALS" --quiet
-          fi
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+          # Authenticate Docker using WIF access token (more reliable than configure-docker with WIF)
+          # This avoids issues with credential helper file references that may not exist
+          echo "🔐 Authenticating Docker to Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
           export DOCKER_BUILDKIT=1
           export BUILDKIT_PROGRESS=plain
