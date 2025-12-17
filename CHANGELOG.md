@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### [0.3.1](https://github.com/the-white-platform/fashion-web/compare/v0.3.0...v0.3.1) (2025-12-17)
+
+### Bug Fixes
+
+- address code review comments ([#14](https://github.com/the-white-platform/fashion-web/issues/14)) ([1274c30](https://github.com/the-white-platform/fashion-web/commit/1274c303e505fc3e7f284d9a9777100feb8da33e))
+- replace invalid gcloud artifacts copy command with docker pull/push ([#13](https://github.com/the-white-platform/fashion-web/issues/13)) ([1c60860](https://github.com/the-white-platform/fashion-web/commit/1c60860379576ccfccbaa9b036adf9d04711fe8a))
+
 ## [0.3.0](https://github.com/the-white-platform/fashion-web/compare/v0.1.0...v0.3.0) (2025-12-17)
 
 ### Features
