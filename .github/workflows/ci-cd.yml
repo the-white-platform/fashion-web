@@ -454,6 +454,11 @@ jobs:
       image_sha: ${{ steps.build.outputs.sha }}
       image_uri: ${{ steps.build.outputs.image_uri }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
       # WIF: Authenticate to dev project to build and push image
       - name: Debug GitHub Context
         run: |
@@ -524,11 +529,6 @@ jobs:
           echo "=========================================="
           echo "✅ WIF Authentication Verification Complete!"
           echo "=========================================="
-
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: main
 
       - name: Get dev service URL
         id: service-url
