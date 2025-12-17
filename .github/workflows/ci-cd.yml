@@ -242,7 +242,7 @@ jobs:
             fi
           fi
 
-      # WIF: Authenticate to prod project for deployment
+      # WIF: Authenticate to prod project (prod SA has read access to dev registry via IAM)
       - name: Authenticate to Google Cloud - Prod (WIF)
         uses: google-github-actions/auth@v2
         with:
@@ -252,25 +252,25 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      # WIF: Authenticate to dev project to copy image
-      - name: Authenticate to Google Cloud - Dev (WIF)
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER_DEV }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}
-
       - name: Copy image from dev to prod
         run: |
           VERSION=${GITHUB_REF_NAME#v}
           DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$VERSION"
 
-          # Use WIF token to authenticate - switching context to prod
-          gcloud config set project "${{ env.PROD_PROJECT }}"
+          # Validate dev image exists before attempting copy
+          # Prod service account has read access to dev registry (configured in Terraform)
+          if ! gcloud artifacts docker images describe "$DEV_IMAGE" --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
+            echo "❌ Error: Dev image not found!"
+            echo "   Expected: $DEV_IMAGE"
+            echo "   Make sure Stage 2 (Build & Deploy Dev) completed successfully."
+            exit 1
+          fi
 
-          # Copy the same image that was built once
-          gcloud artifacts docker images copy $DEV_IMAGE $PROD_IMAGE \
-            --project="${{ env.PROD_PROJECT }}" \
+          echo "✅ Found dev image: $DEV_IMAGE"
+
+          # Copy using prod credentials (has read access to dev via IAM, write access to prod)
+          gcloud artifacts docker images copy "$DEV_IMAGE" "$PROD_IMAGE" \
             --quiet
 
       - name: Deploy to prod
@@ -414,6 +414,22 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Get dev service URL
+        id: service-url
+        run: |
+          SERVICE_URL=$(gcloud run services describe fashion-web-dev \
+            --region="${{ env.REGION }}" \
+            --project="${{ env.DEV_PROJECT }}" \
+            --format='value(status.url)' 2>/dev/null || echo "")
+          if [ -z "$SERVICE_URL" ]; then
+            echo "⚠️  Dev service not found, using placeholder"
+            SERVICE_URL="https://fashion-web-dev-XXXXXX.run.app"
+          fi
+          echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+          echo "Using NEXT_PUBLIC_SERVER_URL: $SERVICE_URL"
 
       - name: Build and push Docker image
         id: build
@@ -422,6 +438,7 @@ jobs:
           VERSION=${{ needs.release.outputs.version }}
           IMAGE_SHA="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
           IMAGE_VERSION="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
+          IMAGE_LATEST="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:latest"
 
           # WIF: Use OAuth token from WIF for Docker authentication
           gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
@@ -429,24 +446,26 @@ jobs:
           export DOCKER_BUILDKIT=1
           export BUILDKIT_PROGRESS=plain
 
-          # Pull cache if available
-          docker pull "$IMAGE_VERSION" 2>/dev/null && CACHE_FROM="--cache-from $IMAGE_VERSION" || CACHE_FROM=""
+          # Pull cache from latest (more likely to exist than version tag)
+          docker pull "$IMAGE_LATEST" 2>/dev/null && CACHE_FROM="--cache-from $IMAGE_LATEST" || CACHE_FROM=""
 
           # Build once - same image for all environments
+          # Note: NEXT_PUBLIC_SERVER_URL uses actual dev service URL (build-once-deploy-anywhere limitation)
           docker build \
             -t "$IMAGE_SHA" \
             -t "$IMAGE_VERSION" \
-            --build-arg NEXT_PUBLIC_SERVER_URL="https://fashion-web-dev-XXXXXX.run.app" \
+            -t "$IMAGE_LATEST" \
+            --build-arg NEXT_PUBLIC_SERVER_URL="${{ steps.service-url.outputs.url }}" \
             --build-arg PAYLOAD_SECRET="dummy-secret-for-build" \
             --build-arg DATABASE_URI="postgres://dummy:dummy@localhost:5432/dummy" \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             $CACHE_FROM \
             .
 
-          # Push image (using WIF token)
-          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
+          # Push image (authentication already established)
           docker push "$IMAGE_SHA"
           docker push "$IMAGE_VERSION"
+          docker push "$IMAGE_LATEST"
 
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "sha=$SHORT_SHA" >> $GITHUB_OUTPUT
@@ -524,12 +543,12 @@ jobs:
     needs: [check-skip, create-github-release]
     if: github.event_name == 'push' && github.ref_type == 'tag' && needs.check-skip.outputs.skip != 'true'
     steps:
-      # WIF: Authenticate based on environment
+      # WIF: Authenticate to prod (job only runs on tags)
       - name: Authenticate to Google Cloud (WIF)
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ github.ref_type == 'tag' && secrets.WIF_PROVIDER_PROD || secrets.WIF_PROVIDER_DEV }}
-          service_account: ${{ github.ref_type == 'tag' && secrets.WIF_SERVICE_ACCOUNT_PROD || secrets.WIF_SERVICE_ACCOUNT_DEV }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER_PROD }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_PROD }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -537,10 +556,10 @@ jobs:
       - name: Health check
         run: |
           sleep 30
-          SERVICE_NAME="${{ github.ref_type == 'tag' && 'fashion-web' || 'fashion-web-dev' }}"
+          SERVICE_NAME="fashion-web"
           SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" \
             --region="${{ env.REGION }}" \
-            --project="${{ github.ref_type == 'tag' && env.PROD_PROJECT || env.DEV_PROJECT }}" \
+            --project="${{ env.PROD_PROJECT }}" \
             --format='value(status.url)' 2>/dev/null || echo "")
           if [ -z "$SERVICE_URL" ]; then
             exit 0
