@@ -79,7 +79,7 @@ jobs:
         run: |
           # Authenticate Docker using access token from Application Default Credentials
           echo "🔐 Authenticating Docker to Artifact Registry..."
-          TOKEN=$(python3 << 'PYEOF'
+          TOKEN=$(python3 -c "
 import os
 import subprocess
 import sys
@@ -98,8 +98,7 @@ except ImportError:
         print(result.stdout.strip())
 except Exception as e:
     sys.exit(1)
-PYEOF
-)
+")
           echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
           echo "✅ Docker authenticated to Artifact Registry"
 
@@ -208,7 +207,7 @@ PYEOF
         run: |
           # Authenticate Docker using access token from Application Default Credentials
           echo "🔐 Authenticating Docker to Artifact Registry..."
-          TOKEN=$(python3 << 'PYEOF'
+          TOKEN=$(python3 -c "
 import os
 import subprocess
 import sys
@@ -227,8 +226,7 @@ except ImportError:
         print(result.stdout.strip())
 except Exception as e:
     sys.exit(1)
-PYEOF
-)
+")
           echo "$TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
           echo "✅ Docker authenticated to Artifact Registry"
 
