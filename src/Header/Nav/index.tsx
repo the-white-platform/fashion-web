@@ -12,7 +12,7 @@ import { useUser } from '@/contexts/UserContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { LanguageSwitcher } from '@/components/ecommerce/LanguageSwitcher'
 
-export const HeaderNav: React.FC<{ header: HeaderType; onSearchOpen: () => void }> = ({
+export const HeaderNav: React.FC<{ header: HeaderType | null; onSearchOpen: () => void }> = ({
   header,
   onSearchOpen,
 }) => {

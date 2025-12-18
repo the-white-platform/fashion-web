@@ -77,7 +77,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
           </div>
 
           {/* Navigation and Actions */}
-          {header && <HeaderNav header={header} onSearchOpen={() => setIsSearchOpen(true)} />}
+          <HeaderNav header={header} onSearchOpen={() => setIsSearchOpen(true)} />
         </div>
       </div>
 
