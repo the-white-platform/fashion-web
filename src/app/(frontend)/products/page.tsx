@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Filter, ChevronDown, X, Search, SlidersHorizontal } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import {
@@ -169,8 +169,7 @@ const priceRanges = [
 
 const quickFilters = ['MỚI', 'BÁN CHẠY', 'ÁO THUN', 'ÁO POLO', 'QUẦN SHORT', 'ÁO KHOÁC']
 
-export default function ProductsPage() {
-  const searchParams = useSearchParams()
+function ProductsPageContent() {
   const router = useRouter()
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
@@ -788,5 +787,19 @@ export default function ProductsPage() {
         />
       )}
     </div>
+  )
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white pt-24 flex items-center justify-center">
+          Đang tải...
+        </div>
+      }
+    >
+      <ProductsPageContent />
+    </Suspense>
   )
 }
