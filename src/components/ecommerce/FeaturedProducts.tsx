@@ -3,11 +3,9 @@
 import { Heart, ArrowRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'motion'
+import { motion } from 'motion/react'
 import { useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 
 interface Product {
   id: number
@@ -96,15 +94,17 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
         <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-between items-start sm:items-center">
           <div className="flex gap-2 flex-wrap">
             {filters.map((filter) => (
-              <Button
+              <button
                 key={filter}
-                variant={activeFilter === filter ? 'default' : 'outline'}
-                size="sm"
                 onClick={() => setActiveFilter(filter)}
-                className="uppercase"
+                className={`px-4 py-2 border rounded-sm transition-all hover:scale-105 uppercase text-sm ${
+                  activeFilter === filter
+                    ? 'bg-white text-black border-white'
+                    : 'border-gray-600 hover:border-white'
+                }`}
               >
                 {t(filter)}
-              </Button>
+              </button>
             ))}
           </div>
 
@@ -151,15 +151,13 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
                   />
 
                   {/* Tag */}
-                  <Badge className="absolute top-4 left-4 bg-white text-black hover:bg-white">
+                  <div className="absolute top-4 left-4 bg-white text-black px-3 py-1 text-xs font-bold rounded-sm">
                     {product.tag}
-                  </Badge>
+                  </div>
 
-                  {/* Wishlist Button */}
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                  {/* Wishlist Button - Hidden on mobile, shown on hover/touch */}
+                  <button
+                    className="absolute top-4 right-4 bg-white text-black p-2 rounded-sm opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -167,20 +165,21 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
                     }}
                   >
                     <Heart className="w-5 h-5" />
-                  </Button>
+                  </button>
 
                   {/* Quick Add - Hidden on mobile */}
-                  <Button
-                    variant="secondary"
-                    className="hidden lg:block absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-all"
+                  <button
+                    className="hidden lg:block absolute bottom-4 left-4 right-4 bg-white text-black py-3 text-center opacity-0 group-hover:opacity-100 transition-all hover:bg-gray-200 rounded-sm font-medium"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
-                      // TODO: Quick view
+                      if (onProductClick) {
+                        onProductClick(product)
+                      }
                     }}
                   >
                     {t('products.quickView')}
-                  </Button>
+                  </button>
                 </div>
 
                 <div>
@@ -204,18 +203,12 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
           viewport={{ once: true }}
           className="mt-12 text-center"
         >
-          <Button
-            variant="outline"
-            size="lg"
-            className="border-2 border-black hover:bg-black hover:text-white uppercase tracking-wide"
+          <button
+            className="border-2 border-black px-8 py-3 rounded-sm hover:bg-black hover:text-white transition-all hover:scale-105 uppercase tracking-wide font-medium"
             onClick={onViewAll}
-            asChild
           >
-            <Link href="/products" className="flex items-center gap-2">
-              {t('products.viewAll')}
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </Button>
+            {t('products.viewAll')}
+          </button>
         </motion.div>
       </div>
     </section>

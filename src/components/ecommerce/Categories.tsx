@@ -2,7 +2,7 @@
 
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
-import { motion } from 'motion'
+import { motion } from 'motion/react'
 import { useLanguage } from '@/contexts/LanguageContext'
 
 export function Categories() {

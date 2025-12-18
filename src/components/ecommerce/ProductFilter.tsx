@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Filter, ChevronDown } from 'lucide-react'
-import { motion, AnimatePresence } from 'motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -136,7 +136,7 @@ export function ProductFilter({ onFilterChange }: ProductFilterProps) {
   return (
     <>
       {/* Filter Toggle Button - Mobile & Desktop */}
-      <div className="sticky top-20 z-30 bg-white border-b border-gray-200 py-4">
+      <div className="bg-white border-b border-gray-200 py-4">
         <div className="container mx-auto px-6">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
             <Button

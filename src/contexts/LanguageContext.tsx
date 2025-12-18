@@ -607,20 +607,31 @@ const translations = {
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  // Always start with 'vi' to ensure server and client render the same
+  // This prevents hydration mismatches
   const [language, setLanguageState] = useState<Language>('vi')
 
-  // Load language from localStorage on mount
+  // Load language from localStorage only after mount (client-side)
+  // This ensures server and client initial renders match
   useEffect(() => {
-    const storedLanguage = localStorage.getItem('thewhite-language') as Language
-    if (storedLanguage && (storedLanguage === 'vi' || storedLanguage === 'en')) {
-      setLanguageState(storedLanguage)
+    try {
+      const storedLanguage = localStorage.getItem('thewhite-language') as Language
+      if (storedLanguage && (storedLanguage === 'vi' || storedLanguage === 'en')) {
+        setLanguageState(storedLanguage)
+      }
+    } catch {
+      // localStorage might not be available
     }
   }, [])
 
   // Save language to localStorage when it changes
   const setLanguage = (lang: Language) => {
     setLanguageState(lang)
-    localStorage.setItem('thewhite-language', lang)
+    try {
+      localStorage.setItem('thewhite-language', lang)
+    } catch {
+      // localStorage might not be available
+    }
   }
 
   // Translation function

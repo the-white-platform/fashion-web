@@ -70,17 +70,20 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: ReactNode }) {
+  // Always start with null to ensure server and client render the same
+  // This prevents hydration mismatches
   const [user, setUser] = useState<User | null>(null)
 
-  // Load user from localStorage on mount
+  // Load user from localStorage only after mount (client-side)
+  // This ensures server and client initial renders match
   useEffect(() => {
-    const storedUser = localStorage.getItem('thewhite-user')
-    if (storedUser) {
-      try {
+    try {
+      const storedUser = localStorage.getItem('thewhite-user')
+      if (storedUser) {
         setUser(JSON.parse(storedUser))
-      } catch (e) {
-        console.error('Error loading user:', e)
       }
+    } catch (e) {
+      console.error('Error loading user:', e)
     }
   }, [])
 

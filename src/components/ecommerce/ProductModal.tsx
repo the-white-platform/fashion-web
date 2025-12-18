@@ -3,7 +3,7 @@
 import { X, Heart, Plus, Minus } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'

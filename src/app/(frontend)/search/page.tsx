@@ -52,26 +52,33 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   })
 
   return (
-    <div className="pt-24 pb-24">
+    <div className="pb-24">
       <PageClient />
-      <div className="container mb-16">
-        <div className="prose dark:prose-invert max-w-none">
+      <div className="container mx-auto px-6 mb-16">
+        <div className="max-w-none">
           <h1 className="sr-only">Search</h1>
-          <Search />
+          <div className="mb-8">
+            <Search />
+          </div>
         </div>
       </div>
 
       {posts.totalDocs > 0 ? (
-        <CollectionArchive posts={posts.docs as unknown as Post[]} />
-      ) : (
-        <div className="container">No results found.</div>
-      )}
+        <div className="container mx-auto px-6">
+          <CollectionArchive posts={posts.docs as unknown as Post[]} />
+        </div>
+      ) : query ? (
+        <div className="container mx-auto px-6">
+          <p className="text-gray-600 text-center py-12">Không tìm thấy kết quả cho "{query}"</p>
+        </div>
+      ) : null}
     </div>
   )
 }
 
 export function generateMetadata(): Metadata {
   return {
-    title: `Payload Website Template Search`,
+    title: `Tìm Kiếm - TheWhite`,
+    description: 'Tìm kiếm sản phẩm thời trang thể thao',
   }
 }

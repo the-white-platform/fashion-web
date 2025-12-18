@@ -3,9 +3,8 @@
 import { ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'motion'
+import { motion } from 'motion/react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { Button } from '@/components/ui/button'
 
 export function Hero() {
   const { t, language } = useLanguage()
@@ -70,23 +69,16 @@ export function Hero() {
               transition={{ delay: 0.5 }}
               className="flex flex-col sm:flex-row gap-4"
             >
-              <Button
-                asChild
-                size="lg"
-                className="bg-black text-white hover:bg-gray-800 uppercase tracking-wide font-bold"
+              <Link
+                href="/products"
+                className="bg-black text-white px-8 py-4 rounded-sm hover:bg-gray-800 transition-all hover:scale-105 flex items-center justify-center gap-2 group uppercase tracking-wide font-bold text-sm"
               >
-                <Link href="/products" className="flex items-center justify-center gap-2 group">
-                  {t('hero.cta')}
-                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-              <Button
-                variant="outline"
-                size="lg"
-                className="border-2 border-black hover:bg-black hover:text-white uppercase tracking-wide font-bold"
-              >
+                {t('hero.cta')}
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              <button className="border-2 border-black px-8 py-4 rounded-sm hover:bg-black hover:text-white transition-all hover:scale-105 uppercase tracking-wide font-bold text-sm">
                 {t('hero.lookbook')}
-              </Button>
+              </button>
             </motion.div>
 
             <motion.div
