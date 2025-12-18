@@ -119,7 +119,7 @@ export default function CheckoutPage() {
     setCurrentStep('confirmation')
   }
 
-  const steps = [
+  const steps: Array<{ id: CheckoutStep; label: string; icon: any }> = [
     { id: 'shipping', label: 'Giao Hàng', icon: Truck },
     { id: 'payment', label: 'Thanh Toán', icon: CreditCard },
     { id: 'review', label: 'Xác Nhận', icon: Package },
@@ -281,46 +281,44 @@ export default function CheckoutPage() {
                   </div>
 
                   {/* Coupon */}
-                  {currentStep !== 'confirmation' && (
-                    <div className="mb-6 pb-6 border-b border-gray-200">
-                      {!appliedCoupon ? (
-                        <div className="space-y-2">
-                          <Label className="text-sm uppercase tracking-wide">Mã Giảm Giá</Label>
-                          <div className="flex gap-2">
-                            <Input
-                              type="text"
-                              value={couponCode}
-                              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                              placeholder="Nhập mã"
-                              className="flex-1 text-sm"
-                            />
-                            <Button onClick={applyCoupon} size="sm">
-                              Áp Dụng
-                            </Button>
-                          </div>
-                          {couponError && <p className="text-xs text-red-600">{couponError}</p>}
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-sm">
-                          <div className="flex items-center gap-2">
-                            <Tag className="w-4 h-4 text-green-600" />
-                            <div>
-                              <p className="text-sm font-semibold">{appliedCoupon.code}</p>
-                              <p className="text-xs text-gray-600">{appliedCoupon.description}</p>
-                            </div>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={removeCoupon}
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            Xóa
+                  <div className="mb-6 pb-6 border-b border-gray-200">
+                    {!appliedCoupon ? (
+                      <div className="space-y-2">
+                        <Label className="text-sm uppercase tracking-wide">Mã Giảm Giá</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="text"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            placeholder="Nhập mã"
+                            className="flex-1 text-sm"
+                          />
+                          <Button onClick={applyCoupon} size="sm">
+                            Áp Dụng
                           </Button>
                         </div>
-                      )}
-                    </div>
-                  )}
+                        {couponError && <p className="text-xs text-red-600">{couponError}</p>}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-sm">
+                        <div className="flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-green-600" />
+                          <div>
+                            <p className="text-sm font-semibold">{appliedCoupon.code}</p>
+                            <p className="text-xs text-gray-600">{appliedCoupon.description}</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={removeCoupon}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          Xóa
+                        </Button>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Price Breakdown */}
                   <div className="space-y-3 mb-6">

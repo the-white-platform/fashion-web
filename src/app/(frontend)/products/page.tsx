@@ -28,9 +28,22 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
 
+// Product Type
+interface Product {
+  id: number
+  name: string
+  category: string
+  price: string
+  priceNumber: number
+  image: string
+  colors: { name: string; hex: string }[]
+  tag: string
+  inStock: boolean
+}
+
 // Mock Data Generator
-const generateProducts = (count: number) => {
-  const baseProducts = [
+const generateProducts = (count: number): Product[] => {
+  const baseProducts: Product[] = [
     {
       id: 1,
       name: 'Áo Training Performance',
@@ -114,7 +127,7 @@ const generateProducts = (count: number) => {
     },
   ]
 
-  const products = []
+  const products: Product[] = []
   for (let i = 0; i < count; i++) {
     const base = baseProducts[i % baseProducts.length]
     products.push({
@@ -727,7 +740,6 @@ export default function ProductsPage() {
                   <PaginationContent>
                     <PaginationItem>
                       <PaginationPrevious
-                        href="#"
                         onClick={(e) => {
                           e.preventDefault()
                           handlePageChange(currentPage - 1)
@@ -738,7 +750,6 @@ export default function ProductsPage() {
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <PaginationItem key={page}>
                         <PaginationLink
-                          href="#"
                           onClick={(e) => {
                             e.preventDefault()
                             handlePageChange(page)
@@ -751,7 +762,6 @@ export default function ProductsPage() {
                     ))}
                     <PaginationItem>
                       <PaginationNext
-                        href="#"
                         onClick={(e) => {
                           e.preventDefault()
                           handlePageChange(currentPage + 1)

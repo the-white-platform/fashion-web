@@ -107,8 +107,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
   // Check if user already reviewed
   const hasReviewed = reviews.some((review) => review.userId === user?.id)
 
-  const calculateAverageRating = () => {
-    if (reviews.length === 0) return 0
+  const calculateAverageRating = (): string => {
+    if (reviews.length === 0) return '0.0'
     const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
     return (sum / reviews.length).toFixed(1)
   }

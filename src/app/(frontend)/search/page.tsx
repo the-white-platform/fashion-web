@@ -69,7 +69,9 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
         </div>
       ) : query ? (
         <div className="container mx-auto px-6">
-          <p className="text-gray-600 text-center py-12">Không tìm thấy kết quả cho "{query}"</p>
+          <p className="text-gray-600 text-center py-12">
+            Không tìm thấy kết quả cho &quot;{query}&quot;
+          </p>
         </div>
       ) : null}
     </div>

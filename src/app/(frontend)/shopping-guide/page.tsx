@@ -84,7 +84,8 @@ export default function ShoppingGuidePage() {
                   </p>
                   <p>• Chọn size, màu sắc và số lượng mong muốn</p>
                   <p>
-                    • Nhấn nút <strong>"THÊM VÀO GIỎ"</strong> hoặc <strong>"MUA NGAY"</strong>
+                    • Nhấn nút <strong>&quot;THÊM VÀO GIỎ&quot;</strong> hoặc{' '}
+                    <strong>&quot;MUA NGAY&quot;</strong>
                   </p>
                 </div>
                 <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-sm">
@@ -116,10 +117,10 @@ export default function ShoppingGuidePage() {
                   <p>• Nhấn vào biểu tượng giỏ hàng ở góc trên cùng</p>
                   <p>• Xem lại các sản phẩm đã chọn: tên, size, màu, số lượng, giá</p>
                   <p>• Cập nhật số lượng hoặc xóa sản phẩm nếu cần</p>
-                  <p>• Nhập mã giảm giá (nếu có) vào ô "MÃ GIẢM GIÁ"</p>
+                  <p>• Nhập mã giảm giá (nếu có) vào ô &quot;MÃ GIẢM GIÁ&quot;</p>
                   <p>• Kiểm tra tổng tiền tạm tính</p>
                   <p>
-                    • Nhấn <strong>"THANH TOÁN"</strong> khi đã sẵn sàng
+                    • Nhấn <strong>&quot;THANH TOÁN&quot;</strong> khi đã sẵn sàng
                   </p>
                 </div>
                 <div className="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-sm">
@@ -278,7 +279,7 @@ export default function ShoppingGuidePage() {
                 <div className="space-y-3">
                   <p>• Kiểm tra lại toàn bộ thông tin đơn hàng</p>
                   <p>
-                    • Nhấn <strong>"XÁC NHẬN ĐẶT HÀNG"</strong>
+                    • Nhấn <strong>&quot;XÁC NHẬN ĐẶT HÀNG&quot;</strong>
                   </p>
                   <p>• Nhận email/SMS xác nhận đơn hàng ngay lập tức</p>
                   <p>• Theo dõi đơn hàng qua link trong email hoặc tài khoản TheWhite</p>

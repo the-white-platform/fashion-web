@@ -75,8 +75,8 @@ export function BrandStory() {
                 đẹp mà còn giúp họ tự tin trong mọi hoạt động.
               </p>
               <p>
-                Với triết lý "Take Action", chúng tôi khuyến khích mọi người bước ra khỏi vùng an
-                toàn, thử thách bản thân và sống một cuộc sống năng động, tích cực hơn.
+                Với triết lý &quot;Take Action&quot;, chúng tôi khuyến khích mọi người bước ra khỏi
+                vùng an toàn, thử thách bản thân và sống một cuộc sống năng động, tích cực hơn.
               </p>
               <p>
                 Mỗi sản phẩm của TheWhite đều được thiết kế tỉ mỉ, chọn lọc chất liệu cao cấp và sản

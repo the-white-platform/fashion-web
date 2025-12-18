@@ -3,6 +3,7 @@
 import { X, Search } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface SearchModalProps {
   isOpen: boolean
@@ -126,11 +127,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         key={product.id}
                         className="flex gap-4 p-2 hover:bg-gray-50 rounded-sm transition-colors cursor-pointer"
                       >
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-16 h-16 object-cover rounded-sm"
-                        />
+                        <div className="relative w-16 h-16 flex-shrink-0">
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            className="object-cover rounded-sm"
+                            sizes="64px"
+                          />
+                        </div>
                         <div>
                           <h4 className="mb-1">{product.name}</h4>
                           <p className="text-sm text-gray-600">{product.price}</p>

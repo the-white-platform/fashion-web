@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { motion } from 'motion/react'
 import { ChevronLeft, Upload, CheckCircle } from 'lucide-react'
 import { useUser } from '@/contexts/UserContext'
@@ -166,12 +167,14 @@ export default function ReturnRequestPage() {
                       onChange={() => handleItemToggle(index.toString())}
                       className="w-5 h-5"
                     />
-                    <div className="w-16 h-20 bg-gray-200 rounded-sm overflow-hidden">
+                    <div className="w-16 h-20 bg-gray-200 rounded-sm overflow-hidden relative">
                       {item.image && (
-                        <img
+                        <Image
                           src={item.image}
                           alt={item.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          className="object-cover"
+                          sizes="64px"
                         />
                       )}
                     </div>
