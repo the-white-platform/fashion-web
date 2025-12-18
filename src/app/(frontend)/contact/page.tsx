@@ -3,17 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
-import {
-  ChevronLeft,
-  Mail,
-  Phone,
-  MapPin,
-  Clock,
-  Send,
-  Facebook,
-  Instagram,
-  MessageCircle,
-} from 'lucide-react'
+import { Mail, Phone, MapPin, Clock, Send, Facebook, Instagram, MessageCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -35,7 +25,6 @@ import {
 import Link from 'next/link'
 
 export default function ContactPage() {
-  const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
     email: '',

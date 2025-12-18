@@ -3,17 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { motion, AnimatePresence } from 'motion/react'
-import {
-  ChevronDown,
-  ChevronLeft,
-  Search,
-  Package,
-  CreditCard,
-  Truck,
-  RefreshCw,
-  HelpCircle,
-} from 'lucide-react'
+import { motion } from 'motion/react'
+import { Search, Package, CreditCard, Truck, RefreshCw, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -169,7 +160,6 @@ const faqs = [
 ]
 
 export default function FAQPage() {
-  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
 

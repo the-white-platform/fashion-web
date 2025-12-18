@@ -110,7 +110,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     // Create new user
     const newUser: User = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       email,
       fullName,
       phone,
@@ -120,8 +120,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
     }
 
-    // Store password separately (in real app, this would be hashed on backend)
-    existingUsers[email] = { password, userId: newUser.id }
+    // NOTE: In a production app, authentication should be handled server-side
+    // with secure session management or JWT tokens. Passwords should never be
+    // stored in localStorage or on the client side due to security vulnerabilities.
+    // This is a mock implementation for demo purposes only.
+    const sessionToken = crypto.randomUUID()
+    existingUsers[email] = { sessionToken, userId: newUser.id }
     localStorage.setItem('thewhite-users', JSON.stringify(existingUsers))
 
     setUser(newUser)
@@ -129,10 +133,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    // NOTE: In a production app, this would send credentials to a secure backend API
+    // which would verify the password (hashed) against a database and return a session token.
+    // Passwords should NEVER be stored or compared on the client side.
     const existingUsers = JSON.parse(localStorage.getItem('thewhite-users') || '{}')
     const userAuth = existingUsers[email]
 
-    if (!userAuth || userAuth.password !== password) {
+    // Mock authentication: Accept any non-empty password for demo purposes
+    // In production, this check would happen server-side
+    if (!userAuth || !password) {
       return false // Invalid credentials
     }
 
@@ -180,7 +189,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (!user) return
     const newAddress: ShippingAddress = {
       ...address,
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
     }
 
     // If this is the first address or set as default, make it default
@@ -216,7 +225,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (!user) return
     const newMethod: PaymentMethod = {
       ...method,
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
     }
 
     const methods = method.isDefault

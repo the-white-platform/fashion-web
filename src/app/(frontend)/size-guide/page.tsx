@@ -15,7 +15,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { Badge } from '@/components/ui/badge'
 
 const sizeCharts = {
   men: {
@@ -80,8 +79,7 @@ export default function SizeGuidePage() {
       return
     }
 
-    // Simple AI algorithm based on BMI and measurements
-    const bmi = w / (h / 100) ** 2
+    // Simple AI algorithm based on measurements
     const chart = sizeCharts[gender][productType]
 
     let bestMatch = chart[2] // Default to M

@@ -4,7 +4,6 @@ import { motion } from 'motion/react'
 import { ArrowRight, Zap, TrendingUp, Award, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
 
 export function ExploreMore() {
   const router = useRouter()

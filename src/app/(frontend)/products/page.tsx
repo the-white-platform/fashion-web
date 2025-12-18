@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, useMemo, Suspense } from 'react'
+import { useState, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { Filter, ChevronDown, X, Search, SlidersHorizontal } from 'lucide-react'
-import { motion, AnimatePresence } from 'motion/react'
+import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
+import { motion } from 'motion/react'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -23,7 +22,6 @@ import {
   PaginationPrevious,
 } from '@/components/ui/pagination'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
@@ -170,7 +168,6 @@ const priceRanges = [
 const quickFilters = ['MỚI', 'BÁN CHẠY', 'ÁO THUN', 'ÁO POLO', 'QUẦN SHORT', 'ÁO KHOÁC']
 
 function ProductsPageContent() {
-  const router = useRouter()
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState('Tất Cả')
@@ -628,7 +625,10 @@ function ProductsPageContent() {
                 </div>
 
                 {/* Clear Filters */}
-                <button className="w-full border-2 border-gray-400 py-3 rounded-sm hover:border-black hover:bg-black hover:text-white transition-all text-sm uppercase tracking-wide">
+                <button
+                  onClick={clearFilters}
+                  className="w-full border-2 border-gray-400 py-3 rounded-sm hover:border-black hover:bg-black hover:text-white transition-all text-sm uppercase tracking-wide"
+                >
                   Xóa Bộ Lọc
                 </button>
               </div>

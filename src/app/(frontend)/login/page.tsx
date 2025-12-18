@@ -7,7 +7,6 @@ import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { Logo } from '@/components/Logo/Logo'
-import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()

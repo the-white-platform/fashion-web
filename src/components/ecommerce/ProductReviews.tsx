@@ -454,7 +454,7 @@ function ReviewForm({
     }
 
     const review: Review = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       userId: user?.id || '',
       userName: user?.fullName || 'Khách hàng',
       rating,

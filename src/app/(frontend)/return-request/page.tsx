@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
-import { ChevronLeft, Upload, CheckCircle } from 'lucide-react'
+import { Upload, CheckCircle } from 'lucide-react'
 import { useUser } from '@/contexts/UserContext'
 import {
   Breadcrumb,

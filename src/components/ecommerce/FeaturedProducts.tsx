@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart, ArrowRight } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'motion/react'

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
-import { Check, ChevronLeft, CreditCard, Truck, Package, MapPin, Plus, Tag } from 'lucide-react'
+import { Check, ChevronLeft, CreditCard, Truck, Package, Plus, Tag } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
 import { Button } from '@/components/ui/button'

@@ -19,7 +19,6 @@ export const HeaderNav: React.FC<{ header: HeaderType | null; onSearchOpen: () =
   const navItems = header?.navItems || []
   const { items, setIsCartOpen } = useCart()
   const { user } = useUser()
-  const { t } = useLanguage()
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
