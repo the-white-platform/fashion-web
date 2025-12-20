@@ -117,6 +117,7 @@ export default {
       fontFamily: {
         sans: ['var(--font-inter)', 'ui-sans-serif', 'system-ui'],
         heading: ['var(--font-inter)', 'ui-sans-serif', 'system-ui'],
+        white: ['var(--font-white)', 'serif'],
       },
       keyframes: {
         'accordion-down': {

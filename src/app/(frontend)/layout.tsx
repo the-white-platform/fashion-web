@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 
 import { cn } from 'src/utilities/cn'
 import { Inter } from 'next/font/google'
+import localFont from 'next/font/local'
 import React from 'react'
 
 import { AdminBar } from '@/components/AdminBar'
@@ -25,11 +26,50 @@ const inter = Inter({
   weight: ['400', '500', '600', '700'],
 })
 
+// The White font - configured with multiple weights
+const theWhite = localFont({
+  src: [
+    {
+      path: '../../fonts/the-white-light.otf',
+      weight: '300',
+      style: 'normal',
+    },
+    {
+      path: '../../fonts/the-white-regular.otf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../../fonts/the-white-bold.otf',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: '../../fonts/the-white-italic.otf',
+      weight: '400',
+      style: 'italic',
+    },
+    {
+      path: '../../fonts/the-white-bold-italic.otf',
+      weight: '700',
+      style: 'italic',
+    },
+    {
+      path: '../../fonts/the-white-light-italic.otf',
+      weight: '300',
+      style: 'italic',
+    },
+  ],
+  variable: '--font-white',
+  display: 'swap',
+  fallback: ['serif'],
+})
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
 
   return (
-    <html className={cn(inter.variable)} lang="en" suppressHydrationWarning>
+    <html className={cn(inter.variable, theWhite.variable)} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
