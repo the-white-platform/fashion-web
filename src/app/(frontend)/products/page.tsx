@@ -21,8 +21,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
+
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
 
@@ -276,7 +275,7 @@ function ProductsPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-black pt-24 pb-12 relative">
+    <div className="min-h-screen bg-white text-black pt-32 pb-12 relative">
       {/* Noisy Background Texture */}
       <div className="fixed inset-0 opacity-20 pointer-events-none mix-blend-multiply z-0">
         <div
@@ -289,18 +288,25 @@ function ProductsPageContent() {
       </div>
       <div className="relative z-10">
         <div className="container mx-auto px-6">
-          {/* Breadcrumb */}
-          <div className="mb-6">
+          {/* Breadcrumb - More prominent */}
+          <div className="mb-8 font-medium">
             <Breadcrumb>
-              <BreadcrumbList>
+              <BreadcrumbList className="text-gray-500">
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
-                    <Link href="/">Trang chủ</Link>
+                    <Link
+                      href="/"
+                      className="hover:text-black transition-colors uppercase tracking-widest text-[10px]"
+                    >
+                      Trang chủ
+                    </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Sản phẩm</BreadcrumbPage>
+                  <BreadcrumbPage className="text-black uppercase tracking-widest text-[10px] font-bold">
+                    Sản phẩm
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -314,18 +320,14 @@ function ProductsPageContent() {
           >
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
-                <h1 className="text-4xl mb-4 uppercase tracking-wide">Sản Phẩm</h1>
-                <p className="text-gray-600">Khám phá bộ sưu tập thời trang thể thao TheWhite</p>
+                <h1 className="text-5xl mb-4 uppercase tracking-tighter font-bold italic">
+                  Sản Phẩm
+                </h1>
+                <p className="text-gray-500 max-w-md">
+                  Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite. Thiết kế tối giản,
+                  hiệu năng tối đa.
+                </p>
               </div>
-
-              {/* Mobile Filter Button */}
-              <Button
-                onClick={() => setShowFilters(true)}
-                className="lg:hidden bg-black text-white"
-              >
-                <SlidersHorizontal className="w-5 h-5 mr-2" />
-                <span className="uppercase tracking-wide">Bộ Lọc</span>
-              </Button>
             </div>
           </motion.div>
         </div>
@@ -333,18 +335,18 @@ function ProductsPageContent() {
         {/* Filter and Sort Bar */}
         <div className="bg-white border-b border-gray-200 shadow-sm">
           <div className="container mx-auto px-6 py-4">
-            {/* Filter Bar */}
+            {/* Filter Bar - Mobile Only since Desktop has sidebar */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-3"
+              className="lg:hidden mb-4"
             >
               <button
                 onClick={() => setShowFilters(true)}
-                className="w-full lg:w-auto bg-black text-white px-6 py-3 flex items-center justify-center gap-2 uppercase tracking-wide text-sm"
+                className="w-full bg-black text-white px-6 py-4 flex items-center justify-center gap-3 uppercase tracking-[0.2em] text-xs font-bold shadow-xl active:scale-95 transition-all"
               >
                 <SlidersHorizontal className="w-5 h-5" />
-                <span>BỘ LỌC</span>
+                <span>BỘ LỌC TÙY CHỌN</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
             </motion.div>
@@ -480,18 +482,22 @@ function ProductsPageContent() {
                       className="space-y-3"
                     >
                       <label className="flex items-center gap-3 cursor-pointer group">
-                        <Checkbox
+                        <input
+                          type="checkbox"
                           checked={showInStock}
-                          onCheckedChange={(checked) => setShowInStock(checked === true)}
+                          onChange={(e) => setShowInStock(e.target.checked)}
+                          className="w-4 h-4 rounded-sm border-2 border-gray-400 text-black focus:ring-2 focus:ring-black focus:ring-offset-0 cursor-pointer accent-black"
                         />
                         <span className="group-hover:text-gray-600 transition-colors">
                           Còn hàng <span className="text-gray-500">({inStockCount})</span>
                         </span>
                       </label>
                       <label className="flex items-center gap-3 cursor-pointer group">
-                        <Checkbox
+                        <input
+                          type="checkbox"
                           checked={showOutOfStock}
-                          onCheckedChange={(checked) => setShowOutOfStock(checked === true)}
+                          onChange={(e) => setShowOutOfStock(e.target.checked)}
+                          className="w-4 h-4 rounded-sm border-2 border-gray-400 text-black focus:ring-2 focus:ring-black focus:ring-offset-0 cursor-pointer accent-black"
                         />
                         <span className="group-hover:text-gray-600 transition-colors">
                           Hết hàng <span className="text-gray-500">({outOfStockCount})</span>
@@ -794,7 +800,7 @@ export default function ProductsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-white pt-24 flex items-center justify-center">
+        <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
           Đang tải...
         </div>
       }

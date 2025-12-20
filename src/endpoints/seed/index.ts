@@ -282,18 +282,29 @@ export const seed = async ({
         {
           link: {
             type: 'custom',
-            label: 'Posts',
-            url: '/posts',
+            label: 'Nam',
+            url: '/products?category=men',
           },
         },
         {
           link: {
-            type: 'reference',
-            label: 'Contact',
-            reference: {
-              relationTo: 'pages',
-              value: contactPage.id,
-            },
+            type: 'custom',
+            label: 'Nữ',
+            url: '/products?category=women',
+          },
+        },
+        {
+          link: {
+            type: 'custom',
+            label: 'Trẻ Em',
+            url: '/products?category=kids',
+          },
+        },
+        {
+          link: {
+            type: 'custom',
+            label: 'Mới Nhất',
+            url: '/products?sort=newest',
           },
         },
       ],

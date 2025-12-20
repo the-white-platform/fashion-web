@@ -172,20 +172,27 @@ export default function FAQPage() {
   })
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-background text-foreground pb-12 pt-32">
       <div className="container mx-auto px-6 max-w-5xl">
         {/* Breadcrumb */}
-        <div className="mb-6">
+        <div className="mb-8 font-medium">
           <Breadcrumb>
-            <BreadcrumbList>
+            <BreadcrumbList className="text-gray-500">
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/">Trang chủ</Link>
+                  <Link
+                    href="/"
+                    className="hover:text-black transition-colors uppercase tracking-widest text-[10px]"
+                  >
+                    Trang chủ
+                  </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Câu Hỏi Thường Gặp</BreadcrumbPage>
+                <BreadcrumbPage className="text-black uppercase tracking-widest text-[10px] font-bold">
+                  Câu Hỏi Thường Gặp
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -193,12 +200,20 @@ export default function FAQPage() {
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl uppercase tracking-wide mb-4">Câu Hỏi Thường Gặp</h1>
-          <p className="text-gray-600">Tìm câu trả lời cho những câu hỏi phổ biến về TheWhite</p>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl lg:text-6xl uppercase tracking-tight mb-4 font-bold"
+          >
+            Câu Hỏi Thường Gặp
+          </motion.h1>
+          <p className="text-gray-500 font-medium text-lg">
+            Tìm câu trả lời cho những câu hỏi phổ biến về TheWhite
+          </p>
         </div>
 
         {/* Search */}
-        <div className="mb-8">
+        <div className="mb-10">
           <div className="relative max-w-2xl mx-auto">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
@@ -206,7 +221,7 @@ export default function FAQPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Tìm kiếm câu hỏi..."
-              className="pl-12 py-4 text-lg"
+              className="pl-12 py-6 text-base border-2 border-gray-200 rounded-sm focus:border-black transition-colors"
             />
           </div>
         </div>
@@ -215,14 +230,17 @@ export default function FAQPage() {
         <div className="flex flex-wrap justify-center gap-3 mb-12">
           {categories.map((cat) => {
             const Icon = cat.icon
+            const isActive = selectedCategory === cat.id
             return (
               <Button
                 key={cat.id}
-                variant={selectedCategory === cat.id ? 'default' : 'outline'}
+                variant={isActive ? 'default' : 'outline'}
                 onClick={() => setSelectedCategory(cat.id)}
-                className="uppercase tracking-wide"
+                className={`uppercase tracking-wide rounded-sm px-6 py-3 font-bold text-sm transition-all ${
+                  isActive ? '' : 'hover:border-black'
+                }`}
               >
-                <Icon className="w-5 h-5 mr-2" />
+                <Icon className="w-4 h-4 mr-2" />
                 {cat.label}
               </Button>
             )
@@ -230,20 +248,23 @@ export default function FAQPage() {
         </div>
 
         {/* FAQs */}
-        <div className="space-y-4 mb-12">
-          {filteredFAQs.map((faq) => (
+        <div className="space-y-3 mb-12">
+          {filteredFAQs.map((faq, index) => (
             <motion.div
               key={faq.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="border-2 border-gray-200 rounded-sm overflow-hidden"
+              transition={{ delay: index * 0.05 }}
+              className="border-2 border-gray-200 rounded-sm overflow-hidden hover:border-black transition-colors shadow-sm hover:shadow-md"
             >
               <Accordion type="single" collapsible>
                 <AccordionItem value={faq.id} className="border-0">
-                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50">
-                    <span className="text-left text-lg pr-4">{faq.question}</span>
+                  <AccordionTrigger className="px-6 py-5 hover:no-underline hover:bg-gray-50 transition-colors">
+                    <span className="text-left text-base font-bold pr-4 text-foreground">
+                      {faq.question}
+                    </span>
                   </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6 text-gray-700">
+                  <AccordionContent className="px-6 pb-6 pt-2 text-foreground leading-relaxed">
                     {faq.answer}
                   </AccordionContent>
                 </AccordionItem>
@@ -253,15 +274,16 @@ export default function FAQPage() {
         </div>
 
         {filteredFAQs.length === 0 && (
-          <div className="text-center py-12">
+          <div className="text-center py-16 bg-gray-50 rounded-sm">
             <HelpCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-            <p className="text-gray-600 mb-4">Không tìm thấy câu hỏi phù hợp</p>
+            <p className="text-gray-600 mb-6 text-lg font-medium">Không tìm thấy câu hỏi phù hợp</p>
             <Button
               variant="outline"
               onClick={() => {
                 setSearchQuery('')
                 setSelectedCategory('all')
               }}
+              className="rounded-sm border-2 border-black hover:bg-black hover:text-white font-bold uppercase tracking-wide"
             >
               Xóa bộ lọc
             </Button>
@@ -273,24 +295,29 @@ export default function FAQPage() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-16 bg-black text-white rounded-sm p-8 text-center"
+          className="mt-20 bg-black text-white rounded-sm p-12 text-center shadow-2xl"
         >
-          <h3 className="text-2xl uppercase tracking-wide mb-4">Không Tìm Thấy Câu Trả Lời?</h3>
-          <p className="text-gray-300 mb-6">
+          <h3 className="text-3xl lg:text-4xl uppercase tracking-tight mb-4 font-bold">
+            Không Tìm Thấy Câu Trả Lời?
+          </h3>
+          <p className="text-gray-300 mb-8 text-lg font-medium max-w-2xl mx-auto">
             Đội ngũ hỗ trợ của TheWhite sẵn sàng giúp đỡ bạn 24/7
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button variant="secondary" size="lg" asChild>
-              <Link href="/contact">Chat Với Chúng Tôi</Link>
-            </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              variant="outline"
               size="lg"
-              className="border-white text-white hover:bg-white hover:text-black"
+              variant="secondary"
+              className="rounded-sm px-8 py-6 font-bold uppercase tracking-wide"
               asChild
             >
-              <Link href="/contact">Gọi Hotline: 1900-xxxx</Link>
+              <Link href="/contact">Chat Với Chúng Tôi</Link>
             </Button>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center border-2 border-white text-white hover:bg-white hover:text-black rounded-sm px-8 py-6 font-bold uppercase tracking-wide transition-colors h-12"
+            >
+              Gọi Hotline: 1900-xxxx
+            </Link>
           </div>
         </motion.div>
       </div>

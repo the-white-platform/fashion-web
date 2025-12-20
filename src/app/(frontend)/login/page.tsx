@@ -58,10 +58,12 @@ export default function LoginPage() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
-            <Logo showSlogan={false} className="items-center justify-center" />
-          </Link>
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-black text-white rounded-sm mb-4">
+          <div className="mb-8">
+            <Link href="/" className="inline-block">
+              <Logo showSlogan={false} className="items-center justify-center" />
+            </Link>
+          </div>
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-black text-white rounded-sm mb-6">
             <LogIn className="w-8 h-8" />
           </div>
           <h1 className="text-3xl md:text-4xl uppercase tracking-wide mb-2">Đăng Nhập</h1>

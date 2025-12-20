@@ -67,11 +67,11 @@ interface FeaturedProductsProps {
 
 export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProductsProps) {
   const { t } = useLanguage()
-  const [activeFilter, setActiveFilter] = useState('common.all')
-  const [activeSort, setActiveSort] = useState('common.newest')
+  const [activeFilter, setActiveFilter] = useState('Tất Cả')
+  const [activeSort, setActiveSort] = useState('Mới Nhất')
 
-  const filters = ['common.all', 'nav.men', 'nav.women', 'products.accessories', 'products.sale']
-  const sorts = ['common.newest', 'common.priceAsc', 'common.priceDesc', 'common.popular']
+  const filters = ['Tất Cả', 'Nam', 'Nữ', 'Phụ Kiện', 'Khuyến Mãi']
+  const sorts = ['Mới Nhất', 'Giá Tăng Dần', 'Giá Giảm Dần', 'Phổ Biến']
 
   return (
     <section className="py-20 bg-transparent text-black">
@@ -82,28 +82,30 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-3xl lg:text-4xl uppercase mb-2"
+              className="text-4xl lg:text-6xl uppercase mb-2 font-heading font-bold tracking-tight"
             >
-              {t('products.title')}
+              Sản Phẩm Nổi Bật
             </motion.h2>
-            <p className="text-gray-400">{t('products.subtitle')}</p>
+            <p className="text-gray-500 font-normal tracking-wide text-lg">
+              Khám phá các thiết kế mới nhất cho mùa giải này
+            </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8 justify-between items-start sm:items-center">
+        <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-between items-start sm:items-center">
           <div className="flex gap-2 flex-wrap">
             {filters.map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
-                className={`px-4 py-2 border rounded-sm transition-all hover:scale-105 uppercase text-sm ${
+                className={`px-5 py-2 border rounded-sm transition-all hover:bg-black hover:text-white uppercase text-sm font-medium tracking-wider ${
                   activeFilter === filter
-                    ? 'bg-white text-black border-white'
-                    : 'border-gray-600 hover:border-white'
+                    ? 'bg-black text-white border-black'
+                    : 'border-gray-300 text-gray-700'
                 }`}
               >
-                {t(filter)}
+                {filter}
               </button>
             ))}
           </div>
@@ -111,17 +113,17 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
           <select
             value={activeSort}
             onChange={(e) => setActiveSort(e.target.value)}
-            className="w-full sm:w-auto bg-transparent border border-gray-600 px-4 py-2 pr-8 rounded-sm outline-none hover:border-white transition-colors appearance-none cursor-pointer uppercase text-sm"
+            className="px-4 py-2 border border-gray-300 rounded-sm bg-white text-sm font-medium uppercase tracking-wider focus:outline-none focus:border-black"
           >
             {sorts.map((sort) => (
-              <option key={sort} value={sort} className="bg-white text-black">
-                {t(sort)}
+              <option key={sort} value={sort}>
+                {sort}
               </option>
             ))}
           </select>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
           {products.map((product, index) => (
             <motion.div
               key={product.id}
@@ -131,45 +133,36 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
               transition={{ delay: index * 0.1 }}
               className="group"
             >
-              <Link
-                href={`/products/${product.id}`}
-                onClick={(e) => {
-                  if (onProductClick) {
-                    e.preventDefault()
-                    onProductClick(product)
-                  }
-                }}
-                className="block"
-              >
-                <div className="relative overflow-hidden bg-gray-900 mb-4 aspect-[3/4] rounded-sm">
+              <Link href={`/products/${product.id}`} className="block">
+                <div className="relative overflow-hidden bg-gray-100 mb-4 aspect-[3/4] rounded-sm shadow-lg">
                   <Image
                     src={product.image}
                     alt={product.name}
                     fill
-                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                    className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     sizes="(max-width: 1024px) 50vw, 25vw"
                   />
 
                   {/* Tag */}
-                  <div className="absolute top-4 left-4 bg-white text-black px-3 py-1 text-xs font-bold rounded-sm">
+                  <div className="absolute top-0 left-0 bg-black text-white px-3 py-1 text-xs font-bold uppercase tracking-wider">
                     {product.tag}
                   </div>
 
-                  {/* Wishlist Button - Hidden on mobile, shown on hover/touch */}
+                  {/* Wishlist Button - Always visible on mobile, hover on desktop */}
                   <button
-                    className="absolute top-4 right-4 bg-white text-black p-2 rounded-sm opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+                    className="absolute top-3 right-3 bg-white text-black p-2 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:scale-110 shadow-md"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
                       // TODO: Add to wishlist
                     }}
                   >
-                    <Heart className="w-5 h-5" />
+                    <Heart className="w-4 h-4" />
                   </button>
 
-                  {/* Quick Add - Hidden on mobile */}
+                  {/* Quick View Button - Always visible on mobile, slide up on desktop hover */}
                   <button
-                    className="hidden lg:block absolute bottom-4 left-4 right-4 bg-white text-black py-3 text-center opacity-0 group-hover:opacity-100 transition-all hover:bg-gray-200 rounded-sm font-medium"
+                    className="absolute bottom-0 left-0 right-0 bg-black text-white py-3 lg:py-4 text-center lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 uppercase text-xs lg:text-sm font-bold tracking-widest hover:bg-white hover:text-black"
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -178,18 +171,18 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
                       }
                     }}
                   >
-                    {t('products.quickView')}
+                    Xem Nhanh
                   </button>
                 </div>
 
                 <div>
-                  <div className="text-xs text-gray-500 mb-1 uppercase tracking-wide">
+                  <div className="text-[10px] text-gray-500 mb-1 uppercase tracking-[0.2em] font-medium">
                     {product.category}
                   </div>
-                  <h3 className="mb-2 font-medium group-hover:text-gray-600 transition-colors line-clamp-1">
+                  <h3 className="mb-1 text-lg uppercase font-semibold group-hover:text-gray-600 transition-colors line-clamp-1 leading-none">
                     {product.name}
                   </h3>
-                  <div className="font-bold">{product.price}</div>
+                  <div className="font-bold text-gray-900">{product.price}</div>
                 </div>
               </Link>
             </motion.div>
@@ -201,13 +194,13 @@ export function FeaturedProducts({ onProductClick, onViewAll }: FeaturedProducts
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          className="mt-12 text-center"
+          className="mt-16 text-center"
         >
           <button
-            className="border-2 border-black px-8 py-3 rounded-sm hover:bg-black hover:text-white transition-all hover:scale-105 uppercase tracking-wide font-medium"
+            className="bg-black text-white border-2 border-black px-10 py-4 rounded-sm hover:bg-white hover:text-black transition-all uppercase tracking-wide font-bold text-sm"
             onClick={onViewAll}
           >
-            {t('products.viewAll')}
+            Xem Tất Cả Sản Phẩm
           </button>
         </motion.div>
       </div>

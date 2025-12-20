@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { Ruler, User, Weight, Sparkles, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -148,20 +146,20 @@ export default function SizeGuidePage() {
   const currentChart = sizeCharts[gender][productType]
 
   return (
-    <div className="min-h-screen bg-white text-black pb-12 relative overflow-hidden">
+    <div className="min-h-screen bg-white text-black pb-12 pt-32 relative overflow-hidden">
       {/* Noisy Background Texture */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none mix-blend-multiply z-0">
+      <div className="fixed inset-0 opacity-40 pointer-events-none mix-blend-multiply z-0">
         <div
           className="w-full h-full"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.5'/%3E%3C/svg%3E")`,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.8'/%3E%3C/svg%3E")`,
             backgroundRepeat: 'repeat',
           }}
         />
       </div>
       <div className="container mx-auto px-6 relative z-10 max-w-6xl">
         {/* Breadcrumb */}
-        <div className="mb-6">
+        <div className="mb-8">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
@@ -209,20 +207,26 @@ export default function SizeGuidePage() {
               <div>
                 <label className="block text-sm uppercase tracking-wide mb-3">Giới Tính</label>
                 <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant={gender === 'men' ? 'default' : 'outline'}
+                  <button
                     onClick={() => setGender('men')}
-                    className="w-full"
+                    className={`py-3 border-2 rounded-sm transition-all ${
+                      gender === 'men'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-300 hover:border-black'
+                    }`}
                   >
                     Nam
-                  </Button>
-                  <Button
-                    variant={gender === 'women' ? 'default' : 'outline'}
+                  </button>
+                  <button
                     onClick={() => setGender('women')}
-                    className="w-full"
+                    className={`py-3 border-2 rounded-sm transition-all ${
+                      gender === 'women'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-300 hover:border-black'
+                    }`}
                   >
                     Nữ
-                  </Button>
+                  </button>
                 </div>
               </div>
 
@@ -230,20 +234,26 @@ export default function SizeGuidePage() {
               <div>
                 <label className="block text-sm uppercase tracking-wide mb-3">Loại Sản Phẩm</label>
                 <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    variant={productType === 'shirt' ? 'default' : 'outline'}
+                  <button
                     onClick={() => setProductType('shirt')}
-                    className="w-full"
+                    className={`py-3 border-2 rounded-sm transition-all ${
+                      productType === 'shirt'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-300 hover:border-black'
+                    }`}
                   >
                     Áo
-                  </Button>
-                  <Button
-                    variant={productType === 'pants' ? 'default' : 'outline'}
+                  </button>
+                  <button
                     onClick={() => setProductType('pants')}
-                    className="w-full"
+                    className={`py-3 border-2 rounded-sm transition-all ${
+                      productType === 'pants'
+                        ? 'bg-black text-white border-black'
+                        : 'bg-white text-black border-gray-300 hover:border-black'
+                    }`}
                   >
                     Quần
-                  </Button>
+                  </button>
                 </div>
               </div>
 
@@ -255,12 +265,12 @@ export default function SizeGuidePage() {
                   </label>
                   <div className="relative">
                     <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    <Input
+                    <input
                       type="number"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
                       placeholder="170"
-                      className="pl-10"
+                      className="w-full pl-10 pr-3 py-3 border-2 border-gray-300 rounded-sm outline-none focus:border-black transition-colors bg-white text-black"
                     />
                   </div>
                 </div>
@@ -271,12 +281,12 @@ export default function SizeGuidePage() {
                   </label>
                   <div className="relative">
                     <Weight className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    <Input
+                    <input
                       type="number"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
                       placeholder="65"
-                      className="pl-10"
+                      className="w-full pl-10 pr-3 py-3 border-2 border-gray-300 rounded-sm outline-none focus:border-black transition-colors bg-white text-black"
                     />
                   </div>
                 </div>
@@ -287,12 +297,12 @@ export default function SizeGuidePage() {
                   </label>
                   <div className="relative">
                     <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    <Input
+                    <input
                       type="number"
                       value={chest}
                       onChange={(e) => setChest(e.target.value)}
                       placeholder="90"
-                      className="pl-10"
+                      className="w-full pl-10 pr-3 py-3 border-2 border-gray-300 rounded-sm outline-none focus:border-black transition-colors bg-white text-black"
                     />
                   </div>
                 </div>
@@ -301,26 +311,37 @@ export default function SizeGuidePage() {
                   <label className="block text-sm uppercase tracking-wide mb-2">Vòng Eo (cm)</label>
                   <div className="relative">
                     <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    <Input
+                    <input
                       type="number"
                       value={waist}
                       onChange={(e) => setWaist(e.target.value)}
                       placeholder="80"
-                      className="pl-10"
+                      className="w-full pl-10 pr-3 py-3 border-2 border-gray-300 rounded-sm outline-none focus:border-black transition-colors bg-white text-black"
                     />
                   </div>
                 </div>
               </div>
 
+              <p className="text-xs text-gray-600">
+                <span className="text-red-500">*</span> Bắt buộc. Các thông số khác giúp kết quả
+                chính xác hơn.
+              </p>
+
               {/* Action Buttons */}
               <div className="flex gap-3">
-                <Button onClick={calculateSize} className="flex-1" size="lg">
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Tính Size
-                </Button>
-                <Button variant="outline" onClick={resetCalculator} className="flex-1">
-                  Đặt Lại
-                </Button>
+                <button
+                  onClick={calculateSize}
+                  className="flex-1 bg-black text-white py-3 rounded-sm hover:bg-gray-800 transition-all uppercase tracking-wide flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  Tính Size AI
+                </button>
+                <button
+                  onClick={resetCalculator}
+                  className="px-6 border-2 border-gray-300 bg-white text-black py-3 rounded-sm hover:border-black transition-all uppercase tracking-wide"
+                >
+                  Làm Mới
+                </button>
               </div>
             </div>
 
@@ -359,13 +380,12 @@ export default function SizeGuidePage() {
                       )}
                     </div>
                   </div>
-                  <Button
-                    variant="outline"
+                  <button
                     onClick={() => router.push(`/products?size=${recommendedSize}`)}
-                    className="w-full"
+                    className="w-full mt-4 py-3 border-2 border-black bg-white text-black rounded-sm hover:bg-black hover:text-white transition-all uppercase tracking-wide"
                   >
                     Xem Sản Phẩm Size {recommendedSize}
-                  </Button>
+                  </button>
                 </motion.div>
               ) : (
                 <div className="text-center py-12 text-gray-400">
@@ -387,60 +407,86 @@ export default function SizeGuidePage() {
           <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
             <h2 className="text-2xl uppercase tracking-wide">Bảng Size Chi Tiết</h2>
             <div className="flex gap-3">
-              <Button
-                variant={gender === 'men' ? 'default' : 'outline'}
-                size="sm"
+              <button
                 onClick={() => setGender('men')}
+                className={`px-4 py-2 rounded-sm border-2 transition-all uppercase tracking-wide text-sm ${
+                  gender === 'men'
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-black border-gray-300 hover:border-black'
+                }`}
               >
                 Nam
-              </Button>
-              <Button
-                variant={gender === 'women' ? 'default' : 'outline'}
-                size="sm"
+              </button>
+              <button
                 onClick={() => setGender('women')}
+                className={`px-4 py-2 rounded-sm border-2 transition-all uppercase tracking-wide text-sm ${
+                  gender === 'women'
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-black border-gray-300 hover:border-black'
+                }`}
               >
                 Nữ
-              </Button>
+              </button>
             </div>
           </div>
 
           <div className="mb-6 flex gap-3">
-            <Button
-              variant={productType === 'shirt' ? 'default' : 'outline'}
-              size="sm"
+            <button
               onClick={() => setProductType('shirt')}
+              className={`px-4 py-2 rounded-sm border-2 transition-all uppercase tracking-wide text-sm ${
+                productType === 'shirt'
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-black border-gray-300 hover:border-black'
+              }`}
             >
               Áo
-            </Button>
-            <Button
-              variant={productType === 'pants' ? 'default' : 'outline'}
-              size="sm"
+            </button>
+            <button
               onClick={() => setProductType('pants')}
+              className={`px-4 py-2 rounded-sm border-2 transition-all uppercase tracking-wide text-sm ${
+                productType === 'pants'
+                  ? 'bg-black text-white border-black'
+                  : 'bg-white text-black border-gray-300 hover:border-black'
+              }`}
             >
               Quần
-            </Button>
+            </button>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="border-b-2 border-black">
-                  <th className="text-left py-4 px-4 uppercase tracking-wide">Size</th>
+                <tr className="bg-black text-white">
+                  <th className="border border-gray-300 px-4 py-3 text-left uppercase tracking-wide">
+                    Size
+                  </th>
                   {productType === 'shirt' ? (
                     <>
-                      <th className="text-left py-4 px-4 uppercase tracking-wide">Ngực (cm)</th>
-                      <th className="text-left py-4 px-4 uppercase tracking-wide">Eo (cm)</th>
-                      <th className="text-left py-4 px-4 uppercase tracking-wide">
+                      <th className="border border-gray-300 px-4 py-3 uppercase tracking-wide">
+                        Vòng Ngực (cm)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 uppercase tracking-wide">
+                        Vòng Eo (cm)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 uppercase tracking-wide">
                         Chiều Cao (cm)
                       </th>
-                      <th className="text-left py-4 px-4 uppercase tracking-wide">Cân Nặng (kg)</th>
+                      <th className="border border-gray-300 px-4 py-3 uppercase tracking-wide">
+                        Cân Nặng (kg)
+                      </th>
                     </>
                   ) : (
                     <>
-                      <th className="text-left py-4 px-4 uppercase tracking-wide">Eo (cm)</th>
-                      <th className="text-left py-4 px-4 uppercase tracking-wide">Hông (cm)</th>
-                      <th className="text-left py-4 px-4 uppercase tracking-wide">Dài (cm)</th>
-                      <th className="text-left py-4 px-4 uppercase tracking-wide">
+                      <th className="border border-gray-300 px-4 py-3 uppercase tracking-wide">
+                        Vòng Eo (cm)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 uppercase tracking-wide">
+                        Vòng Mông (cm)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 uppercase tracking-wide">
+                        Chiều Dài (cm)
+                      </th>
+                      <th className="border border-gray-300 px-4 py-3 uppercase tracking-wide">
                         Chiều Cao (cm)
                       </th>
                     </>
@@ -449,24 +495,35 @@ export default function SizeGuidePage() {
               </thead>
               <tbody>
                 {currentChart.map((row, index) => (
-                  <tr
-                    key={row.size}
-                    className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
-                  >
-                    <td className="py-4 px-4 font-bold">{row.size}</td>
+                  <tr key={row.size} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                    <td className="border border-gray-300 px-4 py-3 font-bold">{row.size}</td>
                     {productType === 'shirt' ? (
                       <>
-                        <td className="py-4 px-4">{row.chest}</td>
-                        <td className="py-4 px-4">{row.waist}</td>
-                        <td className="py-4 px-4">{row.height}</td>
-                        <td className="py-4 px-4">{'weight' in row ? row.weight : '-'}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">
+                          {row.chest}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">
+                          {row.waist}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">
+                          {row.height}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">
+                          {'weight' in row ? row.weight : '-'}
+                        </td>
                       </>
                     ) : (
                       <>
-                        <td className="py-4 px-4">{row.waist}</td>
-                        <td className="py-4 px-4">{row.hip}</td>
-                        <td className="py-4 px-4">{row.length}</td>
-                        <td className="py-4 px-4">{row.height}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">
+                          {row.waist}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">{row.hip}</td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">
+                          {row.length}
+                        </td>
+                        <td className="border border-gray-300 px-4 py-3 text-center">
+                          {row.height}
+                        </td>
                       </>
                     )}
                   </tr>

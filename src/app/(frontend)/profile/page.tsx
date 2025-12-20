@@ -42,7 +42,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
+    <div className="min-h-screen pt-32 bg-gray-50 pb-12">
       <div className="container mx-auto px-4 md:px-6 max-w-7xl">
         {/* Header */}
         <motion.div
@@ -79,21 +79,30 @@ export default function ProfilePage() {
           className="bg-white rounded-sm border border-gray-200 mb-6 shadow-sm"
         >
           <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex min-w-full">
+            <div className="flex">
               {tabs.map((tab) => {
                 const Icon = tab.icon
                 const isActive = activeTab === tab.id
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center justify-center gap-3 px-6 py-5 transition-colors relative whitespace-nowrap flex-shrink-0 ${
+                    onClick={(e) => {
+                      setActiveTab(tab.id)
+                      e.currentTarget.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                        inline: 'center',
+                      })
+                    }}
+                    className={`flex items-center justify-center gap-2 px-4 py-4 md:px-6 md:py-5 md:gap-3 transition-colors relative whitespace-nowrap flex-shrink-0 ${
                       isActive ? 'text-black' : 'text-gray-500 hover:text-black'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 ${isActive ? 'stroke-2' : 'stroke-1.5'}`} />
+                    <Icon
+                      className={`w-4 h-4 md:w-5 md:h-5 ${isActive ? 'stroke-2' : 'stroke-1.5'}`}
+                    />
                     <span
-                      className={`uppercase tracking-wide text-sm ${isActive ? 'font-bold' : 'font-medium'}`}
+                      className={`uppercase tracking-wide text-xs md:text-sm ${isActive ? 'font-bold' : 'font-medium'}`}
                     >
                       {tab.label}
                     </span>

@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
 
-import { Button } from '@/components/ui/button'
-
 export default function NotFound() {
   return (
     <div className="container py-28">
@@ -10,9 +8,12 @@ export default function NotFound() {
         <h1 style={{ marginBottom: 0 }}>404</h1>
         <p className="mb-4">This page could not be found.</p>
       </div>
-      <Button asChild variant="default">
-        <Link href="/">Go home</Link>
-      </Button>
+      <Link
+        href="/"
+        className="inline-block bg-black text-white px-6 py-3 rounded-sm hover:bg-gray-800 transition-colors uppercase tracking-wide"
+      >
+        Go home
+      </Link>
     </div>
   )
 }

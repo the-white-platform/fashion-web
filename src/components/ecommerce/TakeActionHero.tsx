@@ -2,7 +2,6 @@
 
 import { motion } from 'motion/react'
 import { ArrowRight } from 'lucide-react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 
 export function TakeActionHero() {
@@ -26,21 +25,16 @@ export function TakeActionHero() {
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
-          {/* Take Action Image/Text */}
+          {/* Take Action Text */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="mb-12"
           >
-            <Image
-              src="/assets/slogan.jpg"
-              alt="TAKE ACTION"
-              width={800}
-              height={200}
-              className="w-full max-w-4xl mx-auto h-auto"
-              priority
-            />
+            <h2 className="text-6xl md:text-8xl lg:text-9xl font-bold text-white tracking-wider font-white">
+              TAKE ACTION
+            </h2>
           </motion.div>
 
           {/* Subtitle */}
@@ -48,9 +42,11 @@ export function TakeActionHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-xl md:text-2xl text-gray-300 mb-12 tracking-wide max-w-3xl mx-auto"
+            className="text-xl md:text-3xl text-gray-300 mb-12 tracking-wide max-w-4xl mx-auto font-light leading-relaxed"
           >
-            Hành động để tạo ra sự khác biệt. Thời trang thể thao cho phong cách sống năng động.
+            HÀNH ĐỘNG ĐỂ TẠO RA SỰ KHÁC BIỆT.
+            <br className="hidden md:block" />
+            THỜI TRANG THỂ THAO CHO PHONG CÁCH SỐNG NĂNG ĐỘNG.
           </motion.p>
 
           {/* CTA Buttons */}
@@ -58,11 +54,11 @@ export function TakeActionHero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
           >
             <button
               onClick={handleExplore}
-              className="group bg-white text-black px-8 py-4 rounded-sm hover:bg-gray-200 transition-all uppercase tracking-wider flex items-center gap-3 hover:scale-105"
+              className="group bg-white text-black px-10 py-5 rounded-none hover:bg-black hover:text-white border-2 border-white transition-all uppercase tracking-[0.1em] font-bold text-sm flex items-center gap-3 hover:scale-105"
             >
               <span>Khám Phá Bộ Sưu Tập</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -70,7 +66,7 @@ export function TakeActionHero() {
 
             <button
               onClick={handleExplore}
-              className="group border-2 border-white text-white px-8 py-4 rounded-sm hover:bg-white hover:text-black transition-all uppercase tracking-wider flex items-center gap-3 hover:scale-105"
+              className="group border-2 border-white text-white px-10 py-5 rounded-none hover:bg-white hover:text-black transition-all uppercase tracking-[0.1em] font-bold text-sm flex items-center gap-3 hover:scale-105"
             >
               <span>Xem Tất Cả Sản Phẩm</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

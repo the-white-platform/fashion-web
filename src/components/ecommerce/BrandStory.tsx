@@ -88,13 +88,13 @@ export function BrandStory() {
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link
                 href="/products"
-                className="bg-black text-white px-8 py-4 rounded-sm hover:bg-gray-200 transition-all hover:scale-105"
+                className="bg-black text-white px-8 py-4 rounded-none hover:bg-gray-200 hover:text-black transition-all hover:scale-105 uppercase tracking-widest font-bold text-sm"
               >
                 Khám Phá Bộ Sưu Tập
               </Link>
               <Link
                 href="/contact"
-                className="border-2 border-black px-8 py-4 rounded-sm hover:bg-black hover:text-white transition-all hover:scale-105"
+                className="border-2 border-black px-8 py-4 rounded-none hover:bg-black hover:text-white transition-all hover:scale-105 uppercase tracking-widest font-bold text-sm"
               >
                 Câu Chuyện Của Chúng Tôi
               </Link>

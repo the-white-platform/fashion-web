@@ -117,7 +117,7 @@ Chúng tôi có quyền thay đổi điều khoản này bất kỳ lúc nào. V
   ]
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white pt-32 pb-12">
       <div className="container mx-auto px-6 max-w-4xl">
         {/* Breadcrumb */}
         <div className="mb-6">

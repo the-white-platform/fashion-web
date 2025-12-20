@@ -69,7 +69,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed top-0 left-0 right-0 bg-white z-50 shadow-2xl"
+            className="fixed top-0 left-0 right-0 bg-white z-[60] shadow-2xl"
           >
             <div className="container mx-auto px-6 py-8">
               {/* Search Input */}
@@ -108,7 +108,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           setSearchQuery(search)
                           // Could navigate to search results here
                         }}
-                        className="px-4 py-2 border border-gray-300 rounded-sm hover:border-black hover:bg-black hover:text-white transition-all"
+                        className="px-4 py-2 border border-gray-300 rounded-sm text-foreground hover:border-black hover:bg-black hover:text-white transition-all"
                       >
                         {search}
                       </button>
@@ -137,7 +137,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                           />
                         </div>
                         <div>
-                          <h4 className="mb-1">{product.name}</h4>
+                          <h4 className="mb-1 text-foreground">{product.name}</h4>
                           <p className="text-sm text-gray-600">{product.price}</p>
                         </div>
                       </div>

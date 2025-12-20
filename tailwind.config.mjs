@@ -7,7 +7,21 @@ export default {
     './src/**/*.{ts,tsx}',
   ],
   darkMode: ['selector', '[data-theme="dark"]'],
-  plugins: [require('tailwindcss-animate'), require('@tailwindcss/typography')],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'),
+    function ({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-hide': {
+          '-ms-overflow-style': 'none',
+          'scrollbar-width': 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
+        },
+      })
+    },
+  ],
   prefix: '',
   safelist: [
     'lg:col-span-4',
@@ -48,9 +62,9 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        lg: '0.5rem',    // 8px - same as --radius
+        md: '0.375rem',  // 6px
+        sm: '0.25rem',   // 4px
       },
       colors: {
         accent: {
@@ -101,8 +115,9 @@ export default {
         },
       },
       fontFamily: {
-        mono: ['var(--font-geist-mono)'],
-        sans: ['var(--font-geist-sans)'],
+        sans: ['var(--font-inter)', 'ui-sans-serif', 'system-ui'],
+        heading: ['var(--font-inter)', 'ui-sans-serif', 'system-ui'],
+        white: ['var(--font-white)', 'serif'],
       },
       keyframes: {
         'accordion-down': {

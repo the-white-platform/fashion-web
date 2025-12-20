@@ -1,19 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { motion } from 'motion/react'
 import { Mail, Phone, MapPin, Clock, Send, Facebook, Instagram, MessageCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -62,7 +51,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white pt-32 pb-12">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -111,94 +100,100 @@ export default function ContactPage() {
                     <label className="block text-sm uppercase tracking-wide mb-2">
                       Họ và tên *
                     </label>
-                    <Input
+                    <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
                       placeholder="Nguyễn Văn A"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
                     />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm uppercase tracking-wide mb-2">Email *</label>
-                      <Input
+                      <input
                         type="email"
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
                         placeholder="email@example.com"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
                       />
                     </div>
                     <div>
                       <label className="block text-sm uppercase tracking-wide mb-2">
                         Số điện thoại
                       </label>
-                      <Input
+                      <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         placeholder="0901234567"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm uppercase tracking-wide mb-2">Danh mục *</label>
-                    <Select
+                    <select
                       value={formData.category}
-                      onValueChange={(value) => setFormData({ ...formData, category: value })}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
                     >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="general">Câu hỏi chung</SelectItem>
-                        <SelectItem value="order">Đơn hàng</SelectItem>
-                        <SelectItem value="product">Sản phẩm</SelectItem>
-                        <SelectItem value="return">Đổi trả</SelectItem>
-                        <SelectItem value="partnership">Hợp tác</SelectItem>
-                        <SelectItem value="other">Khác</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      <option value="general">Câu hỏi chung</option>
+                      <option value="order">Đơn hàng</option>
+                      <option value="product">Sản phẩm</option>
+                      <option value="return">Đổi trả</option>
+                      <option value="partnership">Hợp tác</option>
+                      <option value="other">Khác</option>
+                    </select>
                   </div>
 
                   <div>
                     <label className="block text-sm uppercase tracking-wide mb-2">Tiêu đề *</label>
-                    <Input
+                    <input
                       type="text"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
                       placeholder="Vấn đề cần hỗ trợ"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-black transition-colors bg-white text-black"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm uppercase tracking-wide mb-2">Nội dung *</label>
-                    <Textarea
+                    <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
                       rows={6}
                       placeholder="Mô tả chi tiết vấn đề của bạn..."
+                      className="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:border-black transition-colors resize-none bg-white text-black"
                     />
                   </div>
 
-                  <Button type="submit" disabled={isSubmitting} className="w-full" size="lg">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-black text-white py-4 rounded-sm hover:bg-gray-800 transition-colors uppercase tracking-wide flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
                     {isSubmitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                        Đang Gửi...
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Đang Gửi...</span>
                       </>
                     ) : (
                       <>
-                        <Send className="w-5 h-5 mr-2" />
-                        Gửi Tin Nhắn
+                        <Send className="w-5 h-5" />
+                        <span>Gửi Tin Nhắn</span>
                       </>
                     )}
-                  </Button>
+                  </button>
                 </form>
               )}
             </div>
