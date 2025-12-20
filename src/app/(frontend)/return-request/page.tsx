@@ -58,7 +58,7 @@ export default function ReturnRequestPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-white pb-12">
+      <div className="min-h-screen bg-white pt-32 pb-12">
         <div className="container mx-auto px-6 max-w-2xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -96,7 +96,7 @@ export default function ReturnRequestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white pt-32 pb-12">
       <div className="container mx-auto px-6 max-w-4xl">
         {/* Breadcrumb */}
         <div className="mb-6">

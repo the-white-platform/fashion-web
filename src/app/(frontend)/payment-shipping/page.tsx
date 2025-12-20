@@ -23,7 +23,7 @@ import {
 
 export default function PaymentShippingPage() {
   return (
-    <div className="min-h-screen bg-white text-black pb-12 relative overflow-hidden">
+    <div className="min-h-screen bg-white pt-32 text-black pb-12 relative overflow-hidden">
       {/* Noisy Background Texture */}
       <div className="fixed inset-0 opacity-20 pointer-events-none mix-blend-multiply z-0">
         <div

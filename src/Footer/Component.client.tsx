@@ -14,28 +14,28 @@ export function FooterClient() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
-            <Link href="/">
-              <Logo showSlogan={false} className="items-start mb-4" />
+            <Link href="/" className="inline-block bg-black px-4 py-2 mb-4">
+              <Logo showSlogan={false} className="items-start" />
             </Link>
-            <p className="text-gray-400 mb-4 text-sm leading-relaxed">{t('footer.aboutDesc')}</p>
-            <div className="flex gap-4">
+            <p className="text-gray-600 mb-4 text-sm leading-relaxed">{t('footer.aboutDesc')}</p>
+            <div className="flex gap-3">
               <a
                 href="#"
-                className="w-10 h-10 bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-all hover:scale-110 rounded-sm border border-gray-200"
+                className="w-10 h-10 bg-white text-black flex items-center justify-center hover:bg-black hover:text-white transition-all rounded-md border border-gray-300"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-all hover:scale-110 rounded-sm border border-gray-200"
+                className="w-10 h-10 bg-white text-black flex items-center justify-center hover:bg-black hover:text-white transition-all rounded-md border border-gray-300"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-10 h-10 bg-white text-black flex items-center justify-center hover:bg-gray-200 transition-all hover:scale-110 rounded-sm border border-gray-200"
+                className="w-10 h-10 bg-white text-black flex items-center justify-center hover:bg-black hover:text-white transition-all rounded-md border border-gray-300"
                 aria-label="YouTube"
               >
                 <Youtube className="w-5 h-5" />
@@ -45,8 +45,8 @@ export function FooterClient() {
 
           {/* Products */}
           <div className="col-span-1">
-            <h3 className="text-lg font-bold mb-4 uppercase">{t('nav.products')}</h3>
-            <ul className="space-y-2 text-gray-400">
+            <h3 className="text-lg font-semibold mb-4 uppercase tracking-wide">Sản Phẩm</h3>
+            <ul className="space-y-2 text-gray-600 font-normal">
               <li>
                 <Link
                   href="/products"
@@ -92,8 +92,10 @@ export function FooterClient() {
 
           {/* Support */}
           <div className="col-span-1">
-            <h3 className="text-lg font-bold mb-4 uppercase">{t('footer.customer')}</h3>
-            <ul className="space-y-2 text-gray-400">
+            <h3 className="text-lg font-semibold mb-4 uppercase tracking-wide">
+              {t('footer.customer')}
+            </h3>
+            <ul className="space-y-2 text-gray-600 font-normal">
               <li>
                 <Link
                   href="/return-policy"
@@ -139,8 +141,10 @@ export function FooterClient() {
 
           {/* Contact */}
           <div className="col-span-2 lg:col-span-1">
-            <h3 className="text-lg font-bold mb-4 uppercase">{t('nav.contact')}</h3>
-            <ul className="space-y-3 text-gray-400">
+            <h3 className="text-lg font-semibold mb-4 uppercase tracking-wide">
+              {t('nav.contact')}
+            </h3>
+            <ul className="space-y-3 text-gray-600 font-normal">
               <li className="flex items-center gap-2 hover:text-black transition-colors cursor-pointer text-sm">
                 <Phone className="w-4 h-4" />
                 <a href="tel:+84123456789">0123 456 789</a>
@@ -166,8 +170,8 @@ export function FooterClient() {
                 </a>
               </li>
               <li className="pt-2">
-                <p className="text-gray-400 text-sm">{t('footer.contact.hours')}</p>
-                <p className="text-gray-400 mt-1 text-sm">{t('footer.contact.showroom')}</p>
+                <p className="text-gray-700 text-sm font-semibold">{t('footer.contact.hours')}</p>
+                <p className="text-gray-600 mt-1 text-sm">{t('footer.contact.showroom')}</p>
               </li>
             </ul>
           </div>
@@ -175,10 +179,10 @@ export function FooterClient() {
 
         {/* Bottom */}
         <div className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-gray-400 text-sm text-center md:text-left">
+          <div className="text-gray-600 text-sm text-center md:text-left font-normal">
             {t('footer.copyright')}
           </div>
-          <div className="flex gap-6 text-sm text-gray-400">
+          <div className="flex gap-6 text-sm text-gray-600 font-normal">
             <Link href="/privacy-policy" className="hover:text-black transition-colors">
               {t('footer.privacy')}
             </Link>

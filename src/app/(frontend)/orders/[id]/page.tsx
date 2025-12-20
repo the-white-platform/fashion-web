@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { motion } from 'motion/react'
 import { Package, Truck, CheckCircle, Clock, XCircle, ChevronLeft, MapPin } from 'lucide-react'
 import { useUser } from '@/contexts/UserContext'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
@@ -111,13 +110,18 @@ export default function OrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-white pt-24 pb-12">
+      <div className="min-h-screen bg-white pt-32 pb-12">
         <div className="container mx-auto px-6 max-w-6xl">
           <div className="text-center py-20">
             <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
             <h2 className="text-2xl uppercase tracking-wide mb-3">Không Tìm Thấy Đơn Hàng</h2>
             <p className="text-gray-600 mb-8">Đơn hàng bạn tìm kiếm không tồn tại.</p>
-            <Button onClick={() => router.push('/orders')}>Quay Lại Danh Sách Đơn Hàng</Button>
+            <button
+              onClick={() => router.push('/orders')}
+              className="bg-black text-white px-6 py-3 rounded-sm hover:bg-gray-800 transition-colors uppercase tracking-wide"
+            >
+              Quay Lại Danh Sách Đơn Hàng
+            </button>
           </div>
         </div>
       </div>
@@ -129,7 +133,7 @@ export default function OrderDetailPage() {
   const timeline = getTimeline(order.status, order)
 
   return (
-    <div className="min-h-screen bg-white pt-24 pb-12">
+    <div className="min-h-screen bg-white pt-32 pb-12">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -155,10 +159,13 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Back Button */}
-        <Button variant="ghost" onClick={() => router.back()} className="mb-8">
-          <ChevronLeft className="w-5 h-5 mr-2" />
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 mb-8 text-gray-600 hover:text-black transition-colors"
+        >
+          <ChevronLeft className="w-5 h-5" />
           <span>Quay lại</span>
-        </Button>
+        </button>
 
         {/* Order Header */}
         <div className="bg-gray-50 rounded-sm p-6 mb-8">

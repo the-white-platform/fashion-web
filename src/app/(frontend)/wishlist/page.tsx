@@ -7,7 +7,6 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'motion/react'
 import { Heart, ShoppingCart, Share2 } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
@@ -97,7 +96,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white pt-32 pb-12">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -125,14 +124,20 @@ export default function WishlistPage() {
 
           {wishlistItems.length > 0 && (
             <div className="flex gap-3">
-              <Button variant="outline" onClick={handleShare}>
-                <Share2 className="w-5 h-5 mr-2" />
+              <button
+                onClick={handleShare}
+                className="flex items-center gap-2 px-4 py-2 border-2 border-gray-300 rounded-sm hover:border-black transition-colors bg-white text-black"
+              >
+                <Share2 className="w-5 h-5" />
                 <span className="hidden sm:inline">Chia Sẻ</span>
-              </Button>
-              <Button onClick={handleAddAllToCart}>
-                <ShoppingCart className="w-5 h-5 mr-2" />
+              </button>
+              <button
+                onClick={handleAddAllToCart}
+                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-sm hover:bg-gray-800 transition-colors"
+              >
+                <ShoppingCart className="w-5 h-5" />
                 <span className="hidden sm:inline">Thêm Tất Cả Vào Giỏ</span>
-              </Button>
+              </button>
             </div>
           )}
         </div>
@@ -198,21 +203,19 @@ export default function WishlistPage() {
                         <label className="block text-xs text-gray-600 mb-2 uppercase">Size</label>
                         <div className="flex gap-2 flex-wrap">
                           {item.sizes.map((size) => (
-                            <Button
+                            <button
                               key={size}
-                              variant={
-                                (selectedSizes[item.id] || item.sizes[0]) === size
-                                  ? 'default'
-                                  : 'outline'
-                              }
-                              size="sm"
                               onClick={() =>
                                 setSelectedSizes({ ...selectedSizes, [item.id]: size })
                               }
-                              className="text-xs"
+                              className={`px-3 py-1 text-xs rounded-sm border-2 transition-colors ${
+                                (selectedSizes[item.id] || item.sizes[0]) === size
+                                  ? 'bg-black text-white border-black'
+                                  : 'bg-white text-black border-gray-300 hover:border-black'
+                              }`}
                             >
                               {size}
-                            </Button>
+                            </button>
                           ))}
                         </div>
                       </div>
@@ -220,18 +223,20 @@ export default function WishlistPage() {
 
                     {/* Add to Cart Button */}
                     {item.inStock ? (
-                      <Button
+                      <button
                         onClick={() => handleAddToCart(item)}
-                        className="w-full"
-                        variant="default"
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-black text-white rounded-sm hover:bg-gray-800 transition-colors uppercase tracking-wide"
                       >
-                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        <ShoppingCart className="w-4 h-4" />
                         Thêm Vào Giỏ
-                      </Button>
+                      </button>
                     ) : (
-                      <Button className="w-full" variant="outline" disabled>
+                      <button
+                        disabled
+                        className="w-full py-3 border-2 border-gray-300 text-gray-400 rounded-sm uppercase tracking-wide cursor-not-allowed"
+                      >
                         Hết Hàng
-                      </Button>
+                      </button>
                     )}
                   </div>
                 </motion.div>
@@ -250,9 +255,12 @@ export default function WishlistPage() {
             </div>
             <h2 className="text-2xl uppercase tracking-wide mb-3">Danh Sách Yêu Thích Trống</h2>
             <p className="text-gray-600 mb-8">Thêm sản phẩm yêu thích để dễ dàng mua sắm sau này</p>
-            <Button onClick={() => router.push('/products')} size="lg">
+            <button
+              onClick={() => router.push('/products')}
+              className="bg-black text-white px-8 py-4 rounded-sm hover:bg-gray-800 transition-colors uppercase tracking-wide"
+            >
               Khám Phá Sản Phẩm
-            </Button>
+            </button>
           </motion.div>
         )}
 

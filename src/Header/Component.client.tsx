@@ -9,7 +9,7 @@ import type { Header } from '@/payload-types'
 import { Logo } from '@/components/Logo/Logo'
 import { HeaderNav } from './Nav'
 import { Menu, Search } from 'lucide-react'
-import { SearchModal } from '@/components/ecommerce/SearchModal'
+import { useModal } from '@/contexts/ModalContext'
 
 interface HeaderClientProps {
   header: Header | null
@@ -20,7 +20,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
   const [theme, setTheme] = useState<string | null>(null)
   const { headerTheme, setHeaderTheme } = useHeaderTheme()
   const pathname = usePathname()
-  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const { setIsSearchOpen, setIsMobileMenuOpen } = useModal()
 
   useEffect(() => {
     setHeaderTheme(null)
@@ -45,24 +45,27 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 bg-black text-white z-40 transition-all duration-300 border-b ${
-        isScrolled ? 'shadow-lg border-gray-800' : 'border-transparent'
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${
+        isScrolled
+          ? 'bg-black shadow-lg border-gray-800'
+          : 'bg-black/90 backdrop-blur-md border-gray-800/50'
       }`}
       {...(theme ? { 'data-theme': theme } : {})}
     >
-      <div className="container mx-auto px-4 lg:px-6 py-4">
+      <div className="container mx-auto px-4 lg:px-6 py-2">
         <div className="flex items-center justify-between">
           {/* Mobile Menu & Search - Left on Mobile */}
           <div className="flex items-center gap-2 lg:hidden">
             <button
-              className="p-2 -ml-2 hover:bg-white/10 rounded-sm transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="p-2 -ml-2 text-white hover:bg-white/10 rounded-none transition-colors"
               aria-label="Menu"
             >
               <Menu className="w-6 h-6" />
             </button>
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 hover:bg-white/10 rounded-sm transition-colors"
+              className="p-2 text-white hover:bg-white/10 rounded-none transition-colors"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
@@ -77,12 +80,13 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
           </div>
 
           {/* Navigation and Actions */}
-          <HeaderNav header={header} onSearchOpen={() => setIsSearchOpen(true)} />
+          <HeaderNav
+            isScrolled={isScrolled}
+            header={header}
+            onSearchOpen={() => setIsSearchOpen(true)}
+          />
         </div>
       </div>
-
-      {/* Search Modal */}
-      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   )
 }

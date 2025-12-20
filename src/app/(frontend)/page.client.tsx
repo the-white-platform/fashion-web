@@ -12,7 +12,6 @@ import { VirtualTryOnDemo } from '@/components/ecommerce/VirtualTryOnDemo'
 import { BrandStory } from '@/components/ecommerce/BrandStory'
 import { Newsletter } from '@/components/ecommerce/Newsletter'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
-import { Cart } from '@/components/ecommerce/Cart'
 
 export default function HomePageClient() {
   const router = useRouter()
@@ -46,9 +45,6 @@ export default function HomePageClient() {
           onClose={() => setSelectedProduct(null)}
         />
       )}
-
-      {/* Cart */}
-      <Cart />
     </>
   )
 }

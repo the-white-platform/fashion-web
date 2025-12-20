@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { motion } from 'motion/react'
 import { Package, Truck, CheckCircle, Clock, XCircle, ChevronRight } from 'lucide-react'
 import { useUser } from '@/contexts/UserContext'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
@@ -76,7 +75,7 @@ export default function OrdersPage() {
   const orders = user?.orderHistory || []
 
   return (
-    <div className="min-h-screen bg-white pb-12">
+    <div className="min-h-screen bg-white pt-32 pb-12">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -176,13 +175,13 @@ export default function OrdersPage() {
                             {order.total.toLocaleString('vi-VN')}₫
                           </p>
                         </div>
-                        <Button
-                          variant="outline"
+                        <button
                           onClick={() => router.push(`/orders/${order.id}`)}
+                          className="flex items-center gap-2 px-4 py-2 border-2 border-gray-300 rounded-sm hover:border-black transition-colors bg-white text-black"
                         >
                           Xem Chi Tiết
-                          <ChevronRight className="w-4 h-4 ml-2" />
-                        </Button>
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </motion.div>
@@ -203,9 +202,12 @@ export default function OrdersPage() {
             <p className="text-gray-600 mb-8">
               Bạn chưa có đơn hàng nào. Hãy bắt đầu mua sắm ngay!
             </p>
-            <Button onClick={() => router.push('/products')} size="lg">
+            <button
+              onClick={() => router.push('/products')}
+              className="bg-black text-white px-8 py-4 rounded-sm hover:bg-gray-800 transition-colors uppercase tracking-wide"
+            >
               Khám Phá Sản Phẩm
-            </Button>
+            </button>
           </motion.div>
         )}
       </div>

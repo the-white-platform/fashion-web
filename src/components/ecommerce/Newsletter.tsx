@@ -49,7 +49,7 @@ export function Newsletter() {
             <button
               type="submit"
               disabled={submitted}
-              className="bg-white text-black px-8 py-4 rounded-sm hover:bg-gray-200 transition-all hover:scale-105 whitespace-nowrap disabled:opacity-50"
+              className="bg-white text-black px-8 py-4 rounded-none hover:bg-black hover:text-white border-2 border-white transition-all hover:scale-105 whitespace-nowrap disabled:opacity-50 uppercase tracking-widest font-bold text-sm"
             >
               {submitted ? 'Đã Đăng Ký!' : 'Đăng Ký'}
             </button>
