@@ -32,10 +32,7 @@ export function TakeActionHero() {
             transition={{ duration: 0.8 }}
             className="mb-12"
           >
-            <h2
-              className="text-6xl md:text-8xl lg:text-9xl font-bold text-white tracking-wider"
-              style={{ fontFamily: 'The Seasons' }}
-            >
+            <h2 className="text-6xl md:text-8xl lg:text-9xl font-bold text-white tracking-wider">
               TAKE ACTION
             </h2>
           </motion.div>

@@ -276,7 +276,7 @@ export default function ProductDetailPage() {
                   className="w-full bg-black text-white py-6 rounded-sm hover:bg-white hover:text-black border-2 border-black transition-all hover:scale-[1.02] uppercase tracking-[0.2em] font-bold text-xs flex items-center justify-center gap-3 group shadow-2xl"
                 >
                   <Sparkles className="w-5 h-5 group-hover:animate-pulse text-yellow-500" />
-                  Thử Đồ Ảnh
+                  Thử Đồ Ảo
                 </button>
 
                 <button

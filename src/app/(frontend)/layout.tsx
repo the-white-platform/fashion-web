@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
       </head>
-      <body className="relative font-sans antialiased" suppressHydrationWarning>
+      <body className="relative font-sans antialiased">
         {/* Noisy Background Texture - matching prototype */}
         <div className="fixed inset-0 opacity-40 pointer-events-none mix-blend-multiply z-0">
           <div

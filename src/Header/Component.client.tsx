@@ -58,7 +58,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
           <div className="flex items-center gap-2 lg:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="p-2 -ml-2 text-white hover:bg-white/10 rounded-none transition-colors"
+              className="p-2 -ml-2 text-white hover:bg-white/10 rounded-sm transition-colors"
               aria-label="Menu"
             >
               <Menu className="w-6 h-6" />
