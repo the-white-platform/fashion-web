@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl'
 
 export function BrandStory() {
   const t = useTranslations('brandStory')
-  const tCommon = useTranslations('common')
 
   return (
     <section className="py-20 bg-transparent text-foreground">
