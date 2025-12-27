@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
+import { useTranslations } from 'next-intl'
 
 interface Review {
   id: string
@@ -42,6 +43,7 @@ interface ProductReviewsProps {
 
 export function ProductReviews({ productId, productName }: ProductReviewsProps) {
   const { user } = useUser()
+  const t = useTranslations('reviews')
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [sortBy, setSortBy] = useState<'recent' | 'helpful' | 'rating'>('recent')
   const [filterRating, setFilterRating] = useState<number | 'all'>('all')
@@ -161,24 +163,26 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
   }
 
   return (
-    <div className="bg-white border-t border-gray-200 py-12">
+    <div className="bg-background border-t border-border py-12">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <h2 className="text-3xl uppercase tracking-wide mb-2">Đánh Giá & Nhận Xét</h2>
-          <p className="text-gray-600">Từ khách hàng đã mua {productName}</p>
+          <h2 className="text-3xl uppercase tracking-wide mb-2 text-foreground">{t('title')}</h2>
+          <p className="text-muted-foreground">{t('subtitle', { productName })}</p>
         </div>
 
         {/* Rating Summary */}
-        <div className="bg-gray-50 rounded-sm p-8 mb-8">
+        <div className="bg-muted/50 rounded-sm p-8 mb-8">
           <div className="grid md:grid-cols-2 gap-8">
             {/* Average Rating */}
             <div className="text-center md:text-left">
               <div className="flex items-end justify-center md:justify-start gap-4 mb-4">
-                <div className="text-6xl">{averageRating}</div>
+                <div className="text-6xl text-foreground">{averageRating}</div>
                 <div className="pb-2">
                   <StarRating rating={Math.round(parseFloat(averageRating))} />
-                  <p className="text-sm text-gray-600 mt-1">{totalReviews} đánh giá</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {t('count', { count: totalReviews })}
+                  </p>
                 </div>
               </div>
             </div>
@@ -193,18 +197,18 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
                   <button
                     key={rating}
                     onClick={() => setFilterRating(filterRating === rating ? 'all' : rating)}
-                    className={`flex items-center gap-3 w-full group hover:bg-gray-100 rounded-sm p-2 transition-colors ${
-                      filterRating === rating ? 'bg-gray-100' : ''
+                    className={`flex items-center gap-3 w-full group hover:bg-muted rounded-sm p-2 transition-colors ${
+                      filterRating === rating ? 'bg-muted' : ''
                     }`}
                   >
                     <div className="flex items-center gap-1 w-16">
-                      <span className="text-sm">{rating}</span>
+                      <span className="text-sm text-foreground">{rating}</span>
                       <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     </div>
-                    <div className="flex-1 bg-gray-200 h-2 rounded-sm overflow-hidden">
+                    <div className="flex-1 bg-border h-2 rounded-sm overflow-hidden">
                       <Progress value={percentage} className="h-full bg-yellow-400" />
                     </div>
-                    <span className="text-sm text-gray-600 w-12 text-right">{count}</span>
+                    <span className="text-sm text-muted-foreground w-12 text-right">{count}</span>
                   </button>
                 )
               })}
@@ -217,38 +221,36 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
           <div className="mb-8">
             {hasPurchased ? (
               hasReviewed ? (
-                <div className="bg-blue-50 border border-blue-200 rounded-sm p-4 flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-blue-600" />
-                  <span className="text-blue-900">Bạn đã đánh giá sản phẩm này</span>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-sm p-4 flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <span className="text-blue-900 dark:text-blue-100">{t('alreadyReviewed')}</span>
                 </div>
               ) : (
                 <Button
                   onClick={() => setShowReviewForm(!showReviewForm)}
-                  className="w-full md:w-auto bg-black text-white hover:bg-gray-800 uppercase tracking-wide"
+                  className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 uppercase tracking-wide"
                   size="lg"
                 >
                   <MessageCircle className="w-5 h-5 mr-2" />
-                  <span>Viết Đánh Giá</span>
+                  <span>{t('write')}</span>
                 </Button>
               )
             ) : (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-sm p-4 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600" />
-                <span className="text-yellow-900">
-                  Chỉ khách hàng đã mua sản phẩm mới có thể đánh giá
-                </span>
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-sm p-4 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                <span className="text-yellow-900 dark:text-yellow-100">{t('mustPurchase')}</span>
               </div>
             )}
           </div>
         )}
 
         {!user && (
-          <div className="mb-8 bg-gray-50 border border-gray-200 rounded-sm p-4 text-center">
-            <p className="text-gray-600">
-              <Link href="/login" className="text-black underline hover:text-gray-700">
-                Đăng nhập
+          <div className="mb-8 bg-muted/50 border border-border rounded-sm p-4 text-center">
+            <p className="text-muted-foreground">
+              <Link href="/login" className="text-foreground underline hover:text-muted-foreground">
+                {t('login')}
               </Link>{' '}
-              để viết đánh giá
+              {t('loginToReview')}
             </p>
           </div>
         )}
@@ -275,17 +277,17 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
         </AnimatePresence>
 
         {/* Filters & Sort */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <span className="text-sm uppercase tracking-wide">Sắp xếp:</span>
+            <span className="text-sm uppercase tracking-wide text-foreground">{t('sortBy')}</span>
             <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="recent">Mới nhất</SelectItem>
-                <SelectItem value="helpful">Hữu ích nhất</SelectItem>
-                <SelectItem value="rating">Đánh giá cao nhất</SelectItem>
+                <SelectItem value="recent">{t('sort.recent')}</SelectItem>
+                <SelectItem value="helpful">{t('sort.helpful')}</SelectItem>
+                <SelectItem value="rating">{t('sort.rating')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -294,9 +296,9 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
             <Button
               variant="link"
               onClick={() => setFilterRating('all')}
-              className="text-gray-600 hover:text-black underline"
+              className="text-muted-foreground hover:text-foreground underline"
             >
-              Xóa bộ lọc
+              {t('clearCo')}
             </Button>
           )}
         </div>
@@ -309,7 +311,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
         </div>
 
         {filteredAndSortedReviews().length === 0 && (
-          <div className="text-center py-12 text-gray-500">Chưa có đánh giá nào</div>
+          <div className="text-center py-12 text-muted-foreground">{t('empty')}</div>
         )}
       </div>
     </div>
@@ -318,6 +320,7 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
 
 // Review Card Component
 function ReviewCard({ review }: { review: Review }) {
+  const t = useTranslations('reviews')
   const [helpful, setHelpful] = useState(review.helpful)
   const [hasVoted, setHasVoted] = useState(false)
 
@@ -331,11 +334,11 @@ function ReviewCard({ review }: { review: Review }) {
   const getFitLabel = (fit?: string) => {
     switch (fit) {
       case 'tight':
-        return { label: 'Hơi chật', color: 'text-orange-600 bg-orange-50' }
+        return { label: t('fit.tight'), color: 'text-orange-600 bg-orange-500/10' }
       case 'perfect':
-        return { label: 'Vừa vặn', color: 'text-green-600 bg-green-50' }
+        return { label: t('fit.perfect'), color: 'text-green-600 bg-green-500/10' }
       case 'loose':
-        return { label: 'Hơi rộng', color: 'text-blue-600 bg-blue-50' }
+        return { label: t('fit.loose'), color: 'text-blue-600 bg-blue-500/10' }
       default:
         return null
     }
@@ -347,25 +350,28 @@ function ReviewCard({ review }: { review: Review }) {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="border border-gray-200 rounded-sm p-6"
+      className="border border-border rounded-sm p-6"
     >
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-black text-white rounded-sm flex items-center justify-center uppercase">
+          <div className="w-12 h-12 bg-primary text-primary-foreground rounded-sm flex items-center justify-center uppercase">
             {review.userName.charAt(0)}
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="uppercase tracking-wide">{review.userName}</span>
+              <span className="uppercase tracking-wide text-foreground">{review.userName}</span>
               {review.verified && (
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
+                <Badge
+                  variant="secondary"
+                  className="bg-green-500/10 text-green-600 dark:text-green-400"
+                >
                   <CheckCircle className="w-3 h-3 mr-1" />
-                  Đã mua hàng
+                  {t('verified')}
                 </Badge>
               )}
             </div>
-            <div className="flex items-center gap-3 text-sm text-gray-600">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
               <span>{new Date(review.date).toLocaleDateString('vi-VN')}</span>
               {review.size && <span>Size: {review.size}</span>}
             </div>
@@ -379,29 +385,31 @@ function ReviewCard({ review }: { review: Review }) {
           <Star
             key={star}
             className={`w-5 h-5 ${
-              star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+              star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-border'
             }`}
           />
         ))}
       </div>
 
       {/* Title */}
-      {review.title && <h4 className="uppercase tracking-wide mb-2">{review.title}</h4>}
+      {review.title && (
+        <h4 className="uppercase tracking-wide mb-2 text-foreground">{review.title}</h4>
+      )}
 
       {/* Comment */}
-      <p className="text-gray-700 mb-4">{review.comment}</p>
+      <p className="text-foreground/90 mb-4">{review.comment}</p>
 
       {/* Body Info */}
       {(review.height || review.weight || fitInfo) && (
         <div className="flex flex-wrap gap-2 mb-4">
           {review.height && (
             <Badge variant="outline" className="text-xs">
-              Cao: {review.height}
+              {t('labels.height')}: {review.height}
             </Badge>
           )}
           {review.weight && (
             <Badge variant="outline" className="text-xs">
-              Nặng: {review.weight}
+              {t('labels.weight')}: {review.weight}
             </Badge>
           )}
           {fitInfo && <Badge className={`text-xs ${fitInfo.color}`}>{fitInfo.label}</Badge>}
@@ -409,16 +417,18 @@ function ReviewCard({ review }: { review: Review }) {
       )}
 
       {/* Footer */}
-      <div className="flex items-center gap-4 pt-4 border-t border-gray-200">
+      <div className="flex items-center gap-4 pt-4 border-t border-border">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleHelpful}
           disabled={hasVoted}
-          className={`${hasVoted ? 'text-green-600' : 'text-gray-600'}`}
+          className={`${hasVoted ? 'text-green-600' : 'text-muted-foreground'}`}
         >
           <ThumbsUp className={`w-4 h-4 mr-2 ${hasVoted ? 'fill-green-600' : ''}`} />
-          <span>Hữu ích ({helpful})</span>
+          <span>
+            {t('helpful')} ({helpful})
+          </span>
         </Button>
       </div>
     </motion.div>
@@ -436,6 +446,7 @@ function ReviewForm({
   productId: number
 }) {
   const { user } = useUser()
+  const t = useTranslations('reviews')
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [title, setTitle] = useState('')
@@ -449,7 +460,7 @@ function ReviewForm({
     e.preventDefault()
 
     if (!rating || !comment) {
-      alert('Vui lòng nhập đánh giá và nhận xét')
+      alert(t('form.alert'))
       return
     }
 
@@ -473,13 +484,13 @@ function ReviewForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-gray-50 border-2 border-black rounded-sm p-6">
-      <h3 className="text-xl uppercase tracking-wide mb-6">Viết Đánh Giá Của Bạn</h3>
+    <form onSubmit={handleSubmit} className="bg-muted/30 border-2 border-border rounded-sm p-6">
+      <h3 className="text-xl uppercase tracking-wide mb-6 text-foreground">{t('form.title')}</h3>
 
       {/* Rating */}
       <div className="mb-6">
-        <label className="block text-sm uppercase tracking-wide mb-2">
-          Đánh Giá <span className="text-red-500">*</span>
+        <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
+          {t('labels.rating')} <span className="text-red-500">*</span>
         </label>
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -495,7 +506,7 @@ function ReviewForm({
                 className={`w-8 h-8 ${
                   star <= (hoverRating || rating)
                     ? 'fill-yellow-400 text-yellow-400'
-                    : 'text-gray-300'
+                    : 'text-border'
                 }`}
               />
             </button>
@@ -505,24 +516,26 @@ function ReviewForm({
 
       {/* Title */}
       <div className="mb-4">
-        <label className="block text-sm uppercase tracking-wide mb-2">Tiêu Đề</label>
+        <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
+          {t('labels.title')}
+        </label>
         <Input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Tóm tắt đánh giá của bạn"
+          placeholder={t('placeholders.title')}
         />
       </div>
 
       {/* Comment */}
       <div className="mb-4">
-        <label className="block text-sm uppercase tracking-wide mb-2">
-          Nhận Xét <span className="text-red-500">*</span>
+        <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
+          {t('labels.comment')} <span className="text-red-500">*</span>
         </label>
         <Textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
+          placeholder={t('placeholders.comment')}
           rows={5}
           required
         />
@@ -531,10 +544,12 @@ function ReviewForm({
       {/* Size & Fit Info */}
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="block text-sm uppercase tracking-wide mb-2">Size Đã Mua</label>
+          <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
+            {t('labels.size')}
+          </label>
           <Select value={size} onValueChange={setSize}>
             <SelectTrigger>
-              <SelectValue placeholder="Chọn size" />
+              <SelectValue placeholder={t('placeholders.size')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="XS">XS</SelectItem>
@@ -548,36 +563,42 @@ function ReviewForm({
         </div>
 
         <div>
-          <label className="block text-sm uppercase tracking-wide mb-2">Độ Vừa Vặn</label>
+          <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
+            {t('labels.fit')}
+          </label>
           <Select value={fit} onValueChange={(value: any) => setFit(value)}>
             <SelectTrigger>
-              <SelectValue placeholder="Chọn độ vừa vặn" />
+              <SelectValue placeholder={t('placeholders.fit')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="tight">Hơi chật</SelectItem>
-              <SelectItem value="perfect">Vừa vặn</SelectItem>
-              <SelectItem value="loose">Hơi rộng</SelectItem>
+              <SelectItem value="tight">{t('fit.tight')}</SelectItem>
+              <SelectItem value="perfect">{t('fit.perfect')}</SelectItem>
+              <SelectItem value="loose">{t('fit.loose')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div>
-          <label className="block text-sm uppercase tracking-wide mb-2">Chiều Cao</label>
+          <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
+            {t('labels.height')}
+          </label>
           <Input
             type="text"
             value={height}
             onChange={(e) => setHeight(e.target.value)}
-            placeholder="VD: 175cm"
+            placeholder={t('placeholders.height')}
           />
         </div>
 
         <div>
-          <label className="block text-sm uppercase tracking-wide mb-2">Cân Nặng</label>
+          <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
+            {t('labels.weight')}
+          </label>
           <Input
             type="text"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
-            placeholder="VD: 68kg"
+            placeholder={t('placeholders.weight')}
           />
         </div>
       </div>
@@ -586,9 +607,9 @@ function ReviewForm({
       <div className="flex gap-3">
         <Button
           type="submit"
-          className="flex-1 bg-black text-white hover:bg-gray-800 uppercase tracking-wide"
+          className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 uppercase tracking-wide"
         >
-          Gửi Đánh Giá
+          {t('form.submit')}
         </Button>
         <Button
           type="button"
@@ -596,7 +617,7 @@ function ReviewForm({
           onClick={onCancel}
           className="flex-1 uppercase tracking-wide"
         >
-          Hủy
+          {t('form.cancel')}
         </Button>
       </div>
     </form>

@@ -6,12 +6,13 @@ import { cn } from '@/utilities/cn'
 import type { Header as HeaderType } from '@/payload-types'
 
 import { CMSLink } from '@/components/Link'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { Search, ShoppingBag, User } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
-import { useLanguage } from '@/contexts/LanguageContext'
+import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/ecommerce/LanguageSwitcher'
+import { ThemeSwitcher } from '@/components/ecommerce/ThemeSwitcher'
 
 export const HeaderNav: React.FC<{
   header: HeaderType | null
@@ -21,14 +22,15 @@ export const HeaderNav: React.FC<{
   const navItems = header?.navItems || []
   const { items, setIsCartOpen } = useCart()
   const { user } = useUser()
+  const t = useTranslations()
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
   // Default navigation items as fallback
   const defaultNavItems = [
-    { label: 'Nam', url: '/products?category=men' },
-    { label: 'Nữ', url: '/products?category=women' },
-    { label: 'Trẻ Em', url: '/products?category=kids' },
-    { label: 'Mới Nhất', url: '/products?sort=newest' },
+    { label: t('nav.men'), url: '/products?category=men' },
+    { label: t('nav.women'), url: '/products?category=women' },
+    { label: t('nav.kids'), url: '/products?category=kids' },
+    { label: t('nav.new'), url: '/products?sort=newest' },
   ]
 
   const displayNavItems = navItems.length > 0 ? navItems : defaultNavItems
@@ -47,8 +49,8 @@ export const HeaderNav: React.FC<{
                 {...item.link}
                 appearance="inline"
                 className={cn(
-                  'hover:text-gray-400 transition-all tracking-wide uppercase text-sm font-medium text-white',
-                  !isScrolled && 'drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]',
+                  'hover:text-muted-foreground transition-all tracking-wide uppercase text-sm font-medium text-foreground',
+                  !isScrolled && 'drop-shadow-sm',
                 )}
               />
             )
@@ -59,8 +61,8 @@ export const HeaderNav: React.FC<{
                 key={i}
                 href={item.url}
                 className={cn(
-                  'hover:text-gray-400 transition-all tracking-wide uppercase text-sm font-medium text-white',
-                  !isScrolled && 'drop-shadow-[0_2px_2px_rgba(0,0,0,0.5)]',
+                  'hover:text-muted-foreground transition-all tracking-wide uppercase text-sm font-medium text-foreground',
+                  !isScrolled && 'drop-shadow-sm',
                 )}
               >
                 {item.label}
@@ -71,11 +73,11 @@ export const HeaderNav: React.FC<{
       </nav>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 lg:gap-4 text-white">
+      <div className="flex items-center gap-2 lg:gap-4 text-foreground">
         <button
           onClick={onSearchOpen}
           className={cn(
-            'p-2 hover:bg-white/10 rounded-sm transition-all hidden lg:block',
+            'p-2 hover:bg-accent rounded-sm transition-all hidden lg:block',
             !isScrolled && 'drop-shadow-lg',
           )}
           aria-label="Search"
@@ -85,20 +87,20 @@ export const HeaderNav: React.FC<{
         <Link
           href={user ? '/profile' : '/login'}
           className={cn(
-            'p-2 hover:bg-white/10 rounded-sm transition-all hidden lg:block',
+            'p-2 hover:bg-accent rounded-sm transition-all hidden lg:block',
             !isScrolled && 'drop-shadow-lg',
           )}
-          aria-label={user ? 'Profile' : 'Login'}
+          aria-label={user ? t('nav.profile') : t('nav.login')}
         >
           <User className="w-5 h-5" />
         </Link>
         <button
           onClick={() => setIsCartOpen(true)}
           className={cn(
-            'p-2 hover:bg-white/10 rounded-sm transition-all relative',
+            'p-2 hover:bg-accent rounded-sm transition-all relative',
             !isScrolled && 'drop-shadow-lg',
           )}
-          aria-label="Cart"
+          aria-label={t('nav.cart')}
         >
           <ShoppingBag className="w-5 h-5" />
           {totalItems > 0 && (
@@ -107,7 +109,8 @@ export const HeaderNav: React.FC<{
             </span>
           )}
         </button>
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex items-center gap-4">
+          <ThemeSwitcher />
           <LanguageSwitcher />
         </div>
       </div>

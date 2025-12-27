@@ -7,40 +7,43 @@ import { motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-
-const carouselSlides = [
-  {
-    id: 1,
-    image:
-      'https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=3270&auto=format&fit=crop',
-    title: 'HST MÙA ĐÔNG<br/>2024',
-    subtitle: 'Sức mạnh trong từng bước chân',
-    cta: 'KHÁM PHÁ NGAY',
-    link: '/products',
-  },
-  {
-    id: 2,
-    image:
-      'https://images.unsplash.com/photo-1572565408388-cdd3afe23e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920',
-    title: 'PERFORMANCE<br/>PRO',
-    subtitle: 'Công nghệ tiên tiến cho hiệu suất tối đa',
-    cta: 'XEM SẢN PHẨM',
-    link: '/products',
-  },
-  {
-    id: 3,
-    image:
-      'https://images.unsplash.com/photo-1625515922308-56dcaa45351c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920',
-    title: 'STYLE<br/>& COMFORT',
-    subtitle: 'Kết hợp hoàn hảo giữa thời trang và sự thoải mái',
-    cta: 'MUA NGAY',
-    link: '/products',
-  },
-]
+import { useTranslations } from 'next-intl'
 
 export function Carousel() {
+  const t = useTranslations('carousel')
+  const tCommon = useTranslations('common')
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 20 })
   const [selectedIndex, setSelectedIndex] = useState(0)
+
+  const carouselSlides = [
+    {
+      id: 1,
+      image:
+        'https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=3270&auto=format&fit=crop',
+      titleKey: 'slides.winter2024.title',
+      subtitleKey: 'slides.winter2024.subtitle',
+      ctaKey: 'slides.winter2024.cta',
+      link: '/products',
+    },
+    {
+      id: 2,
+      image:
+        'https://images.unsplash.com/photo-1572565408388-cdd3afe23e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920',
+      titleKey: 'slides.performancePro.title',
+      subtitleKey: 'slides.performancePro.subtitle',
+      ctaKey: 'slides.performancePro.cta',
+      link: '/products',
+    },
+    {
+      id: 3,
+      image:
+        'https://images.unsplash.com/photo-1625515922308-56dcaa45351c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920',
+      titleKey: 'slides.styleComfort.title',
+      subtitleKey: 'slides.styleComfort.subtitle',
+      ctaKey: 'slides.styleComfort.cta',
+      link: '/products',
+    },
+  ]
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev()
@@ -73,7 +76,7 @@ export function Carousel() {
   }, [emblaApi, onSelect])
 
   return (
-    <section className="relative bg-black text-white -mt-24">
+    <section className="relative text-foreground -mt-24">
       <div className="relative h-screen overflow-hidden" ref={emblaRef}>
         <div className="flex h-full">
           {carouselSlides.map((slide) => (
@@ -103,21 +106,21 @@ export function Carousel() {
                       className="max-w-4xl"
                     >
                       <div className="mb-6 inline-block bg-white text-black px-4 py-2 text-sm tracking-widest rounded-sm">
-                        THEWHITE COLLECTION
+                        {tCommon('collection')}
                       </div>
                       <h2
-                        className="text-6xl lg:text-9xl uppercase leading-[0.9] mb-8 font-heading font-bold tracking-tight"
-                        dangerouslySetInnerHTML={{ __html: slide.title }}
+                        className="text-6xl lg:text-9xl uppercase leading-[0.9] mb-8 font-heading font-bold tracking-tight text-white"
+                        dangerouslySetInnerHTML={{ __html: t(slide.titleKey) }}
                       />
                       <p className="text-xl lg:text-2xl text-white mb-10 font-medium tracking-wide max-w-2xl text-shadow-sm">
-                        {slide.subtitle}
+                        {t(slide.subtitleKey)}
                       </p>
                       <Button
                         size="lg"
                         className="bg-white text-black hover:bg-gray-200 rounded-sm px-8 py-4 text-sm tracking-wide font-bold transition-all hover:scale-105 uppercase"
                         asChild
                       >
-                        <Link href={slide.link}>{slide.cta}</Link>
+                        <Link href={slide.link}>{t(slide.ctaKey)}</Link>
                       </Button>
                     </motion.div>
                   </div>
@@ -132,14 +135,14 @@ export function Carousel() {
       <button
         onClick={scrollPrev}
         className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm text-white p-3 rounded-sm hover:bg-white/20 transition-all hover:scale-110"
-        aria-label="Previous slide"
+        aria-label={t('previousSlide')}
       >
         <ChevronLeft className="w-6 h-6" />
       </button>
       <button
         onClick={scrollNext}
         className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm text-white p-3 rounded-sm hover:bg-white/20 transition-all hover:scale-110"
-        aria-label="Next slide"
+        aria-label={t('nextSlide')}
       >
         <ChevronRight className="w-6 h-6" />
       </button>
@@ -154,7 +157,7 @@ export function Carousel() {
               className={`h-1 rounded-sm transition-all duration-300 ${
                 index === selectedIndex ? 'w-12 bg-white' : 'w-12 bg-white/30 hover:bg-white/60'
               }`}
-              aria-label={`Go to slide ${index + 1}`}
+              aria-label={`${t('goToSlide')} ${index + 1}`}
             />
           ))}
         </div>

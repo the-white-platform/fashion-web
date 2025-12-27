@@ -3,8 +3,10 @@
 import { Mail } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 export function Newsletter() {
+  const t = useTranslations('newsletter')
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
@@ -18,7 +20,7 @@ export function Newsletter() {
   }
 
   return (
-    <section className="py-20 bg-gray-950 text-white">
+    <section className="py-20 text-foreground">
       <div className="container mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -28,11 +30,9 @@ export function Newsletter() {
         >
           <Mail className="w-12 h-12 mx-auto mb-6" />
 
-          <h2 className="text-3xl lg:text-4xl uppercase mb-4">Đăng Ký Nhận Tin</h2>
+          <h2 className="text-3xl lg:text-4xl uppercase mb-4">{t('title')}</h2>
 
-          <p className="text-gray-400 mb-8">
-            Nhận thông tin về sản phẩm mới, ưu đãi đặc biệt và cập nhật từ TheWhite
-          </p>
+          <p className="text-muted-foreground mb-8">{t('description')}</p>
 
           <form
             onSubmit={handleSubmit}
@@ -40,24 +40,22 @@ export function Newsletter() {
           >
             <input
               type="email"
-              placeholder="Nhập email của bạn"
+              placeholder={t('placeholder')}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="flex-1 px-6 py-4 bg-black border-2 border-gray-700 text-white outline-none focus:border-white transition-colors rounded-sm placeholder:text-gray-500"
+              className="flex-1 px-6 py-4 bg-background border-2 border-input text-foreground outline-none focus:border-ring transition-colors rounded-sm placeholder:text-muted-foreground"
             />
             <button
               type="submit"
               disabled={submitted}
-              className="bg-white text-black px-8 py-4 rounded-none hover:bg-black hover:text-white border-2 border-white transition-all hover:scale-105 whitespace-nowrap disabled:opacity-50 uppercase tracking-widest font-bold text-sm"
+              className="bg-primary text-primary-foreground px-8 py-4 rounded-none hover:bg-primary/90 hover:text-primary-foreground border-2 border-primary transition-all hover:scale-105 whitespace-nowrap disabled:opacity-50 uppercase tracking-widest font-bold text-sm"
             >
-              {submitted ? 'Đã Đăng Ký!' : 'Đăng Ký'}
+              {submitted ? t('buttonSuccess') : t('button')}
             </button>
           </form>
 
-          <p className="text-sm text-gray-500 mt-4">
-            Chúng tôi cam kết bảo vệ thông tin của bạn. Bạn có thể hủy đăng ký bất cứ lúc nào.
-          </p>
+          <p className="text-sm text-muted-foreground mt-4">{t('note')}</p>
         </motion.div>
       </div>
     </section>

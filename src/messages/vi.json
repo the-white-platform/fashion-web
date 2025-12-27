@@ -1,0 +1,597 @@
+{
+  "theme": {
+    "light": "Sáng",
+    "dark": "Tối",
+    "system": "Hệ Thống"
+  },
+  "nav": {
+    "home": "Trang Chủ",
+    "products": "Sản Phẩm",
+    "men": "Nam",
+    "women": "Nữ",
+    "kids": "Trẻ Em",
+    "new": "Mới Nhất",
+    "collections": "Bộ Sưu Tập",
+    "about": "Về Chúng Tôi",
+    "contact": "Liên Hệ",
+    "search": "Tìm kiếm...",
+    "account": "Tài Khoản",
+    "wishlist": "Yêu Thích",
+    "cart": "Giỏ Hàng",
+    "login": "Đăng Nhập",
+    "register": "Đăng Ký",
+    "logout": "Đăng Xuất",
+    "profile": "Hồ Sơ",
+    "backToHome": "Về Trang Chủ"
+  },
+  "hero": {
+    "title": "BỘ SƯU TẬP MÙA ĐÔNG 2024",
+    "subtitle": "PHONG CÁCH THỂ THAO HIỆN ĐẠI",
+    "description": "Khám phá bộ sưu tập mới nhất với thiết kế tối giản, chất liệu cao cấp và công nghệ tiên tiến",
+    "cta": "Khám Phá Ngay",
+    "lookbook": "Xem Lookbook",
+    "stats": {
+      "products": "Sản Phẩm",
+      "customers": "Khách Hàng",
+      "rating": "Đánh Giá"
+    },
+    "discount": {
+      "upto": "GIẢM GIÁ ĐẾN"
+    }
+  },
+  "categories": {
+    "title": "Mua Sắm Theo Hoạt Động",
+    "subtitle": "Tìm kiếm trang phục phù hợp với mọi hoạt động thể thao của bạn",
+    "running": "CHẠY BỘ",
+    "gym": "TẬP GYM",
+    "yoga": "YOGA",
+    "football": "BÓNG ĐÁ"
+  },
+  "products": {
+    "title": "Sản Phẩm Nổi Bật",
+    "subtitle": "Những sản phẩm được yêu thích nhất",
+    "new": "Mới",
+    "bestseller": "Bán Chạy",
+    "sale": "Giảm Giá",
+    "accessories": "Phụ Kiện",
+    "addToCart": "Thêm Vào Giỏ",
+    "quickView": "Xem Nhanh",
+    "viewAll": "Xem Tất Cả",
+    "filter": "Lọc",
+    "sort": "Sắp Xếp",
+    "size": "Kích Thước",
+    "color": "Màu Sắc",
+    "price": "Giá",
+    "category": "Danh Mục"
+  },
+  "cart": {
+    "title": "Giỏ Hàng",
+    "empty": "Giỏ hàng trống",
+    "emptyDesc": "Bạn chưa có sản phẩm nào trong giỏ hàng",
+    "continueShopping": "Tiếp Tục Mua Sắm",
+    "checkout": "Thanh Toán",
+    "total": "Tổng Cộng",
+    "subtotal": "Tạm Tính",
+    "shipping": "Phí Vận Chuyển",
+    "discount": "Giảm Giá",
+    "remove": "Xóa",
+    "quantity": "Số Lượng"
+  },
+  "checkout": {
+    "title": "Thanh Toán",
+    "shipping": "Thông Tin Giao Hàng",
+    "payment": "Phương Thức Thanh Toán",
+    "review": "Xác Nhận Đơn Hàng",
+    "complete": "Hoàn Tất",
+    "next": "Tiếp Theo",
+    "back": "Quay Lại",
+    "placeOrder": "Đặt Hàng",
+    "fullName": "Họ và Tên",
+    "phone": "Số Điện Thoại",
+    "email": "Email",
+    "address": "Địa Chỉ",
+    "city": "Tỉnh/Thành Phố",
+    "district": "Quận/Huyện",
+    "ward": "Phường/Xã",
+    "note": "Ghi Chú",
+    "success": "Đặt Hàng Thành Công!",
+    "successDesc": "Cảm ơn bạn đã mua hàng. Chúng tôi sẽ liên hệ với bạn sớm nhất.",
+    "orderId": "Mã Đơn Hàng"
+  },
+  "profile": {
+    "title": "Hồ Sơ Của Tôi",
+    "info": "Thông Tin",
+    "size": "Size & Số Đo",
+    "vto": "Virtual Try-On",
+    "orders": "Đơn Hàng",
+    "addresses": "Địa Chỉ",
+    "payment": "Thanh Toán",
+    "logout": "Đăng Xuất",
+    "edit": "Chỉnh Sửa",
+    "save": "Lưu",
+    "cancel": "Hủy"
+  },
+  "orders": {
+    "title": "Đơn Hàng Của Tôi",
+    "empty": "Chưa Có Đơn Hàng",
+    "emptyDesc": "Bạn chưa có đơn hàng nào. Hãy khám phá và mua sắm ngay!",
+    "orderId": "Mã Đơn",
+    "date": "Ngày Đặt",
+    "status": "Trạng Thái",
+    "total": "Tổng Tiền",
+    "items": "sản phẩm",
+    "viewDetails": "Chi Tiết",
+    "trackOrder": "Theo Dõi Đơn Hàng",
+    "cancelOrder": "Hủy Đơn",
+    "buyAgain": "Mua Lại",
+    "review": "Đánh Giá",
+    "delivered": "Đã Giao",
+    "shipping": "Đang Giao",
+    "processing": "Đang Xử Lý",
+    "cancelled": "Đã Hủy"
+  },
+  "footer": {
+    "about": "Về TheWhite",
+    "aboutDesc": "Thương hiệu thể thao Việt Nam với phong cách hiện đại, tối giản",
+    "customer": "Khách Hàng",
+    "policy": "Chính Sách",
+    "connect": "Kết Nối",
+    "payment": "Phương Thức Thanh Toán",
+    "shipping": "Đối Tác Vận Chuyển",
+    "copyright": "© 2024 TheWhite. Bảo lưu mọi quyền.",
+    "privacy": "Chính Sách Bảo Mật",
+    "terms": "Điều Khoản Sử Dụng",
+    "products": {
+      "shirts": "Áo Thể Thao",
+      "pants": "Quần Thể Thao",
+      "shoes": "Giày Thể Thao",
+      "accessories": "Phụ Kiện",
+      "new": "Bộ Sưu Tập Mới"
+    },
+    "support": {
+      "return": "Chính Sách Đổi Trả",
+      "guide": "Hướng Dẫn Mua Hàng",
+      "payment": "Thanh Toán & Vận Chuyển",
+      "size": "Hướng Dẫn Chọn Size",
+      "faq": "Câu Hỏi Thường Gặp"
+    },
+    "customerService": {
+      "title": "Chăm Sóc Khách Hàng",
+      "returns": "Chính Sách Đổi Trả",
+      "shipping": "Thanh Toán & Vận Chuyển",
+      "sizeGuide": "Hướng Dẫn Chọn Size",
+      "contact": "Liên Hệ",
+      "faq": "Câu Hỏi Thường Gặp"
+    },
+    "rights": "Bảo lưu mọi quyền.",
+    "contact": {
+      "hours": "Giờ làm việc: 8:00 - 22:00",
+      "showroom": "Showroom: Quận 1, TP.HCM"
+    }
+  },
+  "virtualTryOnDemo": {
+    "badge": "CÔNG NGHỆ AI",
+    "title": "Thử Đồ Ảo",
+    "description": "Trải nghiệm công nghệ AI tiên tiến - Xem bạn trông như thế nào trong trang phục TheWhite",
+    "steps": {
+      "1": {
+        "title": "Chọn Sản Phẩm",
+        "description": "Chọn sản phẩm bạn muốn thử từ trang chi tiết sản phẩm"
+      },
+      "2": {
+        "title": "Tải Ảnh & Thông Tin",
+        "uploadText": "Tải ảnh toàn thân của bạn",
+        "description": "Điền chiều cao, cân nặng và giới tính để kết quả chính xác hơn"
+      },
+      "3": {
+        "title": "Xem Kết Quả",
+        "description": "AI tạo ảnh bạn mặc sản phẩm TheWhite chỉ trong vài giây"
+      }
+    },
+    "cta": {
+      "title": "Sẵn Sàng Thử?",
+      "description": "Chọn bất kỳ sản phẩm nào trong cửa hàng và nhấn nút \"Thử Đồ Ảo\" để bắt đầu trải nghiệm",
+      "button": "Khám Phá Sản Phẩm"
+    },
+    "features": {
+      "upload": {
+        "title": "Dễ Sử Dụng",
+        "description": "Chỉ cần 3 bước đơn giản là có kết quả ngay lập tức"
+      },
+      "ai": {
+        "title": "Công Nghệ AI",
+        "description": "Sử dụng trí tuệ nhân tạo tiên tiến nhất"
+      },
+      "personal": {
+        "title": "Riêng Tư & An Toàn",
+        "description": "Ảnh của bạn được bảo mật tuyệt đối"
+      }
+    }
+  },
+  "common": {
+    "all": "Tất Cả",
+    "newest": "Mới Nhất",
+    "priceAsc": "Giá Tăng Dần",
+    "priceDesc": "Giá Giảm Dần",
+    "popular": "Phổ Biến",
+    "loading": "Đang tải...",
+    "error": "Đã có lỗi xảy ra",
+    "success": "Thành công",
+    "confirm": "Xác nhận",
+    "cancel": "Hủy",
+    "close": "Đóng",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "sort": "Sắp xếp",
+    "apply": "Áp dụng",
+    "reset": "Đặt lại",
+    "viewMore": "Xem Thêm",
+    "viewLess": "Thu Gọn",
+    "readMore": "Đọc Thêm",
+    "showMore": "Hiển Thị Thêm",
+    "products": "SẢN PHẨM",
+    "explore": "KHÁM PHÁ",
+    "collection": "BỘ SƯU TẬP",
+    "notFound": {
+      "title": "404",
+      "description": "Trang này không tồn tại.",
+      "home": "Về Trang Chủ"
+    }
+  },
+  "carousel": {
+    "slides": {
+      "winter2024": {
+        "title": "BST MÙA ĐÔNG 2024",
+        "subtitle": "Sức mạnh trong từng bước chân",
+        "cta": "Khám phá ngay"
+      },
+      "performancePro": {
+        "title": "PHONG CÁCH HIỆN ĐẠI",
+        "subtitle": "Tối ưu cho mọi hoạt động",
+        "cta": "Khám phá ngay"
+      },
+      "styleComfort": {
+        "title": "CHẤT LIỆU CAO CẤP",
+        "subtitle": "Thoải mái suốt cả ngày",
+        "cta": "Khám phá ngay"
+      }
+    },
+    "previousSlide": "Slide Trước",
+    "nextSlide": "Slide Tiếp Theo",
+    "goToSlide": "Đi đến slide"
+  },
+  "takeAction": {
+    "subtitle": "Đừng chỉ mơ về thành công. Hãy hành động ngay hôm nay với trang phục thể thao cao cấp TheWhite.",
+    "cta": {
+      "explore": "Khám Phá Thêm",
+      "collection": "Bộ Sưu Tập Mới"
+    },
+    "scroll": "Cuộn xuống"
+  },
+  "brandStory": {
+    "label": "VỀ THEWHITE",
+    "title": "Thể Thao Là Phong Cách Sống",
+    "desc1": "TheWhite sinh ra từ niềm đam mê thể thao và khao khát mang đến những sản phẩm thời trang thể thao chất lượng cao cho người Việt Nam.",
+    "desc2": "Chúng tôi tin rằng trang phục thể thao không chỉ đơn thuần là quần áo tập luyện, mà còn là biểu tượng của một lối sống năng động, khỏe mạnh và tự tin.",
+    "desc3": "Với thiết kế tối giản, hiện đại kết hợp công nghệ vải tiên tiến, mỗi sản phẩm của TheWhite được tạo ra để đồng hành cùng bạn trong mọi hoạt động.",
+    "feature": {
+      "material": "Chất Liệu Cao Cấp",
+      "materialDesc": "Vải thấm hút mồ hôi tốt",
+      "design": "Thiết Kế Hiện Đại",
+      "designDesc": "Phong cách tối giản",
+      "durable": "Bền Bỉ",
+      "durableDesc": "Chất lượng lâu dài",
+      "origin": "Made in Vietnam",
+      "originDesc": "Tự hào Việt Nam"
+    },
+    "stats": {
+      "founded": "Thành Lập",
+      "vietnam": "Chất Lượng Việt",
+      "passion": "Đam Mê"
+    },
+    "cta": {
+      "explore": "KHÁM PHÁ THÊM",
+      "story": "CÂU CHUYỆN CỦA CHÚNG TÔI"
+    }
+  },
+  "reviews": {
+    "title": "Đánh Giá & Nhận Xét",
+    "subtitle": "Từ khách hàng đã mua {productName}",
+    "count": "{count} đánh giá",
+    "write": "Viết Đánh Giá",
+    "alreadyReviewed": "Bạn đã đánh giá sản phẩm này",
+    "mustPurchase": "Chỉ khách hàng đã mua sản phẩm mới có thể đánh giá",
+    "login": "Đăng nhập",
+    "loginToReview": "để viết đánh giá",
+    "sortBy": "Sắp xếp:",
+    "sort": {
+      "recent": "Mới nhất",
+      "helpful": "Hữu ích nhất",
+      "rating": "Đánh giá cao nhất"
+    },
+    "clearCo": "Xóa bộ lọc",
+    "empty": "Chưa có đánh giá nào",
+    "helpful": "Hữu ích",
+    "verified": "Đã mua hàng",
+    "fit": {
+      "tight": "Hơi chật",
+      "perfect": "Vừa vặn",
+      "loose": "Hơi rộng"
+    },
+    "labels": {
+      "height": "Cao",
+      "weight": "Nặng",
+      "rating": "Đánh Giá",
+      "title": "Tiêu Đề",
+      "comment": "Nhận Xét",
+      "size": "Size Đã Mua",
+      "fit": "Độ Vừa Vặn"
+    },
+    "placeholders": {
+      "title": "Tóm tắt đánh giá của bạn",
+      "comment": "Chia sẻ trải nghiệm của bạn về sản phẩm...",
+      "size": "Chọn size",
+      "fit": "Chọn độ vừa vặn",
+      "height": "VD: 175cm",
+      "weight": "VD: 68kg"
+    },
+    "form": {
+      "title": "Viết Đánh Giá Của Bạn",
+      "submit": "Gửi Đánh Giá",
+      "cancel": "Hủy",
+      "alert": "Vui lòng nhập đánh giá và nhận xét"
+    }
+  },
+  "search": {
+    "placeholder": "Tìm kiếm sản phẩm...",
+    "popular": "Tìm Kiếm Phổ Biến",
+    "recent": "Sản Phẩm Xem Gần Đây",
+    "terms": {
+      "tshirt": "Áo thun nam",
+      "shoes": "Giày chạy bộ",
+      "yoga": "Quần yoga",
+      "jacket": "Áo khoác thể thao",
+      "training": "Giày training"
+    }
+  },
+  "newsletter": {
+    "title": "Nhận Ưu Đãi Độc Quyền",
+    "description": "Đăng ký nhận bản tin để cập nhật những sản phẩm mới nhất, ưu đãi đặc biệt và tips thể thao hữu ích",
+    "placeholder": "Nhập email của bạn",
+    "button": "ĐĂNG KÝ NGAY",
+    "buttonSuccess": "✓ ĐÃ ĐĂNG KÝ",
+    "note": "Nhận ngay mã giảm giá 10% cho đơn hàng đầu tiên"
+  },
+  "exploreMore": {
+    "title": "Khám Phá Thêm",
+    "subtitle": "Khám phá bộ sưu tập thể thao cao cấp được thiết kế để bạn luôn tự tin và thoải mái trong mọi chuyển động",
+    "feature1": {
+      "title": "Hiệu Suất Cao",
+      "desc": "Vải công nghệ tiên tiến, thoáng khí và thấm hút mồ hôi tối ưu"
+    },
+    "feature2": {
+      "title": "Thiết Kế Hiện Đại",
+      "desc": "Phong cách tối giản, sang trọng phù hợp mọi hoạt động"
+    },
+    "feature3": {
+      "title": "Chất Lượng Premium",
+      "desc": "Cam kết 100% chất lượng, bền bỉ theo thời gian"
+    },
+    "feature4": {
+      "title": "Tin Dùng Bởi 10K+",
+      "desc": "Hơn 10,000 vận động viên và người yêu thể thao tin dùng"
+    },
+    "collection1": {
+      "title": "Áo Thể Thao",
+      "desc": "Thoáng mát, co giãn 4 chiều"
+    },
+    "collection2": {
+      "title": "Quần Thể Thao",
+      "desc": "Linh hoạt, thoải mái tối đa"
+    },
+    "collection3": {
+      "title": "Phụ Kiện",
+      "desc": "Hoàn thiện phong cách của bạn"
+    },
+    "cta": "Xem Tất Cả Sản Phẩm"
+  },
+  "vto": {
+    "label": "CÔNG NGHỆ AI",
+    "title": "Thử Đồ Ảo",
+    "subtitle": "Trải nghiệm công nghệ AI tiên tiến - Xem bạn trông như thế nào trong trang phục TheWhite",
+    "step1": {
+      "title": "Chọn Sản Phẩm",
+      "desc": "Chọn sản phẩm bạn muốn thử từ trang chi tiết sản phẩm"
+    },
+    "step2": {
+      "title": "Tải Ảnh & Thông Tin",
+      "desc": "Điền chiều cao, cân nặng và giới tính để kết quả chính xác hơn",
+      "upload": "Tải ảnh toàn thân của bạn"
+    },
+    "step3": {
+      "title": "Xem Kết Quả",
+      "desc": "AI tạo ảnh bạn mặc sản phẩm TheWhite chỉ trong vài giây"
+    },
+    "cta": {
+      "title": "Sẵn Sàng Thử?",
+      "desc": "Chọn bất kỳ sản phẩm nào trong cửa hàng và nhấn nút \"Thử Đồ Ảo\" để bắt đầu trải nghiệm",
+      "button": "Khám Phá Sản Phẩm"
+    },
+    "info1": {
+      "title": "Dễ Sử Dụng",
+      "desc": "Chỉ cần 3 bước đơn giản là có kết quả ngay lập tức"
+    },
+    "info2": {
+      "title": "Công Nghệ AI",
+      "desc": "Sử dụng trí tuệ nhân tạo tiên tiến nhất"
+    },
+    "info3": {
+      "title": "Riêng Tư & An Toàn",
+      "desc": "Ảnh của bạn được bảo mật tuyệt đối"
+    }
+  },
+  "filter": {
+    "title": "Bộ Lọc",
+    "clear": "Xóa Tất Cả Bộ Lọc",
+    "apply": "Áp Dụng",
+    "category": {
+      "title": "Danh Mục",
+      "tshirt": "Áo Thun",
+      "polo": "Áo Polo",
+      "hoodie": "Áo Hoodie",
+      "jacket": "Áo Khoác",
+      "pants": "Quần",
+      "shorts": "Quần Short"
+    },
+    "price": {
+      "title": "Giá",
+      "all": "Tất Cả",
+      "under500": "Dưới 500k",
+      "500-1000": "500k - 1tr",
+      "1000-2000": "1tr - 2tr",
+      "above2000": "Trên 2tr"
+    },
+    "size": "Kích Thước",
+    "color": {
+      "title": "Màu Sắc",
+      "white": "Trắng",
+      "black": "Đen",
+      "gray": "Xám",
+      "navy": "Xanh Navy",
+      "red": "Đỏ",
+      "green": "Xanh Lá"
+    },
+    "sort": {
+      "newest": "Mới Nhất",
+      "priceAsc": "Giá: Thấp → Cao",
+      "priceDesc": "Giá: Cao → Thấp",
+      "popular": "Phổ Biến"
+    }
+  },
+  "privacyPolicy": {
+    "breadcrumb": "Chính Sách Bảo Mật",
+    "title": "Chính Sách Bảo Mật",
+    "subtitle": "Tuân thủ GDPR & Luật Bảo Vệ Dữ Liệu Việt Nam",
+    "lastUpdated": "Cập nhật lần cuối: 17/12/2024",
+    "sections": {
+      "intro": {
+        "title": "1. Giới Thiệu",
+        "content": "TheWhite cam kết bảo vệ quyền riêng tư và dữ liệu cá nhân của bạn theo quy định của GDPR (General Data Protection Regulation) và pháp luật Việt Nam.\n\nChính sách này giải thích cách chúng tôi thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân của bạn khi sử dụng website và dịch vụ của TheWhite."
+      },
+      "collection": {
+        "title": "2. Thông Tin Chúng Tôi Thu Thập",
+        "content": "**Thông tin bạn cung cấp:**\n• Họ tên, địa chỉ email, số điện thoại\n• Địa chỉ giao hàng và thanh toán\n• Thông tin tài khoản (username, password đã mã hóa)\n• Thông tin đơn hàng và lịch sử mua sắm\n• Phản hồi, đánh giá sản phẩm\n\n**Thông tin tự động thu thập:**\n• Địa chỉ IP, loại trình duyệt, hệ điều hành\n• Cookies và công nghệ theo dõi tương tự\n• Dữ liệu sử dụng website (trang xem, thời gian truy cập)\n• Dữ liệu phân tích từ Google Analytics\n\n**Cơ sở pháp lý:**\n• Thực hiện hợp đồng mua bán\n• Lợi ích hợp pháp trong kinh doanh\n• Sự đồng ý của bạn"
+      },
+      "usage": {
+        "title": "3. Mục Đích Sử Dụng Dữ Liệu",
+        "content": "Chúng tôi sử dụng dữ liệu của bạn để:\n\n✓ Xử lý và giao đơn hàng\n✓ Gửi xác nhận đơn hàng và cập nhật vận chuyển\n✓ Cung cấp dịch vụ chăm sóc khách hàng\n✓ Xử lý thanh toán (qua đối tác thanh toán bảo mật)\n✓ Cải thiện trải nghiệm người dùng và cá nhân hóa nội dung\n✓ Gửi thông tin khuyến mãi (chỉ khi bạn đồng ý)\n✓ Phân tích và nghiên cứu thị trường\n✓ Phát hiện và ngăn chặn gian lận\n✓ Tuân thủ nghĩa vụ pháp lý"
+      },
+      "security": {
+        "title": "4. Bảo Mật Dữ Liệu",
+        "content": "**Biện pháp bảo mật:**\n• Mã hóa SSL/TLS cho mọi truyền tải dữ liệu\n• Lưu trữ password dạng băm (hashed) với bcrypt\n• Firewall và hệ thống phát hiện xâm nhập\n• Kiểm soát truy cập dựa trên vai trò\n• Sao lưu dữ liệu định kỳ và mã hóa\n• Đào tạo nhân viên về bảo mật thông tin\n\n**Thời gian lưu trữ:**\n• Dữ liệu tài khoản: Cho đến khi bạn yêu cầu xóa\n• Dữ liệu đơn hàng: 5 năm (yêu cầu pháp lý kế toán)\n• Dữ liệu marketing: 2 năm hoặc cho đến khi từ chối\n• Cookie: Tùy loại (session hoặc 1-12 tháng)"
+      },
+      "sharing": {
+        "title": "5. Chia Sẻ Dữ Liệu",
+        "content": "Chúng tôi chỉ chia sẻ dữ liệu với các bên thứ ba tin cậy:\n\n**Đối tác dịch vụ:**\n• Đơn vị vận chuyển (Giao Hàng Nhanh, Viettel Post)\n• Cổng thanh toán (VNPay, MoMo - tuân thủ PCI DSS)\n• Dịch vụ email marketing (chỉ khi bạn đồng ý)\n• Google Analytics (dữ liệu ẩn danh)\n\n**Yêu cầu pháp lý:**\n• Khi có lệnh từ cơ quan có thẩm quyền\n• Bảo vệ quyền và an toàn của TheWhite và khách hàng\n\nChúng tôi **KHÔNG** bán hoặc cho thuê dữ liệu cá nhân của bạn."
+      },
+      "rights": {
+        "title": "6. Quyền Của Bạn Theo GDPR",
+        "content": "Bạn có các quyền sau:\n\n**Quyền truy cập:** Yêu cầu bản sao dữ liệu cá nhân của bạn\n\n**Quyền chỉnh sửa:** Cập nhật thông tin không chính xác\n\n**Quyền xóa (\"Right to be Forgotten\"):** Yêu cầu xóa dữ liệu của bạn\n\n**Quyền hạn chế xử lý:** Tạm dừng xử lý dữ liệu trong trường hợp cụ thể\n\n**Quyền di chuyển dữ liệu:** Nhận dữ liệu ở định dạng có thể đọc được\n\n**Quyền phản đối:** Từ chối xử lý dữ liệu cho mục đích marketing\n\n**Quyền rút lại đồng ý:** Hủy đồng ý đã cung cấp bất kỳ lúc nào\n\n**Cách thực hiện quyền:**\n📧 Email: privacy@thewhite.vn\n📞 Hotline: 0123 456 789\n⏱️ Thời gian phản hồi: 30 ngày"
+      },
+      "international": {
+        "title": "7. Chuyển Giao Dữ Liệu Quốc Tế",
+        "content": "Một số đối tác của chúng tôi có thể đặt tại nước ngoài (ví dụ: máy chủ AWS tại Singapore). Chúng tôi đảm bảo mọi chuyển giao dữ liệu tuân thủ GDPR thông qua:\n\n• Standard Contractual Clauses (SCC) được EU phê duyệt\n• Đối tác có chứng nhận ISO 27001\n• Thỏa thuận bảo vệ dữ liệu đầy đủ"
+      },
+      "children": {
+        "title": "8. Quyền Riêng Tư Của Trẻ Em",
+        "content": "Website của chúng tôi không nhắm đến trẻ em dưới 16 tuổi. Chúng tôi không cố ý thu thập dữ liệu cá nhân của trẻ em. Nếu bạn là phụ huynh và phát hiện con mình đã cung cấp thông tin, vui lòng liên hệ ngay để chúng tôi xóa dữ liệu."
+      },
+      "changes": {
+        "title": "9. Thay Đổi Chính Sách",
+        "content": "Chúng tôi có thể cập nhật chính sách này định kỳ. Thay đổi quan trọng sẽ được thông báo qua:\n\n• Email đến địa chỉ đã đăng ký\n• Thông báo nổi bật trên website\n• Popup thông báo khi đăng nhập\n\nViệc tiếp tục sử dụng dịch vụ sau thay đổi đồng nghĩa với việc chấp nhận chính sách mới."
+      }
+    },
+    "contact": {
+      "title": "10. Liên Hệ - Data Protection Officer",
+      "description": "Nếu bạn có bất kỳ câu hỏi nào về chính sách bảo mật hoặc muốn thực hiện quyền của mình, vui lòng liên hệ Data Protection Officer (DPO) của chúng tôi:",
+      "complaint": "Bạn cũng có quyền khiếu nại với Cơ quan Bảo vệ Dữ liệu có thẩm quyền nếu cho rằng quyền của bạn bị vi phạm."
+    }
+  },
+  "termsOfUse": {
+    "breadcrumb": "Điều Khoản Sử Dụng",
+    "title": "Điều Khoản Sử Dụng",
+    "subtitle": "Quy định sử dụng dịch vụ TheWhite",
+    "effectiveDate": "Có hiệu lực từ: 17/12/2024",
+    "sections": {
+      "acceptance": {
+        "title": "1. Chấp Nhận Điều Khoản",
+        "content": "Bằng việc truy cập và sử dụng website TheWhite (www.thewhite.vn), bạn đồng ý tuân thủ các điều khoản và điều kiện sử dụng này.\n\nNếu bạn không đồng ý với bất kỳ phần nào của điều khoản, vui lòng không sử dụng dịch vụ của chúng tôi.\n\nChúng tôi có quyền thay đổi điều khoản này bất kỳ lúc nào. Việc tiếp tục sử dụng sau khi có thay đổi đồng nghĩa với việc bạn chấp nhận các điều khoản mới."
+      },
+      "account": {
+        "title": "2. Tài Khoản Người Dùng",
+        "content": "**Đăng ký tài khoản:**\n• Bạn phải từ 16 tuổi trở lên để tạo tài khoản\n• Thông tin đăng ký phải chính xác và đầy đủ\n• Bạn chịu trách nhiệm bảo mật tài khoản và mật khẩu\n• Bạn phải thông báo ngay nếu phát hiện truy cập trái phép\n\n**Quyền hạn của chúng tôi:**\n• Từ chối hoặc hủy đăng ký mà không cần lý do\n• Đình chỉ/xóa tài khoản vi phạm điều khoản\n• Yêu cầu xác minh danh tính bổ sung\n\n**Nghĩa vụ của bạn:**\n• Không chia sẻ tài khoản cho người khác\n• Không sử dụng cho mục đích thương mại trái phép\n• Không tạo nhiều tài khoản để lạm dụng khuyến mãi"
+      },
+      "orders": {
+        "title": "3. Đơn Hàng & Thanh Toán",
+        "content": "**Quy trình đặt hàng:**\n1. Chọn sản phẩm và thêm vào giỏ hàng\n2. Điền thông tin giao hàng và thanh toán\n3. Xác nhận đơn hàng và thanh toán\n4. Nhận email xác nhận đơn hàng\n\n**Giá cả & Thanh toán:**\n• Giá hiển thị bằng VND, đã bao gồm VAT\n• Chúng tôi có quyền thay đổi giá bất kỳ lúc nào\n• Phương thức: COD, chuyển khoản, thẻ tín dụng, ví điện tử\n• Đơn hàng chỉ được xử lý sau khi thanh toán thành công\n\n**Hủy đơn hàng:**\n• Bạn có thể hủy trước khi đơn được giao cho vận chuyển\n• Hoàn tiền trong 5-7 ngày làm việc (nếu đã thanh toán)\n• Chúng tôi có quyền hủy đơn nếu phát hiện gian lận"
+      },
+      "shipping": {
+        "title": "4. Vận Chuyển & Giao Hàng",
+        "content": "**Khu vực giao hàng:**\n• Toàn quốc qua đối tác vận chuyển uy tín\n• Thời gian: 2-5 ngày (nội thành), 3-7 ngày (tỉnh xa)\n• Phí vận chuyển: Theo chính sách hiện hành\n\n**Trách nhiệm:**\n• Chúng tôi không chịu trách nhiệm cho sự chậm trễ do đối tác vận chuyển\n• Bạn phải kiểm tra hàng trước khi nhận (đối với COD)\n• Khiếu nại phải được gửi trong 24h sau khi nhận hàng\n\n**Rủi ro:**\n• Rủi ro chuyển sang bạn khi hàng được giao thành công\n• Bạn chịu trách nhiệm cung cấp địa chỉ chính xác"
+      },
+      "intellectual": {
+        "title": "5. Sở Hữu Trí Tuệ",
+        "content": "**Bản quyền:**\n• Mọi nội dung trên website (văn bản, hình ảnh, logo, video) thuộc quyền sở hữu của TheWhite\n• Logo \"TheWhite\" là thương hiệu đã đăng ký\n• Thiết kế website được bảo vệ bởi luật bản quyền\n\n**Giới hạn sử dụng:**\n• Bạn có thể xem và tải xuống cho mục đích cá nhân\n• Không được sao chép, phân phối, hoặc sử dụng thương mại\n• Không được tạo ra sản phẩm phái sinh\n\n**Vi phạm:**\n• Chúng tôi sẽ thực hiện biện pháp pháp lý nếu phát hiện vi phạm bản quyền"
+      },
+      "liability": {
+        "title": "6. Trách Nhiệm & Giới Hạn",
+        "content": "**Từ chối bảo đảm:**\n• Website cung cấp \"nguyên trạng\" (as-is)\n• Chúng tôi không đảm bảo website luôn hoạt động liên tục\n• Không chịu trách nhiệm cho lỗi kỹ thuật, virus, malware\n\n**Giới hạn trách nhiệm:**\n• Chúng tôi không chịu trách nhiệm cho thiệt hại gián tiếp, ngẫu nhiên, hoặc hậu quả\n• Trách nhiệm tối đa: Giá trị đơn hàng liên quan\n• Không áp dụng cho thiệt hại do sơ suất nghiêm trọng\n\n**Bồi thường:**\n• Bạn đồng ý bồi thường cho TheWhite nếu vi phạm điều khoản gây thiệt hại\n\n**Bất khả kháng:**\n• Chúng tôi không chịu trách nhiệm cho sự kiện ngoài tầm kiểm soát (thiên tai, chiến tranh, dịch bệnh)"
+      },
+      "prohibited": {
+        "title": "7. Hành Vi Bị Cấm",
+        "content": "Khi sử dụng dịch vụ, bạn KHÔNG ĐƯỢC:\n• ❌ Vi phạm luật pháp Việt Nam hoặc quốc tế\n• ❌ Sử dụng cho mục đích gian lận, rửa tiền\n• ❌ Tải lên virus, malware hoặc mã độc hại\n• ❌ Cố gắng truy cập trái phép vào hệ thống\n• ❌ Thu thập thông tin người dùng khác\n• ❌ Mạo danh TheWhite hoặc nhân viên của chúng tôi\n• ❌ Spam, quấy rối, hoặc hành vi gây phiền nhiễu\n• ❌ Sử dụng bot, script tự động để mua hàng\n• ❌ Đăng nội dung vi phạm bản quyền\n• ❌ Lợi dụng lỗi hệ thống để trục lợi"
+      },
+      "links": {
+        "title": "8. Liên Kết Bên Thứ Ba",
+        "content": "Website có thể chứa liên kết đến các trang web của bên thứ ba. Chúng tôi không kiểm soát và không chịu trách nhiệm về nội dung, chính sách bảo mật, hoặc thực hành của các trang này.\n\nViệc truy cập các liên kết bên ngoài là do bạn tự chịu trách nhiệm. Chúng tôi khuyến khích bạn đọc kỹ điều khoản và chính sách bảo mật của mọi trang web bạn truy cập."
+      },
+      "dispute": {
+        "title": "9. Giải Quyết Tranh Chấp",
+        "content": "**Luật điều chỉnh:** Điều khoản này tuân theo pháp luật Việt Nam.\n**Thương lượng:** Các tranh chấp phải được giải quyết thông qua thương lượng hòa giải trước.\n**Tòa án:** Nếu không thương lượng được, tranh chấp sẽ được giải quyết tại Tòa án có thẩm quyền tại TP. Hồ Chí Minh.\n**Ngôn ngữ:** Phiên bản tiếng Việt của điều khoản này là phiên bản chính thức. Trong trường hợp có mâu thuẫn với phiên bản tiếng khác, phiên bản tiếng Việt sẽ được ưu tiên."
+      },
+      "severability": {
+        "title": "10. Tính Riêng Biệt",
+        "content": "Nếu bất kỳ điều khoản nào trong tài liệu này được xác định là không hợp lệ hoặc không thể thi hành, các điều khoản còn lại vẫn giữ nguyên hiệu lực.\n\nViệc chúng tôi không thực thi bất kỳ quyền nào không được coi là từ bỏ quyền đó."
+      }
+    },
+    "contact": {
+      "title": "11. Liên Hệ",
+      "description": "Nếu bạn có câu hỏi về các điều khoản này, vui lòng liên hệ:"
+    },
+    "agreement": {
+      "label": "Quan Trọng:",
+      "content": "Bằng việc sử dụng website TheWhite, bạn xác nhận đã đọc, hiểu và đồng ý tuân thủ toàn bộ các điều khoản và điều kiện nêu trên."
+    }
+  },
+  "wishlist": {
+    "breadcrumb": "Danh Sách Yêu Thích",
+    "title": "Danh Sách Yêu Thích",
+    "itemCount": "{count} sản phẩm",
+    "share": "Chia Sẻ",
+    "addAllToCart": "Thêm Tất Cả Vào Giỏ",
+    "outOfStock": "Hết Hàng",
+    "size": "Size",
+    "addToCart": "Thêm Vào Giỏ",
+    "empty": "Danh Sách Yêu Thích Trống",
+    "emptyDesc": "Thêm sản phẩm yêu thích để dễ dàng mua sắm sau này",
+    "explore": "Khám Phá Sản Phẩm",
+    "shareLinkCopied": "Đã sao chép link wishlist!",
+    "tips": {
+      "title": "Mẹo Hữu Ích",
+      "l1": "Sản phẩm trong wishlist sẽ được lưu trữ trên thiết bị của bạn",
+      "l2": "Nhấn vào sản phẩm để xem chi tiết",
+      "l3": "Chia sẻ wishlist với bạn bè qua link",
+      "l4": "Thêm tất cả sản phẩm vào giỏ hàng chỉ với một cú click"
+    }
+  }
+}
