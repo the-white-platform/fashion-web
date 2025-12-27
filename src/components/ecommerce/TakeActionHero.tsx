@@ -15,7 +15,7 @@ export function TakeActionHero() {
   }
 
   return (
-    <section className="relative min-h-[70vh] flex items-center justify-center text-foreground overflow-hidden">
+    <section className="relative h-[calc(100vh-5rem)] flex items-center justify-center text-foreground overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" />
