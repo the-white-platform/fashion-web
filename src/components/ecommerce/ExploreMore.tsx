@@ -4,56 +4,59 @@ import { motion } from 'motion/react'
 import { ArrowRight, Zap, TrendingUp, Award, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 export function ExploreMore() {
   const router = useRouter()
+  const t = useTranslations('exploreMore')
+  const tCommon = useTranslations('common')
 
   const features = [
     {
       icon: Zap,
-      title: 'Vận Chuyển Nhanh',
-      description: 'Giao hàng toàn quốc trong 1-3 ngày',
+      title: t('feature1.title'),
+      description: t('feature1.desc'),
     },
     {
       icon: TrendingUp,
-      title: 'Chất Lượng Cao',
-      description: 'Sản phẩm được kiểm định nghiêm ngặt',
+      title: t('feature2.title'),
+      description: t('feature2.desc'),
     },
     {
       icon: Award,
-      title: 'Bảo Hành Chính Hãng',
-      description: 'Cam kết chất lượng 100%',
+      title: t('feature3.title'),
+      description: t('feature3.desc'),
     },
     {
       icon: Users,
-      title: 'Hỗ Trợ 24/7',
-      description: 'Đội ngũ tư vấn chuyên nghiệp',
+      title: t('feature4.title'),
+      description: t('feature4.desc'),
     },
   ]
 
   const collections = [
     {
-      title: 'Mùa Đông 2024',
-      description: 'Bộ sưu tập mới nhất với thiết kế độc đáo',
+      title: t('collection1.title'),
+      description: t('collection1.desc'),
       image:
         'https://images.unsplash.com/photo-1572565408388-cdd3afe23e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
     },
     {
-      title: 'Performance Pro',
-      description: 'Công nghệ tiên tiến cho vận động viên',
+      title: t('collection2.title'),
+      description: t('collection2.desc'),
       image:
         'https://images.unsplash.com/photo-1625515922308-56dcaa45351c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
     },
     {
-      title: 'Casual Sport',
-      description: 'Phong cách thể thao cho cuộc sống hàng ngày',
+      title: t('collection3.title'),
+      description: t('collection3.desc'),
       image:
         'https://images.unsplash.com/photo-1758875568971-7388ba15012b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
     },
   ]
 
   return (
-    <section className="py-20 bg-white relative overflow-hidden">
+    <section className="py-20 relative overflow-hidden transition-colors duration-300">
       <div className="container mx-auto px-6">
         {/* Header */}
         <motion.div
@@ -63,10 +66,10 @@ export function ExploreMore() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl mb-4 uppercase tracking-wide">Khám Phá Thêm</h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Tìm hiểu thêm về các bộ sưu tập và dịch vụ đặc biệt của chúng tôi
-          </p>
+          <h2 className="text-4xl md:text-5xl mb-4 uppercase tracking-wide text-foreground">
+            {t('title')}
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('subtitle')}</p>
         </motion.div>
 
         {/* Features Grid */}
@@ -82,11 +85,13 @@ export function ExploreMore() {
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 className="text-center group"
               >
-                <div className="w-16 h-16 bg-black text-white rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-16 h-16 bg-primary text-primary-foreground rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                   <Icon className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl uppercase tracking-wide mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
+                <h3 className="text-xl uppercase tracking-wide mb-2 text-foreground">
+                  {feature.title}
+                </h3>
+                <p className="text-muted-foreground text-sm">{feature.description}</p>
               </motion.div>
             )
           })}
@@ -101,7 +106,7 @@ export function ExploreMore() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="group relative h-96 bg-gray-100 overflow-hidden cursor-pointer rounded-sm"
+              className="group relative h-96 bg-muted overflow-hidden cursor-pointer rounded-sm"
               onClick={() => router.push('/products')}
             >
               <div className="absolute inset-0">
@@ -113,14 +118,16 @@ export function ExploreMore() {
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-10" />
               <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
-                <h3 className="text-white text-2xl uppercase tracking-wide mb-2">
+                <h3 className="text-white text-2xl uppercase tracking-wide mb-2 font-bold">
                   {collection.title}
                 </h3>
-                <p className="text-gray-300 text-sm mb-4">{collection.description}</p>
+                <p className="text-gray-200 text-sm mb-4">{collection.description}</p>
                 <div className="flex items-center gap-2 text-white group-hover:gap-4 transition-all">
-                  <span className="uppercase text-sm tracking-wider">Khám Phá</span>
+                  <span className="uppercase text-sm tracking-wider font-medium">
+                    {tCommon('explore')}
+                  </span>
                   <ArrowRight className="w-5 h-5" />
                 </div>
               </div>
@@ -138,17 +145,17 @@ export function ExploreMore() {
         >
           <button
             onClick={() => router.push('/products')}
-            className="group inline-flex items-center gap-3 bg-black text-white px-8 py-4 rounded-sm hover:bg-gray-800 transition-all uppercase tracking-wider hover:scale-105"
+            className="group inline-flex items-center gap-3 bg-primary text-primary-foreground px-8 py-4 rounded-sm hover:bg-primary/90 transition-all uppercase tracking-wider hover:scale-105 shadow-md hover:shadow-lg font-bold"
           >
-            <span>Xem Tất Cả Sản Phẩm</span>
+            <span>{t('cta')}</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </motion.div>
       </div>
 
       {/* Decorative Background Elements */}
-      <div className="absolute top-20 right-10 w-32 h-32 border-2 border-gray-200 rounded-sm opacity-30 -rotate-12" />
-      <div className="absolute bottom-20 left-10 w-24 h-24 border-2 border-gray-200 rounded-sm opacity-20 rotate-12" />
+      <div className="absolute top-20 right-10 w-32 h-32 border-2 border-border rounded-sm opacity-30 -rotate-12 pointer-events-none" />
+      <div className="absolute bottom-20 left-10 w-24 h-24 border-2 border-border rounded-sm opacity-20 rotate-12 pointer-events-none" />
     </section>
   )
 }

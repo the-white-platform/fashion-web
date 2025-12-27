@@ -91,7 +91,7 @@ export function ImageZoom({
 
       {/* Zoom Indicator */}
       <div
-        className={`absolute top-4 right-4 bg-black/80 text-white px-3 py-1 rounded-sm text-xs uppercase tracking-wide transition-opacity duration-300 z-20 ${
+        className={`absolute top-4 right-4 bg-primary/80 text-primary-foreground px-3 py-1 rounded-sm text-xs uppercase tracking-wide transition-opacity duration-300 z-20 ${
           isZooming ? 'opacity-100' : 'opacity-0'
         }`}
       >
@@ -99,7 +99,7 @@ export function ImageZoom({
       </div>
 
       {/* Hover Hint */}
-      <div className="absolute bottom-4 left-4 bg-black/80 text-white px-3 py-1 rounded-sm text-xs uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+      <div className="absolute bottom-4 left-4 bg-primary/80 text-primary-foreground px-3 py-1 rounded-sm text-xs uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
         Di chuột để phóng to
       </div>
     </div>

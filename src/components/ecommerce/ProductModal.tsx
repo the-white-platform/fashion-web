@@ -85,14 +85,14 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="!max-w-[95vw] !w-[95vw] md:!max-w-6xl md:!w-auto !max-h-[90vh] p-0 gap-0 bg-white overflow-hidden border-0 shadow-2xl rounded-sm">
+        <DialogContent className="!max-w-[95vw] !w-[95vw] md:!max-w-6xl md:!w-auto !max-h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0 shadow-2xl rounded-sm">
           {/* Close Button */}
           <motion.button
             initial={{ opacity: 0, rotate: -90 }}
             animate={{ opacity: 1, rotate: 0 }}
             transition={{ delay: 0.2 }}
             onClick={onClose}
-            className="absolute top-3 right-3 z-50 w-10 h-10 bg-black text-white hover:bg-gray-900 transition-all flex items-center justify-center group rounded-sm"
+            className="absolute top-3 right-3 z-50 w-10 h-10 bg-primary text-primary-foreground hover:bg-primary/90 transition-all flex items-center justify-center group rounded-sm"
           >
             <X className="w-4 h-4 transition-transform group-hover:rotate-90" />
           </motion.button>
@@ -100,7 +100,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
           <div className="grid md:grid-cols-[1fr,1fr] max-h-[90vh] overflow-hidden">
             {/* Image Section - Left Side */}
             <div
-              className="relative bg-gray-50 overflow-hidden h-full"
+              className="relative bg-muted overflow-hidden h-full"
               onMouseEnter={() => setIsImageHovered(true)}
               onMouseLeave={() => setIsImageHovered(false)}
             >
@@ -127,7 +127,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 transition={{ delay: 0.3 }}
                 className="absolute top-5 left-5"
               >
-                <div className="bg-black text-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
+                <div className="bg-primary text-primary-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
                   <span className="flex items-center gap-1.5">
                     <Zap className="w-3 h-3" />
                     Mới Nhất
@@ -152,16 +152,16 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="absolute bottom-5 left-5 bg-white/95 backdrop-blur-md px-5 py-3 shadow-xl flex items-center gap-3 rounded-sm"
+                className="absolute bottom-5 left-5 bg-background/95 backdrop-blur-md px-5 py-3 shadow-xl flex items-center gap-3 rounded-sm border border-border"
               >
                 <div className="flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <div className="h-4 w-px bg-gray-300" />
-                <span className="text-sm font-bold">4.9</span>
-                <span className="text-xs text-gray-500">(127 đánh giá)</span>
+                <div className="h-4 w-px bg-border" />
+                <span className="text-sm font-bold text-foreground">4.9</span>
+                <span className="text-xs text-muted-foreground">(127 đánh giá)</span>
               </motion.div>
 
               {/* Wishlist Button on Image */}
@@ -171,7 +171,9 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 transition={{ delay: 0.6, type: 'spring' }}
                 onClick={handleWishlist}
                 className={`absolute bottom-5 right-5 w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all ${
-                  isWishlisted ? 'bg-red-500 text-white' : 'bg-white text-black hover:bg-red-50'
+                  isWishlisted
+                    ? 'bg-red-500 text-white'
+                    : 'bg-background text-foreground hover:bg-muted'
                 }`}
               >
                 <Heart
@@ -181,7 +183,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
             </div>
 
             {/* Details Section - Right Side */}
-            <div className="p-6 flex flex-col bg-white">
+            <div className="p-6 flex flex-col bg-card">
               {/* Header */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -189,17 +191,19 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 transition={{ delay: 0.2 }}
                 className="mb-4"
               >
-                <p className="text-[9px] text-gray-400 mb-1 uppercase tracking-[0.2em] font-medium">
+                <p className="text-[9px] text-muted-foreground mb-1 uppercase tracking-[0.2em] font-medium">
                   {product.category}
                 </p>
-                <DialogTitle className="text-xl mb-2 uppercase font-black tracking-tight leading-tight pr-8">
+                <DialogTitle className="text-xl mb-2 uppercase font-black tracking-tight leading-tight pr-8 text-foreground">
                   {product.name}
                 </DialogTitle>
                 <div className="flex items-baseline gap-3 mb-2">
-                  <span className="text-2xl font-black">{product.price}</span>
-                  <span className="text-sm text-gray-400 line-through font-medium">1.190.000₫</span>
+                  <span className="text-2xl font-black text-foreground">{product.price}</span>
+                  <span className="text-sm text-muted-foreground line-through font-medium">
+                    1.190.000₫
+                  </span>
                 </div>
-                <p className="text-gray-600 text-xs leading-relaxed">
+                <p className="text-muted-foreground text-xs leading-relaxed">
                   {product.description ||
                     'Thiết kế hiện đại với chất liệu cao cấp, thấm hút mồ hôi và co giãn 4 chiều.'}
                 </p>
@@ -212,7 +216,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 transition={{ delay: 0.25 }}
                 className="mb-4"
               >
-                <label className="block mb-2 text-[9px] uppercase tracking-[0.15em] font-bold text-gray-900">
+                <label className="block mb-2 text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
                   Màu Sắc - {selectedColor.name}
                 </label>
                 <div className="flex gap-2">
@@ -225,8 +229,8 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       onClick={() => setSelectedColor(color)}
                       className={`w-10 h-10 rounded-sm border-2 transition-all hover:scale-110 ${
                         selectedColor.hex === color.hex
-                          ? 'border-black shadow-lg'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-foreground shadow-lg'
+                          : 'border-border hover:border-foreground'
                       }`}
                       style={{ backgroundColor: color.hex }}
                       title={color.name}
@@ -243,14 +247,14 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 className="mb-4"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-[9px] uppercase tracking-[0.15em] font-bold text-gray-900">
+                  <label className="text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
                     Chọn Size
                   </label>
                   <Link
                     href="/size-guide"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[9px] text-gray-500 hover:text-black transition-colors"
+                    className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Hướng dẫn
                   </Link>
@@ -265,15 +269,15 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       onClick={() => setSelectedSize(size)}
                       className={`relative w-10 h-10 font-bold text-xs transition-all duration-200 rounded-sm ${
                         selectedSize === size
-                          ? 'bg-black text-white'
-                          : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-foreground hover:bg-muted/80'
                       }`}
                     >
                       {size}
                       {selectedSize === size && (
                         <motion.div
                           layoutId="size-indicator"
-                          className="absolute inset-0 bg-black rounded-sm"
+                          className="absolute inset-0 bg-primary rounded-sm"
                           style={{ zIndex: -1 }}
                           transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                         />
@@ -290,20 +294,22 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 transition={{ delay: 0.4 }}
                 className="mb-4"
               >
-                <label className="block mb-2 text-[9px] uppercase tracking-[0.15em] font-bold text-gray-900">
+                <label className="block mb-2 text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
                   Số Lượng
                 </label>
-                <div className="inline-flex items-center bg-gray-100 rounded-sm overflow-hidden">
+                <div className="inline-flex items-center bg-muted rounded-sm overflow-hidden">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center hover:bg-background/50 transition-colors text-foreground"
                   >
                     <Minus className="w-4 h-4" />
                   </button>
-                  <span className="w-12 text-center text-lg font-bold select-none">{quantity}</span>
+                  <span className="w-12 text-center text-lg font-bold select-none text-foreground">
+                    {quantity}
+                  </span>
                   <button
                     onClick={() => setQuantity(quantity + 1)}
-                    className="w-10 h-10 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center hover:bg-background/50 transition-colors text-foreground"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
@@ -335,7 +341,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handleAddToCart}
-                      className="w-full bg-black text-white h-12 flex items-center justify-center gap-2 font-bold uppercase tracking-[0.15em] text-xs shadow-lg hover:shadow-xl transition-shadow group rounded-sm"
+                      className="w-full bg-primary text-primary-foreground h-12 flex items-center justify-center gap-2 font-bold uppercase tracking-[0.15em] text-xs shadow-lg hover:shadow-xl transition-shadow group rounded-sm"
                     >
                       <ShoppingCart className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
                       Thêm Vào Giỏ Hàng
@@ -356,28 +362,28 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 </motion.button>
 
                 {/* Features Strip */}
-                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-100">
+                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
                   <div className="text-center">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mx-auto mb-1 text-foreground">
                       <Truck className="w-4 h-4" />
                     </div>
-                    <p className="text-[8px] uppercase tracking-wider font-bold text-gray-900">
+                    <p className="text-[8px] uppercase tracking-wider font-bold text-muted-foreground">
                       Free Ship
                     </p>
                   </div>
                   <div className="text-center">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mx-auto mb-1 text-foreground">
                       <RefreshCw className="w-4 h-4" />
                     </div>
-                    <p className="text-[8px] uppercase tracking-wider font-bold text-gray-900">
+                    <p className="text-[8px] uppercase tracking-wider font-bold text-muted-foreground">
                       Đổi Trả
                     </p>
                   </div>
                   <div className="text-center">
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-1">
+                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mx-auto mb-1 text-foreground">
                       <Shield className="w-4 h-4" />
                     </div>
-                    <p className="text-[8px] uppercase tracking-wider font-bold text-gray-900">
+                    <p className="text-[8px] uppercase tracking-wider font-bold text-muted-foreground">
                       Bảo Hành
                     </p>
                   </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Cookie, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
+import { Switch } from '@/components/ui/switch'
 
 interface CookieSettingsProps {
   variant?: 'fab' | 'menu'
@@ -55,7 +56,7 @@ export function CookieSettings({ variant = 'fab', onClose }: CookieSettingsProps
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={handleOpenModal}
-          className="fixed bottom-[74px] right-6 z-[90] bg-black text-white p-3 rounded-full shadow-xl hover:bg-white hover:text-black border-2 border-black transition-all group hidden lg:flex"
+          className="fixed bottom-[74px] right-6 z-[90] bg-primary text-primary-foreground p-3 rounded-full shadow-xl hover:bg-background hover:text-foreground border-2 border-primary transition-all group hidden lg:flex"
           aria-label="Cookie Settings"
         >
           <Cookie className="w-4 h-4" />
@@ -79,16 +80,16 @@ export function CookieSettings({ variant = 'fab', onClose }: CookieSettingsProps
     <>
       <button
         onClick={handleOpenModal}
-        className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 hover:bg-white/10 transition-all rounded-none w-full"
+        className="flex items-center gap-4 p-4 hover:bg-muted/50 transition-all rounded-none w-full"
       >
-        <div className="w-10 h-10 bg-black text-white border border-white/20 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 bg-primary text-primary-foreground flex items-center justify-center shrink-0">
           <Cookie className="w-5 h-5" />
         </div>
         <div className="text-left">
-          <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">
+          <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
             Quyền riêng tư
           </p>
-          <p className="font-bold uppercase tracking-tight">Cài đặt Cookie</p>
+          <p className="font-bold uppercase tracking-tight text-foreground">Cài đặt Cookie</p>
         </div>
       </button>
 
@@ -134,7 +135,7 @@ function CookieModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-[200]"
           />
 
           {/* Modal Container - Flexbox Centering */}
@@ -149,17 +150,17 @@ function CookieModal({
               initial={{ scale: 0.95, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 20 }}
-              className="w-full max-w-md bg-black text-white shadow-2xl border border-white/10"
+              className="w-full max-w-md bg-card text-card-foreground shadow-2xl border border-border"
             >
               {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-white/10">
+              <div className="flex items-center justify-between p-6 border-b border-border">
                 <div className="flex items-center gap-3">
                   <Cookie className="w-6 h-6" />
                   <h2 className="text-lg font-black uppercase tracking-tight">Cài đặt Cookie</h2>
                 </div>
                 <button
                   onClick={onClose}
-                  className="w-8 h-8 flex items-center justify-center bg-white/5 hover:bg-white/10 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center hover:bg-muted transition-colors rounded-sm"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -167,7 +168,7 @@ function CookieModal({
 
               {/* Content */}
               <div className="p-6 space-y-4">
-                <p className="text-sm text-gray-400 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Chúng tôi sử dụng cookie để cải thiện trải nghiệm của bạn. Bạn có thể chọn loại
                   cookie mà bạn cho phép.
                 </p>
@@ -175,61 +176,67 @@ function CookieModal({
                 {/* Cookie Options */}
                 <div className="space-y-3">
                   {/* Necessary Cookies */}
-                  <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10">
-                    <div>
-                      <p className="font-bold text-sm uppercase tracking-tight">Cookie cần thiết</p>
-                      <p className="text-xs text-gray-500 mt-1">Bắt buộc để website hoạt động</p>
+                  <div className="flex items-center justify-between p-4 bg-muted/20 border border-border">
+                    <div className="pr-4">
+                      <p className="font-bold text-sm uppercase tracking-tight text-foreground">
+                        Cookie cần thiết
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Bắt buộc để website hoạt động
+                      </p>
                     </div>
-                    <div className="w-12 h-6 bg-white/20 rounded-full relative cursor-not-allowed opacity-50">
-                      <div className="absolute right-0.5 top-0.5 w-5 h-5 bg-white rounded-full" />
-                    </div>
+                    <Switch checked={true} disabled={true} />
                   </div>
 
                   {/* Analytics Cookies */}
-                  <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10">
-                    <div>
-                      <p className="font-bold text-sm uppercase tracking-tight">Cookie phân tích</p>
-                      <p className="text-xs text-gray-500 mt-1">Giúp chúng tôi cải thiện website</p>
+                  <div className="flex items-center justify-between p-4 bg-muted/20 border border-border">
+                    <div className="pr-4">
+                      <p className="font-bold text-sm uppercase tracking-tight text-foreground">
+                        Cookie phân tích
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Giúp chúng tôi cải thiện website
+                      </p>
                     </div>
-                    <button
-                      onClick={() => setPreferences((p) => ({ ...p, analytics: !p.analytics }))}
-                      className={`w-12 h-6 rounded-full relative transition-colors ${preferences.analytics ? 'bg-white' : 'bg-white/20'}`}
-                    >
-                      <div
-                        className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${preferences.analytics ? 'right-0.5 bg-black' : 'left-0.5 bg-white'}`}
-                      />
-                    </button>
+                    <Switch
+                      checked={preferences.analytics}
+                      onCheckedChange={(checked) =>
+                        setPreferences((p) => ({ ...p, analytics: checked }))
+                      }
+                    />
                   </div>
 
                   {/* Marketing Cookies */}
-                  <div className="flex items-center justify-between p-4 bg-white/5 border border-white/10">
-                    <div>
-                      <p className="font-bold text-sm uppercase tracking-tight">Cookie tiếp thị</p>
-                      <p className="text-xs text-gray-500 mt-1">Cá nhân hóa quảng cáo cho bạn</p>
+                  <div className="flex items-center justify-between p-4 bg-muted/20 border border-border">
+                    <div className="pr-4">
+                      <p className="font-bold text-sm uppercase tracking-tight text-foreground">
+                        Cookie tiếp thị
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Cá nhân hóa quảng cáo cho bạn
+                      </p>
                     </div>
-                    <button
-                      onClick={() => setPreferences((p) => ({ ...p, marketing: !p.marketing }))}
-                      className={`w-12 h-6 rounded-full relative transition-colors ${preferences.marketing ? 'bg-white' : 'bg-white/20'}`}
-                    >
-                      <div
-                        className={`absolute top-0.5 w-5 h-5 rounded-full transition-all ${preferences.marketing ? 'right-0.5 bg-black' : 'left-0.5 bg-white'}`}
-                      />
-                    </button>
+                    <Switch
+                      checked={preferences.marketing}
+                      onCheckedChange={(checked) =>
+                        setPreferences((p) => ({ ...p, marketing: checked }))
+                      }
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Footer */}
-              <div className="flex gap-3 p-6 border-t border-white/10">
+              <div className="flex gap-3 p-6 border-t border-border">
                 <button
                   onClick={savePreferences}
-                  className="flex-1 py-3 bg-white/10 hover:bg-white/20 font-bold uppercase text-sm tracking-tight transition-colors"
+                  className="flex-1 py-3 bg-muted hover:bg-muted/80 font-bold uppercase text-sm tracking-tight transition-colors text-foreground"
                 >
                   Lưu tùy chọn
                 </button>
                 <button
                   onClick={acceptAll}
-                  className="flex-1 py-3 bg-white text-black hover:bg-gray-200 font-bold uppercase text-sm tracking-tight transition-colors"
+                  className="flex-1 py-3 bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase text-sm tracking-tight transition-colors"
                 >
                   Chấp nhận tất cả
                 </button>

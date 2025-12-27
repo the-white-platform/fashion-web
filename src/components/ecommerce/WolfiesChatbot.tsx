@@ -140,18 +140,18 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
-          className={`fixed ${isMinimized ? 'bottom-24 right-6 w-80' : 'bottom-24 right-6 w-96'} bg-white rounded-sm shadow-2xl border-2 border-black z-[100] flex flex-col transition-all duration-300 overflow-hidden`}
+          className={`fixed ${isMinimized ? 'bottom-24 right-6 w-80' : 'bottom-24 right-6 w-96'} bg-background rounded-sm shadow-2xl border-2 border-primary z-[100] flex flex-col transition-all duration-300 overflow-hidden`}
           style={{ height: isMinimized ? '64px' : '600px', maxHeight: '90vh' }}
         >
           {/* Header */}
-          <div className="bg-black text-white p-4 flex items-center justify-between shadow-lg">
+          <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white rounded flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-background rounded flex items-center justify-center shadow-lg">
                 <span className="text-2xl">🐺</span>
               </div>
               <div>
                 <h3 className="uppercase tracking-widest font-bold text-sm">Wolfies</h3>
-                <p className="text-[10px] text-gray-400 uppercase tracking-tighter">
+                <p className="text-[10px] text-primary-foreground/80 uppercase tracking-tighter">
                   Trợ lý ảo TheWhite
                 </p>
               </div>
@@ -159,7 +159,7 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="p-2 hover:bg-white/10 rounded-sm transition-colors"
+                className="p-2 hover:bg-primary-foreground/10 rounded-sm transition-colors"
                 title={isMinimized ? 'Phóng to' : 'Thu nhỏ'}
               >
                 {isMinimized ? (
@@ -170,7 +170,7 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
               </button>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-white/10 rounded-sm transition-colors"
+                className="p-2 hover:bg-primary-foreground/10 rounded-sm transition-colors"
                 title="Đóng"
               >
                 <X className="w-4 h-4" />
@@ -181,7 +181,7 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
           {!isMinimized && (
             <>
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scrollbar-hide">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30 scrollbar-hide">
                 {messages.map((message) => (
                   <div
                     key={message.id}
@@ -190,13 +190,13 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
                     <div
                       className={`max-w-[85%] p-4 rounded-sm shadow-sm ${
                         message.sender === 'user'
-                          ? 'bg-black text-white'
-                          : 'bg-white border border-gray-200 text-black'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-card border border-border text-foreground'
                       }`}
                     >
                       <p className="text-sm whitespace-pre-line leading-relaxed">{message.text}</p>
                       {mounted && (
-                        <span className="text-[10px] opacity-40 mt-2 block font-medium">
+                        <span className="text-[10px] opacity-60 mt-2 block font-medium">
                           {message.timestamp.toLocaleTimeString('vi-VN', {
                             hour: '2-digit',
                             minute: '2-digit',
@@ -209,18 +209,18 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
 
                 {isTyping && (
                   <div className="flex justify-start">
-                    <div className="bg-white border border-gray-200 p-4 rounded-sm">
+                    <div className="bg-card border border-border p-4 rounded-sm">
                       <div className="flex gap-1.5">
                         <div
-                          className="w-1.5 h-1.5 bg-black rounded-full animate-bounce"
+                          className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
                           style={{ animationDelay: '0ms' }}
                         />
                         <div
-                          className="w-1.5 h-1.5 bg-black rounded-full animate-bounce"
+                          className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
                           style={{ animationDelay: '150ms' }}
                         />
                         <div
-                          className="w-1.5 h-1.5 bg-black rounded-full animate-bounce"
+                          className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
                           style={{ animationDelay: '300ms' }}
                         />
                       </div>
@@ -231,13 +231,13 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
               </div>
 
               {/* Quick Replies */}
-              <div className="p-3 bg-white border-t border-gray-100 overflow-x-auto">
+              <div className="p-3 bg-background border-t border-border overflow-x-auto">
                 <div className="flex gap-2 pb-1">
                   {quickReplies.map((reply, index) => (
                     <button
                       key={index}
                       onClick={() => handleQuickReply(reply)}
-                      className="text-[10px] whitespace-nowrap px-3 py-2 border border-gray-300 rounded-sm hover:bg-black hover:text-white transition-all uppercase font-bold tracking-wider"
+                      className="text-[10px] whitespace-nowrap px-3 py-2 border border-border rounded-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-all uppercase font-bold tracking-wider"
                     >
                       {reply}
                     </button>
@@ -246,7 +246,7 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
               </div>
 
               {/* Input */}
-              <div className="p-4 bg-white border-t border-gray-100 rounded-b-sm">
+              <div className="p-4 bg-background border-t border-border rounded-b-sm">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -254,11 +254,11 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                     placeholder="Nhập tin nhắn..."
-                    className="flex-1 px-4 py-3 border-2 border-gray-100 rounded-sm focus:outline-none focus:border-black transition-colors text-sm"
+                    className="flex-1 px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors text-sm bg-background text-foreground placeholder:text-muted-foreground"
                   />
                   <button
                     onClick={handleSend}
-                    className="p-3 bg-black text-white rounded-sm hover:bg-gray-800 transition-colors shadow-lg"
+                    className="p-3 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors shadow-lg"
                   >
                     <Send className="w-5 h-5" />
                   </button>

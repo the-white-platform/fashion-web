@@ -1,0 +1,597 @@
+{
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "men": "Men",
+    "women": "Women",
+    "kids": "Kids",
+    "new": "New Arrivals",
+    "collections": "Collections",
+    "about": "About Us",
+    "contact": "Contact",
+    "search": "Search...",
+    "account": "Account",
+    "wishlist": "Wishlist",
+    "cart": "Cart",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "profile": "Profile",
+    "backToHome": "Back to Home"
+  },
+  "hero": {
+    "title": "WINTER COLLECTION 2024",
+    "subtitle": "MODERN ATHLETIC STYLE",
+    "description": "Discover our latest collection with minimalist design, premium materials and advanced technology",
+    "cta": "Explore Now",
+    "lookbook": "View Lookbook",
+    "stats": {
+      "products": "Products",
+      "customers": "Customers",
+      "rating": "Ratings"
+    },
+    "discount": {
+      "upto": "UP TO"
+    }
+  },
+  "categories": {
+    "title": "Shop By Activity",
+    "subtitle": "Find the perfect gear for your sport",
+    "running": "RUNNING",
+    "gym": "GYM",
+    "yoga": "YOGA",
+    "football": "FOOTBALL"
+  },
+  "products": {
+    "title": "Featured Products",
+    "subtitle": "Our most loved products",
+    "new": "New",
+    "bestseller": "Bestseller",
+    "sale": "Sale",
+    "accessories": "Accessories",
+    "addToCart": "Add to Cart",
+    "quickView": "Quick View",
+    "viewAll": "View All",
+    "filter": "Filter",
+    "sort": "Sort",
+    "size": "Size",
+    "color": "Color",
+    "price": "Price",
+    "category": "Category"
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "emptyDesc": "You have no items in your cart",
+    "continueShopping": "Continue Shopping",
+    "checkout": "Checkout",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "discount": "Discount",
+    "remove": "Remove",
+    "quantity": "Quantity"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "shipping": "Shipping Information",
+    "payment": "Payment Method",
+    "review": "Review Order",
+    "complete": "Complete",
+    "next": "Next",
+    "back": "Back",
+    "placeOrder": "Place Order",
+    "fullName": "Full Name",
+    "phone": "Phone Number",
+    "email": "Email",
+    "address": "Address",
+    "city": "City/Province",
+    "district": "District",
+    "ward": "Ward",
+    "note": "Note",
+    "success": "Order Placed Successfully!",
+    "successDesc": "Thank you for your order. We will contact you soon.",
+    "orderId": "Order ID"
+  },
+  "profile": {
+    "title": "My Profile",
+    "info": "Information",
+    "size": "Size & Measurements",
+    "vto": "Virtual Try-On",
+    "orders": "Orders",
+    "addresses": "Addresses",
+    "payment": "Payment",
+    "logout": "Logout",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "orders": {
+    "title": "My Orders",
+    "empty": "No Orders Yet",
+    "emptyDesc": "You have no orders yet. Start shopping now!",
+    "orderId": "Order ID",
+    "date": "Date",
+    "status": "Status",
+    "total": "Total",
+    "items": "items",
+    "viewDetails": "View Details",
+    "trackOrder": "Track Order",
+    "cancelOrder": "Cancel Order",
+    "buyAgain": "Buy Again",
+    "review": "Review",
+    "delivered": "Delivered",
+    "shipping": "Shipping",
+    "processing": "Processing",
+    "cancelled": "Cancelled"
+  },
+  "footer": {
+    "about": "About TheWhite",
+    "aboutDesc": "Vietnamese sportswear brand with modern, minimalist style",
+    "customer": "Customer",
+    "policy": "Policy",
+    "connect": "Connect",
+    "payment": "Payment Methods",
+    "shipping": "Shipping Partners",
+    "copyright": "© 2024 TheWhite. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "products": {
+      "shirts": "Sports Shirts",
+      "pants": "Sports Pants",
+      "shoes": "Sports Shoes",
+      "accessories": "Accessories",
+      "new": "New Collection"
+    },
+    "support": {
+      "return": "Return Policy",
+      "guide": "Shopping Guide",
+      "payment": "Payment & Shipping",
+      "size": "Size Guide",
+      "faq": "FAQ"
+    },
+    "customerService": {
+      "title": "Customer Service",
+      "returns": "Return Policy",
+      "shipping": "Shipping Partners",
+      "sizeGuide": "Size Guide",
+      "contact": "Contact",
+      "faq": "FAQ"
+    },
+    "rights": "All rights reserved.",
+    "contact": {
+      "hours": "Working Hours: 8:00 - 22:00",
+      "showroom": "Showroom: District 1, HCMC"
+    }
+  },
+  "virtualTryOnDemo": {
+    "badge": "AI TECHNOLOGY",
+    "title": "Virtual Try-On",
+    "description": "Experience advanced AI technology - See how you look in TheWhite sportswear",
+    "steps": {
+      "1": {
+        "title": "Select Product",
+        "description": "Choose the product you want to try from the product detail page"
+      },
+      "2": {
+        "title": "Upload Photo & Info",
+        "uploadText": "Upload your full body photo",
+        "description": "Enter height, weight and gender for more accurate results"
+      },
+      "3": {
+        "title": "View Result",
+        "description": "AI generates a photo of you wearing TheWhite product in seconds"
+      }
+    },
+    "cta": {
+      "title": "Ready to Try?",
+      "description": "Choose any product in the store and click \"Virtual Try-On\" to start the experience",
+      "button": "Explore Products"
+    },
+    "features": {
+      "upload": {
+        "title": "Easy to Use",
+        "description": "Just 3 simple steps to get results instantly"
+      },
+      "ai": {
+        "title": "AI Technology",
+        "description": "Using the most advanced artificial intelligence"
+      },
+      "personal": {
+        "title": "Private & Secure",
+        "description": "Your photos are strictly confidential"
+      }
+    }
+  },
+  "common": {
+    "all": "All",
+    "newest": "Newest",
+    "priceAsc": "Price: Low to High",
+    "priceDesc": "Price: High to Low",
+    "popular": "Popular",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "close": "Close",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "apply": "Apply",
+    "reset": "Reset",
+    "viewMore": "View More",
+    "viewLess": "View Less",
+    "readMore": "Read More",
+    "showMore": "Show More",
+    "products": "PRODUCTS",
+    "explore": "EXPLORE",
+    "collection": "COLLECTION",
+    "notFound": {
+      "title": "404",
+      "description": "This page could not be found.",
+      "home": "Go Home"
+    }
+  },
+  "carousel": {
+    "slides": {
+      "winter2024": {
+        "title": "WINTER COLLECTION 2024",
+        "subtitle": "Power in every step",
+        "cta": "Explore Now"
+      },
+      "performancePro": {
+        "title": "MODERN STYLE",
+        "subtitle": "Optimized for every activity",
+        "cta": "Explore Now"
+      },
+      "styleComfort": {
+        "title": "PREMIUM MATERIALS",
+        "subtitle": "Comfort all day long",
+        "cta": "Explore Now"
+      }
+    },
+    "previousSlide": "Previous Slide",
+    "nextSlide": "Next Slide",
+    "goToSlide": "Go to slide"
+  },
+  "takeAction": {
+    "subtitle": "Don't just dream of success. Take action today with TheWhite premium sportswear.",
+    "cta": {
+      "explore": "Explore More",
+      "collection": "New Collection"
+    },
+    "scroll": "Scroll Down"
+  },
+  "brandStory": {
+    "label": "ABOUT THEWHITE",
+    "title": "Sport Is A Lifestyle",
+    "desc1": "TheWhite was born from a passion for sports and a desire to bring high-quality sportswear to everyone.",
+    "desc2": "We believe sportswear is not just for training, but a symbol of an active, healthy, and confident lifestyle.",
+    "desc3": "With minimalist, modern design combined with advanced fabric technology, every TheWhite product is created to accompany you in every activity.",
+    "feature": {
+      "material": "Premium Material",
+      "materialDesc": "Excellent sweat absorption",
+      "design": "Modern Design",
+      "designDesc": "Minimalist style",
+      "durable": "Durable",
+      "durableDesc": "Long-lasting quality",
+      "origin": "Made in Vietnam",
+      "originDesc": "Proudly Vietnamese"
+    },
+    "stats": {
+      "founded": "Founded",
+      "vietnam": "Vietnamese Quality",
+      "passion": "Passion"
+    },
+    "cta": {
+      "explore": "EXPLORE MORE",
+      "story": "OUR STORY"
+    }
+  },
+  "reviews": {
+    "title": "Ratings & Reviews",
+    "subtitle": "From customers who purchased {productName}",
+    "count": "{count} reviews",
+    "write": "Write a Review",
+    "alreadyReviewed": "You have already reviewed this product",
+    "mustPurchase": "Only customers who purchased this product can review",
+    "login": "Log in",
+    "loginToReview": "to write a review",
+    "sortBy": "Sort by:",
+    "sort": {
+      "recent": "Newest",
+      "helpful": "Most Helpful",
+      "rating": "Highest Rating"
+    },
+    "clearCo": "Clear filter",
+    "empty": "No reviews yet",
+    "helpful": "Helpful",
+    "verified": "Verified Purchase",
+    "fit": {
+      "tight": "Tight",
+      "perfect": "Perfect",
+      "loose": "Loose"
+    },
+    "labels": {
+      "height": "Height",
+      "weight": "Weight",
+      "rating": "Rating",
+      "title": "Title",
+      "comment": "Review",
+      "size": "Purchased Size",
+      "fit": "Fit"
+    },
+    "placeholders": {
+      "title": "Summarize your review",
+      "comment": "Share your experience about this product...",
+      "size": "Select size",
+      "fit": "Select fit",
+      "height": "e.g. 175cm",
+      "weight": "e.g. 68kg"
+    },
+    "form": {
+      "title": "Write Your Review",
+      "submit": "Submit Review",
+      "cancel": "Cancel",
+      "alert": "Please enter rating and comment"
+    }
+  },
+  "search": {
+    "placeholder": "Search products...",
+    "popular": "Popular Searches",
+    "recent": "Recently Viewed",
+    "terms": {
+      "tshirt": "Men's T-Shirts",
+      "shoes": "Running Shoes",
+      "yoga": "Yoga Pants",
+      "jacket": "Sports Jacket",
+      "training": "Training Shoes"
+    }
+  },
+  "newsletter": {
+    "title": "Get Exclusive Offers",
+    "description": "Subscribe to our newsletter to get updates on the latest products, special offers and useful sports tips",
+    "placeholder": "Enter your email",
+    "button": "SUBSCRIBE NOW",
+    "buttonSuccess": "✓ SUBSCRIBED",
+    "note": "Get a 10% discount code for your first order"
+  },
+  "exploreMore": {
+    "title": "Explore More",
+    "subtitle": "Discover our premium sportswear collection designed to keep you confident and comfortable in every move",
+    "feature1": {
+      "title": "High Performance",
+      "desc": "Advanced technology fabric, breathable and optimal sweat absorption"
+    },
+    "feature2": {
+      "title": "Modern Design",
+      "desc": "Minimalist, luxurious style suitable for all activities"
+    },
+    "feature3": {
+      "title": "Premium Quality",
+      "desc": "100% quality commitment, durable over time"
+    },
+    "feature4": {
+      "title": "Trusted by 10K+",
+      "desc": "Trusted by over 10,000 athletes and sports lovers"
+    },
+    "collection1": {
+      "title": "Sport Shirts",
+      "desc": "Breathable, 4-way stretch"
+    },
+    "collection2": {
+      "title": "Sport Pants",
+      "desc": "Flexible, maximum comfort"
+    },
+    "collection3": {
+      "title": "Accessories",
+      "desc": "Complete your style"
+    },
+    "cta": "View All Products"
+  },
+  "vto": {
+    "label": "AI TECHNOLOGY",
+    "title": "Virtual Try-On",
+    "subtitle": "Experience advanced AI technology - See how you look in TheWhite sportswear",
+    "step1": {
+      "title": "Select Product",
+      "desc": "Choose the product you want to try from the product detail page"
+    },
+    "step2": {
+      "title": "Upload Photo & Info",
+      "desc": "Enter height, weight and gender for more accurate results",
+      "upload": "Upload your full body photo"
+    },
+    "step3": {
+      "title": "View Result",
+      "desc": "AI generates a photo of you wearing TheWhite product in seconds"
+    },
+    "cta": {
+      "title": "Ready to Try?",
+      "desc": "Choose any product in the store and click \"Virtual Try-On\" to start the experience",
+      "button": "Explore Products"
+    },
+    "info1": {
+      "title": "Easy to Use",
+      "desc": "Just 3 simple steps to get results instantly"
+    },
+    "info2": {
+      "title": "AI Technology",
+      "desc": "Using the most advanced artificial intelligence"
+    },
+    "info3": {
+      "title": "Private & Secure",
+      "desc": "Your photos are strictly confidential"
+    }
+  },
+  "filter": {
+    "title": "Filter",
+    "clear": "Clear All Filters",
+    "apply": "Apply",
+    "category": {
+      "title": "Category",
+      "tshirt": "T-Shirt",
+      "polo": "Polo Shirt",
+      "hoodie": "Hoodie",
+      "jacket": "Jacket",
+      "pants": "Pants",
+      "shorts": "Shorts"
+    },
+    "price": {
+      "title": "Price",
+      "all": "All",
+      "under500": "Under 500k",
+      "500-1000": "500k - 1m",
+      "1000-2000": "1m - 2m",
+      "above2000": "Over 2m"
+    },
+    "size": "Size",
+    "color": {
+      "title": "Color",
+      "white": "White",
+      "black": "Black",
+      "gray": "Gray",
+      "navy": "Navy",
+      "red": "Red",
+      "green": "Green"
+    },
+    "sort": {
+      "newest": "Newest",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "popular": "Popular"
+    }
+  },
+  "privacyPolicy": {
+    "breadcrumb": "Privacy Policy",
+    "title": "Privacy Policy",
+    "subtitle": "GDPR Compliant & Vietnam Data Protection Law",
+    "lastUpdated": "Last updated: 17/12/2024",
+    "sections": {
+      "intro": {
+        "title": "1. Introduction",
+        "content": "TheWhite is committed to protecting your privacy and personal data in accordance with the GDPR (General Data Protection Regulation) and Vietnamese law.\n\nThis policy explains how we collect, use, store, and protect your personal information when using TheWhite's website and services."
+      },
+      "collection": {
+        "title": "2. Information We Collect",
+        "content": "**Information you provide:**\n• Name, email address, phone number\n• Shipping and billing address\n• Account information (username, encrypted password)\n• Order information and purchase history\n• Feedback, product reviews\n\n**Information automatically collected:**\n• IP address, browser type, operating system\n• Cookies and similar tracking technologies\n• Website usage data (pages viewed, access time)\n• Analytics data from Google Analytics\n\n**Legal basis:**\n• Performance of a sales contract\n• Legitimate business interests\n• Your consent"
+      },
+      "usage": {
+        "title": "3. Purpose of Data Usage",
+        "content": "We use your data to:\n\n✓ Process and deliver orders\n✓ Send order confirmations and shipping updates\n✓ Provide customer service\n✓ Process payments (via secure payment partners)\n✓ Improve user experience and personalize content\n✓ Send promotional information (only with your consent)\n✓ Analyze and research the market\n✓ Detect and prevent fraud\n✓ Comply with legal obligations"
+      },
+      "security": {
+        "title": "4. Data Security",
+        "content": "**Security measures:**\n• SSL/TLS encryption for all data transmission\n• Password storage hashed with bcrypt\n• Firewall and intrusion detection systems\n• Role-based access control\n• Periodic data backup and encryption\n• Employee training on information security\n\n**Retention period:**\n• Account data: Until you request deletion\n• Order data: 5 years (accounting legal requirement)\n• Marketing data: 2 years or until opt-out\n• Cookies: Varies (session or 1-12 months)"
+      },
+      "sharing": {
+        "title": "5. Data Sharing",
+        "content": "We only share data with trusted third parties:\n\n**Service partners:**\n• Shipping units (Giao Hàng Nhanh, Viettel Post)\n• Payment gateways (VNPay, MoMo - PCI DSS compliant)\n• Email marketing services (only with your consent)\n• Google Analytics (anonymized data)\n\n**Legal requirements:**\n• When ordered by competent authorities\n• To protect the rights and safety of TheWhite and customers\n\nWe do **NOT** sell or rent your personal data."
+      },
+      "rights": {
+        "title": "6. Your Rights Under GDPR",
+        "content": "You have the following rights:\n\n**Right of access:** Request a copy of your personal data\n\n**Right to rectification:** Update inaccurate information\n\n**Right to erasure (\"Right to be Forgotten\"):** Request deletion of your data\n\n**Right to restrict processing:** Pause data processing in specific cases\n\n**Right to data portability:** Receive data in a readable format\n\n**Right to object:** Refuse data processing for marketing purposes\n\n**Right to withdraw consent:** Cancel consent given at any time\n\n**How to exercise rights:**\n📧 Email: privacy@thewhite.vn\n📞 Hotline: 0123 456 789\n⏱️ Response time: 30 days"
+      },
+      "international": {
+        "title": "7. International Data Transfer",
+        "content": "Some of our partners may be located overseas (e.g., AWS servers in Singapore). We ensure all data transfers comply with GDPR through:\n\n• Standard Contractual Clauses (SCC) approved by the EU\n• Partners certified with ISO 27001\n• Full data protection agreements"
+      },
+      "children": {
+        "title": "8. Children's Privacy",
+        "content": "Our website is not intended for children under 16. We do not knowingly collect personal data from children. If you are a parent and discover your child has provided information, please contact us immediately to delete the data."
+      },
+      "changes": {
+        "title": "9. Policy Changes",
+        "content": "We may update this policy periodically. Significant changes will be notified via:\n\n• Email to registered address\n• Prominent notice on the website\n• Popup notice upon login\n\nContinued use of the service after changes implies acceptance of the new policy."
+      }
+    },
+    "contact": {
+      "title": "10. Contact - Data Protection Officer",
+      "description": "If you have any questions about the privacy policy or wish to exercise your rights, please contact our Data Protection Officer (DPO):",
+      "complaint": "You also have the right to lodge a complaint with the competent Data Protection Authority if you believe your rights have been violated."
+    }
+  },
+  "termsOfUse": {
+    "breadcrumb": "Terms of Use",
+    "title": "Terms of Use",
+    "subtitle": "Regulations for using TheWhite services",
+    "effectiveDate": "Effective from: 17/12/2024",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "content": "By accessing and using TheWhite website (www.thewhite.vn), you agree to comply with these terms and conditions of use.\n\nIf you do not agree to any part of the terms, please do not use our services.\n\nWe reserve the right to change these terms at any time. Continued use after changes constitutes your acceptance of the new terms."
+      },
+      "account": {
+        "title": "2. User Account",
+        "content": "**Account Registration:**\n• You must be 16 years or older to create an account\n• Registration information must be accurate and complete\n• You are responsible for securing your account and password\n• You must notify immediately if unauthorized access is detected\n\n**Our Rights:**\n• Refuse or cancel registration without reason\n• Suspend/delete accounts violating terms\n• Request additional identity verification\n\n**Your Obligations:**\n• Do not share account with others\n• Do not use for unauthorized commercial purposes\n• Do not create multiple accounts to abuse promotions"
+      },
+      "orders": {
+        "title": "3. Orders & Payment",
+        "content": "**Ordering Process:**\n1. Select products and add to cart\n2. Fill in shipping and payment information\n3. Confirm order and pay\n4. Receive order confirmation email\n\n**Pricing & Payment:**\n• Prices displayed in VND, including VAT\n• We reserve the right to change prices at any time\n• Methods: COD, bank transfer, credit card, e-wallet\n• Orders are processed only after successful payment\n\n**Order Cancellation:**\n• You can cancel before the order is handed to shipping\n• Refund in 5-7 working days (if paid)\n• We reserve the right to cancel orders if fraud is detected"
+      },
+      "shipping": {
+        "title": "4. Shipping & Delivery",
+        "content": "**Delivery Area:**\n• Nationwide via reputable shipping partners\n• Time: 2-5 days (inner city), 3-7 days (remote provinces)\n• Shipping fee: According to current policy\n\n**Liability:**\n• We are not liable for delays caused by shipping partners\n• You must check goods before accepting (for COD)\n• Complaints must be sent within 24h of receipt\n\n**Risk:**\n• Risk transfers to you upon successful delivery\n• You are responsible for providing accurate address"
+      },
+      "intellectual": {
+        "title": "5. Intellectual Property",
+        "content": "**Copyright:**\n• All content on the website (text, images, logo, video) belongs to TheWhite\n• \"TheWhite\" logo is a registered trademark\n• Website design is protected by copyright law\n\n**Usage Limits:**\n• You may view and download for personal purpose\n• Must not copy, distribute, or use commercially\n• Must not create derivative works\n\n**Violation:**\n• We will take legal action if copyright infringement is detected"
+      },
+      "liability": {
+        "title": "6. Liability & Limitations",
+        "content": "**Disclaimer:**\n• Website provided \"as-is\"\n• We do not guarantee continuous website operation\n• Not liable for technical errors, viruses, malware\n\n**Limitation of Liability:**\n• We are not liable for indirect, incidental, or consequential damages\n• Maximum liability: Value of related order\n• Not applicable for damages due to gross negligence\n\n**Indemnification:**\n• You agree to indemnify TheWhite if violating terms causes damage\n\n**Force Majeure:**\n• We are not liable for events beyond control (natural disasters, war, epidemics)"
+      },
+      "prohibited": {
+        "title": "7. Prohibited Conduct",
+        "content": "When using the service, you MUST NOT:\n• ❌ Violate Vietnamese or international laws\n• ❌ Use for fraud, money laundering\n• ❌ Upload viruses, malware or malicious code\n• ❌ Attempt unauthorized access to the system\n• ❌ Collect other users' information\n• ❌ Impersonate TheWhite or our employees\n• ❌ Spam, harass, or annoying behavior\n• ❌ Use bots, automated scripts to buy goods\n• ❌ Post content violating copyright\n• ❌ Exploit system errors for profit"
+      },
+      "links": {
+        "title": "8. Third Party Links",
+        "content": "The website may contain links to third-party websites. We do not control and are not responsible for the content, privacy policy, or practices of these sites.\n\nAccessing external links is at your own risk. We encourage you to read carefully the terms and privacy policy of every website you visit."
+      },
+      "dispute": {
+        "title": "9. Dispute Resolution",
+        "content": "**Governing Law:** These terms follow Vietnamese law.\n**Negotiation:** Disputes must be resolved through negotiation first.\n**Court:** If negotiation fails, disputes will be resolved at the competent Court in Ho Chi Minh City.\n**Language:** The Vietnamese version of these terms is the official version. In case of conflict with other language versions, the Vietnamese version prevails."
+      },
+      "severability": {
+        "title": "10. Severability",
+        "content": "If any provision in this document is determined to be invalid or unenforceable, the remaining provisions remain in full force.\n\nOur failure to enforce any right is not considered a waiver of that right."
+      }
+    },
+    "contact": {
+      "title": "11. Contact",
+      "description": "If you have questions about these terms, please contact:"
+    },
+    "agreement": {
+      "label": "Important:",
+      "content": "By using TheWhite website, you confirm that you have read, understood and agree to comply with all terms and conditions stated above."
+    }
+  },
+  "wishlist": {
+    "breadcrumb": "Wishlist",
+    "title": "Wishlist",
+    "itemCount": "{count} products",
+    "share": "Share",
+    "addAllToCart": "Add All to Cart",
+    "outOfStock": "Out of Stock",
+    "size": "Size",
+    "addToCart": "Add to Cart",
+    "empty": "Your Wishlist is Empty",
+    "emptyDesc": "Add your favorite products to easily buy later",
+    "explore": "Explore Products",
+    "shareLinkCopied": "Wishlist link copied!",
+    "tips": {
+      "title": "Useful Tips",
+      "l1": "Wishlist products will be saved on your device",
+      "l2": "Click on product to view details",
+      "l3": "Share your wishlist with friends via link",
+      "l4": "Add all products to cart with one click"
+    }
+  }
+}

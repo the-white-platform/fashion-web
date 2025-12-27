@@ -3,7 +3,6 @@ import React from 'react'
 import { HeaderThemeProvider } from './HeaderTheme'
 import { ThemeProvider } from './Theme'
 import { CartProvider } from '@/contexts/CartContext'
-import { LanguageProvider } from '@/contexts/LanguageContext'
 import { UserProvider } from '@/contexts/UserContext'
 import { ModalProvider } from '@/contexts/ModalContext'
 
@@ -12,15 +11,13 @@ export const Providers: React.FC<{
 }> = ({ children }) => {
   return (
     <ThemeProvider>
-      <LanguageProvider>
-        <UserProvider>
-          <CartProvider>
-            <ModalProvider>
-              <HeaderThemeProvider>{children}</HeaderThemeProvider>
-            </ModalProvider>
-          </CartProvider>
-        </UserProvider>
-      </LanguageProvider>
+      <UserProvider>
+        <CartProvider>
+          <ModalProvider>
+            <HeaderThemeProvider>{children}</HeaderThemeProvider>
+          </ModalProvider>
+        </CartProvider>
+      </UserProvider>
     </ThemeProvider>
   )
 }

@@ -20,7 +20,7 @@ export function FloatingActions() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={() => setIsChatOpen(true)}
-            className="fixed bottom-6 right-6 z-[100] bg-black text-white p-3 rounded-full shadow-xl hover:bg-white hover:text-black border-2 border-black transition-all group"
+            className="fixed bottom-6 right-6 z-[100] bg-primary text-primary-foreground p-3 rounded-full shadow-xl hover:bg-background hover:text-foreground border-2 border-primary transition-all group"
             aria-label="Toggle Wolfies Chatbot"
           >
             <div className="relative">

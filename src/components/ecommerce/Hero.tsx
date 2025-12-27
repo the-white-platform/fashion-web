@@ -2,15 +2,15 @@
 
 import { ChevronRight } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { motion } from 'motion/react'
-import { useLanguage } from '@/contexts/LanguageContext'
+import { useTranslations } from 'next-intl'
 
 export function Hero() {
-  const { t, language } = useLanguage()
+  const t = useTranslations('hero')
 
   return (
-    <section className="relative min-h-screen bg-transparent text-black pt-24 pb-12 overflow-hidden">
+    <section className="relative min-h-screen bg-background text-foreground pt-24 pb-12 overflow-hidden">
       <div className="container mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[calc(100vh-6rem)]">
           {/* Left Content */}
@@ -24,9 +24,9 @@ export function Hero() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
-              className="inline-block bg-black text-white px-4 py-2 tracking-widest rounded-sm text-xs lg:text-sm font-medium"
+              className="inline-block bg-primary text-primary-foreground px-4 py-2 tracking-widest rounded-sm text-xs lg:text-sm font-medium"
             >
-              {t('hero.title')}
+              {t('subtitle')}
             </motion.div>
 
             <motion.h1
@@ -35,32 +35,19 @@ export function Hero() {
               transition={{ delay: 0.3 }}
               className="text-4xl sm:text-5xl lg:text-7xl uppercase leading-tight font-black"
             >
-              {language === 'vi' ? (
-                <>
-                  Phong Cách
-                  <br />
-                  Thể Thao
-                  <br />
-                  <span className="text-gray-500">Hiện Đại</span>
-                </>
-              ) : (
-                <>
-                  Modern
-                  <br />
-                  Athletic
-                  <br />
-                  <span className="text-gray-500">Style</span>
-                </>
-              )}
+              {t.rich('title', {
+                br: () => <br />,
+                span: (chunks) => <span className="text-muted-foreground">{chunks}</span>,
+              })}
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-base lg:text-lg text-gray-500 max-w-md"
+              className="text-base lg:text-lg text-muted-foreground max-w-md"
             >
-              {t('hero.description')}
+              {t('description')}
             </motion.p>
 
             <motion.div
@@ -71,13 +58,13 @@ export function Hero() {
             >
               <Link
                 href="/products"
-                className="bg-black text-white px-8 py-4 rounded-sm hover:bg-gray-800 transition-all hover:scale-105 flex items-center justify-center gap-2 group uppercase tracking-wide font-bold text-sm"
+                className="bg-primary text-primary-foreground px-8 py-4 rounded-sm hover:bg-primary/90 transition-all hover:scale-105 flex items-center justify-center gap-2 group uppercase tracking-wide font-bold text-sm"
               >
-                {t('hero.cta')}
+                {t('cta')}
                 <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
-              <button className="border-2 border-black px-8 py-4 rounded-sm hover:bg-black hover:text-white transition-all hover:scale-105 uppercase tracking-wide font-bold text-sm">
-                {t('hero.lookbook')}
+              <button className="border-2 border-primary px-8 py-4 rounded-sm hover:bg-primary hover:text-primary-foreground transition-all hover:scale-105 uppercase tracking-wide font-bold text-sm">
+                {t('lookbook')}
               </button>
             </motion.div>
 
@@ -85,24 +72,24 @@ export function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="flex gap-8 pt-4 border-t border-gray-200 mt-8"
+              className="flex gap-8 pt-4 border-t border-border mt-8"
             >
               <div>
                 <div className="text-2xl lg:text-3xl font-bold">500+</div>
-                <div className="text-xs lg:text-sm text-gray-500 uppercase tracking-wide">
-                  {t('hero.stats.products')}
+                <div className="text-xs lg:text-sm text-muted-foreground uppercase tracking-wide">
+                  {t('stats.products')}
                 </div>
               </div>
               <div>
                 <div className="text-2xl lg:text-3xl font-bold">50K+</div>
-                <div className="text-xs lg:text-sm text-gray-500 uppercase tracking-wide">
-                  {t('hero.stats.customers')}
+                <div className="text-xs lg:text-sm text-muted-foreground uppercase tracking-wide">
+                  {t('stats.customers')}
                 </div>
               </div>
               <div>
                 <div className="text-2xl lg:text-3xl font-bold">4.9★</div>
-                <div className="text-xs lg:text-sm text-gray-500 uppercase tracking-wide">
-                  {t('hero.stats.rating')}
+                <div className="text-xs lg:text-sm text-muted-foreground uppercase tracking-wide">
+                  {t('stats.rating')}
                 </div>
               </div>
             </motion.div>
@@ -152,12 +139,12 @@ export function Hero() {
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.8, type: 'spring' }}
-              className="absolute top-[35%] left-[20%] lg:left-[25%] bg-white text-black px-4 py-3 lg:px-6 lg:py-4 shadow-xl rounded-sm z-30 border border-gray-100"
+              className="absolute top-[35%] left-[20%] lg:left-[25%] bg-card text-card-foreground px-4 py-3 lg:px-6 lg:py-4 shadow-xl rounded-sm z-30 border border-border"
             >
-              <div className="text-xs text-gray-500 font-bold tracking-wider mb-1">
-                {t('hero.discount.upto')}
+              <div className="text-xs text-muted-foreground font-bold tracking-wider mb-1">
+                {t('discount.upto')}
               </div>
-              <div className="text-2xl lg:text-4xl font-black">30%</div>
+              <div className="text-2xl lg:text-4xl font-black">{t('discount.value')}</div>
             </motion.div>
           </motion.div>
         </div>
