@@ -77,7 +77,7 @@ export function Carousel() {
 
   return (
     <section className="relative text-foreground">
-      <div className="relative h-[calc(100vh-5rem)] overflow-hidden" ref={emblaRef}>
+      <div className="relative h-screen overflow-hidden" ref={emblaRef}>
         <div className="flex h-full">
           {carouselSlides.map((slide) => (
             <div key={slide.id} className="relative min-w-0 flex-[0_0_100%]">
