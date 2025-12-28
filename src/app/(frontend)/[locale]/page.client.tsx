@@ -27,35 +27,35 @@ export default function HomePageClient() {
 
   return (
     <>
-      <AlternatingSection index={0}>
-        <Carousel />
-      </AlternatingSection>
+      {/* Carousel - no alternating, inherits global theme */}
+      <Carousel />
 
-      <AlternatingSection index={1}>
+      {/* TakeActionHero at index 0 = same theme as header */}
+      <AlternatingSection index={0}>
         <TakeActionHero />
       </AlternatingSection>
 
-      <AlternatingSection index={2}>
+      <AlternatingSection index={1}>
         <FeaturedProducts onProductClick={handleProductClick} onViewAll={handleViewAll} />
       </AlternatingSection>
 
-      <AlternatingSection index={3}>
+      <AlternatingSection index={2}>
         <Categories />
       </AlternatingSection>
 
-      <AlternatingSection index={4}>
+      <AlternatingSection index={3}>
         <ExploreMore />
       </AlternatingSection>
 
-      <AlternatingSection index={5}>
+      <AlternatingSection index={4}>
         <VirtualTryOnDemo />
       </AlternatingSection>
 
-      <AlternatingSection index={6}>
+      <AlternatingSection index={5}>
         <BrandStory />
       </AlternatingSection>
 
-      <AlternatingSection index={7}>
+      <AlternatingSection index={6}>
         <Newsletter />
       </AlternatingSection>
 

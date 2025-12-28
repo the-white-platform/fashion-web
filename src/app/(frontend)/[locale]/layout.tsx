@@ -81,8 +81,8 @@ export default async function RootLayout({ children, params }: Props) {
     <html className={cn(inter.variable, theWhite.variable)} lang={locale} suppressHydrationWarning>
       <head>
         <InitTheme />
-        <link href="/logo.ico" rel="icon" sizes="32x32" />
-        <link href="/logo.png" rel="icon" type="image/png" />
+        <link href="/logo/claw.ico" rel="icon" sizes="32x32" />
+        <link href="/logo/claw.svg" rel="icon" type="image/svg+xml" />
       </head>
       <body className="relative font-sans antialiased">
         {/* Noisy Background Texture - matching prototype */}
