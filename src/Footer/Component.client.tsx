@@ -15,7 +15,7 @@ export function FooterClient() {
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block bg-black text-white px-4 py-2 mb-4">
-              <Logo showSlogan={false} className="items-start" />
+              <Logo showSlogan={false} className="items-start [&_img]:invert" />
             </Link>
             <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
               {t('footer.aboutDesc')}
@@ -184,7 +184,7 @@ export function FooterClient() {
         {/* Bottom */}
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-muted-foreground text-sm text-center md:text-left font-normal">
-            &copy; {new Date().getFullYear()} The White. {t('footer.rights')}
+            &copy; {2026} The White. {t('footer.rights')}
           </div>
           <div className="flex gap-6 text-sm text-muted-foreground font-normal">
             <Link href="/privacy-policy" className="hover:text-foreground transition-colors">

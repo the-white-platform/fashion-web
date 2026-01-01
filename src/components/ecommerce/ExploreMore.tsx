@@ -2,11 +2,21 @@
 
 import { motion } from 'motion/react'
 import { ArrowRight, Zap, TrendingUp, Award, Users } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 
-export function ExploreMore() {
+interface Category {
+  id: number
+  title: string
+  slug: string
+}
+
+interface ExploreMoreProps {
+  categories?: Category[]
+}
+
+export function ExploreMore({ categories }: ExploreMoreProps = {}) {
   const router = useRouter()
   const t = useTranslations('exploreMore')
   const tCommon = useTranslations('common')
@@ -34,26 +44,23 @@ export function ExploreMore() {
     },
   ]
 
-  const collections = [
-    {
-      title: t('collection1.title'),
-      description: t('collection1.desc'),
-      image:
+  // Map categories to collections with translated descriptions
+  const collections =
+    categories?.map((cat, index) => {
+      const descriptionKeys = ['collection1.desc', 'collection2.desc', 'collection3.desc']
+      const images = [
         'https://images.unsplash.com/photo-1572565408388-cdd3afe23e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-    },
-    {
-      title: t('collection2.title'),
-      description: t('collection2.desc'),
-      image:
         'https://images.unsplash.com/photo-1625515922308-56dcaa45351c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-    },
-    {
-      title: t('collection3.title'),
-      description: t('collection3.desc'),
-      image:
         'https://images.unsplash.com/photo-1758875568971-7388ba15012b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-    },
-  ]
+      ]
+
+      return {
+        title: cat.title,
+        description: t(descriptionKeys[index] as any) || '',
+        image: images[index] || images[0],
+        link: `/products?category=${cat.slug}`,
+      }
+    }) || []
 
   return (
     <section className="py-20 relative overflow-hidden transition-colors duration-300">
@@ -107,7 +114,7 @@ export function ExploreMore() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="group relative h-96 bg-muted overflow-hidden cursor-pointer rounded-sm"
-              onClick={() => router.push('/products')}
+              onClick={() => router.push(collection.link)}
             >
               <div className="absolute inset-0">
                 <Image

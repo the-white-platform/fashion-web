@@ -13,7 +13,41 @@ import { Newsletter } from '@/components/ecommerce/Newsletter'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
 import { AlternatingSection } from '@/components/AlternatingSection'
 
-export default function HomePageClient() {
+interface FeaturedProduct {
+  id: number
+  name: string
+  category: string
+  categoryId?: number
+  categoryIds?: number[]
+  price: string
+  priceNumber: number
+  image: string
+  tag: string
+}
+
+interface QuickFilter {
+  id: string
+  label: string
+  filterType: 'all' | 'category' | 'tag'
+  categoryId?: number
+  tagFilter?: 'sale' | 'new' | 'bestseller'
+}
+
+interface HomePageClientProps {
+  featuredProducts?: FeaturedProduct[]
+  carouselSlides?: any[]
+  featuredCategories?: any[]
+  activityCategories?: any[]
+  quickFilters?: QuickFilter[]
+}
+
+export default function HomePageClient({
+  featuredProducts,
+  carouselSlides,
+  featuredCategories,
+  activityCategories,
+  quickFilters,
+}: HomePageClientProps) {
   const router = useRouter()
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
 
@@ -28,7 +62,7 @@ export default function HomePageClient() {
   return (
     <>
       {/* Carousel - no alternating, inherits global theme */}
-      <Carousel />
+      <Carousel slides={carouselSlides} />
 
       {/* TakeActionHero at index 0 = same theme as header */}
       <AlternatingSection index={0}>
@@ -36,15 +70,20 @@ export default function HomePageClient() {
       </AlternatingSection>
 
       <AlternatingSection index={1}>
-        <FeaturedProducts onProductClick={handleProductClick} onViewAll={handleViewAll} />
+        <FeaturedProducts
+          products={featuredProducts}
+          quickFilters={quickFilters}
+          onProductClick={handleProductClick}
+          onViewAll={handleViewAll}
+        />
       </AlternatingSection>
 
       <AlternatingSection index={2}>
-        <Categories />
+        <Categories categories={activityCategories} />
       </AlternatingSection>
 
       <AlternatingSection index={3}>
-        <ExploreMore />
+        <ExploreMore categories={featuredCategories} />
       </AlternatingSection>
 
       <AlternatingSection index={4}>
@@ -59,7 +98,6 @@ export default function HomePageClient() {
         <Newsletter />
       </AlternatingSection>
 
-      {/* Product Modal */}
       {selectedProduct && (
         <ProductModal
           product={selectedProduct}

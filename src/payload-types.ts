@@ -72,6 +72,7 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    products: Product;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -88,6 +89,7 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -104,10 +106,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    homepage: Homepage;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    homepage: HomepageSelect<false> | HomepageSelect<true>;
   };
   locale: null;
   user: User & {
@@ -706,6 +710,62 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  name: string;
+  slug?: string | null;
+  category: (number | Category)[];
+  price: number;
+  /**
+   * Để trống nếu không có giảm giá
+   */
+  originalPrice?: number | null;
+  images: (number | Media)[];
+  colors?:
+    | {
+        name: string;
+        /**
+         * Ví dụ: #1d2122
+         */
+        hex: string;
+        id?: string | null;
+      }[]
+    | null;
+  sizes?: ('XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45')[] | null;
+  tag?: ('MỚI' | 'BÁN CHẠY' | 'GIẢM 20%' | 'GIẢM 30%' | 'GIẢM 50%' | 'HOT') | null;
+  inStock?: boolean | null;
+  /**
+   * Hiển thị ở trang chủ
+   */
+  featured?: boolean | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  features?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -820,6 +880,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1171,6 +1235,38 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  category?: T;
+  price?: T;
+  originalPrice?: T;
+  images?: T;
+  colors?:
+    | T
+    | {
+        name?: T;
+        hex?: T;
+        id?: T;
+      };
+  sizes?: T;
+  tag?: T;
+  inStock?: T;
+  featured?: T;
+  description?: T;
+  features?:
+    | T
+    | {
+        feature?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -1450,6 +1546,53 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage".
+ */
+export interface Homepage {
+  id: number;
+  carouselSlides?:
+    | {
+        title: string;
+        subtitle: string;
+        ctaText: string;
+        ctaLink: string;
+        /**
+         * Optional background image for the slide
+         */
+        backgroundImage?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Select categories to display in the "Shop By Activity" section on the homepage (max 4 recommended)
+   */
+  activityCategories?: (number | Category)[] | null;
+  /**
+   * Configure the quick filter buttons shown in the Featured Products section
+   */
+  quickFilters?:
+    | {
+        /**
+         * Text displayed on the filter button (e.g., "ALL", "MEN", "WOMEN")
+         */
+        label: string;
+        filterType: 'all' | 'category' | 'tag';
+        /**
+         * Select the category to filter products by
+         */
+        category?: (number | null) | Category;
+        /**
+         * Select the tag type to filter products by
+         */
+        tagFilter?: ('sale' | 'new' | 'bestseller') | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1488,6 +1631,35 @@ export interface FooterSelect<T extends boolean = true> {
               url?: T;
               label?: T;
             };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage_select".
+ */
+export interface HomepageSelect<T extends boolean = true> {
+  carouselSlides?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        ctaText?: T;
+        ctaLink?: T;
+        backgroundImage?: T;
+        id?: T;
+      };
+  activityCategories?: T;
+  quickFilters?:
+    | T
+    | {
+        label?: T;
+        filterType?: T;
+        category?: T;
+        tagFilter?: T;
         id?: T;
       };
   updatedAt?: T;

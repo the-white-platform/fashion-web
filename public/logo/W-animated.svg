@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 100 64">
+    <defs>
+        <clipPath id="clipLeft">
+            <rect class="clip-rect-left"
+                  x="0"
+                  y="0"
+                  width="0"
+                  height="70" />
+        </clipPath>
+
+        <clipPath id="clipRight">
+            <rect class="clip-rect-right"
+                  x="50"
+                  y="70"
+                  width="60"
+                  height="0" />
+        </clipPath>
+    </defs>
+
+    <style>
+        /* Phase 1: Left path reveal - wipe from left to right */
+        .clip-rect-left {
+            animation: revealLeft 0.5s cubic-bezier(0.65, 0, 0.45, 1) forwards,
+                repeatRevealLeft 3s cubic-bezier(0.65, 0, 0.45, 1) 3s infinite;
+        }
+
+        @keyframes revealLeft {
+            from {
+                width: 0px;
+            }
+
+            to {
+                width: 60px;
+            }
+        }
+
+        @keyframes repeatRevealLeft {
+            0% {
+                width: 0px;
+            }
+
+            17% {
+                width: 60px;
+            }
+
+            100% {
+                width: 60px;
+            }
+        }
+
+        /* Phase 3: Right path reveal - wipe from bottom to top */
+        .clip-rect-right {
+            animation: revealRight 0.6s cubic-bezier(0.165, 0.84, 0.44, 1) 0.6s forwards,
+                repeatRevealRight 3s cubic-bezier(0.165, 0.84, 0.44, 1) 3s infinite;
+        }
+
+        @keyframes revealRight {
+            from {
+                y: 70px;
+                height: 0px;
+            }
+
+            to {
+                y: 0px;
+                height: 70px;
+            }
+        }
+
+        @keyframes repeatRevealRight {
+            0% {
+                y: 70px;
+                height: 0px;
+            }
+
+            20% {
+                y: 70px;
+                height: 0px;
+            }
+
+            40% {
+                y: 0px;
+                height: 70px;
+            }
+
+            100% {
+                y: 0px;
+                height: 70px;
+            }
+        }
+
+        .path-left,
+        .path-right {
+            fill: #000;
+            stroke: #000;
+            stroke-width: 0.3;
+            stroke-linejoin: round;
+        }
+
+        .path-left {
+            clip-path: url(#clipLeft);
+        }
+
+        .path-right {
+            clip-path: url(#clipRight);
+        }
+    </style>
+
+    <g shape-rendering="geometricPrecision">
+        <path class="path-left"
+              d="M 0.3 0 L 37.2 63.6 L 56.7 30.2 L 46.5 12.9 L 37.3 28 L 20.7 0 Z" />
+        <path class="path-right"
+              d="M 79.2 0 L 51.6 47.3 L 62.4 63.6 L 99.6 0 Z" />
+    </g>
+</svg>
