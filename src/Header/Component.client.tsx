@@ -28,7 +28,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
     setMounted(true)
   }, [])
 
-  useEffect(() => setHeaderTheme(null), [pathname])
+  useEffect(() => setHeaderTheme(null), [pathname, setHeaderTheme])
 
   // Use headerTheme if explicitly set, otherwise fall back to global theme
   const effectiveTheme = mounted ? (headerTheme ?? globalTheme) : undefined

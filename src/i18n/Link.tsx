@@ -4,7 +4,7 @@ import React from 'react'
 import NProgress from 'nprogress'
 import { BaseLink } from './routing'
 
-export const Link = React.forwardRef<HTMLAnchorElement, React.ComponentProps<typeof BaseLink>>(
+const LinkComponent = React.forwardRef<HTMLAnchorElement, React.ComponentProps<typeof BaseLink>>(
   (props, ref) => {
     return (
       <BaseLink
@@ -17,6 +17,8 @@ export const Link = React.forwardRef<HTMLAnchorElement, React.ComponentProps<typ
       />
     )
   },
-) as any
+)
 
-;(Link as any).displayName = 'Link'
+LinkComponent.displayName = 'Link'
+
+export const Link = LinkComponent as any
