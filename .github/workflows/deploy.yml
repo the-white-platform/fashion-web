@@ -47,25 +47,31 @@ jobs:
             echo "tag=$TAG_NAME" >> $GITHUB_OUTPUT
             echo "project_id=${{ env.PROD_PROJECT }}" >> $GITHUB_OUTPUT
             echo "service_name=fashion-web" >> $GITHUB_OUTPUT
-            echo "service_account=github-actions-deployer@${{ env.PROD_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
-            echo "workload_identity_provider=projects/570865959950/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
-            echo "next_public_server_url=https://fashion-web-XXXXXX.run.app" >> $GITHUB_OUTPUT
             echo "checkout_ref=refs/tags/$TAG_NAME" >> $GITHUB_OUTPUT
+            echo "environment=prod" >> $GITHUB_OUTPUT
           else
             echo "project_id=${{ env.DEV_PROJECT }}" >> $GITHUB_OUTPUT
             echo "service_name=fashion-web-dev" >> $GITHUB_OUTPUT
-            echo "service_account=github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com" >> $GITHUB_OUTPUT
-            echo "workload_identity_provider=projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider" >> $GITHUB_OUTPUT
-            echo "next_public_server_url=https://fashion-web-dev-XXXXXX.run.app" >> $GITHUB_OUTPUT
             echo "checkout_ref=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
+            echo "environment=dev" >> $GITHUB_OUTPUT
           fi
 
-      - name: Authenticate to Google Cloud
-        id: auth
+      - name: Authenticate to Google Cloud (Dev)
+        if: steps.params.outputs.environment == 'dev'
+        id: auth-dev
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ steps.params.outputs.workload_identity_provider }}
-          service_account: ${{ steps.params.outputs.service_account }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER_DEV }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_DEV }}
+          create_credentials_file: true
+
+      - name: Authenticate to Google Cloud (Prod)
+        if: steps.params.outputs.environment == 'prod'
+        id: auth-prod
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER_PROD }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_PROD }}
           create_credentials_file: true
 
       - name: Set up Cloud SDK
@@ -76,17 +82,33 @@ jobs:
         with:
           ref: ${{ steps.params.outputs.checkout_ref }}
 
-      - name: Configure Docker for Artifact Registry
-        if: steps.params.outputs.project_id == env.DEV_PROJECT
+      - name: Get service URL
+        id: service-url
         run: |
-          # Authenticate Docker using WIF access token (more reliable than configure-docker with WIF)
-          # This avoids issues with credential helper file references that may not exist
+          SERVICE_URL=$(gcloud run services describe "${{ steps.params.outputs.service_name }}" \
+            --region="${{ env.REGION }}" \
+            --project="${{ steps.params.outputs.project_id }}" \
+            --format='value(status.url)' 2>/dev/null || echo "")
+          if [ -z "$SERVICE_URL" ]; then
+            echo "⚠️  Service not found, using placeholder"
+            if [ "${{ steps.params.outputs.environment }}" = "prod" ]; then
+              SERVICE_URL="https://fashion-web.run.app"
+            else
+              SERVICE_URL="https://fashion-web-dev.run.app"
+            fi
+          fi
+          echo "url=$SERVICE_URL" >> $GITHUB_OUTPUT
+          echo "Using NEXT_PUBLIC_SERVER_URL: $SERVICE_URL"
+
+      - name: Configure Docker for Artifact Registry
+        if: steps.params.outputs.environment == 'dev'
+        run: |
           echo "🔐 Authenticating Docker to Artifact Registry..."
           ACCESS_TOKEN=$(gcloud auth print-access-token)
           echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
       - name: Fetch secrets for Docker build
-        if: steps.params.outputs.project_id == env.DEV_PROJECT
+        if: steps.params.outputs.environment == 'dev'
         id: secrets
         run: |
           PAYLOAD_SECRET=$(gcloud secrets versions access latest --secret=PAYLOAD_SECRET_DEV --project="${{ steps.params.outputs.project_id }}" 2>/dev/null || echo "")
@@ -97,7 +119,7 @@ jobs:
           echo "database_uri=$DATABASE_URI" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image to dev
-        if: steps.params.outputs.project_id == env.DEV_PROJECT
+        if: steps.params.outputs.environment == 'dev'
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
           VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "latest")
@@ -111,7 +133,7 @@ jobs:
             -t $IMAGE_SHA \
             -t $IMAGE_VERSION \
             -t $IMAGE_LATEST \
-            --build-arg NEXT_PUBLIC_SERVER_URL="${{ steps.params.outputs.next_public_server_url }}" \
+            --build-arg NEXT_PUBLIC_SERVER_URL="${{ steps.service-url.outputs.url }}" \
             --build-arg PAYLOAD_SECRET="${{ steps.secrets.outputs.payload_secret }}" \
             --build-arg DATABASE_URI="${{ steps.secrets.outputs.database_uri }}" \
             --cache-from $IMAGE_LATEST \
@@ -125,7 +147,7 @@ jobs:
           echo "image=$IMAGE_SHA" >> $GITHUB_OUTPUT
 
       - name: Deploy to dev
-        if: steps.params.outputs.project_id == env.DEV_PROJECT
+        if: steps.params.outputs.environment == 'dev'
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
           IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ steps.params.outputs.project_id }}/app-images/fashion-web:$SHORT_SHA"
@@ -137,31 +159,11 @@ jobs:
             --quiet
           echo "✅ Dev deployment complete"
 
-      - name: Authenticate to dev for image copy
-        if: steps.params.outputs.project_id == env.PROD_PROJECT
-        id: auth-dev-copy
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: projects/635555941174/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider
-          service_account: github-actions-deployer@${{ env.DEV_PROJECT }}.iam.gserviceaccount.com
-          create_credentials_file: true
-
-      - name: Set up Cloud SDK for image copy
-        if: steps.params.outputs.project_id == env.PROD_PROJECT
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry (dev)
-        if: steps.params.outputs.project_id == env.PROD_PROJECT
-        run: |
-          # Authenticate Docker to dev registry using dev credentials
-          echo "🔐 Authenticating Docker to dev Artifact Registry..."
-          ACCESS_TOKEN=$(gcloud auth print-access-token)
-          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-
       - name: Copy image from dev to prod
-        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        if: steps.params.outputs.environment == 'prod'
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
+          VERSION=${{ steps.params.outputs.tag }}
+          VERSION=${VERSION#v}
           TAG_SHA=$(git rev-parse ${{ steps.params.outputs.tag }})
           SHORT_SHA=$(git rev-parse --short $TAG_SHA)
           DEV_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.DEV_PROJECT }}/app-images/fashion-web:$VERSION"
@@ -173,6 +175,11 @@ jobs:
           echo "   Version: $VERSION"
           echo "   Source: $DEV_IMAGE"
           echo "   Targets: $PROD_IMAGE, $PROD_IMAGE_LATEST, $PROD_IMAGE_SHA"
+
+          # Authenticate Docker to Artifact Registry
+          echo "🔐 Authenticating Docker to Artifact Registry..."
+          ACCESS_TOKEN=$(gcloud auth print-access-token)
+          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
 
           # Check if dev image exists
           if ! gcloud artifacts docker images describe $DEV_IMAGE --project="${{ env.DEV_PROJECT }}" --quiet 2>/dev/null; then
@@ -191,69 +198,20 @@ jobs:
           docker tag "$DEV_IMAGE" "$PROD_IMAGE_LATEST"
           docker tag "$DEV_IMAGE" "$PROD_IMAGE_SHA"
 
-          # Authenticate to prod registry before pushing
-          # Prod service account has write access to prod registry
-          echo "🔐 Authenticating Docker to prod Artifact Registry..."
-          ACCESS_TOKEN=$(gcloud auth print-access-token)
-          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-
-          # Helper function to push an image and handle expected vs unexpected failures
-          push_image() {
-            local image="$1"
-            local label="$2"
-            local allow_already_exists="$3"
-
-            echo "📤 Pushing $label ($image)..."
-            # Capture output so we can inspect specific error conditions
-            if ! output=$(docker push "$image" 2>&1); then
-              echo "$output"
-              if [ "$allow_already_exists" = "true" ] && echo "$output" | grep -qi 'already exists'; then
-                echo "⚠️  $label already exists in registry; continuing."
-              else
-                echo "❌ Failed to push $label"
-                exit 1
-              fi
-            else
-              echo "$output"
-            fi
-          }
-
           # Push images to prod registry
           echo "📤 Pushing images to prod registry..."
-          # Allow a non-fatal 'already exists' error only for the version tag
-          push_image "$PROD_IMAGE" "version tag" "true"
-          push_image "$PROD_IMAGE_LATEST" "latest tag" "false"
-          push_image "$PROD_IMAGE_SHA" "SHA tag" "false"
+          docker push "$PROD_IMAGE" || true
+          docker push "$PROD_IMAGE_LATEST"
+          docker push "$PROD_IMAGE_SHA"
 
           echo "✅ Image copy completed"
           echo "image=$PROD_IMAGE_SHA" >> $GITHUB_OUTPUT
 
-      - name: Configure Docker for Artifact Registry (prod deployment)
-        if: steps.params.outputs.project_id == env.PROD_PROJECT
-        run: |
-          # Authenticate Docker to prod registry for deployment operations
-          # This ensures Docker is authenticated for subsequent deployment steps
-          echo "🔐 Authenticating Docker to prod Artifact Registry for deployment..."
-          ACCESS_TOKEN=$(gcloud auth print-access-token)
-          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-
-      - name: Authenticate to prod for deployment
-        if: steps.params.outputs.project_id == env.PROD_PROJECT
-        id: auth-prod
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ steps.params.outputs.workload_identity_provider }}
-          service_account: ${{ steps.params.outputs.service_account }}
-          create_credentials_file: true
-
-      - name: Set up Cloud SDK for prod deployment
-        if: steps.params.outputs.project_id == env.PROD_PROJECT
-        uses: google-github-actions/setup-gcloud@v2
-
       - name: Deploy to prod
-        if: steps.params.outputs.project_id == env.PROD_PROJECT
+        if: steps.params.outputs.environment == 'prod'
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
+          VERSION=${{ steps.params.outputs.tag }}
+          VERSION=${VERSION#v}
           TAG_SHA=$(git rev-parse ${{ steps.params.outputs.tag }})
           SHORT_SHA=$(git rev-parse --short $TAG_SHA)
           PROD_IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
