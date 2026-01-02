@@ -218,11 +218,27 @@ html[data-theme='light'] {
 
 /* Hide scrollbar utility */
 @layer utilities {
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+}
+
+/* NProgress Bar - Simple theme-aware styling */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: hsl(var(--foreground));
+  position: fixed;
+  z-index: 99999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+/* Hide spinner */
+#nprogress .spinner {
+  display: none;
 }

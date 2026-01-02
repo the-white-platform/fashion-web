@@ -1,29 +1,21 @@
-import type { CollectionSlug, GlobalSlug, Payload, PayloadRequest, File } from 'payload'
-
-import { contactForm as contactFormData } from './contact-form'
-import { contact as contactPageData } from './contact-page'
-import { home } from './home'
-import { image1 } from './image-1'
-import { image2 } from './image-2'
-import { post1 } from './post-1'
-import { post2 } from './post-2'
-import { post3 } from './post-3'
+import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
+import { productSeedData, categorySeedData } from './products'
 
 const collections: CollectionSlug[] = [
   'categories',
   'media',
   'pages',
   'posts',
+  'products',
   'forms',
   'form-submissions',
   'search',
 ]
-const globals: GlobalSlug[] = ['header', 'footer']
 
-// Next.js revalidation errors are normal when seeding the database without a server running
-// i.e. running `yarn seed` locally instead of using the admin UI within an active app
-// The app is not running to revalidate the pages and so the API routes are not available
-// These error messages can be ignored: `Error hitting revalidate route for...`
+/**
+ * Comprehensive seed script for the entire application
+ * Seeds: categories, products, header navigation, homepage carousel
+ */
 export const seed = async ({
   payload,
   req,
@@ -31,249 +23,195 @@ export const seed = async ({
   payload: Payload
   req: PayloadRequest
 }): Promise<void> => {
-  payload.logger.info('Seeding database...')
+  payload.logger.info('🌱 Seeding database...')
 
-  // we need to clear the media directory before seeding
-  // as well as the collections and globals
-  // this is because while `yarn seed` drops the database
-  // the custom `/api/seed` endpoint does not
+  // 1. Clear existing data (in correct order to avoid foreign key constraints)
+  payload.logger.info('— Clearing existing data...')
 
-  payload.logger.info(`— Clearing media...`)
-  payload.logger.info(`— Clearing collections and globals...`)
-
-  // clear the database
-  for (const global of globals) {
-    await payload.updateGlobal({
-      slug: global,
-      data: {
-        navItems: [],
-      },
-    })
-  }
-
-  for (const collection of collections) {
+  // Delete collections with foreign key dependencies first
+  const collectionsWithDependencies = ['posts', 'products', 'form-submissions']
+  for (const collection of collectionsWithDependencies) {
     await payload.delete({
-      collection: collection,
-      where: {
-        id: {
-          exists: true,
-        },
-      },
+      collection: collection as CollectionSlug,
+      where: { id: { exists: true } },
     })
   }
 
-  const pages = await payload.delete({
-    collection: 'pages',
-    where: {},
-  })
-
-  payload.logger.info(`— Seeding demo author and user...`)
-
-  await payload.delete({
-    collection: 'users',
-    where: {
-      email: {
-        equals: 'demo-author@payloadcms.com',
-      },
-    },
-  })
-
-  const demoAuthor = await payload.create({
-    collection: 'users',
-    data: {
-      name: 'Demo Author',
-      email: 'demo-author@payloadcms.com',
-      password: 'password',
-    },
-  })
-
-  let demoAuthorID: number | string = demoAuthor.id
-
-  payload.logger.info(`— Seeding media...`)
-  const [image1Buffer, image2Buffer, image3Buffer, hero1Buffer] = await Promise.all([
-    fetchFileByURL(
-      'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post1.webp',
-    ),
-    fetchFileByURL(
-      'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post2.webp',
-    ),
-    fetchFileByURL(
-      'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-post3.webp',
-    ),
-    fetchFileByURL(
-      'https://raw.githubusercontent.com/payloadcms/payload/refs/heads/main/templates/website/src/endpoints/seed/image-hero1.webp',
-    ),
-  ])
-
-  const image1Doc = await payload.create({
-    collection: 'media',
-    data: image1,
-    file: image1Buffer,
-  })
-  const image2Doc = await payload.create({
-    collection: 'media',
-    data: image2,
-    file: image2Buffer,
-    req,
-  })
-  const image3Doc = await payload.create({
-    collection: 'media',
-    data: image2,
-    file: image3Buffer,
-  })
-  const imageHomeDoc = await payload.create({
-    collection: 'media',
-    data: image2,
-    file: hero1Buffer,
-  })
-
-  payload.logger.info(`— Seeding categories...`)
-  const technologyCategory = await payload.create({
-    collection: 'categories',
-    data: {
-      title: 'Technology',
-    },
-  })
-
-  const newsCategory = await payload.create({
-    collection: 'categories',
-    data: {
-      title: 'News',
-    },
-  })
-
-  const financeCategory = await payload.create({
-    collection: 'categories',
-    data: {
-      title: 'Finance',
-    },
-  })
-
-  await payload.create({
-    collection: 'categories',
-    data: {
-      title: 'Design',
-    },
-  })
-
-  await payload.create({
-    collection: 'categories',
-    data: {
-      title: 'Software',
-    },
-  })
-
-  await payload.create({
-    collection: 'categories',
-    data: {
-      title: 'Engineering',
-    },
-  })
-
-  let image1ID: number | string = image1Doc.id
-  let image2ID: number | string = image2Doc.id
-  let image3ID: number | string = image3Doc.id
-  let imageHomeID: number | string = imageHomeDoc.id
-
-  if (payload.db.defaultIDType === 'text') {
-    image1ID = `"${image1Doc.id}"`
-    image2ID = `"${image2Doc.id}"`
-    image3ID = `"${image3Doc.id}"`
-    imageHomeID = `"${imageHomeDoc.id}"`
-    demoAuthorID = `"${demoAuthorID}"`
+  // Then delete the rest
+  for (const collection of collections) {
+    if (!collectionsWithDependencies.includes(collection)) {
+      await payload.delete({
+        collection: collection,
+        where: { id: { exists: true } },
+      })
+    }
   }
 
-  payload.logger.info(`— Seeding posts...`)
+  // 2. Create categories
+  payload.logger.info(`— Creating ${categorySeedData.length} categories...`)
+  const categoryMap: Record<string, number> = {}
 
-  // Do not create posts with `Promise.all` because we want the posts to be created in order
-  // This way we can sort them by `createdAt` or `publishedAt` and they will be in the expected order
-  const post1Doc = await payload.create({
-    collection: 'posts',
-    data: JSON.parse(
-      JSON.stringify({ ...post1, categories: [technologyCategory.id] })
-        .replace(/"\{\{IMAGE_1\}\}"/g, String(image1ID))
-        .replace(/"\{\{IMAGE_2\}\}"/g, String(image2ID))
-        .replace(/"\{\{AUTHOR\}\}"/g, String(demoAuthorID)),
-    ),
-  })
-
-  const post2Doc = await payload.create({
-    collection: 'posts',
-    data: JSON.parse(
-      JSON.stringify({ ...post2, categories: [newsCategory.id] })
-        .replace(/"\{\{IMAGE_1\}\}"/g, String(image2ID))
-        .replace(/"\{\{IMAGE_2\}\}"/g, String(image3ID))
-        .replace(/"\{\{AUTHOR\}\}"/g, String(demoAuthorID)),
-    ),
-  })
-
-  const post3Doc = await payload.create({
-    collection: 'posts',
-    data: JSON.parse(
-      JSON.stringify({ ...post3, categories: [financeCategory.id] })
-        .replace(/"\{\{IMAGE_1\}\}"/g, String(image3ID))
-        .replace(/"\{\{IMAGE_2\}\}"/g, String(image1ID))
-        .replace(/"\{\{AUTHOR\}\}"/g, String(demoAuthorID)),
-    ),
-  })
-
-  // update each post with related posts
-  await payload.update({
-    id: post1Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post2Doc.id, post3Doc.id],
-    },
-  })
-  await payload.update({
-    id: post2Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post3Doc.id],
-    },
-  })
-  await payload.update({
-    id: post3Doc.id,
-    collection: 'posts',
-    data: {
-      relatedPosts: [post1Doc.id, post2Doc.id],
-    },
-  })
-
-  payload.logger.info(`— Seeding home page...`)
-
-  await payload.create({
-    collection: 'pages',
-    data: JSON.parse(
-      JSON.stringify(home)
-        .replace(/"\{\{IMAGE_1\}\}"/g, String(imageHomeID))
-        .replace(/"\{\{IMAGE_2\}\}"/g, String(image2ID)),
-    ),
-  })
-
-  payload.logger.info(`— Seeding contact form...`)
-
-  const contactForm = await payload.create({
-    collection: 'forms',
-    data: JSON.parse(JSON.stringify(contactFormData)),
-  })
-
-  let contactFormID: number | string = contactForm.id
-
-  if (payload.db.defaultIDType === 'text') {
-    contactFormID = `"${contactFormID}"`
+  for (const cat of categorySeedData) {
+    const category = await payload.create({
+      collection: 'categories',
+      data: { title: cat.title },
+    })
+    categoryMap[cat.title] = category.id
+    payload.logger.info(`  ✓ Created category: ${cat.title}`)
   }
 
-  payload.logger.info(`— Seeding contact page...`)
+  // 3. Create products with color variants
+  payload.logger.info(`— Creating ${productSeedData.length} products...`)
 
-  const contactPage = await payload.create({
-    collection: 'pages',
-    data: JSON.parse(
-      JSON.stringify(contactPageData).replace(/"\{\{CONTACT_FORM_ID\}\}"/g, String(contactFormID)),
-    ),
-  })
+  for (let i = 0; i < productSeedData.length; i++) {
+    const productData = productSeedData[i]
+    payload.logger.info(`  [${i + 1}/${productSeedData.length}] Processing: ${productData.name}`)
 
-  payload.logger.info(`— Seeding header...`)
+    try {
+      // Get category ID (Primary)
+      const categoryId = categoryMap[productData.categoryTitle]
+      if (!categoryId) {
+        payload.logger.warn(`    ⚠ Category not found for: ${productData.name}`)
+        continue
+      }
+
+      // Resolve additional categories
+      const categoryIds = [categoryId]
+      if (productData.additionalCategories) {
+        for (const catTitle of productData.additionalCategories) {
+          if (categoryMap[catTitle]) {
+            categoryIds.push(categoryMap[catTitle])
+          } else {
+            payload.logger.warn(`    ⚠ Additional category not found: ${catTitle}`)
+          }
+        }
+      }
+
+      // Deduplicate IDs
+      const uniqueCategoryIds = Array.from(new Set(categoryIds))
+
+      // Process color variants
+      const colorVariants: any[] = []
+
+      for (let v = 0; v < productData.colorVariants.length; v++) {
+        const variant = productData.colorVariants[v]
+        payload.logger.info(
+          `    → Processing variant ${v + 1}/${productData.colorVariants.length}: ${variant.color}`,
+        )
+
+        // Fetch and create variant images
+        const variantImageIds: number[] = []
+
+        payload.logger.info(
+          `      → Fetching ${variant.imageUrls.length} images for ${variant.color}...`,
+        )
+        for (let j = 0; j < variant.imageUrls.length; j++) {
+          const imageUrl = variant.imageUrls[j]
+          try {
+            payload.logger.info(
+              `        • Image ${j + 1}/${variant.imageUrls.length}: Downloading...`,
+            )
+            const response = await fetch(imageUrl)
+            const arrayBuffer = await response.arrayBuffer()
+            const buffer = Buffer.from(arrayBuffer)
+
+            // Extract just the image ID, stripping query parameters
+            const urlPath = imageUrl.split('?')[0]
+            const imageId = urlPath.split('/').pop() || `image-${Date.now()}`
+            const fileName = `${imageId}-${variant.color.toLowerCase()}.jpg`
+
+            const imageDoc = await payload.create({
+              collection: 'media',
+              data: { alt: `${productData.name} - ${variant.color}` },
+              file: {
+                name: fileName,
+                data: buffer,
+                mimetype: 'image/jpeg',
+                size: buffer.length,
+              },
+            })
+            variantImageIds.push(imageDoc.id)
+            payload.logger.info(
+              `        ✓ Image ${j + 1}/${variant.imageUrls.length}: Uploaded (ID: ${imageDoc.id})`,
+            )
+          } catch (imgError) {
+            payload.logger.warn(
+              `        ⚠ Image ${j + 1}/${variant.imageUrls.length}: Failed - ${imgError}`,
+            )
+          }
+        }
+
+        // Add variant if it has images
+        if (variantImageIds.length > 0) {
+          colorVariants.push({
+            color: variant.color,
+            colorHex: variant.colorHex,
+            sizes: variant.sizes as (
+              | 'XS'
+              | 'S'
+              | 'M'
+              | 'L'
+              | 'XL'
+              | '2X'
+              | '39'
+              | '40'
+              | '41'
+              | '42'
+              | '43'
+              | '44'
+              | '45'
+            )[],
+            images: variantImageIds,
+            inStock: variant.inStock,
+          })
+          payload.logger.info(
+            `      ✓ Variant ${variant.color}: ${variantImageIds.length} images added`,
+          )
+        } else {
+          payload.logger.warn(`      ⚠ Variant ${variant.color}: Skipped (no images)`)
+        }
+      }
+
+      // Skip if no variants
+      if (colorVariants.length === 0) {
+        payload.logger.warn(`    ⚠ Skipping ${productData.name} (no valid variants)`)
+        continue
+      }
+
+      // Create product with color variants
+      payload.logger.info(`    → Creating product with ${colorVariants.length} variants...`)
+      await payload.create({
+        collection: 'products',
+        data: {
+          name: productData.name,
+          slug: productData.slug,
+          category: uniqueCategoryIds,
+          price: productData.price,
+          originalPrice: productData.originalPrice,
+          colorVariants: colorVariants,
+          tag: productData.tag as
+            | 'MỚI'
+            | 'BÁN CHẠY'
+            | 'GIẢM 20%'
+            | 'GIẢM 30%'
+            | 'GIẢM 50%'
+            | 'HOT'
+            | undefined,
+          featured: productData.featured,
+          features: productData.features.map((f) => ({ feature: f })),
+        },
+      })
+
+      payload.logger.info(
+        `    ✓ Created product: ${productData.name} with ${colorVariants.length} color variants`,
+      )
+    } catch (error) {
+      payload.logger.error(`    ✗ Failed to create ${productData.name}: ${error}`)
+    }
+  }
+
+  // 4. Configure Header Navigation
+  payload.logger.info(`— Configuring header navigation...`)
 
   await payload.updateGlobal({
     slug: 'header',
@@ -282,87 +220,111 @@ export const seed = async ({
         {
           link: {
             type: 'custom',
-            label: 'Nam',
-            url: '/products?category=men',
+            label: 'Men',
+            url: '/products?category=nam',
+            newTab: false,
           },
         },
         {
           link: {
             type: 'custom',
-            label: 'Nữ',
-            url: '/products?category=women',
+            label: 'Women',
+            url: '/products?category=nu',
+            newTab: false,
           },
         },
         {
           link: {
             type: 'custom',
-            label: 'Trẻ Em',
-            url: '/products?category=kids',
+            label: 'Kids',
+            url: '/products?category=tre-em',
+            newTab: false,
           },
         },
         {
           link: {
             type: 'custom',
-            label: 'Mới Nhất',
-            url: '/products?sort=newest',
+            label: 'New Arrivals',
+            url: '/products?category=moi-nhat',
+            newTab: false,
           },
         },
       ],
     },
   })
 
-  payload.logger.info(`— Seeding footer...`)
+  payload.logger.info(`  ✓ Header navigation configured`)
+
+  // 5. Configure Homepage Carousel and Activity Categories
+  payload.logger.info(`— Configuring homepage settings...`)
+
+  // Get activity category IDs
+  const activityNames = ['Gym', 'Chạy Bộ', 'Yoga', 'Bóng Đá']
+  const activityCategoryIds: number[] = []
+  for (const name of activityNames) {
+    if (categoryMap[name]) {
+      activityCategoryIds.push(categoryMap[name])
+    }
+  }
+
+  // Build quick filters configuration
+  const quickFiltersConfig: Array<{
+    label: string
+    filterType: 'all' | 'category' | 'tag'
+    tagFilter?: 'sale' | 'new' | 'bestseller'
+    category?: number
+  }> = [
+    { label: 'TẤT CẢ', filterType: 'all' },
+    { label: 'MỚI', filterType: 'tag', tagFilter: 'new' },
+    { label: 'BÁN CHẠY', filterType: 'tag', tagFilter: 'bestseller' },
+    { label: 'GIẢM GIÁ', filterType: 'tag', tagFilter: 'sale' },
+  ]
+
+  // Add category-based filters if categories exist
+  if (categoryMap['Gym']) {
+    quickFiltersConfig.push({ label: 'GYM', filterType: 'category', category: categoryMap['Gym'] })
+  }
+  if (categoryMap['Yoga']) {
+    quickFiltersConfig.push({
+      label: 'YOGA',
+      filterType: 'category',
+      category: categoryMap['Yoga'],
+    })
+  }
 
   await payload.updateGlobal({
-    slug: 'footer',
+    slug: 'homepage',
     data: {
-      navItems: [
+      carouselSlides: [
         {
-          link: {
-            type: 'custom',
-            label: 'Admin',
-            url: '/admin',
-          },
+          title: 'WINTER COLLECTION 2024',
+          subtitle: 'Power in every step',
+          ctaText: 'Explore Now',
+          ctaLink: '/products',
         },
         {
-          link: {
-            type: 'custom',
-            label: 'Source Code',
-            newTab: true,
-            url: 'https://github.com/payloadcms/payload/tree/beta/templates/website',
-          },
+          title: 'MODERN STYLE',
+          subtitle: 'Optimized for every activity',
+          ctaText: 'Explore Now',
+          ctaLink: '/products',
         },
         {
-          link: {
-            type: 'custom',
-            label: 'Payload',
-            newTab: true,
-            url: 'https://payloadcms.com/',
-          },
+          title: 'PREMIUM MATERIALS',
+          subtitle: 'Comfort all day long',
+          ctaText: 'Explore Now',
+          ctaLink: '/products',
         },
       ],
+      activityCategories: activityCategoryIds,
+      quickFilters: quickFiltersConfig,
     },
   })
 
-  payload.logger.info('Seeded database successfully!')
-}
+  payload.logger.info(`  ✓ Homepage carousel configured`)
+  payload.logger.info(`  ✓ Activity categories configured: ${activityNames.join(', ')}`)
+  payload.logger.info(
+    `  ✓ Quick filters configured: ${quickFiltersConfig.map((f) => f.label).join(', ')}`,
+  )
 
-async function fetchFileByURL(url: string): Promise<File> {
-  const res = await fetch(url, {
-    credentials: 'include',
-    method: 'GET',
-  })
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch file from ${url}, status: ${res.status}`)
-  }
-
-  const data = await res.arrayBuffer()
-
-  return {
-    name: url.split('/').pop() || `file-${Date.now()}`,
-    data: Buffer.from(data),
-    mimetype: `image/${url.split('.').pop()}`,
-    size: data.byteLength,
-  }
+  payload.logger.info('✅ Database seeding completed!')
 }
