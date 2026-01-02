@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
@@ -52,17 +52,20 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
   // Get current variant
   const selectedVariant = product.colorVariants[selectedVariantIndex]
   const currentImages = selectedVariant?.images || product.images || []
-  const currentSizes = selectedVariant?.sizes || product.sizes || []
+  const currentSizes = useMemo(
+    () => selectedVariant?.sizes || product.sizes || [],
+    [selectedVariant?.sizes, product.sizes],
+  )
 
   // Set initial size when variant changes
-  useMemo(() => {
+  useEffect(() => {
     if (currentSizes.length > 0 && !currentSizes.includes(selectedSize)) {
       setSelectedSize(currentSizes[0])
     }
-  }, [selectedVariantIndex, currentSizes, selectedSize])
+  }, [currentSizes, selectedSize])
 
   // Reset image index when variant changes
-  useMemo(() => {
+  useEffect(() => {
     setSelectedImageIndex(0)
   }, [selectedVariantIndex])
 

@@ -19,7 +19,7 @@ import {
 import { VirtualTryOnModal } from './VirtualTryOnModal'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'motion/react'
@@ -55,14 +55,12 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const [isImageHovered, setIsImageHovered] = useState(false)
   const { addToCart, setIsCartOpen } = useCart()
 
-  if (!product) return null
-
   // Get current variant or use default
-  const currentVariant = product.colorVariants?.[selectedVariantIndex] || {
+  const currentVariant = product?.colorVariants?.[selectedVariantIndex] || {
     color: 'Default',
     colorHex: '#000000',
-    sizes: product.sizes || [],
-    images: product.images || [product.image],
+    sizes: product?.sizes || [],
+    images: product?.images || [product?.image],
     inStock: true,
   }
 
@@ -70,14 +68,19 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const availableSizes = currentVariant.sizes
 
   // Get images for current variant
-  const variantImages = currentVariant.images.length > 0 ? currentVariant.images : [product.image]
+  const variantImages: string[] =
+    currentVariant.images.length > 0
+      ? (currentVariant.images.filter((img): img is string => typeof img === 'string') as string[])
+      : [product?.image || ''].filter((img) => img !== '')
 
   // Auto-select first size when variant changes
-  useMemo(() => {
+  useEffect(() => {
     if (availableSizes.length > 0 && !availableSizes.includes(selectedSize)) {
       setSelectedSize(availableSizes[0])
     }
   }, [selectedVariantIndex, availableSizes, selectedSize])
+
+  if (!product) return null
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
@@ -85,7 +88,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
         id: product.id,
         name: product.name,
         price: product.priceNumber,
-        image: variantImages[currentImageIndex],
+        image: variantImages[currentImageIndex] || product.image,
         size: selectedSize,
         color: currentVariant.color,
         colorHex: currentVariant.colorHex,
