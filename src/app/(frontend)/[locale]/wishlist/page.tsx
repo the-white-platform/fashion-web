@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Link, useRouter } from '@/i18n/routing'
+import { Link } from '@/i18n/Link'
+import { useRouter } from '@/i18n/useRouter'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'motion/react'
 import { Heart, ShoppingCart, Share2 } from 'lucide-react'

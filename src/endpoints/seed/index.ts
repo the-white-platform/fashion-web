@@ -60,7 +60,7 @@ export const seed = async ({
     payload.logger.info(`  ✓ Created category: ${cat.title}`)
   }
 
-  // 3. Create products with images
+  // 3. Create products with color variants
   payload.logger.info(`— Creating ${productSeedData.length} products...`)
 
   for (let i = 0; i < productSeedData.length; i++) {
@@ -68,56 +68,6 @@ export const seed = async ({
     payload.logger.info(`  [${i + 1}/${productSeedData.length}] Processing: ${productData.name}`)
 
     try {
-      // Fetch and create product images
-      const imageIds: number[] = []
-
-      payload.logger.info(`    → Fetching ${productData.imageUrls.length} images...`)
-      for (let j = 0; j < productData.imageUrls.length; j++) {
-        const imageUrl = productData.imageUrls[j]
-        try {
-          payload.logger.info(
-            `      • Image ${j + 1}/${productData.imageUrls.length}: Downloading...`,
-          )
-          const response = await fetch(imageUrl)
-          const arrayBuffer = await response.arrayBuffer()
-          const buffer = Buffer.from(arrayBuffer)
-
-          payload.logger.info(
-            `      • Image ${j + 1}/${productData.imageUrls.length}: Uploading to database...`,
-          )
-
-          // Extract just the image ID, stripping query parameters
-          const urlPath = imageUrl.split('?')[0]
-          const imageId = urlPath.split('/').pop() || `image-${Date.now()}`
-          const fileName = `${imageId}.jpg`
-
-          const imageDoc = await payload.create({
-            collection: 'media',
-            data: { alt: productData.name },
-            file: {
-              name: fileName,
-              data: buffer,
-              mimetype: 'image/jpeg',
-              size: buffer.length,
-            },
-          })
-          imageIds.push(imageDoc.id)
-          payload.logger.info(
-            `      ✓ Image ${j + 1}/${productData.imageUrls.length}: Uploaded (ID: ${imageDoc.id})`,
-          )
-        } catch (imgError) {
-          payload.logger.warn(
-            `      ⚠ Image ${j + 1}/${productData.imageUrls.length}: Failed - ${imgError}`,
-          )
-        }
-      }
-
-      // Skip if no images
-      if (imageIds.length === 0) {
-        payload.logger.warn(`    ⚠ Skipping ${productData.name} (no images)`)
-        continue
-      }
-
       // Get category ID (Primary)
       const categoryId = categoryMap[productData.categoryTitle]
       if (!categoryId) {
@@ -140,8 +90,96 @@ export const seed = async ({
       // Deduplicate IDs
       const uniqueCategoryIds = Array.from(new Set(categoryIds))
 
-      // Create product
-      payload.logger.info(`    → Creating product in database...`)
+      // Process color variants
+      const colorVariants: any[] = []
+
+      for (let v = 0; v < productData.colorVariants.length; v++) {
+        const variant = productData.colorVariants[v]
+        payload.logger.info(
+          `    → Processing variant ${v + 1}/${productData.colorVariants.length}: ${variant.color}`,
+        )
+
+        // Fetch and create variant images
+        const variantImageIds: number[] = []
+
+        payload.logger.info(
+          `      → Fetching ${variant.imageUrls.length} images for ${variant.color}...`,
+        )
+        for (let j = 0; j < variant.imageUrls.length; j++) {
+          const imageUrl = variant.imageUrls[j]
+          try {
+            payload.logger.info(
+              `        • Image ${j + 1}/${variant.imageUrls.length}: Downloading...`,
+            )
+            const response = await fetch(imageUrl)
+            const arrayBuffer = await response.arrayBuffer()
+            const buffer = Buffer.from(arrayBuffer)
+
+            // Extract just the image ID, stripping query parameters
+            const urlPath = imageUrl.split('?')[0]
+            const imageId = urlPath.split('/').pop() || `image-${Date.now()}`
+            const fileName = `${imageId}-${variant.color.toLowerCase()}.jpg`
+
+            const imageDoc = await payload.create({
+              collection: 'media',
+              data: { alt: `${productData.name} - ${variant.color}` },
+              file: {
+                name: fileName,
+                data: buffer,
+                mimetype: 'image/jpeg',
+                size: buffer.length,
+              },
+            })
+            variantImageIds.push(imageDoc.id)
+            payload.logger.info(
+              `        ✓ Image ${j + 1}/${variant.imageUrls.length}: Uploaded (ID: ${imageDoc.id})`,
+            )
+          } catch (imgError) {
+            payload.logger.warn(
+              `        ⚠ Image ${j + 1}/${variant.imageUrls.length}: Failed - ${imgError}`,
+            )
+          }
+        }
+
+        // Add variant if it has images
+        if (variantImageIds.length > 0) {
+          colorVariants.push({
+            color: variant.color,
+            colorHex: variant.colorHex,
+            sizes: variant.sizes as (
+              | 'XS'
+              | 'S'
+              | 'M'
+              | 'L'
+              | 'XL'
+              | '2X'
+              | '39'
+              | '40'
+              | '41'
+              | '42'
+              | '43'
+              | '44'
+              | '45'
+            )[],
+            images: variantImageIds,
+            inStock: variant.inStock,
+          })
+          payload.logger.info(
+            `      ✓ Variant ${variant.color}: ${variantImageIds.length} images added`,
+          )
+        } else {
+          payload.logger.warn(`      ⚠ Variant ${variant.color}: Skipped (no images)`)
+        }
+      }
+
+      // Skip if no variants
+      if (colorVariants.length === 0) {
+        payload.logger.warn(`    ⚠ Skipping ${productData.name} (no valid variants)`)
+        continue
+      }
+
+      // Create product with color variants
+      payload.logger.info(`    → Creating product with ${colorVariants.length} variants...`)
       await payload.create({
         collection: 'products',
         data: {
@@ -150,23 +188,7 @@ export const seed = async ({
           category: uniqueCategoryIds,
           price: productData.price,
           originalPrice: productData.originalPrice,
-          images: imageIds,
-          colors: productData.colors,
-          sizes: productData.sizes as (
-            | 'XS'
-            | 'S'
-            | 'M'
-            | 'L'
-            | 'XL'
-            | '2X'
-            | '39'
-            | '40'
-            | '41'
-            | '42'
-            | '43'
-            | '44'
-            | '45'
-          )[],
+          colorVariants: colorVariants,
           tag: productData.tag as
             | 'MỚI'
             | 'BÁN CHẠY'
@@ -175,13 +197,14 @@ export const seed = async ({
             | 'GIẢM 50%'
             | 'HOT'
             | undefined,
-          inStock: productData.inStock,
           featured: productData.featured,
           features: productData.features.map((f) => ({ feature: f })),
         },
       })
 
-      payload.logger.info(`    ✓ Created product: ${productData.name}`)
+      payload.logger.info(
+        `    ✓ Created product: ${productData.name} with ${colorVariants.length} color variants`,
+      )
     } catch (error) {
       payload.logger.error(`    ✗ Failed to create ${productData.name}: ${error}`)
     }

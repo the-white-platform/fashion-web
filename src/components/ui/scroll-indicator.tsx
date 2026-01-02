@@ -2,6 +2,8 @@
 
 import * as React from 'react'
 import { cn } from '@/utilities/cn'
+import { ChevronUp, ChevronDown } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
 
 interface ScrollIndicatorProps {
   children: React.ReactNode
@@ -9,11 +11,13 @@ interface ScrollIndicatorProps {
   innerClassName?: string
   hideScrollbar?: boolean
   withShadows?: boolean
+  withScrollButtons?: boolean
 }
 
 /**
  * A component that provides a scrollable area with optional invisible scrollbars
  * and top/bottom shadow indicators to show there is more content.
+ * Optionally shows scroll up/down buttons for better UX.
  * Fixes layout flicker caused by disappearing scrollbars when overlays/modals open.
  */
 export const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
@@ -22,6 +26,7 @@ export const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
   innerClassName,
   hideScrollbar = true,
   withShadows = true,
+  withScrollButtons = true,
 }) => {
   const [showTopShadow, setShowTopShadow] = React.useState(false)
   const [showBottomShadow, setShowBottomShadow] = React.useState(false)
@@ -34,6 +39,17 @@ export const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
     // Using a small buffer (5px) to prevent flickering on edge cases
     setShowTopShadow(scrollTop > 5)
     setShowBottomShadow(scrollTop + clientHeight < scrollHeight - 5)
+  }, [])
+
+  const scrollTo = React.useCallback((direction: 'up' | 'down') => {
+    if (!containerRef.current) return
+    const container = containerRef.current
+    const scrollAmount = container.clientHeight * 0.8 // Scroll 80% of visible height
+
+    container.scrollBy({
+      top: direction === 'down' ? scrollAmount : -scrollAmount,
+      behavior: 'smooth',
+    })
   }, [])
 
   React.useEffect(() => {
@@ -67,6 +83,30 @@ export const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
         />
       )}
 
+      {/* Scroll Up Button */}
+      {withScrollButtons && (
+        <AnimatePresence>
+          {showTopShadow && (
+            <motion.button
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => scrollTo('up')}
+              className="absolute top-2 left-1/2 -translate-x-1/2 z-30 p-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:bg-accent transition-colors shadow-md"
+              aria-label="Scroll up"
+            >
+              <motion.div
+                animate={{ y: [-2, 0, -2] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <ChevronUp className="w-4 h-4 text-foreground" />
+              </motion.div>
+            </motion.button>
+          )}
+        </AnimatePresence>
+      )}
+
       <div
         ref={containerRef}
         className={cn(
@@ -86,6 +126,30 @@ export const ScrollIndicator: React.FC<ScrollIndicatorProps> = ({
             showBottomShadow ? 'opacity-100' : 'opacity-0',
           )}
         />
+      )}
+
+      {/* Scroll Down Button */}
+      {withScrollButtons && (
+        <AnimatePresence>
+          {showBottomShadow && (
+            <motion.button
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => scrollTo('down')}
+              className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 p-1.5 rounded-full bg-background/80 backdrop-blur-sm border border-border hover:bg-accent transition-colors shadow-md"
+              aria-label="Scroll down"
+            >
+              <motion.div
+                animate={{ y: [0, 2, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <ChevronDown className="w-4 h-4 text-foreground" />
+              </motion.div>
+            </motion.button>
+          )}
+        </AnimatePresence>
       )}
     </div>
   )

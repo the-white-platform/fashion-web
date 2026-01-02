@@ -5,6 +5,14 @@ import { seed as seedScript } from '@/endpoints/seed'
 export const seedHandler: PayloadHandler = async (req): Promise<Response> => {
   const { payload, user } = req
 
+  // Prevent seeding in production
+  if (process.env.NODE_ENV === 'production') {
+    return Response.json(
+      { error: 'Seeding is disabled in production environment' },
+      { status: 403 },
+    )
+  }
+
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }

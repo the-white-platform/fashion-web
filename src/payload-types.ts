@@ -722,7 +722,34 @@ export interface Product {
    * Để trống nếu không có giảm giá
    */
   originalPrice?: number | null;
-  images: (number | Media)[];
+  /**
+   * Thêm hình ảnh riêng cho từng màu sắc. Màu đầu tiên sẽ là màu mặc định.
+   */
+  colorVariants?:
+    | {
+        /**
+         * Ví dụ: Đen, Trắng, Xanh Navy
+         */
+        color: string;
+        /**
+         * Ví dụ: #1d2122
+         */
+        colorHex: string;
+        /**
+         * Các size có sẵn cho màu này
+         */
+        sizes?: ('XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45')[] | null;
+        /**
+         * Hình ảnh cho màu này (áp dụng cho tất cả size của màu này)
+         */
+        images: (number | Media)[];
+        inStock?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Tự động tổng hợp từ colorVariants. Có thể thêm thủ công nếu cần.
+   */
   colors?:
     | {
         name: string;
@@ -1243,7 +1270,16 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   price?: T;
   originalPrice?: T;
-  images?: T;
+  colorVariants?:
+    | T
+    | {
+        color?: T;
+        colorHex?: T;
+        sizes?: T;
+        images?: T;
+        inStock?: T;
+        id?: T;
+      };
   colors?:
     | T
     | {

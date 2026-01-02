@@ -61,10 +61,17 @@ export default async function HomePage() {
       const primaryCategory = categories[0] as Category | undefined
       const categoryIds = categories.map((cat) => (cat as Category).id)
 
-      const images = (product.images || []).map((img) => {
-        const media = img as Media
-        return media?.url || '/assets/placeholder.jpg'
-      })
+      // Get image from first color variant
+      let imageUrl = '/assets/placeholder.jpg'
+      if (product.colorVariants && product.colorVariants.length > 0) {
+        const firstVariant = product.colorVariants[0]
+        if (firstVariant.images && firstVariant.images.length > 0) {
+          const firstImage = firstVariant.images[0]
+          if (typeof firstImage === 'object' && firstImage !== null) {
+            imageUrl = (firstImage as Media).url || '/assets/placeholder.jpg'
+          }
+        }
+      }
 
       const formatPrice = (price: number) =>
         new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 0 }).format(price) + '₫'
@@ -77,7 +84,7 @@ export default async function HomePage() {
         categoryIds: categoryIds, // New field for multi-category filtering
         price: formatPrice(product.price),
         priceNumber: product.price,
-        image: images[0] || '/assets/placeholder.jpg',
+        image: imageUrl,
         tag: product.tag || '',
       }
     })

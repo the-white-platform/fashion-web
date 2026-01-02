@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { X, User, ShoppingBag, ChevronRight, Search } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import { cn } from '@/utilities/cn'
 import { CMSLink } from '@/components/Link'
 import type { Header as HeaderType } from '@/payload-types'
@@ -76,7 +76,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header,
                       onClick={onClose}
                       className="flex items-center justify-between py-4 text-2xl font-black uppercase tracking-tighter italic border-b border-border group hover:text-muted-foreground transition-colors"
                     >
-                      <span className="relative z-10">{link.label}</span>
                       <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </CMSLink>
                   </motion.li>

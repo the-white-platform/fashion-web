@@ -2,7 +2,7 @@
 
 import { ChevronRight } from 'lucide-react'
 import Image from 'next/image'
-import { Link } from '@/i18n/routing'
+import { Link } from '@/i18n/Link'
 import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 

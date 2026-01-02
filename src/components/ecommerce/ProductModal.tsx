@@ -13,14 +13,17 @@ import {
   Star,
   Check,
   Zap,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 import { VirtualTryOnModal } from './VirtualTryOnModal'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'motion/react'
+import type { ColorVariant } from '@/utilities/getProducts'
 
 interface Product {
   id: number
@@ -29,6 +32,9 @@ interface Product {
   price: string
   priceNumber: number
   image: string
+  images: string[]
+  colorVariants: ColorVariant[]
+  sizes: string[]
   description?: string
 }
 
@@ -38,19 +44,10 @@ interface ProductModalProps {
   onClose: () => void
 }
 
-const sizes = ['S', 'M', 'L', 'XL', 'XXL']
-
-const colors = [
-  { name: 'Đen', hex: '#1d2122' },
-  { name: 'Trắng', hex: '#ebe7db' },
-  { name: 'Xám', hex: '#a9a9a9' },
-  { name: 'Xanh lá', hex: '#a6d6ca' },
-  { name: 'Xanh dương', hex: '#b9c1e8' },
-]
-
 export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
-  const [selectedSize, setSelectedSize] = useState('M')
-  const [selectedColor, setSelectedColor] = useState(colors[0])
+  const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
+  const [selectedSize, setSelectedSize] = useState('')
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isTryOnOpen, setIsTryOnOpen] = useState(false)
   const [isWishlisted, setIsWishlisted] = useState(false)
@@ -60,14 +57,38 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
 
   if (!product) return null
 
+  // Get current variant or use default
+  const currentVariant = product.colorVariants?.[selectedVariantIndex] || {
+    color: 'Default',
+    colorHex: '#000000',
+    sizes: product.sizes || [],
+    images: product.images || [product.image],
+    inStock: true,
+  }
+
+  // Get available sizes for current variant
+  const availableSizes = currentVariant.sizes
+
+  // Get images for current variant
+  const variantImages = currentVariant.images.length > 0 ? currentVariant.images : [product.image]
+
+  // Auto-select first size when variant changes
+  useMemo(() => {
+    if (availableSizes.length > 0 && !availableSizes.includes(selectedSize)) {
+      setSelectedSize(availableSizes[0])
+    }
+  }, [selectedVariantIndex, availableSizes, selectedSize])
+
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: product.id,
         name: product.name,
         price: product.priceNumber,
-        image: product.image,
+        image: variantImages[currentImageIndex],
         size: selectedSize,
+        color: currentVariant.color,
+        colorHex: currentVariant.colorHex,
       })
     }
     setAddedToCart(true)
@@ -110,14 +131,63 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 animate={{ scale: isImageHovered ? 1.05 : 1 }}
                 transition={{ duration: 0.4, ease: 'easeOut' }}
               >
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 55vw"
-                  priority
-                />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${selectedVariantIndex}-${currentImageIndex}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative w-full h-full"
+                  >
+                    <Image
+                      src={variantImages[currentImageIndex]}
+                      alt={`${product.name} - ${currentVariant.color}`}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 55vw"
+                      priority
+                    />
+                  </motion.div>
+                </AnimatePresence>
+
+                {/* Image Navigation */}
+                {variantImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          prev === 0 ? variantImages.length - 1 : prev - 1,
+                        )
+                      }
+                      className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() =>
+                        setCurrentImageIndex((prev) =>
+                          prev === variantImages.length - 1 ? 0 : prev + 1,
+                        )
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-background/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-background transition-colors"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                    {/* Image Indicators */}
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                      {variantImages.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            idx === currentImageIndex ? 'bg-foreground w-6' : 'bg-foreground/30'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </motion.div>
 
               {/* Premium Badge */}
@@ -210,34 +280,64 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               </motion.div>
 
               {/* Color Selection */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="mb-4"
-              >
-                <label className="block mb-2 text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
-                  Màu Sắc - {selectedColor.name}
-                </label>
-                <div className="flex gap-2">
-                  {colors.map((color, idx) => (
-                    <motion.button
-                      key={color.name}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.25 + idx * 0.05 }}
-                      onClick={() => setSelectedColor(color)}
-                      className={`w-10 h-10 rounded-sm border-2 transition-all hover:scale-110 ${
-                        selectedColor.hex === color.hex
-                          ? 'border-foreground shadow-lg'
-                          : 'border-border hover:border-foreground'
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                      title={color.name}
-                    />
-                  ))}
-                </div>
-              </motion.div>
+              {product.colorVariants && product.colorVariants.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="mb-4"
+                >
+                  <label className="block mb-2 text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
+                    Màu Sắc - {currentVariant.color}
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {/* Sort variants: in-stock first, then out-of-stock */}
+                    {[...product.colorVariants]
+                      .sort((a, b) => {
+                        if (a.inStock === b.inStock) return 0
+                        return a.inStock ? -1 : 1
+                      })
+                      .map((variant, sortedIdx) => {
+                        // Find original index for state management
+                        const originalIdx = product.colorVariants.findIndex(
+                          (v) => v.color === variant.color && v.colorHex === variant.colorHex,
+                        )
+
+                        return (
+                          <motion.button
+                            key={`${variant.color}-${originalIdx}`}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 0.25 + sortedIdx * 0.05 }}
+                            onClick={() => {
+                              if (variant.inStock) {
+                                setSelectedVariantIndex(originalIdx)
+                                setCurrentImageIndex(0)
+                              }
+                            }}
+                            className={`relative w-10 h-10 rounded-sm border-2 transition-all ${
+                              variant.inStock ? 'hover:scale-110' : 'cursor-not-allowed'
+                            } ${
+                              selectedVariantIndex === originalIdx
+                                ? 'border-foreground shadow-lg'
+                                : 'border-border hover:border-foreground'
+                            } ${!variant.inStock ? 'opacity-40' : ''}`}
+                            style={{ backgroundColor: variant.colorHex }}
+                            title={`${variant.color}${!variant.inStock ? ' (Hết hàng)' : ''}`}
+                            disabled={!variant.inStock}
+                          >
+                            {/* Strikethrough indicator for out-of-stock */}
+                            {!variant.inStock && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-full h-[2px] bg-red-500 rotate-45 transform scale-150" />
+                              </div>
+                            )}
+                          </motion.button>
+                        )
+                      })}
+                  </div>
+                </motion.div>
+              )}
 
               {/* Size Selection */}
               <motion.div
@@ -259,8 +359,8 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                     Hướng dẫn
                   </Link>
                 </div>
-                <div className="flex gap-2">
-                  {sizes.map((size, idx) => (
+                <div className="flex gap-2 flex-wrap">
+                  {availableSizes.map((size, idx) => (
                     <motion.button
                       key={size}
                       initial={{ opacity: 0, y: 10 }}

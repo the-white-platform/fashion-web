@@ -2,7 +2,7 @@
 
 import { FileText, ShoppingBag, AlertTriangle, Scale, UserX, RefreshCw } from 'lucide-react'
 import { motion } from 'motion/react'
-import { Link } from '@/i18n/routing'
+import { Link } from '@/i18n/Link'
 import {
   Breadcrumb,
   BreadcrumbItem,

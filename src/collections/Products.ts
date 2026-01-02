@@ -80,17 +80,82 @@ export const Products: CollectionConfig = {
       },
     },
     {
-      name: 'images',
-      type: 'relationship',
-      relationTo: 'media',
-      hasMany: true,
-      required: true,
-      label: 'Hình Ảnh',
+      name: 'colorVariants',
+      type: 'array',
+      label: 'Biến Thể Màu Sắc',
+      admin: {
+        description: 'Thêm hình ảnh riêng cho từng màu sắc. Màu đầu tiên sẽ là màu mặc định.',
+      },
+      fields: [
+        {
+          name: 'color',
+          type: 'text',
+          required: true,
+          label: 'Tên Màu',
+          admin: {
+            description: 'Ví dụ: Đen, Trắng, Xanh Navy',
+          },
+        },
+        {
+          name: 'colorHex',
+          type: 'text',
+          required: true,
+          label: 'Mã Màu (Hex)',
+          admin: {
+            description: 'Ví dụ: #1d2122',
+          },
+        },
+        {
+          name: 'sizes',
+          type: 'select',
+          hasMany: true,
+          label: 'Size Có Sẵn',
+          admin: {
+            description: 'Các size có sẵn cho màu này',
+          },
+          options: [
+            { label: 'XS', value: 'XS' },
+            { label: 'S', value: 'S' },
+            { label: 'M', value: 'M' },
+            { label: 'L', value: 'L' },
+            { label: 'XL', value: 'XL' },
+            { label: '2X', value: '2X' },
+            { label: '39', value: '39' },
+            { label: '40', value: '40' },
+            { label: '41', value: '41' },
+            { label: '42', value: '42' },
+            { label: '43', value: '43' },
+            { label: '44', value: '44' },
+            { label: '45', value: '45' },
+          ],
+        },
+        {
+          name: 'images',
+          type: 'relationship',
+          relationTo: 'media',
+          hasMany: true,
+          required: true,
+          label: 'Hình Ảnh',
+          admin: {
+            description: 'Hình ảnh cho màu này (áp dụng cho tất cả size của màu này)',
+          },
+        },
+        {
+          name: 'inStock',
+          type: 'checkbox',
+          defaultValue: true,
+          label: 'Còn Hàng',
+        },
+      ],
     },
     {
       name: 'colors',
       type: 'array',
-      label: 'Màu Sắc',
+      label: 'Màu Sắc (Tổng Hợp)',
+      admin: {
+        description: 'Tự động tổng hợp từ colorVariants. Có thể thêm thủ công nếu cần.',
+        readOnly: false,
+      },
       fields: [
         {
           name: 'name',

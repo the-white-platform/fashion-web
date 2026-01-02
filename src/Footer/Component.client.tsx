@@ -1,7 +1,7 @@
 'use client'
 
 import { Facebook, Instagram, Youtube, Phone, Mail } from 'lucide-react'
-import { Link } from '@/i18n/routing'
+import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/Logo/Logo'
 

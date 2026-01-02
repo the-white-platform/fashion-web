@@ -51,7 +51,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-background text-foreground shadow-lg border-b border-border`}
+      className={`fixed top-0 left-0 right-0 z-[80] transition-all duration-300 bg-background text-foreground shadow-lg border-b border-border`}
       {...(effectiveTheme ? { 'data-theme': effectiveTheme } : {})}
     >
       <div className="container mx-auto px-4 lg:px-6 py-2">
@@ -75,7 +75,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
           </div>
 
           {/* Logo - Center on Mobile, Left on Desktop */}
-          <div className="flex-1 lg:flex-none flex justify-center lg:justify-start -ml-12 lg:ml-0">
+          <div className="absolute left-1/2 -translate-x-1/2 lg:relative lg:left-0 lg:translate-x-0 lg:flex-none">
             <Link href="/" className="cursor-pointer">
               <Logo />
             </Link>

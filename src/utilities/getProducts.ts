@@ -3,6 +3,14 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 
+export interface ColorVariant {
+  color: string
+  colorHex: string
+  sizes: string[]
+  images: string[]
+  inStock: boolean
+}
+
 export interface ProductForFrontend {
   id: number
   name: string
@@ -14,10 +22,11 @@ export interface ProductForFrontend {
   priceNumber: number
   originalPrice?: string
   originalPriceNumber?: number
-  image: string
-  images: string[]
-  colors: { name: string; hex: string }[]
-  sizes: string[]
+  image: string // Default/first variant's first image
+  images: string[] // Default/first variant's images
+  colorVariants: ColorVariant[]
+  colors: { name: string; hex: string }[] // Aggregated from variants
+  sizes: string[] // Aggregated from all variants
   tag: string
   inStock: boolean
   featured: boolean
@@ -34,7 +43,7 @@ export interface CategoryForFrontend {
 /**
  * Transform a Product from Payload to a frontend-friendly format
  */
-function transformProduct(product: Product): ProductForFrontend {
+export function transformProduct(product: Product): ProductForFrontend {
   // Get category info
   const rawCategories = product.category
   const categoriesList = Array.isArray(rawCategories)
@@ -66,11 +75,48 @@ function transformProduct(product: Product): ProductForFrontend {
     )
   }
 
-  // Get images
-  const images = (product.images || []).map((img) => {
-    const media = img as Media
-    return media?.url || '/assets/placeholder.jpg'
-  })
+  // Transform color variants
+  const colorVariants: ColorVariant[] = ((product as any).colorVariants || []).map(
+    (variant: any) => {
+      const variantImages = (variant.images || []).map((img: any) => {
+        const media = img as Media
+        return media?.url || '/assets/placeholder.jpg'
+      })
+
+      return {
+        color: variant.color || '',
+        colorHex: variant.colorHex || '#000000',
+        sizes: variant.sizes || [],
+        images: variantImages,
+        inStock: variant.inStock ?? true,
+      }
+    },
+  )
+
+  // Get default variant (first one) or fallback to old images field
+  const defaultVariant = colorVariants[0]
+  const defaultImages = defaultVariant?.images || []
+
+  // Fallback: if no variants, use old images field
+  if (!defaultVariant && (product as any).images) {
+    const legacyImages = ((product as any).images || []).map((img: any) => {
+      const media = img as Media
+      return media?.url || '/assets/placeholder.jpg'
+    })
+    defaultImages.push(...legacyImages)
+  }
+
+  // Aggregate all unique colors from variants
+  const colors = colorVariants.map((v) => ({ name: v.color, hex: v.colorHex }))
+
+  // Aggregate all unique sizes from all variants
+  const allSizes = new Set<string>()
+  colorVariants.forEach((v) => v.sizes.forEach((s) => allSizes.add(s)))
+  const sizes = Array.from(allSizes)
+
+  // Check if any variant is in stock
+  const inStock =
+    colorVariants.length > 0 ? colorVariants.some((v) => v.inStock) : (product.inStock ?? true)
 
   // Get description as plain text (if richText)
   let description = ''
@@ -89,12 +135,13 @@ function transformProduct(product: Product): ProductForFrontend {
     priceNumber: product.price,
     originalPrice: product.originalPrice ? formatPrice(product.originalPrice) : undefined,
     originalPriceNumber: product.originalPrice || undefined,
-    image: images[0] || '/assets/placeholder.jpg',
-    images,
-    colors: (product.colors || []).map((c) => ({ name: c.name, hex: c.hex })),
-    sizes: product.sizes || [],
+    image: defaultImages[0] || '/assets/placeholder.jpg',
+    images: defaultImages,
+    colorVariants,
+    colors,
+    sizes,
     tag: product.tag || '',
-    inStock: product.inStock ?? true,
+    inStock,
     featured: product.featured ?? false,
     description,
     features: (product.features || []).map((f) => f.feature),

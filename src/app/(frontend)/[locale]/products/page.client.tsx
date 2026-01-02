@@ -26,7 +26,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { ScrollIndicator } from '@/components/ui/scroll-indicator'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
-import type { ProductForFrontend, CategoryForFrontend } from '@/utilities/getProducts'
+import type { ProductForFrontend, CategoryForFrontend, ColorVariant } from '@/utilities/getProducts'
 
 // Product Type for display
 interface Product {
@@ -745,6 +745,21 @@ function ProductsPageContent({
                       <h3 className="mb-2 font-medium group-hover:text-muted-foreground transition-colors">
                         {product.name}
                       </h3>
+
+                      {/* Available Sizes */}
+                      {product.sizes && product.sizes.length > 0 && (
+                        <div className="flex gap-1 mb-2 flex-wrap">
+                          {product.sizes.map((size) => (
+                            <span
+                              key={size}
+                              className="text-[10px] px-2 py-0.5 border border-border rounded-sm text-muted-foreground uppercase"
+                            >
+                              {size}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between">
                         <span className="font-bold">{product.price}</span>
                         <div className="flex gap-1">
@@ -775,19 +790,69 @@ function ProductsPageContent({
                         className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
                       />
                     </PaginationItem>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          onClick={(e) => {
-                            e.preventDefault()
-                            handlePageChange(page)
-                          }}
-                          isActive={currentPage === page}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
+
+                    {/* Smart pagination with ellipsis */}
+                    {(() => {
+                      const pages: (number | 'ellipsis')[] = []
+                      const showEllipsis = totalPages > 7
+
+                      if (!showEllipsis) {
+                        // Show all pages if 7 or fewer
+                        for (let i = 1; i <= totalPages; i++) {
+                          pages.push(i)
+                        }
+                      } else {
+                        // Always show first page
+                        pages.push(1)
+
+                        // Calculate range around current page
+                        const start = Math.max(2, currentPage - 1)
+                        const end = Math.min(totalPages - 1, currentPage + 1)
+
+                        // Add ellipsis after first page if needed
+                        if (start > 2) {
+                          pages.push('ellipsis')
+                        }
+
+                        // Add pages around current page
+                        for (let i = start; i <= end; i++) {
+                          pages.push(i)
+                        }
+
+                        // Add ellipsis before last page if needed
+                        if (end < totalPages - 1) {
+                          pages.push('ellipsis')
+                        }
+
+                        // Always show last page
+                        pages.push(totalPages)
+                      }
+
+                      return pages.map((page, index) => {
+                        if (page === 'ellipsis') {
+                          return (
+                            <PaginationItem key={`ellipsis-${index}`}>
+                              <span className="px-4 py-2">...</span>
+                            </PaginationItem>
+                          )
+                        }
+
+                        return (
+                          <PaginationItem key={page}>
+                            <PaginationLink
+                              onClick={(e) => {
+                                e.preventDefault()
+                                handlePageChange(page)
+                              }}
+                              isActive={currentPage === page}
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )
+                      })
+                    })()}
+
                     <PaginationItem>
                       <PaginationNext
                         onClick={(e) => {
@@ -829,6 +894,8 @@ interface Product {
   price: string
   priceNumber: number
   image: string
+  images: string[]
+  colorVariants: ColorVariant[]
   colors: { name: string; hex: string }[]
   sizes: string[]
   tag: string
@@ -850,6 +917,8 @@ export default function ProductsPageClient({
     price: p.price,
     priceNumber: p.priceNumber,
     image: p.image,
+    images: p.images,
+    colorVariants: p.colorVariants,
     colors: p.colors,
     sizes: p.sizes,
     tag: p.tag,
