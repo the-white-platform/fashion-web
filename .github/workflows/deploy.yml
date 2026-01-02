@@ -117,6 +117,7 @@ jobs:
             --image $IMAGE \
             --region="${{ env.REGION }}" \
             --project="${{ env.DEV_PROJECT }}" \
+            --set-env-vars="PAYLOAD_PUSH_SCHEMA=true" \
             --quiet
           echo "✅ Dev deployment complete"
 

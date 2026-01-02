@@ -75,6 +75,9 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
+    // Auto-push schema changes in dev environment
+    // In production, use migrations instead
+    push: process.env.PAYLOAD_PUSH_SCHEMA === 'true',
   }),
   collections: [Pages, Posts, Media, Categories, Users, Products],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
