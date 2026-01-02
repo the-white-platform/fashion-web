@@ -76,6 +76,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header,
                       onClick={onClose}
                       className="flex items-center justify-between py-4 text-2xl font-black uppercase tracking-tighter italic border-b border-border group hover:text-muted-foreground transition-colors"
                     >
+                      <span className="flex-1 text-left">{link?.label ?? ''}</span>
                       <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </CMSLink>
                   </motion.li>
