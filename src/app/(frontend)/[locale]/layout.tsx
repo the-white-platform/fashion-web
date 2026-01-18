@@ -18,6 +18,7 @@ import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
+import { ProgressBar } from '@/components/ProgressBar'
 
 import '../globals.css'
 
@@ -81,8 +82,7 @@ export default async function RootLayout({ children, params }: Props) {
     <html className={cn(inter.variable, theWhite.variable)} lang={locale} suppressHydrationWarning>
       <head>
         <InitTheme />
-        <link href="/logo/claw.ico" rel="icon" sizes="32x32" />
-        <link href="/logo/claw.svg" rel="icon" type="image/svg+xml" />
+        <link rel="preload" href="/logo/W.svg" as="image" type="image/svg+xml" />
       </head>
       <body className="relative font-sans antialiased">
         {/* Noisy Background Texture - matching prototype */}
@@ -96,8 +96,9 @@ export default async function RootLayout({ children, params }: Props) {
           />
         </div>
         <div className="relative z-10 min-h-screen">
-          <NextIntlClientProvider messages={messages}>
+          <NextIntlClientProvider messages={messages} locale={locale}>
             <Providers>
+              <ProgressBar />
               <AdminBar
                 adminBarProps={{
                   preview: isEnabled,
@@ -125,5 +126,11 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     creator: '@thewhite',
+  },
+  icons: {
+    icon: [
+      { url: '/logo/W-dark.ico', media: '(prefers-color-scheme: light)' },
+      { url: '/logo/W-light.ico', media: '(prefers-color-scheme: dark)' },
+    ],
   },
 }

@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from '@/i18n/routing'
-import { Link } from '@/i18n/routing'
+import { useRouter } from '@/i18n/useRouter'
+import { Link } from '@/i18n/Link'
 import { User, MapPin, CreditCard, Ruler, Sparkles, Package, LogOut } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'

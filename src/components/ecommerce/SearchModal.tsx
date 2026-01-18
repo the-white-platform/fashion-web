@@ -70,7 +70,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-background/80 z-50 backdrop-blur-sm"
+            className="fixed inset-0 bg-background/80 z-[90] backdrop-blur-sm"
           />
 
           {/* Search Modal */}
@@ -79,7 +79,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed top-0 left-0 right-0 bg-background text-foreground z-[60] shadow-2xl border-b border-border"
+            className="fixed top-0 left-0 right-0 bg-background text-foreground z-[100] shadow-2xl border-b border-border"
           >
             <div className="container mx-auto px-6 py-8">
               {/* Search Input */}

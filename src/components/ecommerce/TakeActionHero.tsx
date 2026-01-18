@@ -27,14 +27,14 @@ export function TakeActionHero() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, ease: 'easeOut' }}
-            className="w-32 h-32 md:w-48 md:h-48 lg:w-56 lg:h-56 mb-8"
+            className="w-32 md:w-48 lg:w-56 h-auto aspect-[100/64] mb-8"
           >
             <Image
-              src="/logo/claw.svg"
-              alt="The White Claw Logo"
-              width={224}
-              height={224}
-              className="w-full h-full dark:invert"
+              src="/logo/W-animated.svg"
+              alt="The White Logo"
+              width={200}
+              height={128}
+              className="w-full h-full dark:invert object-contain"
               priority
             />
           </motion.div>

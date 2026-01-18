@@ -35,6 +35,10 @@ export const Posts: CollectionConfig = {
     read: authenticatedOrPublished,
     update: authenticated,
   },
+  labels: {
+    singular: { vi: 'Bài Viết', en: 'Post' },
+    plural: { vi: 'Bài Viết', en: 'Posts' },
+  },
   admin: {
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
@@ -62,6 +66,8 @@ export const Posts: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
+      label: { vi: 'Tiêu đề', en: 'Title' },
     },
     {
       type: 'tabs',
@@ -71,6 +77,7 @@ export const Posts: CollectionConfig = {
             {
               name: 'content',
               type: 'richText',
+              localized: true,
               editor: lexicalEditor({
                 features: ({ rootFeatures }) => {
                   return [
@@ -87,13 +94,14 @@ export const Posts: CollectionConfig = {
               required: true,
             },
           ],
-          label: 'Content',
+          label: { vi: 'Nội dung', en: 'Content' },
         },
         {
           fields: [
             {
               name: 'relatedPosts',
               type: 'relationship',
+              label: { vi: 'Bài viết liên quan', en: 'Related Posts' },
               admin: {
                 position: 'sidebar',
               },
@@ -110,6 +118,7 @@ export const Posts: CollectionConfig = {
             {
               name: 'categories',
               type: 'relationship',
+              label: { vi: 'Danh mục', en: 'Categories' },
               admin: {
                 position: 'sidebar',
               },
@@ -117,7 +126,7 @@ export const Posts: CollectionConfig = {
               relationTo: 'categories',
             },
           ],
-          label: 'Meta',
+          label: { vi: 'Thông tin', en: 'Meta' },
         },
         {
           name: 'meta',
@@ -151,6 +160,7 @@ export const Posts: CollectionConfig = {
     {
       name: 'publishedAt',
       type: 'date',
+      label: { vi: 'Ngày xuất bản', en: 'Published At' },
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',
@@ -171,6 +181,7 @@ export const Posts: CollectionConfig = {
     {
       name: 'authors',
       type: 'relationship',
+      label: { vi: 'Tác giả', en: 'Authors' },
       admin: {
         position: 'sidebar',
       },

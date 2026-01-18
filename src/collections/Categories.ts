@@ -14,11 +14,17 @@ export const Categories: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
   },
+  labels: {
+    singular: { vi: 'Danh Mục', en: 'Category' },
+    plural: { vi: 'Danh Mục', en: 'Categories' },
+  },
   fields: [
     {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
+      label: { vi: 'Tiêu đề', en: 'Title' },
     },
   ],
 }

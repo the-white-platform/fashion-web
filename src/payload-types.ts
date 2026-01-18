@@ -72,6 +72,8 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    products: Product;
+    orders: Order;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -88,6 +90,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -100,16 +104,20 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('vi' | 'en') | ('vi' | 'en')[];
   globals: {
     header: Header;
     footer: Footer;
+    homepage: Homepage;
+    'payment-methods': PaymentMethod;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    homepage: HomepageSelect<false> | HomepageSelect<true>;
+    'payment-methods': PaymentMethodsSelect<false> | PaymentMethodsSelect<true>;
   };
-  locale: null;
+  locale: 'vi' | 'en';
   user: User & {
     collection: 'users';
   };
@@ -706,6 +714,169 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  name: string;
+  slug?: string | null;
+  category: (number | Category)[];
+  price: number;
+  /**
+   * Leave empty if no discount
+   */
+  originalPrice?: number | null;
+  /**
+   * Add separate images for each color. The first color will be the default.
+   */
+  colorVariants?:
+    | {
+        /**
+         * Example: Black, White, Navy Blue
+         */
+        color: string;
+        /**
+         * Example: #1d2122
+         */
+        colorHex: string;
+        /**
+         * Manage stock quantity for each size
+         */
+        sizeInventory?:
+          | {
+              size: 'XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45';
+              stock: number;
+              /**
+               * Alert when stock falls below this
+               */
+              lowStockThreshold?: number | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Images for this color (applies to all sizes of this color)
+         */
+        images: (number | Media)[];
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Auto-aggregated from colorVariants. Can be added manually if needed.
+   */
+  colors?:
+    | {
+        name: string;
+        /**
+         * Example: #1d2122
+         */
+        hex: string;
+        id?: string | null;
+      }[]
+    | null;
+  sizes?: ('XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45')[] | null;
+  tag?: ('MỚI' | 'BÁN CHẠY' | 'GIẢM 20%' | 'GIẢM 30%' | 'GIẢM 50%' | 'HOT') | null;
+  inStock?: boolean | null;
+  /**
+   * Display on homepage
+   */
+  featured?: boolean | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  features?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  orderNumber: string;
+  status: 'pending' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'cancelled' | 'refunded';
+  customerInfo: {
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    /**
+     * If customer was logged in
+     */
+    user?: (number | null) | User;
+  };
+  shippingAddress: {
+    address: string;
+    ward?: string | null;
+    district: string;
+    city: string;
+    postalCode?: string | null;
+    notes?: string | null;
+  };
+  items: {
+    product: number | Product;
+    /**
+     * Snapshot of name at order time
+     */
+    productName: string;
+    variant?: string | null;
+    size: string;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+    /**
+     * Product image URL
+     */
+    productImage?: string | null;
+    id?: string | null;
+  }[];
+  payment: {
+    method: 'cod' | 'bank_transfer' | 'qr_code' | 'vnpay' | 'stripe' | 'momo';
+    paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+    /**
+     * Transaction ID from payment gateway
+     */
+    transactionId?: string | null;
+    paidAt?: string | null;
+  };
+  totals: {
+    subtotal: number;
+    shippingFee?: number | null;
+    discount?: number | null;
+    total: number;
+    couponCode?: string | null;
+  };
+  /**
+   * Notes visible only to admins
+   */
+  adminNotes?: string | null;
+  fulfillment?: {
+    carrier?: string | null;
+    trackingNumber?: string | null;
+    shippedAt?: string | null;
+    deliveredAt?: string | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -820,6 +991,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: number | Order;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1171,6 +1350,120 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products_select".
+ */
+export interface ProductsSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  category?: T;
+  price?: T;
+  originalPrice?: T;
+  colorVariants?:
+    | T
+    | {
+        color?: T;
+        colorHex?: T;
+        sizeInventory?:
+          | T
+          | {
+              size?: T;
+              stock?: T;
+              lowStockThreshold?: T;
+              id?: T;
+            };
+        images?: T;
+        id?: T;
+      };
+  colors?:
+    | T
+    | {
+        name?: T;
+        hex?: T;
+        id?: T;
+      };
+  sizes?: T;
+  tag?: T;
+  inStock?: T;
+  featured?: T;
+  description?: T;
+  features?:
+    | T
+    | {
+        feature?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderNumber?: T;
+  status?: T;
+  customerInfo?:
+    | T
+    | {
+        customerName?: T;
+        customerEmail?: T;
+        customerPhone?: T;
+        user?: T;
+      };
+  shippingAddress?:
+    | T
+    | {
+        address?: T;
+        ward?: T;
+        district?: T;
+        city?: T;
+        postalCode?: T;
+        notes?: T;
+      };
+  items?:
+    | T
+    | {
+        product?: T;
+        productName?: T;
+        variant?: T;
+        size?: T;
+        quantity?: T;
+        unitPrice?: T;
+        lineTotal?: T;
+        productImage?: T;
+        id?: T;
+      };
+  payment?:
+    | T
+    | {
+        method?: T;
+        paymentStatus?: T;
+        transactionId?: T;
+        paidAt?: T;
+      };
+  totals?:
+    | T
+    | {
+        subtotal?: T;
+        shippingFee?: T;
+        discount?: T;
+        total?: T;
+        couponCode?: T;
+      };
+  adminNotes?: T;
+  fulfillment?:
+    | T
+    | {
+        carrier?: T;
+        trackingNumber?: T;
+        shippedAt?: T;
+        deliveredAt?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects_select".
  */
 export interface RedirectsSelect<T extends boolean = true> {
@@ -1450,6 +1743,136 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage".
+ */
+export interface Homepage {
+  id: number;
+  carouselSlides?:
+    | {
+        title: string;
+        subtitle: string;
+        ctaText: string;
+        ctaLink: string;
+        /**
+         * Optional background image for the slide
+         */
+        backgroundImage?: (number | null) | Media;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Select categories to display in the "Shop By Activity" section on the homepage (max 4 recommended)
+   */
+  activityCategories?: (number | Category)[] | null;
+  /**
+   * Configure the quick filter buttons shown in the Featured Products section
+   */
+  quickFilters?:
+    | {
+        /**
+         * Text displayed on the filter button (e.g., "ALL", "MEN", "WOMEN")
+         */
+        label: string;
+        filterType: 'all' | 'category' | 'tag';
+        /**
+         * Select the category to filter products by
+         */
+        category?: (number | null) | Category;
+        /**
+         * Select the tag type to filter products by
+         */
+        tagFilter?: ('sale' | 'new' | 'bestseller') | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods".
+ */
+export interface PaymentMethod {
+  id: number;
+  cod?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    sortOrder?: number | null;
+  };
+  bankTransfer?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    bankName?: string | null;
+    accountNumber?: string | null;
+    accountName?: string | null;
+    branch?: string | null;
+    sortOrder?: number | null;
+  };
+  qrCode?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    /**
+     * Upload payment QR code image
+     */
+    qrImage?: (number | null) | Media;
+    instructions?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    sortOrder?: number | null;
+  };
+  /**
+   * Configure API keys in environment variables: VNPAY_MERCHANT_ID, VNPAY_SECRET_KEY
+   */
+  vnpay?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    sortOrder?: number | null;
+  };
+  /**
+   * Configure API keys in environment variables: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY
+   */
+  stripe?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    sortOrder?: number | null;
+  };
+  /**
+   * Configure API keys in environment variables: MOMO_PARTNER_CODE, MOMO_ACCESS_KEY, MOMO_SECRET_KEY
+   */
+  momo?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    sortOrder?: number | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1489,6 +1912,104 @@ export interface FooterSelect<T extends boolean = true> {
               label?: T;
             };
         id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "homepage_select".
+ */
+export interface HomepageSelect<T extends boolean = true> {
+  carouselSlides?:
+    | T
+    | {
+        title?: T;
+        subtitle?: T;
+        ctaText?: T;
+        ctaLink?: T;
+        backgroundImage?: T;
+        id?: T;
+      };
+  activityCategories?: T;
+  quickFilters?:
+    | T
+    | {
+        label?: T;
+        filterType?: T;
+        category?: T;
+        tagFilter?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods_select".
+ */
+export interface PaymentMethodsSelect<T extends boolean = true> {
+  cod?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        sortOrder?: T;
+      };
+  bankTransfer?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        bankName?: T;
+        accountNumber?: T;
+        accountName?: T;
+        branch?: T;
+        sortOrder?: T;
+      };
+  qrCode?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        qrImage?: T;
+        instructions?: T;
+        sortOrder?: T;
+      };
+  vnpay?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        sortOrder?: T;
+      };
+  stripe?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        sortOrder?: T;
+      };
+  momo?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        sortOrder?: T;
       };
   updatedAt?: T;
   createdAt?: T;
