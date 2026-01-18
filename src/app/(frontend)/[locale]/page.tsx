@@ -30,7 +30,8 @@ interface QuickFilter {
 
 // Always use the custom e-commerce home page
 // The CMS home page is available via /home if needed
-export default async function HomePage() {
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
   let featuredProducts: FeaturedProduct[] = []
   let carouselSlides: any[] = []
   let featuredCategories: any[] = []
@@ -44,6 +45,7 @@ export default async function HomePage() {
     const result = await payload.find({
       collection: 'products',
       depth: 2,
+      locale: locale as 'vi' | 'en',
       where: {
         featured: { equals: true },
       },
@@ -93,6 +95,7 @@ export default async function HomePage() {
     const homepage = await payload.findGlobal({
       slug: 'homepage',
       depth: 2, // Populate relationships
+      locale: locale as 'vi' | 'en',
     })
 
     carouselSlides = homepage?.carouselSlides || []
@@ -117,6 +120,7 @@ export default async function HomePage() {
     const categoryNames = ['Áo Thể Thao', 'Quần Dài', 'Giày Thể Thao']
     const categoriesResult = await payload.find({
       collection: 'categories',
+      locale: locale as 'vi' | 'en',
       where: {
         title: { in: categoryNames },
       },

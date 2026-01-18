@@ -20,17 +20,23 @@ export const Products: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'category', 'price', 'tag', 'inStock'],
   },
+  labels: {
+    singular: { vi: 'Sản Phẩm', en: 'Product' },
+    plural: { vi: 'Sản Phẩm', en: 'Products' },
+  },
   fields: [
     {
       name: 'name',
       type: 'text',
       required: true,
-      label: 'Tên Sản Phẩm',
+      localized: true,
+      label: { vi: 'Tên Sản Phẩm', en: 'Product Name' },
     },
     {
       name: 'slug',
       type: 'text',
       unique: true,
+      label: { vi: 'Đường dẫn', en: 'Slug' },
       admin: {
         position: 'sidebar',
       },
@@ -58,7 +64,7 @@ export const Products: CollectionConfig = {
       relationTo: 'categories',
       hasMany: true,
       required: true,
-      label: 'Danh Mục',
+      label: { vi: 'Danh Mục', en: 'Category' },
       admin: {
         position: 'sidebar',
       },
@@ -67,66 +73,110 @@ export const Products: CollectionConfig = {
       name: 'price',
       type: 'number',
       required: true,
-      label: 'Giá (VND)',
+      label: { vi: 'Giá (VND)', en: 'Price (VND)' },
       min: 0,
     },
     {
       name: 'originalPrice',
       type: 'number',
-      label: 'Giá Gốc (VND)',
+      label: { vi: 'Giá Gốc (VND)', en: 'Original Price (VND)' },
       min: 0,
       admin: {
-        description: 'Để trống nếu không có giảm giá',
+        description: { vi: 'Để trống nếu không có giảm giá', en: 'Leave empty if no discount' },
       },
     },
     {
       name: 'colorVariants',
       type: 'array',
-      label: 'Biến Thể Màu Sắc',
+      label: { vi: 'Biến Thể Màu Sắc', en: 'Color Variants' },
       admin: {
-        description: 'Thêm hình ảnh riêng cho từng màu sắc. Màu đầu tiên sẽ là màu mặc định.',
+        description: {
+          vi: 'Thêm hình ảnh riêng cho từng màu sắc. Màu đầu tiên sẽ là màu mặc định.',
+          en: 'Add separate images for each color. The first color will be the default.',
+        },
       },
       fields: [
         {
           name: 'color',
           type: 'text',
           required: true,
-          label: 'Tên Màu',
+          localized: true,
+          label: { vi: 'Tên Màu', en: 'Color Name' },
           admin: {
-            description: 'Ví dụ: Đen, Trắng, Xanh Navy',
+            description: {
+              vi: 'Ví dụ: Đen, Trắng, Xanh Navy',
+              en: 'Example: Black, White, Navy Blue',
+            },
           },
         },
         {
           name: 'colorHex',
           type: 'text',
           required: true,
-          label: 'Mã Màu (Hex)',
+          label: { vi: 'Mã Màu (Hex)', en: 'Color Code (Hex)' },
           admin: {
-            description: 'Ví dụ: #1d2122',
+            description: { vi: 'Ví dụ: #1d2122', en: 'Example: #1d2122' },
           },
         },
         {
-          name: 'sizes',
-          type: 'select',
-          hasMany: true,
-          label: 'Size Có Sẵn',
+          name: 'sizeInventory',
+          type: 'array',
+          label: { vi: 'Tồn Kho Theo Size', en: 'Size Inventory' },
           admin: {
-            description: 'Các size có sẵn cho màu này',
+            description: {
+              vi: 'Quản lý số lượng tồn kho cho từng size',
+              en: 'Manage stock quantity for each size',
+            },
           },
-          options: [
-            { label: 'XS', value: 'XS' },
-            { label: 'S', value: 'S' },
-            { label: 'M', value: 'M' },
-            { label: 'L', value: 'L' },
-            { label: 'XL', value: 'XL' },
-            { label: '2X', value: '2X' },
-            { label: '39', value: '39' },
-            { label: '40', value: '40' },
-            { label: '41', value: '41' },
-            { label: '42', value: '42' },
-            { label: '43', value: '43' },
-            { label: '44', value: '44' },
-            { label: '45', value: '45' },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'size',
+                  type: 'select',
+                  required: true,
+                  label: { vi: 'Size', en: 'Size' },
+                  options: [
+                    { label: 'XS', value: 'XS' },
+                    { label: 'S', value: 'S' },
+                    { label: 'M', value: 'M' },
+                    { label: 'L', value: 'L' },
+                    { label: 'XL', value: 'XL' },
+                    { label: '2X', value: '2X' },
+                    { label: '39', value: '39' },
+                    { label: '40', value: '40' },
+                    { label: '41', value: '41' },
+                    { label: '42', value: '42' },
+                    { label: '43', value: '43' },
+                    { label: '44', value: '44' },
+                    { label: '45', value: '45' },
+                  ],
+                },
+                {
+                  name: 'stock',
+                  type: 'number',
+                  required: true,
+                  min: 0,
+                  defaultValue: 0,
+                  label: { vi: 'Số Lượng', en: 'Stock Quantity' },
+                },
+                {
+                  name: 'lowStockThreshold',
+                  type: 'number',
+                  min: 0,
+                  defaultValue: 5,
+                  label: { vi: 'Ngưỡng Cảnh Báo', en: 'Low Stock Alert' },
+                  admin: {
+                    description: {
+                      vi: 'Cảnh báo khi tồn kho thấp hơn số này',
+                      en: 'Alert when stock falls below this',
+                    },
+                    width: '33%',
+                  },
+                },
+              ],
+            },
           ],
         },
         {
@@ -135,25 +185,25 @@ export const Products: CollectionConfig = {
           relationTo: 'media',
           hasMany: true,
           required: true,
-          label: 'Hình Ảnh',
+          label: { vi: 'Hình Ảnh', en: 'Images' },
           admin: {
-            description: 'Hình ảnh cho màu này (áp dụng cho tất cả size của màu này)',
+            description: {
+              vi: 'Hình ảnh cho màu này (áp dụng cho tất cả size của màu này)',
+              en: 'Images for this color (applies to all sizes of this color)',
+            },
           },
-        },
-        {
-          name: 'inStock',
-          type: 'checkbox',
-          defaultValue: true,
-          label: 'Còn Hàng',
         },
       ],
     },
     {
       name: 'colors',
       type: 'array',
-      label: 'Màu Sắc (Tổng Hợp)',
+      label: { vi: 'Màu Sắc (Tổng Hợp)', en: 'Colors (Summary)' },
       admin: {
-        description: 'Tự động tổng hợp từ colorVariants. Có thể thêm thủ công nếu cần.',
+        description: {
+          vi: 'Tự động tổng hợp từ colorVariants. Có thể thêm thủ công nếu cần.',
+          en: 'Auto-aggregated from colorVariants. Can be added manually if needed.',
+        },
         readOnly: false,
       },
       fields: [
@@ -161,15 +211,15 @@ export const Products: CollectionConfig = {
           name: 'name',
           type: 'text',
           required: true,
-          label: 'Tên Màu',
+          label: { vi: 'Tên Màu', en: 'Color Name' },
         },
         {
           name: 'hex',
           type: 'text',
           required: true,
-          label: 'Mã Màu (Hex)',
+          label: { vi: 'Mã Màu (Hex)', en: 'Color Code (Hex)' },
           admin: {
-            description: 'Ví dụ: #1d2122',
+            description: { vi: 'Ví dụ: #1d2122', en: 'Example: #1d2122' },
           },
         },
       ],
@@ -178,7 +228,7 @@ export const Products: CollectionConfig = {
       name: 'sizes',
       type: 'select',
       hasMany: true,
-      label: 'Size',
+      label: { vi: 'Size', en: 'Size' },
       options: [
         // Clothing sizes
         { label: 'XS', value: 'XS' },
@@ -201,13 +251,13 @@ export const Products: CollectionConfig = {
     {
       name: 'tag',
       type: 'select',
-      label: 'Nhãn',
+      label: { vi: 'Nhãn', en: 'Tag' },
       options: [
-        { label: 'Mới', value: 'MỚI' },
-        { label: 'Bán Chạy', value: 'BÁN CHẠY' },
-        { label: 'Giảm 20%', value: 'GIẢM 20%' },
-        { label: 'Giảm 30%', value: 'GIẢM 30%' },
-        { label: 'Giảm 50%', value: 'GIẢM 50%' },
+        { label: { vi: 'Mới', en: 'New' }, value: 'MỚI' },
+        { label: { vi: 'Bán Chạy', en: 'Bestseller' }, value: 'BÁN CHẠY' },
+        { label: { vi: 'Giảm 20%', en: '20% Off' }, value: 'GIẢM 20%' },
+        { label: { vi: 'Giảm 30%', en: '30% Off' }, value: 'GIẢM 30%' },
+        { label: { vi: 'Giảm 50%', en: '50% Off' }, value: 'GIẢM 50%' },
         { label: 'Hot', value: 'HOT' },
       ],
       admin: {
@@ -218,7 +268,7 @@ export const Products: CollectionConfig = {
       name: 'inStock',
       type: 'checkbox',
       defaultValue: true,
-      label: 'Còn Hàng',
+      label: { vi: 'Còn Hàng', en: 'In Stock' },
       admin: {
         position: 'sidebar',
       },
@@ -227,16 +277,17 @@ export const Products: CollectionConfig = {
       name: 'featured',
       type: 'checkbox',
       defaultValue: false,
-      label: 'Sản Phẩm Nổi Bật',
+      label: { vi: 'Sản Phẩm Nổi Bật', en: 'Featured Product' },
       admin: {
         position: 'sidebar',
-        description: 'Hiển thị ở trang chủ',
+        description: { vi: 'Hiển thị ở trang chủ', en: 'Display on homepage' },
       },
     },
     {
       name: 'description',
       type: 'richText',
-      label: 'Mô Tả',
+      localized: true,
+      label: { vi: 'Mô Tả', en: 'Description' },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]
@@ -246,12 +297,14 @@ export const Products: CollectionConfig = {
     {
       name: 'features',
       type: 'array',
-      label: 'Đặc Điểm Kỹ Thuật',
+      localized: true,
+      label: { vi: 'Đặc Điểm Kỹ Thuật', en: 'Technical Features' },
       fields: [
         {
           name: 'feature',
           type: 'text',
           required: true,
+          label: { vi: 'Đặc điểm', en: 'Feature' },
         },
       ],
     },

@@ -10,12 +10,12 @@ interface ProductDetailPageProps {
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  const { id } = await params
+  const { id, locale } = await params
 
-  // Fetch product data and all products from Payload CMS
+  // Fetch product data and all products from Payload CMS with locale
   const [product, allProductsResult] = await Promise.all([
-    getCachedProductBySlug(id)(),
-    getCachedProducts()(),
+    getCachedProductBySlug(id, locale)(),
+    getCachedProducts({ locale })(),
   ])
 
   // If product not found, show 404

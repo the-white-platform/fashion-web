@@ -73,6 +73,7 @@ export interface Config {
     categories: Category;
     users: User;
     products: Product;
+    orders: Order;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -90,6 +91,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -102,18 +104,20 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('vi' | 'en') | ('vi' | 'en')[];
   globals: {
     header: Header;
     footer: Footer;
     homepage: Homepage;
+    'payment-methods': PaymentMethod;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     homepage: HomepageSelect<false> | HomepageSelect<true>;
+    'payment-methods': PaymentMethodsSelect<false> | PaymentMethodsSelect<true>;
   };
-  locale: null;
+  locale: 'vi' | 'en';
   user: User & {
     collection: 'users';
   };
@@ -719,42 +723,51 @@ export interface Product {
   category: (number | Category)[];
   price: number;
   /**
-   * Để trống nếu không có giảm giá
+   * Leave empty if no discount
    */
   originalPrice?: number | null;
   /**
-   * Thêm hình ảnh riêng cho từng màu sắc. Màu đầu tiên sẽ là màu mặc định.
+   * Add separate images for each color. The first color will be the default.
    */
   colorVariants?:
     | {
         /**
-         * Ví dụ: Đen, Trắng, Xanh Navy
+         * Example: Black, White, Navy Blue
          */
         color: string;
         /**
-         * Ví dụ: #1d2122
+         * Example: #1d2122
          */
         colorHex: string;
         /**
-         * Các size có sẵn cho màu này
+         * Manage stock quantity for each size
          */
-        sizes?: ('XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45')[] | null;
+        sizeInventory?:
+          | {
+              size: 'XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45';
+              stock: number;
+              /**
+               * Alert when stock falls below this
+               */
+              lowStockThreshold?: number | null;
+              id?: string | null;
+            }[]
+          | null;
         /**
-         * Hình ảnh cho màu này (áp dụng cho tất cả size của màu này)
+         * Images for this color (applies to all sizes of this color)
          */
         images: (number | Media)[];
-        inStock?: boolean | null;
         id?: string | null;
       }[]
     | null;
   /**
-   * Tự động tổng hợp từ colorVariants. Có thể thêm thủ công nếu cần.
+   * Auto-aggregated from colorVariants. Can be added manually if needed.
    */
   colors?:
     | {
         name: string;
         /**
-         * Ví dụ: #1d2122
+         * Example: #1d2122
          */
         hex: string;
         id?: string | null;
@@ -764,7 +777,7 @@ export interface Product {
   tag?: ('MỚI' | 'BÁN CHẠY' | 'GIẢM 20%' | 'GIẢM 30%' | 'GIẢM 50%' | 'HOT') | null;
   inStock?: boolean | null;
   /**
-   * Hiển thị ở trang chủ
+   * Display on homepage
    */
   featured?: boolean | null;
   description?: {
@@ -788,6 +801,77 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  orderNumber: string;
+  status: 'pending' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'cancelled' | 'refunded';
+  customerInfo: {
+    customerName: string;
+    customerEmail: string;
+    customerPhone: string;
+    /**
+     * If customer was logged in
+     */
+    user?: (number | null) | User;
+  };
+  shippingAddress: {
+    address: string;
+    ward?: string | null;
+    district: string;
+    city: string;
+    postalCode?: string | null;
+    notes?: string | null;
+  };
+  items: {
+    product: number | Product;
+    /**
+     * Snapshot of name at order time
+     */
+    productName: string;
+    variant?: string | null;
+    size: string;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+    /**
+     * Product image URL
+     */
+    productImage?: string | null;
+    id?: string | null;
+  }[];
+  payment: {
+    method: 'cod' | 'bank_transfer' | 'qr_code' | 'vnpay' | 'stripe' | 'momo';
+    paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded';
+    /**
+     * Transaction ID from payment gateway
+     */
+    transactionId?: string | null;
+    paidAt?: string | null;
+  };
+  totals: {
+    subtotal: number;
+    shippingFee?: number | null;
+    discount?: number | null;
+    total: number;
+    couponCode?: string | null;
+  };
+  /**
+   * Notes visible only to admins
+   */
+  adminNotes?: string | null;
+  fulfillment?: {
+    carrier?: string | null;
+    trackingNumber?: string | null;
+    shippedAt?: string | null;
+    deliveredAt?: string | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -911,6 +995,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products';
         value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: number | Order;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1275,9 +1363,15 @@ export interface ProductsSelect<T extends boolean = true> {
     | {
         color?: T;
         colorHex?: T;
-        sizes?: T;
+        sizeInventory?:
+          | T
+          | {
+              size?: T;
+              stock?: T;
+              lowStockThreshold?: T;
+              id?: T;
+            };
         images?: T;
-        inStock?: T;
         id?: T;
       };
   colors?:
@@ -1297,6 +1391,73 @@ export interface ProductsSelect<T extends boolean = true> {
     | {
         feature?: T;
         id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderNumber?: T;
+  status?: T;
+  customerInfo?:
+    | T
+    | {
+        customerName?: T;
+        customerEmail?: T;
+        customerPhone?: T;
+        user?: T;
+      };
+  shippingAddress?:
+    | T
+    | {
+        address?: T;
+        ward?: T;
+        district?: T;
+        city?: T;
+        postalCode?: T;
+        notes?: T;
+      };
+  items?:
+    | T
+    | {
+        product?: T;
+        productName?: T;
+        variant?: T;
+        size?: T;
+        quantity?: T;
+        unitPrice?: T;
+        lineTotal?: T;
+        productImage?: T;
+        id?: T;
+      };
+  payment?:
+    | T
+    | {
+        method?: T;
+        paymentStatus?: T;
+        transactionId?: T;
+        paidAt?: T;
+      };
+  totals?:
+    | T
+    | {
+        subtotal?: T;
+        shippingFee?: T;
+        discount?: T;
+        total?: T;
+        couponCode?: T;
+      };
+  adminNotes?: T;
+  fulfillment?:
+    | T
+    | {
+        carrier?: T;
+        trackingNumber?: T;
+        shippedAt?: T;
+        deliveredAt?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1629,6 +1790,89 @@ export interface Homepage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods".
+ */
+export interface PaymentMethod {
+  id: number;
+  cod?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    sortOrder?: number | null;
+  };
+  bankTransfer?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    bankName?: string | null;
+    accountNumber?: string | null;
+    accountName?: string | null;
+    branch?: string | null;
+    sortOrder?: number | null;
+  };
+  qrCode?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    /**
+     * Upload payment QR code image
+     */
+    qrImage?: (number | null) | Media;
+    instructions?: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    } | null;
+    sortOrder?: number | null;
+  };
+  /**
+   * Configure API keys in environment variables: VNPAY_MERCHANT_ID, VNPAY_SECRET_KEY
+   */
+  vnpay?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    sortOrder?: number | null;
+  };
+  /**
+   * Configure API keys in environment variables: STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY
+   */
+  stripe?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    sortOrder?: number | null;
+  };
+  /**
+   * Configure API keys in environment variables: MOMO_PARTNER_CODE, MOMO_ACCESS_KEY, MOMO_SECRET_KEY
+   */
+  momo?: {
+    enabled?: boolean | null;
+    name?: string | null;
+    description?: string | null;
+    icon?: (number | null) | Media;
+    sortOrder?: number | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1697,6 +1941,75 @@ export interface HomepageSelect<T extends boolean = true> {
         category?: T;
         tagFilter?: T;
         id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-methods_select".
+ */
+export interface PaymentMethodsSelect<T extends boolean = true> {
+  cod?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        sortOrder?: T;
+      };
+  bankTransfer?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        bankName?: T;
+        accountNumber?: T;
+        accountName?: T;
+        branch?: T;
+        sortOrder?: T;
+      };
+  qrCode?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        qrImage?: T;
+        instructions?: T;
+        sortOrder?: T;
+      };
+  vnpay?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        sortOrder?: T;
+      };
+  stripe?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        sortOrder?: T;
+      };
+  momo?:
+    | T
+    | {
+        enabled?: T;
+        name?: T;
+        description?: T;
+        icon?: T;
+        sortOrder?: T;
       };
   updatedAt?: T;
   createdAt?: T;

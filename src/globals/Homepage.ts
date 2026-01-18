@@ -17,19 +17,22 @@ export const Homepage: GlobalConfig = {
           name: 'title',
           type: 'text',
           required: true,
-          label: 'Title',
+          localized: true,
+          label: { vi: 'Tiêu đề', en: 'Title' },
         },
         {
           name: 'subtitle',
           type: 'text',
           required: true,
-          label: 'Subtitle',
+          localized: true,
+          label: { vi: 'Phụ đề', en: 'Subtitle' },
         },
         {
           name: 'ctaText',
           type: 'text',
           required: true,
-          label: 'Button Text',
+          localized: true,
+          label: { vi: 'Văn bản nút', en: 'Button Text' },
           defaultValue: 'Explore Now',
         },
         {
@@ -75,9 +78,13 @@ export const Homepage: GlobalConfig = {
           name: 'label',
           type: 'text',
           required: true,
-          label: 'Button Label',
+          localized: true,
+          label: { vi: 'Nhãn nút', en: 'Button Label' },
           admin: {
-            description: 'Text displayed on the filter button (e.g., "ALL", "MEN", "WOMEN")',
+            description: {
+              vi: 'Văn bản hiển thị trên nút lọc (ví dụ: "TẤT CẢ", "NAM", "NỮ")',
+              en: 'Text displayed on the filter button (e.g., "ALL", "MEN", "WOMEN")',
+            },
           },
         },
         {

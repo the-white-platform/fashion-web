@@ -7,6 +7,7 @@ const collections: CollectionSlug[] = [
   'pages',
   'posts',
   'products',
+  'orders',
   'forms',
   'form-submissions',
   'search',
@@ -47,32 +48,87 @@ export const seed = async ({
     }
   }
 
-  // 2. Create categories
+  // 2. Create categories (Vietnamese + English)
   payload.logger.info(`— Creating ${categorySeedData.length} categories...`)
   const categoryMap: Record<string, number> = {}
 
   for (const cat of categorySeedData) {
+    // Create category with Vietnamese (default locale)
     const category = await payload.create({
       collection: 'categories',
       data: { title: cat.title },
+      locale: 'vi',
     })
     categoryMap[cat.title] = category.id
-    payload.logger.info(`  ✓ Created category: ${cat.title}`)
+
+    // Add English translation
+    await payload.update({
+      collection: 'categories',
+      id: category.id,
+      data: { title: cat.titleEn },
+      locale: 'en',
+    })
+
+    payload.logger.info(`  ✓ Created category: ${cat.title} / ${cat.titleEn}`)
   }
 
-  // 3. Create products with color variants
-  payload.logger.info(`— Creating ${productSeedData.length} products...`)
+  // 3. Create products with color variants (PARALLEL PROCESSING)
+  payload.logger.info(`— Creating ${productSeedData.length} products (parallel batches)...`)
 
-  for (let i = 0; i < productSeedData.length; i++) {
-    const productData = productSeedData[i]
-    payload.logger.info(`  [${i + 1}/${productSeedData.length}] Processing: ${productData.name}`)
+  // Helper: Upload a single image
+  async function uploadImage(
+    imageUrl: string,
+    productName: string,
+    productNameEn: string,
+    color: string,
+    colorEn: string,
+  ): Promise<number | null> {
+    try {
+      const response = await fetch(imageUrl)
+      const arrayBuffer = await response.arrayBuffer()
+      const buffer = Buffer.from(arrayBuffer)
 
+      const urlPath = imageUrl.split('?')[0]
+      const imageId = urlPath.split('/').pop() || `image-${Date.now()}`
+      const fileName = `${imageId}-${color.toLowerCase()}-${Date.now()}.jpg`
+
+      const imageDoc = await payload.create({
+        collection: 'media',
+        data: { alt: `${productName} - ${color}` },
+        file: {
+          name: fileName,
+          data: buffer,
+          mimetype: 'image/jpeg',
+          size: buffer.length,
+        },
+        locale: 'vi',
+      })
+
+      // Add English alt text
+      await payload.update({
+        collection: 'media',
+        id: imageDoc.id,
+        data: { alt: `${productNameEn} - ${colorEn}` },
+        locale: 'en',
+      })
+
+      return imageDoc.id
+    } catch {
+      return null
+    }
+  }
+
+  // Helper: Create a single product
+  async function createProduct(
+    productData: (typeof productSeedData)[0],
+    index: number,
+  ): Promise<void> {
     try {
       // Get category ID (Primary)
       const categoryId = categoryMap[productData.categoryTitle]
       if (!categoryId) {
-        payload.logger.warn(`    ⚠ Category not found for: ${productData.name}`)
-        continue
+        payload.logger.warn(`  [${index + 1}] ⚠ Category not found for: ${productData.name}`)
+        return
       }
 
       // Resolve additional categories
@@ -81,106 +137,46 @@ export const seed = async ({
         for (const catTitle of productData.additionalCategories) {
           if (categoryMap[catTitle]) {
             categoryIds.push(categoryMap[catTitle])
-          } else {
-            payload.logger.warn(`    ⚠ Additional category not found: ${catTitle}`)
           }
         }
       }
-
-      // Deduplicate IDs
       const uniqueCategoryIds = Array.from(new Set(categoryIds))
 
-      // Process color variants
+      // Process all color variants with parallel image uploads
       const colorVariants: any[] = []
+      const colorVariantsEn: any[] = []
 
-      for (let v = 0; v < productData.colorVariants.length; v++) {
-        const variant = productData.colorVariants[v]
-        payload.logger.info(
-          `    → Processing variant ${v + 1}/${productData.colorVariants.length}: ${variant.color}`,
+      for (const variant of productData.colorVariants) {
+        // Upload all images for this variant in parallel
+        const imagePromises = variant.imageUrls.map((url) =>
+          uploadImage(url, productData.name, productData.nameEn, variant.color, variant.colorEn),
         )
+        const imageResults = await Promise.all(imagePromises)
+        const variantImageIds = imageResults.filter((id): id is number => id !== null)
 
-        // Fetch and create variant images
-        const variantImageIds: number[] = []
-
-        payload.logger.info(
-          `      → Fetching ${variant.imageUrls.length} images for ${variant.color}...`,
-        )
-        for (let j = 0; j < variant.imageUrls.length; j++) {
-          const imageUrl = variant.imageUrls[j]
-          try {
-            payload.logger.info(
-              `        • Image ${j + 1}/${variant.imageUrls.length}: Downloading...`,
-            )
-            const response = await fetch(imageUrl)
-            const arrayBuffer = await response.arrayBuffer()
-            const buffer = Buffer.from(arrayBuffer)
-
-            // Extract just the image ID, stripping query parameters
-            const urlPath = imageUrl.split('?')[0]
-            const imageId = urlPath.split('/').pop() || `image-${Date.now()}`
-            const fileName = `${imageId}-${variant.color.toLowerCase()}.jpg`
-
-            const imageDoc = await payload.create({
-              collection: 'media',
-              data: { alt: `${productData.name} - ${variant.color}` },
-              file: {
-                name: fileName,
-                data: buffer,
-                mimetype: 'image/jpeg',
-                size: buffer.length,
-              },
-            })
-            variantImageIds.push(imageDoc.id)
-            payload.logger.info(
-              `        ✓ Image ${j + 1}/${variant.imageUrls.length}: Uploaded (ID: ${imageDoc.id})`,
-            )
-          } catch (imgError) {
-            payload.logger.warn(
-              `        ⚠ Image ${j + 1}/${variant.imageUrls.length}: Failed - ${imgError}`,
-            )
-          }
-        }
-
-        // Add variant if it has images
         if (variantImageIds.length > 0) {
           colorVariants.push({
             color: variant.color,
             colorHex: variant.colorHex,
-            sizes: variant.sizes as (
-              | 'XS'
-              | 'S'
-              | 'M'
-              | 'L'
-              | 'XL'
-              | '2X'
-              | '39'
-              | '40'
-              | '41'
-              | '42'
-              | '43'
-              | '44'
-              | '45'
-            )[],
+            sizeInventory: variant.sizeInventory,
             images: variantImageIds,
-            inStock: variant.inStock,
           })
-          payload.logger.info(
-            `      ✓ Variant ${variant.color}: ${variantImageIds.length} images added`,
-          )
-        } else {
-          payload.logger.warn(`      ⚠ Variant ${variant.color}: Skipped (no images)`)
+          colorVariantsEn.push({
+            color: variant.colorEn,
+            colorHex: variant.colorHex,
+            sizeInventory: variant.sizeInventory,
+            images: variantImageIds,
+          })
         }
       }
 
-      // Skip if no variants
       if (colorVariants.length === 0) {
-        payload.logger.warn(`    ⚠ Skipping ${productData.name} (no valid variants)`)
-        continue
+        payload.logger.warn(`  [${index + 1}] ⚠ Skipping ${productData.name} (no valid variants)`)
+        return
       }
 
-      // Create product with color variants
-      payload.logger.info(`    → Creating product with ${colorVariants.length} variants...`)
-      await payload.create({
+      // Create product with Vietnamese content
+      const product = await payload.create({
         collection: 'products',
         data: {
           name: productData.name,
@@ -189,26 +185,47 @@ export const seed = async ({
           price: productData.price,
           originalPrice: productData.originalPrice,
           colorVariants: colorVariants,
-          tag: productData.tag as
-            | 'MỚI'
-            | 'BÁN CHẠY'
-            | 'GIẢM 20%'
-            | 'GIẢM 30%'
-            | 'GIẢM 50%'
-            | 'HOT'
-            | undefined,
+          tag: productData.tag as any,
           featured: productData.featured,
           features: productData.features.map((f) => ({ feature: f })),
         },
+        locale: 'vi',
+      })
+
+      // Add English translation
+      await payload.update({
+        collection: 'products',
+        id: product.id,
+        data: {
+          name: productData.nameEn,
+          colorVariants: colorVariantsEn,
+          features: productData.featuresEn.map((f) => ({ feature: f })),
+        },
+        locale: 'en',
       })
 
       payload.logger.info(
-        `    ✓ Created product: ${productData.name} with ${colorVariants.length} color variants`,
+        `  [${index + 1}] ✓ ${productData.name} (${colorVariants.length} variants)`,
       )
     } catch (error) {
-      payload.logger.error(`    ✗ Failed to create ${productData.name}: ${error}`)
+      payload.logger.error(`  [${index + 1}] ✗ Failed: ${productData.name}`)
     }
   }
+
+  // Process products in parallel batches of 10
+  const BATCH_SIZE = 10
+  for (let batchStart = 0; batchStart < productSeedData.length; batchStart += BATCH_SIZE) {
+    const batchEnd = Math.min(batchStart + BATCH_SIZE, productSeedData.length)
+    const batch = productSeedData.slice(batchStart, batchEnd)
+
+    payload.logger.info(
+      `  → Batch ${Math.floor(batchStart / BATCH_SIZE) + 1}/${Math.ceil(productSeedData.length / BATCH_SIZE)}: Processing products ${batchStart + 1}-${batchEnd}...`,
+    )
+
+    await Promise.all(batch.map((productData, i) => createProduct(productData, batchStart + i)))
+  }
+
+  payload.logger.info(`  ✓ All products created`)
 
   // 4. Configure Header Navigation
   payload.logger.info(`— Configuring header navigation...`)
@@ -267,8 +284,8 @@ export const seed = async ({
     }
   }
 
-  // Build quick filters configuration
-  const quickFiltersConfig: Array<{
+  // Build quick filters configuration (base with Vietnamese labels)
+  const quickFiltersBase: Array<{
     label: string
     filterType: 'all' | 'category' | 'tag'
     tagFilter?: 'sale' | 'new' | 'bestseller'
@@ -282,48 +299,97 @@ export const seed = async ({
 
   // Add category-based filters if categories exist
   if (categoryMap['Gym']) {
-    quickFiltersConfig.push({ label: 'GYM', filterType: 'category', category: categoryMap['Gym'] })
+    quickFiltersBase.push({ label: 'GYM', filterType: 'category', category: categoryMap['Gym'] })
   }
   if (categoryMap['Yoga']) {
-    quickFiltersConfig.push({
+    quickFiltersBase.push({
       label: 'YOGA',
       filterType: 'category',
       category: categoryMap['Yoga'],
     })
   }
 
+  // English filter labels (same order as base)
+  const englishLabels = ['ALL', 'NEW', 'BESTSELLER', 'SALE', 'GYM', 'YOGA']
+
+  // Step 1: Create homepage content with Vietnamese (default locale) - this creates the structure and IDs
   await payload.updateGlobal({
     slug: 'homepage',
+    locale: 'vi',
     data: {
       carouselSlides: [
         {
-          title: 'WINTER COLLECTION 2024',
-          subtitle: 'Power in every step',
-          ctaText: 'Explore Now',
+          title: 'BỘ SƯU TẬP MÙA ĐÔNG 2024',
+          subtitle: 'Sức mạnh trong từng bước đi',
+          ctaText: 'Khám Phá Ngay',
           ctaLink: '/products',
         },
         {
-          title: 'MODERN STYLE',
-          subtitle: 'Optimized for every activity',
-          ctaText: 'Explore Now',
+          title: 'PHONG CÁCH HIỆN ĐẠI',
+          subtitle: 'Tối ưu cho mọi hoạt động',
+          ctaText: 'Khám Phá Ngay',
           ctaLink: '/products',
         },
         {
-          title: 'PREMIUM MATERIALS',
-          subtitle: 'Comfort all day long',
-          ctaText: 'Explore Now',
+          title: 'CHẤT LIỆU CAO CẤP',
+          subtitle: 'Thoải mái cả ngày dài',
+          ctaText: 'Khám Phá Ngay',
           ctaLink: '/products',
         },
       ],
       activityCategories: activityCategoryIds,
-      quickFilters: quickFiltersConfig,
+      quickFilters: quickFiltersBase,
     },
   })
 
-  payload.logger.info(`  ✓ Homepage carousel configured`)
+  // Step 2: Read back the homepage to get the generated IDs
+  const savedHomepage = await payload.findGlobal({
+    slug: 'homepage',
+    locale: 'vi',
+    depth: 0,
+  })
+
+  // Step 3: Build English quick filters with same IDs and English labels
+  const quickFiltersEn = (savedHomepage.quickFilters || []).map((filter: any, index: number) => ({
+    id: filter.id, // Preserve the same row ID
+    label: englishLabels[index] || filter.label, // Use English label
+    filterType: filter.filterType,
+    tagFilter: filter.tagFilter,
+    category: filter.category,
+  }))
+
+  // Step 4: Build English carousel slides with same IDs
+  const carouselSlidesEn = (savedHomepage.carouselSlides || []).map((slide: any, index: number) => {
+    const englishSlides = [
+      { title: 'WINTER COLLECTION 2024', subtitle: 'Power in every step', ctaText: 'Explore Now' },
+      { title: 'MODERN STYLE', subtitle: 'Optimized for every activity', ctaText: 'Explore Now' },
+      { title: 'PREMIUM MATERIALS', subtitle: 'Comfort all day long', ctaText: 'Explore Now' },
+    ]
+    return {
+      id: slide.id, // Preserve the same row ID
+      title: englishSlides[index]?.title || slide.title,
+      subtitle: englishSlides[index]?.subtitle || slide.subtitle,
+      ctaText: englishSlides[index]?.ctaText || slide.ctaText,
+      ctaLink: slide.ctaLink,
+      backgroundImage: slide.backgroundImage,
+    }
+  })
+
+  // Step 5: Update English locale with same IDs
+  await payload.updateGlobal({
+    slug: 'homepage',
+    locale: 'en',
+    data: {
+      carouselSlides: carouselSlidesEn,
+      activityCategories: activityCategoryIds,
+      quickFilters: quickFiltersEn,
+    },
+  })
+
+  payload.logger.info(`  ✓ Homepage carousel configured (vi + en)`)
   payload.logger.info(`  ✓ Activity categories configured: ${activityNames.join(', ')}`)
   payload.logger.info(
-    `  ✓ Quick filters configured: ${quickFiltersConfig.map((f) => f.label).join(', ')}`,
+    `  ✓ Quick filters configured: vi: ${quickFiltersBase.map((f) => f.label).join(', ')} | en: ${englishLabels.slice(0, quickFiltersBase.length).join(', ')}`,
   )
 
   payload.logger.info('✅ Database seeding completed!')

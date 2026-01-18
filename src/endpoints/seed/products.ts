@@ -1,16 +1,23 @@
 // Product seed data for development environment with color variants
 // Uses placeholder images from Unsplash for dev only
 
+export interface SizeInventoryItem {
+  size: string
+  stock: number
+  lowStockThreshold?: number
+}
+
 export interface ColorVariantSeedData {
   color: string
+  colorEn: string
   colorHex: string
-  sizes: string[]
+  sizeInventory: SizeInventoryItem[]
   imageUrls: string[]
-  inStock: boolean
 }
 
 export interface ProductSeedData {
   name: string
+  nameEn: string
   slug: string
   categoryTitle: string
   additionalCategories?: string[]
@@ -20,7 +27,9 @@ export interface ProductSeedData {
   featured: boolean
   colorVariants: ColorVariantSeedData[]
   description: string
+  descriptionEn: string
   features: string[]
+  featuresEn: string[]
 }
 
 // Type for image sets
@@ -216,23 +225,35 @@ function generateProducts(): ProductSeedData[] {
           ? placeholderImages.gym
           : placeholderImages.sportswear
 
+      // Helper to generate sizeInventory with random stock
+      const generateSizeInventory = (sizes: string[]) =>
+        sizes.map((size) => ({
+          size,
+          stock: Math.floor(Math.random() * 16) + 5, // Random 5-20
+          lowStockThreshold: 5,
+        }))
+
       // Add black variant (always available)
       colorVariants.push({
         color: 'Đen',
+        colorEn: 'Black',
         colorHex: '#1d2122',
-        sizes: base.shoe ? ['39', '40', '41', '42', '43', '44'] : ['S', 'M', 'L', 'XL'],
+        sizeInventory: generateSizeInventory(
+          base.shoe ? ['39', '40', '41', '42', '43', '44'] : ['S', 'M', 'L', 'XL'],
+        ),
         imageUrls: imageSet.black,
-        inStock: true,
       })
 
       // Add white variant for some products
       if (i % 2 === 0 && imageSet.white) {
         colorVariants.push({
           color: 'Trắng',
+          colorEn: 'White',
           colorHex: '#ffffff',
-          sizes: base.shoe ? ['39', '40', '41', '42', '43'] : ['M', 'L', 'XL', '2X'],
+          sizeInventory: generateSizeInventory(
+            base.shoe ? ['39', '40', '41', '42', '43'] : ['M', 'L', 'XL', '2X'],
+          ),
           imageUrls: imageSet.white,
-          inStock: i % 4 !== 0,
         })
       }
 
@@ -240,10 +261,12 @@ function generateProducts(): ProductSeedData[] {
       if (i % 3 === 0 && imageSet.gray) {
         colorVariants.push({
           color: 'Xám',
+          colorEn: 'Gray',
           colorHex: '#a9a9a9',
-          sizes: base.shoe ? ['40', '41', '42', '43'] : ['S', 'M', 'L'],
+          sizeInventory: generateSizeInventory(
+            base.shoe ? ['40', '41', '42', '43'] : ['S', 'M', 'L'],
+          ),
           imageUrls: imageSet.gray,
-          inStock: true,
         })
       }
 
@@ -251,15 +274,52 @@ function generateProducts(): ProductSeedData[] {
       if (i % 4 === 0 && imageSet.blue) {
         colorVariants.push({
           color: 'Xanh Navy',
+          colorEn: 'Navy Blue',
           colorHex: '#2c3e50',
-          sizes: base.shoe ? ['39', '40', '41', '42'] : ['M', 'L', 'XL'],
+          sizeInventory: generateSizeInventory(
+            base.shoe ? ['39', '40', '41', '42'] : ['M', 'L', 'XL'],
+          ),
           imageUrls: imageSet.blue,
-          inStock: true,
         })
       }
 
+      // Generate English name from base product
+      const nameEn = name
+        .replace('Áo Training', 'Training Shirt')
+        .replace('Áo Polo', 'Polo Shirt')
+        .replace('Áo Hoodie', 'Hoodie')
+        .replace('Áo Tank Top', 'Tank Top')
+        .replace('Áo Thun Basic', 'Basic T-Shirt')
+        .replace('Áo Khoác', 'Sports Jacket')
+        .replace('Áo Windbreaker', 'Windbreaker')
+        .replace('Áo Thun Long Sleeve', 'Long Sleeve Shirt')
+        .replace('Quần Short Training', 'Training Shorts')
+        .replace('Quần Short 2 in 1', '2-in-1 Shorts')
+        .replace('Quần Short Basketball', 'Basketball Shorts')
+        .replace('Quần Jogger', 'Jogger Pants')
+        .replace('Quần Track', 'Track Pants')
+        .replace('Legging Compression', 'Compression Leggings')
+        .replace('Giày Chạy Bộ', 'Running Shoes')
+        .replace('Giày Training', 'Training Shoes')
+        .replace('Set Đồ Tập', 'Training Set')
+        .replace('Set Yoga', 'Yoga Set')
+        .replace('Set Tennis', 'Tennis Set')
+        .replace('Sports Bra', 'Sports Bra')
+        .replace('Performance', 'Performance')
+        .replace('Oversize', 'Oversize')
+        .replace('Heavy', 'Heavy')
+        .replace('Thể Thao', 'Sports')
+        .replace('Slim Fit', 'Slim Fit')
+        .replace('CrossFit', 'CrossFit')
+        .replace('Gym Premium', 'Gym Premium')
+        .replace('Flow', 'Flow')
+        .replace('Classic', 'Classic')
+        .replace('High Support', 'High Support')
+        .replace('Elite', 'Elite')
+
       products.push({
         name,
+        nameEn,
         slug,
         categoryTitle: base.category,
         additionalCategories: base.additional,
@@ -269,11 +329,18 @@ function generateProducts(): ProductSeedData[] {
         featured: productCount < 20, // First 20 are featured
         colorVariants,
         description: `${name} với công nghệ tiên tiến, thiết kế hiện đại và chất liệu cao cấp. Phù hợp cho các hoạt động thể thao cường độ cao và sử dụng hàng ngày.`,
+        descriptionEn: `${nameEn} with advanced technology, modern design and premium materials. Suitable for high-intensity sports activities and daily use.`,
         features: [
           'Chất liệu cao cấp',
           'Công nghệ thấm hút mồ hôi',
           'Thiết kế hiện đại',
           'Độ bền cao',
+        ],
+        featuresEn: [
+          'Premium materials',
+          'Sweat-wicking technology',
+          'Modern design',
+          'High durability',
         ],
       })
 
@@ -289,17 +356,17 @@ export const productSeedData: ProductSeedData[] = generateProducts()
 
 // Categories to be seeded
 export const categorySeedData = [
-  { title: 'Nam', slug: 'nam' },
-  { title: 'Nữ', slug: 'nu' },
-  { title: 'Trẻ Em', slug: 'tre-em' },
-  { title: 'Mới Nhất', slug: 'moi-nhat' },
-  { title: 'Áo Thể Thao', slug: 'ao-the-thao' },
-  { title: 'Quần Short', slug: 'quan-short' },
-  { title: 'Quần Dài', slug: 'quan-dai' },
-  { title: 'Bộ Tập Luyện', slug: 'bo-tap-luyen' },
-  { title: 'Giày Thể Thao', slug: 'giay-the-thao' },
-  { title: 'Chạy Bộ', slug: 'chay-bo' },
-  { title: 'Gym', slug: 'gym' },
-  { title: 'Yoga', slug: 'yoga' },
-  { title: 'Bóng Đá', slug: 'bong-da' },
+  { title: 'Nam', titleEn: 'Men', slug: 'nam' },
+  { title: 'Nữ', titleEn: 'Women', slug: 'nu' },
+  { title: 'Trẻ Em', titleEn: 'Kids', slug: 'tre-em' },
+  { title: 'Mới Nhất', titleEn: 'New Arrivals', slug: 'moi-nhat' },
+  { title: 'Áo Thể Thao', titleEn: 'Sports Shirts', slug: 'ao-the-thao' },
+  { title: 'Quần Short', titleEn: 'Shorts', slug: 'quan-short' },
+  { title: 'Quần Dài', titleEn: 'Pants', slug: 'quan-dai' },
+  { title: 'Bộ Tập Luyện', titleEn: 'Training Sets', slug: 'bo-tap-luyen' },
+  { title: 'Giày Thể Thao', titleEn: 'Sports Shoes', slug: 'giay-the-thao' },
+  { title: 'Chạy Bộ', titleEn: 'Running', slug: 'chay-bo' },
+  { title: 'Gym', titleEn: 'Gym', slug: 'gym' },
+  { title: 'Yoga', titleEn: 'Yoga', slug: 'yoga' },
+  { title: 'Bóng Đá', titleEn: 'Football', slug: 'bong-da' },
 ]

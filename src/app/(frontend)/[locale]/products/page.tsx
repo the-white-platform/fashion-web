@@ -5,27 +5,33 @@ import React from 'react'
 import ProductsPageClient from './page.client'
 import type { ProductForFrontend, CategoryForFrontend } from '@/utilities/getProducts'
 import { transformProduct } from '@/utilities/getProducts'
+import { getTranslations } from 'next-intl/server'
 
 // During Docker build, database may not be available - make dynamic to avoid build failures
 export const dynamic = 'force-dynamic'
 export const revalidate = 600
 
-export default async function ProductsPage() {
+export default async function ProductsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params
+  const t = await getTranslations('products')
+
   try {
     const payload = await getPayload({ config: configPromise })
 
-    // Fetch all products
+    // Fetch all products with locale
     const productsResult = await payload.find({
       collection: 'products',
       depth: 2,
       limit: 100,
+      locale: locale as 'vi' | 'en',
     })
 
-    // Fetch categories
+    // Fetch categories with locale
     const categoriesResult = await payload.find({
       collection: 'categories',
       depth: 0,
       limit: 100,
+      locale: locale as 'vi' | 'en',
     })
 
     // Transform products
@@ -45,9 +51,10 @@ export default async function ProductsPage() {
       })
     })
 
-    // Build categories with counts
+    // Build categories with counts - use translated "All" label
+    const allLabel = locale === 'en' ? 'All' : 'Tất Cả'
     const categories: CategoryForFrontend[] = [
-      { name: 'Tất Cả', slug: 'all', count: products.length },
+      { name: allLabel, slug: 'all', count: products.length },
       ...categoriesResult.docs
         .filter((cat) => categoryCounts.has(cat.title))
         .map((cat) => ({
@@ -71,11 +78,12 @@ export default async function ProductsPage() {
     )
   } catch (error) {
     console.warn('Failed to fetch products:', error)
+    const allLabel = locale === 'en' ? 'All' : 'Tất Cả'
     // Return client with empty data - it will show loading or fallback
     return (
       <ProductsPageClient
         initialProducts={[]}
-        categories={[{ name: 'Tất Cả', slug: 'all', count: 0 }]}
+        categories={[{ name: allLabel, slug: 'all', count: 0 }]}
         colors={[]}
       />
     )

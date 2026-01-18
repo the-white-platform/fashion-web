@@ -155,6 +155,7 @@ async function getProducts(options?: {
   limit?: number
   featured?: boolean
   categorySlug?: string
+  locale?: string
 }) {
   const payload = await getPayload({ config: configPromise })
 
@@ -168,6 +169,7 @@ async function getProducts(options?: {
     collection: 'products',
     depth: 2,
     limit: options?.limit || 100,
+    locale: (options?.locale as 'vi' | 'en') || 'vi',
     where: Object.keys(where).length > 0 ? where : undefined,
   })
 
@@ -177,13 +179,14 @@ async function getProducts(options?: {
 /**
  * Fetch a single product by slug or ID
  */
-async function getProductBySlug(slug: string) {
+async function getProductBySlug(slug: string, locale?: string) {
   const payload = await getPayload({ config: configPromise })
 
   // Try to find by slug first
   let result = await payload.find({
     collection: 'products',
     depth: 2,
+    locale: (locale as 'vi' | 'en') || 'vi',
     where: {
       slug: { equals: slug },
     },
@@ -199,6 +202,7 @@ async function getProductBySlug(slug: string) {
           collection: 'products',
           id,
           depth: 2,
+          locale: (locale as 'vi' | 'en') || 'vi',
         })
         if (product) {
           return transformProduct(product)
@@ -216,13 +220,14 @@ async function getProductBySlug(slug: string) {
 /**
  * Fetch categories with product counts
  */
-async function getCategories(): Promise<CategoryForFrontend[]> {
+async function getCategories(locale?: string): Promise<CategoryForFrontend[]> {
   const payload = await getPayload({ config: configPromise })
 
   const categories = await payload.find({
     collection: 'categories',
     depth: 0,
     limit: 100,
+    locale: (locale as 'vi' | 'en') || 'vi',
   })
 
   // Get product counts for each category
@@ -256,7 +261,11 @@ async function getCategories(): Promise<CategoryForFrontend[]> {
 /**
  * Cached version of getProducts
  */
-export const getCachedProducts = (options?: { limit?: number; featured?: boolean }) =>
+export const getCachedProducts = (options?: {
+  limit?: number
+  featured?: boolean
+  locale?: string
+}) =>
   unstable_cache(async () => getProducts(options), ['products', JSON.stringify(options)], {
     tags: ['products'],
     revalidate: 600, // 10 minutes
@@ -265,8 +274,8 @@ export const getCachedProducts = (options?: { limit?: number; featured?: boolean
 /**
  * Cached version of getProductBySlug
  */
-export const getCachedProductBySlug = (slug: string) =>
-  unstable_cache(async () => getProductBySlug(slug), ['product', slug], {
+export const getCachedProductBySlug = (slug: string, locale?: string) =>
+  unstable_cache(async () => getProductBySlug(slug, locale), ['product', slug, locale || 'vi'], {
     tags: [`product_${slug}`],
     revalidate: 600,
   })
@@ -274,8 +283,8 @@ export const getCachedProductBySlug = (slug: string) =>
 /**
  * Cached version of getCategories
  */
-export const getCachedCategories = () =>
-  unstable_cache(async () => getCategories(), ['categories'], {
+export const getCachedCategories = (locale?: string) =>
+  unstable_cache(async () => getCategories(locale), ['categories', locale || 'vi'], {
     tags: ['categories'],
     revalidate: 600,
   })
