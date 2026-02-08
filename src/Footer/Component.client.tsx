@@ -184,7 +184,7 @@ export function FooterClient() {
         {/* Bottom */}
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-muted-foreground text-sm text-center md:text-left font-normal">
-            &copy; {2026} The White. {t('footer.rights')}
+            &copy; {new Date().getFullYear()} The White. {t('footer.rights')}
           </div>
           <div className="flex gap-6 text-sm text-muted-foreground font-normal">
             <Link href="/privacy-policy" className="hover:text-foreground transition-colors">

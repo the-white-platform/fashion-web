@@ -215,48 +215,24 @@ This project uses **GitHub Actions** for all CI/CD operations (build, test, depl
 
 1.  **Infrastructure**: The infrastructure (Cloud Run, Cloud SQL, Secret Manager) is managed via Terraform in the `../infrastructure` directory.
 2.  **Deployment**:
-    - **PRs**: Fast validation build (`pnpm build`) - no deployment
-    - **Push to main**: Version bump, changelog generation, tag creation
-    - **Tag push (v\*)**: Docker build and deployment to dev/prod
+    - **PRs**: Quality checks (format, lint, typecheck)
+    - **Push to main**: Version bump, changelog, tag, Docker build, deploy to Cloud Run (prod)
 
 #### Important Notes
 
-- **Cloud Build triggers MUST be DISABLED** - All deployments happen via GitHub Actions only
 - Docker images are built directly in GitHub Actions and pushed to Artifact Registry
-- The `cloudbuild.yaml` file is kept for reference but not actively used
-
-#### Disable Cloud Build Triggers
-
-To prevent Cloud Build from running automatically, disable all triggers:
-
-```bash
-# List all triggers
-gcloud builds triggers list \
-  --region=asia-southeast1 \
-  --project=the-white-dev-481217
-
-# Disable a specific trigger
-gcloud builds triggers update TRIGGER_ID \
-  --region=asia-southeast1 \
-  --project=the-white-dev-481217 \
-  --disabled
-```
-
-Or disable via GCP Console: Cloud Build > Triggers > Select trigger > Edit > Disable
-
-#### Manual Deployment
-
-Use the GitHub Actions workflow dispatch or push a tag to trigger deployment.
 
 #### Skip CI/CD
 
 To skip CI/CD workflows (e.g., when updating documentation), include one of these in your commit message:
+
 - `[skip ci]`
 - `[ci skip]`
 - `[skip actions]`
 - `[actions skip]`
 
 Example:
+
 ```bash
 git commit -m "docs: update README [skip ci]"
 ```
