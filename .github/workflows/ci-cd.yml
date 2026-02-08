@@ -24,8 +24,10 @@ permissions:
   id-token: write
 
 env:
-  REGION: asia-southeast1
-  PROD_PROJECT: the-white-prod-481217
+  REGION: ${{ vars.GCP_REGION }}
+  PROD_PROJECT: ${{ vars.GCP_PROJECT_PROD }}
+  SERVICE_NAME: ${{ vars.CLOUD_RUN_SERVICE }}
+  AR_REPO: ${{ vars.ARTIFACT_REGISTRY_REPO }}
 
 jobs:
   quality:
@@ -159,7 +161,7 @@ jobs:
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
           VERSION="${{ steps.release.outputs.version || '0.0.0' }}"
-          IMAGE_BASE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web"
+          IMAGE_BASE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}"
           IMAGE_SHA="$IMAGE_BASE:$SHORT_SHA"
           IMAGE_VERSION="$IMAGE_BASE:$VERSION"
           IMAGE_LATEST="$IMAGE_BASE:latest"
@@ -191,9 +193,9 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}:$SHORT_SHA"
 
-          gcloud run services update fashion-web \
+          gcloud run services update ${{ env.SERVICE_NAME }} \
             --image "$IMAGE" \
             --region="${{ env.REGION }}" \
             --project="${{ env.PROD_PROJECT }}" \
@@ -221,7 +223,7 @@ jobs:
       - name: Build and push Docker image
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          IMAGE_BASE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web"
+          IMAGE_BASE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}"
           IMAGE_SHA="$IMAGE_BASE:$SHORT_SHA"
           IMAGE_LATEST="$IMAGE_BASE:latest"
 
@@ -248,9 +250,9 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/app-images/fashion-web:$SHORT_SHA"
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}:$SHORT_SHA"
 
-          gcloud run services update fashion-web \
+          gcloud run services update ${{ env.SERVICE_NAME }} \
             --image "$IMAGE" \
             --region="${{ env.REGION }}" \
             --project="${{ env.PROD_PROJECT }}" \
