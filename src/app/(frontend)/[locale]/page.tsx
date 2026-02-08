@@ -31,7 +31,15 @@ interface QuickFilter {
 // Always use the custom e-commerce home page
 // The CMS home page is available via /home if needed
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
-  const { locale } = await params
+  // Robustly handle params
+  let locale = 'vi'
+  try {
+    const resolvedParams = await params
+    locale = resolvedParams?.locale || 'vi'
+  } catch (e) {
+    console.error('Error resolving params:', e)
+  }
+
   let featuredProducts: FeaturedProduct[] = []
   let carouselSlides: any[] = []
   let featuredCategories: any[] = []
@@ -39,7 +47,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   let quickFilters: QuickFilter[] = []
 
   try {
+    // Only fetch if configPromise is available
+    if (!configPromise) {
+      throw new Error('Payload config promise is missing')
+    }
+
     const payload = await getPayload({ config: configPromise })
+    if (!payload) {
+      throw new Error('Failed to initialize Payload')
+    }
 
     // Fetch featured products
     const result = await payload.find({
@@ -52,44 +68,54 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       limit: 8, // Increased limit to support filtering
     })
 
-    featuredProducts = result.docs.map((product: Product) => {
-      // Handle category as array or object
-      const categories = Array.isArray(product.category)
-        ? product.category
-        : product.category
-          ? [product.category]
-          : []
+    if (result?.docs) {
+      featuredProducts = result.docs
+        .map((product: Product) => {
+          if (!product) return null
 
-      const primaryCategory = categories[0] as Category | undefined
-      const categoryIds = categories.map((cat) => (cat as Category).id)
+          // Handle category as array or object
+          const categories = Array.isArray(product.category)
+            ? product.category
+            : product.category
+              ? [product.category]
+              : []
 
-      // Get image from first color variant
-      let imageUrl = '/assets/placeholder.jpg'
-      if (product.colorVariants && product.colorVariants.length > 0) {
-        const firstVariant = product.colorVariants[0]
-        if (firstVariant.images && firstVariant.images.length > 0) {
-          const firstImage = firstVariant.images[0]
-          if (typeof firstImage === 'object' && firstImage !== null) {
-            imageUrl = (firstImage as Media).url || '/assets/placeholder.jpg'
+          const primaryCategory = categories[0] as Category | undefined
+          const categoryIds = categories
+            .map((cat) => (typeof cat === 'object' ? cat?.id : cat))
+            .filter(Boolean) as number[]
+
+          // Get image from first color variant
+          let imageUrl = '/assets/placeholder.jpg'
+          if (product.colorVariants && product.colorVariants.length > 0) {
+            const firstVariant = product.colorVariants[0]
+            if (firstVariant?.images && firstVariant.images.length > 0) {
+              const firstImage = firstVariant.images[0]
+              if (typeof firstImage === 'object' && firstImage !== null) {
+                imageUrl = (firstImage as Media).url || '/assets/placeholder.jpg'
+              }
+            }
           }
-        }
-      }
 
-      const formatPrice = (price: number) =>
-        new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 0 }).format(price) + '₫'
+          const formatPrice = (price: number) => {
+            if (typeof price !== 'number') return '0₫'
+            return new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 0 }).format(price) + '₫'
+          }
 
-      return {
-        id: product.id,
-        name: product.name,
-        category: primaryCategory?.title || 'Uncategorized',
-        categoryId: primaryCategory?.id, // Keep for backward compatibility if needed
-        categoryIds: categoryIds, // New field for multi-category filtering
-        price: formatPrice(product.price),
-        priceNumber: product.price,
-        image: imageUrl,
-        tag: product.tag || '',
-      }
-    })
+          return {
+            id: product.id,
+            name: product.name || 'Sản phẩm không tên',
+            category: primaryCategory?.title || 'Chưa phân loại',
+            categoryId: primaryCategory?.id,
+            categoryIds: categoryIds,
+            price: formatPrice(product.price),
+            priceNumber: product.price || 0,
+            image: imageUrl,
+            tag: product.tag || '',
+          }
+        })
+        .filter(Boolean) as FeaturedProduct[]
+    }
 
     // Fetch carousel slides, activity categories, and quick filters from homepage global
     const homepage = await payload.findGlobal({
@@ -98,21 +124,71 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       locale: locale as 'vi' | 'en',
     })
 
-    carouselSlides = homepage?.carouselSlides || []
+    if (homepage) {
+      carouselSlides = homepage.carouselSlides || []
 
-    // Process quick filters from CMS
-    const cmsQuickFilters = (homepage?.quickFilters || []) as any[]
-    quickFilters = cmsQuickFilters.map((filter: any, index: number) => ({
-      id: `filter-${index}`,
-      label: filter.label,
-      filterType: filter.filterType || 'all',
-      categoryId: typeof filter.category === 'object' ? filter.category?.id : filter.category,
-      tagFilter: filter.tagFilter,
-    }))
+      // Process quick filters from CMS
+      const cmsQuickFilters = (homepage.quickFilters || []) as any[]
+      quickFilters = cmsQuickFilters
+        .map((filter: any, index: number) => {
+          if (!filter) return null
+          return {
+            id: `filter-${index}`,
+            label: filter.label || 'Filter',
+            filterType: filter.filterType || 'all',
+            categoryId: typeof filter.category === 'object' ? filter.category?.id : filter.category,
+            tagFilter: filter.tagFilter,
+          }
+        })
+        .filter(Boolean) as QuickFilter[]
 
-    // If no quick filters configured, use defaults
-    if (quickFilters.length === 0) {
-      quickFilters = [{ id: 'all', label: 'Tất Cả', filterType: 'all' }]
+      // If no quick filters configured, use defaults
+      if (quickFilters.length === 0) {
+        quickFilters = [{ id: 'all', label: 'Tất Cả', filterType: 'all' }]
+      }
+
+      // Fetch activity categories for Shop By Activity section (from homepage global)
+      const configuredActivityCategories = (homepage.activityCategories || []) as (
+        | number
+        | Category
+      )[]
+
+      // Get product counts for each activity category
+      if (configuredActivityCategories.length > 0) {
+        activityCategories = await Promise.all(
+          configuredActivityCategories.map(async (catItem: number | Category) => {
+            if (!catItem) return null
+
+            const catId = typeof catItem === 'object' ? catItem.id : catItem
+            const catTitle = typeof catItem === 'object' ? catItem.title : `Category ${catId}`
+
+            try {
+              const productCount = await payload.count({
+                collection: 'products',
+                where: {
+                  category: { equals: catId },
+                },
+              })
+
+              return {
+                id: catId,
+                title: catTitle,
+                slug: catTitle
+                  .toLowerCase()
+                  .normalize('NFD')
+                  .replace(/[\u0300-\u036f]/g, '')
+                  .replace(/đ/g, 'd')
+                  .replace(/Đ/g, 'D')
+                  .replace(/[^a-z0-9]+/g, '-'),
+                productCount: productCount.totalDocs,
+              }
+            } catch (e) {
+              return null
+            }
+          }),
+        )
+        activityCategories = activityCategories.filter(Boolean)
+      }
     }
 
     // Fetch top 3 categories for ExploreMore section
@@ -127,32 +203,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       limit: 3,
     })
 
-    featuredCategories = categoriesResult.docs.map((cat: Category) => ({
-      id: cat.id,
-      title: cat.title,
-      slug: cat.title
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D')
-        .replace(/[^a-z0-9]+/g, '-'),
-    }))
-
-    // Fetch activity categories for Shop By Activity section (from homepage global)
-    const configuredActivityCategories = (homepage?.activityCategories || []) as Category[]
-
-    // Get product counts for each activity category
-    if (configuredActivityCategories.length > 0) {
-      activityCategories = await Promise.all(
-        configuredActivityCategories.map(async (cat: Category) => {
-          const productCount = await payload.count({
-            collection: 'products',
-            where: {
-              category: { equals: cat.id },
-            },
-          })
-
+    if (categoriesResult?.docs) {
+      featuredCategories = categoriesResult.docs
+        .map((cat: Category) => {
+          if (!cat) return null
           return {
             id: cat.id,
             title: cat.title,
@@ -163,13 +217,12 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               .replace(/đ/g, 'd')
               .replace(/Đ/g, 'D')
               .replace(/[^a-z0-9]+/g, '-'),
-            productCount: productCount.totalDocs,
           }
-        }),
-      )
+        })
+        .filter(Boolean)
     }
-  } catch (error) {
-    console.warn('Failed to fetch data:', error)
+  } catch (error: any) {
+    console.warn('Failed to fetch data:', error?.message || error || 'Unknown error')
   }
 
   return (

@@ -83,12 +83,25 @@ export function transformProduct(product: Product): ProductForFrontend {
         return media?.url || '/assets/placeholder.jpg'
       })
 
+      // Get sizes from sizeInventory (new structure) or fallback to sizes array
+      const sizesFromInventory = (variant.sizeInventory || [])
+        .filter((si: any) => si?.stock > 0)
+        .map((si: any) => si.size)
+
+      const sizes = sizesFromInventory.length > 0 ? sizesFromInventory : variant.sizes || []
+
+      // inStock is true if there's any item with stock > 0
+      const variantInStock =
+        variant.sizeInventory && variant.sizeInventory.length > 0
+          ? variant.sizeInventory.some((si: any) => si.stock > 0)
+          : (variant.inStock ?? true)
+
       return {
         color: variant.color || '',
         colorHex: variant.colorHex || '#000000',
-        sizes: variant.sizes || [],
+        sizes: sizes,
         images: variantImages,
-        inStock: variant.inStock ?? true,
+        inStock: variantInStock,
       }
     },
   )
@@ -112,6 +125,12 @@ export function transformProduct(product: Product): ProductForFrontend {
   // Aggregate all unique sizes from all variants
   const allSizes = new Set<string>()
   colorVariants.forEach((v) => v.sizes.forEach((s) => allSizes.add(s)))
+
+  // Fallback to top-level sizes if no variant sizes found
+  if (allSizes.size === 0 && product.sizes) {
+    product.sizes.forEach((s) => allSizes.add(s))
+  }
+
   const sizes = Array.from(allSizes)
 
   // Check if any variant is in stock

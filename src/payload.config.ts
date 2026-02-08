@@ -20,6 +20,7 @@ import { Homepage } from './globals/Homepage'
 import { PaymentMethods } from './globals/PaymentMethods'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
+import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -94,6 +95,8 @@ export default buildConfig({
     // Auto-push schema changes in dev environment
     // In production, use migrations instead
     push: process.env.PAYLOAD_PUSH_SCHEMA === 'true',
+    // Run migrations automatically on startup in production
+    prodMigrations: migrations,
   }),
   collections: [Pages, Posts, Media, Categories, Users, Products, Orders],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),

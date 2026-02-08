@@ -1,4 +1,5 @@
-import type { CollectionBeforeChangeHook, CollectionAfterChangeHook, Payload } from 'payload'
+import type { CollectionBeforeChangeHook, CollectionAfterChangeHook } from 'payload'
+import type { Product } from '@/payload-types'
 
 interface OrderItem {
   product: number | { id: number }
@@ -11,26 +12,6 @@ interface Order {
   id?: number
   items: OrderItem[]
   status: string
-}
-
-interface SizeInventoryItem {
-  id?: string
-  size: string
-  stock: number
-  lowStockThreshold?: number
-}
-
-interface ColorVariant {
-  id?: string
-  color: string
-  colorHex: string
-  sizeInventory?: SizeInventoryItem[]
-  images?: any[]
-}
-
-interface Product {
-  id: number
-  colorVariants?: ColorVariant[]
 }
 
 /**
@@ -50,11 +31,11 @@ export const validateStockBeforeOrder: CollectionBeforeChangeHook = async ({
 
   for (const item of items) {
     const productId = typeof item.product === 'object' ? item.product.id : item.product
-    const product = (await payload.findByID({
+    const product = await payload.findByID({
       collection: 'products',
       id: productId,
       depth: 0,
-    })) as Product
+    })
 
     if (!product) {
       throw new Error(`Product ${productId} not found`)
@@ -112,11 +93,11 @@ export const decrementStockAfterOrder: CollectionAfterChangeHook = async ({
     const productId = typeof item.product === 'object' ? item.product.id : item.product
 
     try {
-      const product = (await payload.findByID({
+      const product = await payload.findByID({
         collection: 'products',
         id: productId,
         depth: 0,
-      })) as Product
+      })
 
       if (!product || !product.colorVariants) continue
 
@@ -203,11 +184,11 @@ export const restoreStockOnCancel: CollectionAfterChangeHook = async ({
     const productId = typeof item.product === 'object' ? item.product.id : item.product
 
     try {
-      const product = (await payload.findByID({
+      const product = await payload.findByID({
         collection: 'products',
         id: productId,
         depth: 0,
-      })) as Product
+      })
 
       if (!product || !product.colorVariants) continue
 

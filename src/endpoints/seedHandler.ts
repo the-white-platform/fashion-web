@@ -14,7 +14,15 @@ export const seedHandler: PayloadHandler = async (req): Promise<Response> => {
   }
 
   if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const { totalDocs } = await payload.find({
+      collection: 'users',
+      limit: 0,
+      depth: 0,
+    })
+
+    if (totalDocs > 0) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   try {

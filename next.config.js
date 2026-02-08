@@ -23,6 +23,10 @@ const nextConfig = {
         hostname: 'images.unsplash.com',
         protocol: 'https',
       },
+      {
+        hostname: 'img.vietqr.io',
+        protocol: 'https',
+      },
     ],
   },
   reactStrictMode: true,

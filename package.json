@@ -14,12 +14,13 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "lint:fix": "cross-env NODE_OPTIONS=--no-deprecation next lint --fix",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
+    "migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "prepare": "node -e \"try { require('fs').accessSync('.git'); require('child_process').execSync('husky', { stdio: 'inherit' }); } catch(e) { console.log('Skipping husky: .git not found (Docker/CI environment)'); }\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "commit": "cz",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
     "release:patch": "standard-version --release-as patch",
@@ -111,9 +112,7 @@
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.19",
-    "commitizen": "^4.3.1",
     "copyfiles": "^2.4.1",
-    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^9.39.2",
     "eslint-config-next": "^15.5.8",
     "husky": "^9.1.7",
@@ -131,11 +130,6 @@
     "overrides": {
       "@types/react": "^19.0.3",
       "@types/react-dom": "^19.0.3"
-    }
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
     }
   }
 }

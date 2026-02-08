@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/useRouter'
 import { motion, AnimatePresence } from 'motion/react'
 import { Check, ChevronLeft, CreditCard, Truck, Package, Plus, Tag } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
@@ -13,10 +13,15 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/Link'
 
 type CheckoutStep = 'shipping' | 'payment' | 'review' | 'confirmation'
 
 export default function CheckoutPage() {
+  const t = useTranslations('checkout')
+  const tNav = useTranslations('nav')
+  const tCart = useTranslations('cart')
   const router = useRouter()
   const { items: cartItems, getTotalPrice, clearCart } = useCart()
   const { user, updateProfile } = useUser()
@@ -51,10 +56,18 @@ export default function CheckoutPage() {
     WELCOME10: {
       type: 'percentage',
       value: 10,
-      description: 'Giảm 10% cho đơn hàng đầu',
+      description: t('WELCOME10_desc', { defaultMessage: 'Giảm 10% cho đơn hàng đầu' }),
     },
-    FREESHIP: { type: 'shipping', value: 0, description: 'Miễn phí vận chuyển' },
-    SAVE50K: { type: 'fixed', value: 50000, description: 'Giảm 50.000₫' },
+    FREESHIP: {
+      type: 'shipping',
+      value: 0,
+      description: t('FREESHIP_desc', { defaultMessage: 'Miễn phí vận chuyển' }),
+    },
+    SAVE50K: {
+      type: 'fixed',
+      value: 50000,
+      description: t('SAVE50K_desc', { defaultMessage: 'Giảm 50.000₫' }),
+    },
   }
 
   const calculateSubtotal = () => getTotalPrice()
@@ -77,7 +90,7 @@ export default function CheckoutPage() {
       setAppliedCoupon({ code: couponCode.toUpperCase(), ...coupon })
       setCouponError('')
     } else {
-      setCouponError('Mã giảm giá không hợp lệ')
+      setCouponError(t('invalidCoupon'))
       setAppliedCoupon(null)
     }
   }
@@ -88,13 +101,17 @@ export default function CheckoutPage() {
     setCouponError('')
   }
 
-  const handleCompleteOrder = () => {
-    const newOrderId = `TW${Date.now()}`
-    setOrderId(newOrderId)
+  // Pre-generate order ID if not exists
+  useEffect(() => {
+    if (!orderId) {
+      setOrderId(`TW${Date.now()}`)
+    }
+  }, [orderId])
 
+  const handleCompleteOrder = () => {
     // Add to order history
     const newOrder = {
-      id: newOrderId,
+      id: orderId,
       date: new Date().toISOString(),
       status: 'processing' as const,
       total: calculateTotal(),
@@ -120,9 +137,9 @@ export default function CheckoutPage() {
   }
 
   const steps: Array<{ id: CheckoutStep; label: string; icon: any }> = [
-    { id: 'shipping', label: 'Giao Hàng', icon: Truck },
-    { id: 'payment', label: 'Thanh Toán', icon: CreditCard },
-    { id: 'review', label: 'Xác Nhận', icon: Package },
+    { id: 'shipping', label: t('shipping'), icon: Truck },
+    { id: 'payment', label: t('payment'), icon: CreditCard },
+    { id: 'review', label: t('review'), icon: Package },
   ]
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep)
@@ -133,12 +150,10 @@ export default function CheckoutPage() {
         <div className="container mx-auto px-6 max-w-2xl">
           <div className="text-center py-12">
             <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <h2 className="text-2xl uppercase tracking-wide mb-3">Giỏ Hàng Trống</h2>
-            <p className="text-muted-foreground mb-8">
-              Bạn cần thêm sản phẩm vào giỏ hàng trước khi thanh toán
-            </p>
+            <h2 className="text-2xl uppercase tracking-wide mb-3">{tCart('empty')}</h2>
+            <p className="text-muted-foreground mb-8">{tCart('emptyDesc')}</p>
             <Button onClick={() => router.push('/products')} size="lg">
-              Tiếp Tục Mua Sắm
+              {tCart('continueShopping')}
             </Button>
           </div>
         </div>
@@ -152,7 +167,7 @@ export default function CheckoutPage() {
         {/* Back Button */}
         <Button variant="ghost" onClick={() => router.back()} className="mb-8">
           <ChevronLeft className="w-5 h-5 mr-2" />
-          <span>Quay lại giỏ hàng</span>
+          <span>{t('backToCart')}</span>
         </Button>
 
         {currentStep !== 'confirmation' && (
@@ -227,6 +242,8 @@ export default function CheckoutPage() {
                       onSelectPayment={setSelectedPayment}
                       showNewPayment={showNewPayment}
                       onToggleNewPayment={() => setShowNewPayment(!showNewPayment)}
+                      total={calculateTotal()}
+                      orderId={orderId}
                       onBack={() => setCurrentStep('shipping')}
                       onNext={() => setCurrentStep('review')}
                     />
@@ -254,7 +271,7 @@ export default function CheckoutPage() {
               {/* Order Summary Sidebar */}
               <div className="lg:col-span-1">
                 <div className="bg-card border border-border rounded-sm p-6 sticky top-24">
-                  <h3 className="text-xl uppercase tracking-wide mb-6">Đơn Hàng</h3>
+                  <h3 className="text-xl uppercase tracking-wide mb-6">{t('orderSummary')}</h3>
 
                   {/* Cart Items */}
                   <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
@@ -284,17 +301,17 @@ export default function CheckoutPage() {
                   <div className="mb-6 pb-6 border-b border-border">
                     {!appliedCoupon ? (
                       <div className="space-y-2">
-                        <Label className="text-sm uppercase tracking-wide">Mã Giảm Giá</Label>
+                        <Label className="text-sm uppercase tracking-wide">{t('couponCode')}</Label>
                         <div className="flex gap-2">
                           <Input
                             type="text"
                             value={couponCode}
                             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                            placeholder="Nhập mã"
+                            placeholder={t('couponPlaceholder')}
                             className="flex-1 text-sm"
                           />
                           <Button onClick={applyCoupon} size="sm">
-                            Áp Dụng
+                            {t('apply')}
                           </Button>
                         </div>
                         {couponError && <p className="text-xs text-red-600">{couponError}</p>}
@@ -316,7 +333,7 @@ export default function CheckoutPage() {
                           onClick={removeCoupon}
                           className="text-red-600 hover:text-red-700"
                         >
-                          Xóa
+                          {t('remove')}
                         </Button>
                       </div>
                     )}
@@ -325,14 +342,14 @@ export default function CheckoutPage() {
                   {/* Price Breakdown */}
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Tạm tính</span>
+                      <span className="text-muted-foreground">{t('subtotal')}</span>
                       <span>{calculateSubtotal().toLocaleString('vi-VN')}₫</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Phí vận chuyển</span>
+                      <span className="text-muted-foreground">{t('shippingFee')}</span>
                       <span>
                         {calculateShipping() === 0 ? (
-                          <span className="text-green-600">Miễn phí</span>
+                          <span className="text-green-600">{t('free')}</span>
                         ) : (
                           `${calculateShipping().toLocaleString('vi-VN')}₫`
                         )}
@@ -340,12 +357,12 @@ export default function CheckoutPage() {
                     </div>
                     {appliedCoupon && calculateDiscount() > 0 && (
                       <div className="flex justify-between text-sm text-green-600">
-                        <span>Giảm giá</span>
+                        <span>{t('discount')}</span>
                         <span>-{calculateDiscount().toLocaleString('vi-VN')}₫</span>
                       </div>
                     )}
                     <div className="pt-3 border-t border-border flex justify-between">
-                      <span className="uppercase tracking-wide">Tổng cộng</span>
+                      <span className="uppercase tracking-wide">{t('total')}</span>
                       <span className="text-xl font-bold">
                         {calculateTotal().toLocaleString('vi-VN')}₫
                       </span>
@@ -369,6 +386,7 @@ export default function CheckoutPage() {
           <ConfirmationStep
             orderId={orderId}
             total={calculateTotal()}
+            selectedPayment={selectedPayment}
             onViewOrders={() => router.push('/orders')}
             onContinueShopping={() => router.push('/products')}
           />
@@ -387,6 +405,7 @@ function ShippingStep({
   onToggleNewAddress,
   onNext,
 }: any) {
+  const t = useTranslations('checkout')
   const [newAddress, setNewAddress] = useState({
     fullName: '',
     phone: '',
@@ -398,12 +417,12 @@ function ShippingStep({
 
   const handleNext = () => {
     if (!selectedAddress && !showNewAddress) {
-      alert('Vui lòng chọn địa chỉ giao hàng')
+      alert(t('address'))
       return
     }
     if (showNewAddress) {
       if (!newAddress.fullName || !newAddress.phone || !newAddress.address || !newAddress.city) {
-        alert('Vui lòng điền đầy đủ thông tin địa chỉ')
+        alert(t('address'))
         return
       }
       onSelectAddress(newAddress)
@@ -418,7 +437,7 @@ function ShippingStep({
       exit={{ opacity: 0, x: -20 }}
       className="bg-card border border-border rounded-sm p-8"
     >
-      <h2 className="text-2xl uppercase tracking-wide mb-6">Địa Chỉ Giao Hàng</h2>
+      <h2 className="text-2xl uppercase tracking-wide mb-6">{t('shipping')}</h2>
 
       {/* Saved Addresses */}
       {user?.shippingAddresses && user.shippingAddresses.length > 0 && !showNewAddress && (
@@ -446,7 +465,7 @@ function ShippingStep({
                     </p>
                     {address.isDefault && (
                       <Badge variant="secondary" className="mt-2">
-                        Mặc định
+                        {t('default')}
                       </Badge>
                     )}
                   </div>
@@ -461,53 +480,53 @@ function ShippingStep({
       {showNewAddress && (
         <div className="space-y-4 mb-6">
           <div>
-            <Label>Họ và tên *</Label>
+            <Label>{t('fullName')} *</Label>
             <Input
               value={newAddress.fullName}
               onChange={(e) => setNewAddress({ ...newAddress, fullName: e.target.value })}
-              placeholder="Nguyễn Văn A"
+              placeholder={t('namePlaceholder')}
               required
             />
           </div>
           <div>
-            <Label>Số điện thoại *</Label>
+            <Label>{t('phone')} *</Label>
             <Input
               value={newAddress.phone}
               onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
-              placeholder="0901234567"
+              placeholder={t('phonePlaceholder')}
               required
             />
           </div>
           <div>
-            <Label>Địa chỉ *</Label>
+            <Label>{t('address')} *</Label>
             <Input
               value={newAddress.address}
               onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
-              placeholder="Số nhà, tên đường"
+              placeholder={t('addressPlaceholder')}
               required
             />
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <Label>Phường/Xã</Label>
+              <Label>{t('ward')}</Label>
               <Input
                 value={newAddress.ward}
                 onChange={(e) => setNewAddress({ ...newAddress, ward: e.target.value })}
               />
             </div>
             <div>
-              <Label>Quận/Huyện</Label>
+              <Label>{t('district')}</Label>
               <Input
                 value={newAddress.district}
                 onChange={(e) => setNewAddress({ ...newAddress, district: e.target.value })}
               />
             </div>
             <div>
-              <Label>Thành phố *</Label>
+              <Label>{t('city')} *</Label>
               <Input
                 value={newAddress.city}
                 onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                placeholder="Hà Nội"
+                placeholder={t('cityPlaceholder')}
                 required
               />
             </div>
@@ -519,13 +538,13 @@ function ShippingStep({
       {user?.shippingAddresses && user.shippingAddresses.length > 0 && (
         <Button variant="ghost" onClick={onToggleNewAddress} className="mb-6">
           <Plus className="w-4 h-4 mr-2" />
-          {showNewAddress ? 'Chọn địa chỉ có sẵn' : 'Thêm địa chỉ mới'}
+          {showNewAddress ? t('useSavedAddress') : t('addNewAddress')}
         </Button>
       )}
 
       {/* Action Button */}
       <Button onClick={handleNext} className="w-full" size="lg">
-        Tiếp Tục
+        {t('next')}
       </Button>
     </motion.div>
   )
@@ -538,11 +557,14 @@ function PaymentStep({
   onSelectPayment,
   showNewPayment,
   onToggleNewPayment,
+  total,
+  orderId,
   onBack,
   onNext,
 }: any) {
+  const t = useTranslations('checkout')
   const [newPayment, setNewPayment] = useState({
-    type: 'card' as 'card' | 'bank' | 'momo' | 'cod',
+    type: 'bank' as 'bank' | 'cod',
     cardNumber: '',
     cardName: '',
     expiryDate: '',
@@ -551,16 +573,10 @@ function PaymentStep({
 
   const handleNext = () => {
     if (!selectedPayment && !showNewPayment) {
-      alert('Vui lòng chọn phương thức thanh toán')
+      alert(t('selectPayment'))
       return
     }
-    if (showNewPayment && newPayment.type === 'card') {
-      if (!newPayment.cardNumber || !newPayment.cardName || !newPayment.expiryDate) {
-        alert('Vui lòng điền đầy đủ thông tin thẻ')
-        return
-      }
-      onSelectPayment(newPayment)
-    } else if (showNewPayment) {
+    if (showNewPayment) {
       onSelectPayment(newPayment)
     }
     onNext()
@@ -573,7 +589,7 @@ function PaymentStep({
       exit={{ opacity: 0, x: -20 }}
       className="bg-card border border-border rounded-sm p-8"
     >
-      <h2 className="text-2xl uppercase tracking-wide mb-6">Phương Thức Thanh Toán</h2>
+      <h2 className="text-2xl uppercase tracking-wide mb-6">{t('payment')}</h2>
 
       {/* Saved Payment Methods */}
       {user?.paymentMethods && user.paymentMethods.length > 0 && !showNewPayment && (
@@ -592,10 +608,10 @@ function PaymentStep({
                   <RadioGroupItem value={String(index)} checked={selectedPayment === method} />
                   <div>
                     <p className="font-semibold">
-                      {method.type === 'card' && '💳 Thẻ tín dụng/ghi nợ'}
-                      {method.type === 'bank' && '🏦 Chuyển khoản ngân hàng'}
-                      {method.type === 'cod' && '💵 Thanh toán khi nhận hàng'}
-                      {method.type === 'momo' && '📱 Ví MoMo'}
+                      {method.type === 'card' && `💳 ${t('paymentMethods.card')}`}
+                      {method.type === 'bank' && `🏦 ${t('paymentMethods.bank')}`}
+                      {method.type === 'cod' && `💵 ${t('paymentMethods.cod')}`}
+                      {method.type === 'momo' && `📱 ${t('paymentMethods.momo')}`}
                     </p>
                     {method.type === 'card' && method.cardNumber && (
                       <p className="text-sm text-muted-foreground">
@@ -604,7 +620,7 @@ function PaymentStep({
                     )}
                     {method.isDefault && (
                       <Badge variant="secondary" className="mt-1">
-                        Mặc định
+                        {t('default')}
                       </Badge>
                     )}
                   </div>
@@ -620,7 +636,7 @@ function PaymentStep({
         <div className="space-y-4 mb-6">
           {/* Payment Type Selection */}
           <div className="grid grid-cols-2 gap-3">
-            {['card', 'bank', 'momo', 'cod'].map((type) => (
+            {['bank', 'cod'].map((type) => (
               <Button
                 key={type}
                 variant={newPayment.type === type ? 'default' : 'outline'}
@@ -628,92 +644,64 @@ function PaymentStep({
                 className="p-4 h-auto flex-col"
               >
                 <span className="text-lg mb-1">
-                  {type === 'card' && '💳'}
-                  {type === 'bank' && '🏦'}
-                  {type === 'momo' && '📱'}
-                  {type === 'cod' && '💵'}
+                  {type === 'card' && '💳 Thẻ'}
+                  {type === 'bank' && '🏦 QR'}
+                  {type === 'momo' && '📱 MoMo'}
+                  {type === 'cod' && '💵 COD'}
                 </span>
                 <span className="text-sm">
-                  {type === 'card' && 'Thẻ'}
-                  {type === 'bank' && 'Chuyển khoản'}
-                  {type === 'momo' && 'MoMo'}
-                  {type === 'cod' && 'COD'}
+                  {type === 'bank' && t('paymentMethods.bank')}
+                  {type === 'cod' && t('paymentMethods.cod')}
                 </span>
               </Button>
             ))}
           </div>
 
-          {/* Card Details */}
-          {newPayment.type === 'card' && (
-            <div className="space-y-4 pt-4">
-              <div>
-                <Label>Số thẻ *</Label>
-                <Input
-                  value={newPayment.cardNumber}
-                  onChange={(e) => setNewPayment({ ...newPayment, cardNumber: e.target.value })}
-                  placeholder="1234 5678 9012 3456"
-                  maxLength={19}
-                />
-              </div>
-              <div>
-                <Label>Tên trên thẻ *</Label>
-                <Input
-                  value={newPayment.cardName}
-                  onChange={(e) => setNewPayment({ ...newPayment, cardName: e.target.value })}
-                  placeholder="NGUYEN VAN A"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Ngày hết hạn *</Label>
-                  <Input
-                    value={newPayment.expiryDate}
-                    onChange={(e) => setNewPayment({ ...newPayment, expiryDate: e.target.value })}
-                    placeholder="MM/YY"
-                    maxLength={5}
-                  />
-                </div>
-                <div>
-                  <Label>CVV *</Label>
-                  <Input
-                    value={newPayment.cvv}
-                    onChange={(e) => setNewPayment({ ...newPayment, cvv: e.target.value })}
-                    placeholder="123"
-                    maxLength={3}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           {newPayment.type === 'bank' && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-sm p-4 text-blue-600 dark:text-blue-400">
-              <p className="text-sm mb-2">Chuyển khoản đến:</p>
-              <p className="text-sm">
-                <strong>Ngân hàng:</strong> Vietcombank
-              </p>
-              <p className="text-sm">
-                <strong>Số tài khoản:</strong> 1234567890
-              </p>
-              <p className="text-sm">
-                <strong>Chủ tài khoản:</strong> CONG TY THEWHITE
-              </p>
-            </div>
-          )}
-
-          {newPayment.type === 'momo' && (
-            <div className="bg-pink-500/10 border border-pink-500/20 rounded-sm p-4 text-pink-600 dark:text-pink-400">
-              <p className="text-sm">
-                Bạn sẽ được chuyển đến ứng dụng MoMo để hoàn tất thanh toán.
+            <div className="bg-primary/5 border border-primary/20 rounded-sm p-6 text-primary">
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="bg-white p-4 rounded-lg shadow-sm shrink-0">
+                  <Image
+                    src={`https://img.vietqr.io/image/VCB-kanetran29-compact2.png?amount=${total}&addInfo=${orderId}&accountName=KANE%20TRAN`}
+                    alt="VietQR"
+                    width={280}
+                    height={280}
+                    className="object-contain"
+                  />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <p className="text-sm mb-3 font-bold uppercase tracking-wider text-primary">
+                    🏦 {t('bankTransferQR')}
+                  </p>
+                  <div className="space-y-1 text-sm text-foreground">
+                    <p>
+                      <span className="text-muted-foreground">{t('bank')}:</span>{' '}
+                      <strong>Vietcombank</strong>
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">{t('accountNumber')}:</span>{' '}
+                      <strong>kanetran29</strong>
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">{t('amount')}:</span>{' '}
+                      <strong>{total.toLocaleString('vi-VN')}₫</strong>
+                    </p>
+                    <p className="p-2 bg-primary/10 rounded-sm mt-2 font-mono text-xs border border-primary/20">
+                      <span className="text-muted-foreground">{t('content')}:</span>{' '}
+                      <strong>{orderId}</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[10px] mt-4 italic text-muted-foreground text-center">
+                {t('qrNote')}
               </p>
             </div>
           )}
 
           {newPayment.type === 'cod' && (
             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-sm p-4 text-yellow-600 dark:text-yellow-500">
-              <p className="text-sm">
-                Thanh toán bằng tiền mặt khi nhận hàng. Vui lòng chuẩn bị đúng số tiền.
-              </p>
+              <p className="text-sm">{t('codNote')}</p>
             </div>
           )}
         </div>
@@ -723,17 +711,17 @@ function PaymentStep({
       {user?.paymentMethods && user.paymentMethods.length > 0 && (
         <Button variant="ghost" onClick={onToggleNewPayment} className="mb-6">
           <Plus className="w-4 h-4 mr-2" />
-          {showNewPayment ? 'Chọn phương thức có sẵn' : 'Thêm phương thức mới'}
+          {showNewPayment ? t('useSavedPayment') : t('addNewPayment')}
         </Button>
       )}
 
       {/* Action Buttons */}
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1">
-          Quay Lại
+          {t('back')}
         </Button>
         <Button onClick={handleNext} className="flex-1">
-          Tiếp Tục
+          {t('next')}
         </Button>
       </div>
     </motion.div>
@@ -755,6 +743,7 @@ function ReviewStep({
   onBack,
   onComplete,
 }: any) {
+  const t = useTranslations('checkout')
   return (
     <motion.div
       initial={{ opacity: 0, x: 20 }}
@@ -764,7 +753,9 @@ function ReviewStep({
     >
       {/* Order Items */}
       <div className="bg-card border border-border rounded-sm p-6">
-        <h3 className="text-xl uppercase tracking-wide mb-4">Sản Phẩm ({cartItems.length})</h3>
+        <h3 className="text-xl uppercase tracking-wide mb-4">
+          {t('items')} ({cartItems.length})
+        </h3>
         <div className="space-y-4">
           {cartItems.map((item: any, index: number) => (
             <div key={index} className="flex gap-4 pb-4 border-b border-border last:border-0">
@@ -779,8 +770,12 @@ function ReviewStep({
               </div>
               <div className="flex-1">
                 <p className="mb-1">{item.name}</p>
-                <p className="text-sm text-muted-foreground">Size: {item.size}</p>
-                <p className="text-sm text-muted-foreground">Số lượng: {item.quantity}</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('size')}: {item.size}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t('quantity')}: {item.quantity}
+                </p>
               </div>
               <div className="text-right">
                 <p>{(item.price * item.quantity).toLocaleString('vi-VN')}₫</p>
@@ -792,7 +787,7 @@ function ReviewStep({
 
       {/* Shipping Address */}
       <div className="bg-card border border-border rounded-sm p-6">
-        <h3 className="text-xl uppercase tracking-wide mb-4">Địa Chỉ Giao Hàng</h3>
+        <h3 className="text-xl uppercase tracking-wide mb-4">{t('shipping')}</h3>
         {selectedAddress && (
           <div>
             <p className="font-semibold mb-1">{selectedAddress.fullName}</p>
@@ -809,14 +804,14 @@ function ReviewStep({
 
       {/* Payment Method */}
       <div className="bg-card border border-border rounded-sm p-6">
-        <h3 className="text-xl uppercase tracking-wide mb-4">Phương Thức Thanh Toán</h3>
+        <h3 className="text-xl uppercase tracking-wide mb-4">{t('payment')}</h3>
         {selectedPayment && (
           <div>
             <p className="font-semibold">
-              {selectedPayment.type === 'card' && '💳 Thẻ tín dụng/ghi nợ'}
-              {selectedPayment.type === 'bank' && '🏦 Chuyển khoản ngân hàng'}
-              {selectedPayment.type === 'cod' && '💵 Thanh toán khi nhận hàng'}
-              {selectedPayment.type === 'momo' && '📱 Ví MoMo'}
+              {selectedPayment.type === 'card' && `💳 ${t('paymentMethods.card')}`}
+              {selectedPayment.type === 'bank' && `🏦 ${t('paymentMethods.bank')}`}
+              {selectedPayment.type === 'cod' && `💵 ${t('paymentMethods.cod')}`}
+              {selectedPayment.type === 'momo' && `📱 ${t('paymentMethods.momo')}`}
             </p>
             {selectedPayment.type === 'card' && selectedPayment.cardNumber && (
               <p className="text-sm text-muted-foreground">
@@ -829,11 +824,11 @@ function ReviewStep({
 
       {/* Order Notes */}
       <div className="bg-card border border-border rounded-sm p-6">
-        <h3 className="text-xl uppercase tracking-wide mb-4">Ghi Chú Đơn Hàng</h3>
+        <h3 className="text-xl uppercase tracking-wide mb-4">{t('orderNotes')}</h3>
         <Textarea
           value={orderNotes}
           onChange={(e) => onNotesChange(e.target.value)}
-          placeholder="Ghi chú về đơn hàng (tùy chọn)"
+          placeholder={t('orderNotesPlaceholder')}
           rows={4}
         />
       </div>
@@ -841,10 +836,10 @@ function ReviewStep({
       {/* Action Buttons */}
       <div className="flex gap-3">
         <Button variant="outline" onClick={onBack} className="flex-1">
-          Quay Lại
+          {t('back')}
         </Button>
         <Button onClick={onComplete} className="flex-1" size="lg">
-          Đặt Hàng
+          {t('placeOrder')}
         </Button>
       </div>
     </motion.div>
@@ -855,14 +850,21 @@ function ReviewStep({
 function ConfirmationStep({
   orderId,
   total,
+  selectedPayment,
   onViewOrders,
   onContinueShopping,
 }: {
   orderId: string
   total: number
+  selectedPayment: any
   onViewOrders: () => void
   onContinueShopping: () => void
 }) {
+  const t = useTranslations('checkout')
+  const tNav = useTranslations('nav')
+  const isBankTransfer = selectedPayment?.type === 'bank'
+  const qrUrl = `https://img.vietqr.io/image/VCB-kanetran29-compact2.png?amount=${total}&addInfo=${orderId}&accountName=KANE%20TRAN`
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -873,35 +875,83 @@ function ConfirmationStep({
         <Check className="w-10 h-10 text-green-500" />
       </div>
 
-      <h1 className="text-3xl uppercase tracking-wide mb-4">Đặt Hàng Thành Công!</h1>
-      <p className="text-muted-foreground mb-8">
-        Cảm ơn bạn đã mua hàng tại TheWhite. Chúng tôi sẽ xử lý đơn hàng của bạn ngay lập tức.
-      </p>
+      <h1 className="text-3xl uppercase tracking-wide mb-4">{t('success')}</h1>
+      <p className="text-muted-foreground mb-8">{t('successDesc')}</p>
+
+      {isBankTransfer && (
+        <div className="bg-card border-2 border-primary/20 rounded-sm p-8 mb-8 shadow-xl">
+          <h2 className="text-xl uppercase tracking-widest mb-6 font-bold flex items-center justify-center gap-2">
+            <span className="w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center rounded-full text-xs">
+              1
+            </span>
+            {t('qrTitle')}
+          </h2>
+
+          <div className="flex flex-col md:flex-row items-center gap-10 justify-center mb-6">
+            <div className="bg-white p-6 rounded-lg shadow-inner">
+              <Image
+                src={qrUrl}
+                alt="QR Code thanh toán"
+                width={320}
+                height={320}
+                className="mx-auto"
+              />
+            </div>
+            <div className="text-left space-y-4 max-w-xs">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+                  {t('accountHolder')}
+                </p>
+                <p className="font-bold uppercase tracking-wide">KANE TRAN</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+                  {t('accountNumber')}
+                </p>
+                <p className="font-bold text-lg">kanetran29</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+                  {t('bank')}
+                </p>
+                <p className="font-bold">Vietcombank (VCB)</p>
+              </div>
+              <div className="p-3 bg-muted rounded-sm border border-border">
+                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
+                  {t('content')}
+                </p>
+                <p className="font-mono font-bold text-primary">{orderId}</p>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground italic">{t('qrNote')}</p>
+        </div>
+      )}
 
       <div className="bg-card border border-border rounded-sm p-6 mb-8">
         <div className="grid md:grid-cols-2 gap-4 text-left">
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Mã đơn hàng</p>
+            <p className="text-sm text-muted-foreground mb-1">{t('orderId')}</p>
             <p className="text-xl font-bold">{orderId}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground mb-1">Tổng tiền</p>
+            <p className="text-sm text-muted-foreground mb-1">{t('total')}</p>
             <p className="text-xl font-bold">{total.toLocaleString('vi-VN')}₫</p>
           </div>
         </div>
       </div>
 
       <div className="space-y-3 mb-8 text-muted-foreground">
-        <p className="text-sm">📧 Chúng tôi đã gửi email xác nhận đến địa chỉ email của bạn</p>
-        <p className="text-sm">📦 Bạn có thể theo dõi đơn hàng trong trang Đơn Hàng Của Tôi</p>
+        <p className="text-sm">📧 {t('successEmail')}</p>
+        <p className="text-sm">📦 {t('successTrack')}</p>
       </div>
 
       <div className="flex gap-3">
         <Button variant="outline" onClick={onContinueShopping} className="flex-1" size="lg">
-          Tiếp Tục Mua Sắm
+          {tNav('products')}
         </Button>
         <Button onClick={onViewOrders} className="flex-1" size="lg">
-          Xem Đơn Hàng
+          {t('viewOrders')}
         </Button>
       </div>
     </motion.div>

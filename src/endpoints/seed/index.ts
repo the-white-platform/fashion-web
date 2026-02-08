@@ -48,6 +48,35 @@ export const seed = async ({
     }
   }
 
+  // 1.5 Create admin user
+  payload.logger.info('— Creating admin user...')
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@thewhite.vn'
+  const adminPassword = process.env.ADMIN_PASSWORD || 'TheWhite@2024'
+  const adminName = process.env.ADMIN_NAME || 'Admin'
+
+  const { totalDocs: userExists } = await payload.find({
+    collection: 'users',
+    where: {
+      email: {
+        equals: adminEmail,
+      },
+    },
+  })
+
+  if (userExists === 0) {
+    await payload.create({
+      collection: 'users',
+      data: {
+        name: adminName,
+        email: adminEmail,
+        password: adminPassword,
+      },
+    })
+    payload.logger.info(`  ✓ Created admin user: ${adminEmail}`)
+  } else {
+    payload.logger.info('  ✓ Admin user already exists')
+  }
+
   // 2. Create categories (Vietnamese + English)
   payload.logger.info(`— Creating ${categorySeedData.length} categories...`)
   const categoryMap: Record<string, number> = {}
@@ -391,6 +420,105 @@ export const seed = async ({
   payload.logger.info(
     `  ✓ Quick filters configured: vi: ${quickFiltersBase.map((f) => f.label).join(', ')} | en: ${englishLabels.slice(0, quickFiltersBase.length).join(', ')}`,
   )
+
+  // 6. Configure Payment Methods
+  payload.logger.info(`— Configuring payment methods (QR & COD)...`)
+
+  await payload.updateGlobal({
+    slug: 'payment-methods',
+    locale: 'vi',
+    data: {
+      cod: {
+        enabled: true,
+        name: 'Thanh toán khi nhận hàng',
+        description: 'Thanh toán bằng tiền mặt khi nhận hàng. Vui lòng chuẩn bị đúng số tiền.',
+        sortOrder: 1,
+      },
+      bankTransfer: {
+        enabled: true,
+        name: 'Chuyển khoản ngân hàng / QR',
+        description: 'Chuyển khoản nhanh qua mã VietQR hoặc số tài khoản.',
+        bankName: 'Vietcombank',
+        accountNumber: 'kanetran29',
+        accountName: 'KANE TRAN',
+        sortOrder: 2,
+      },
+      qrCode: { enabled: false },
+      vnpay: { enabled: false },
+      stripe: { enabled: false },
+      momo: { enabled: false },
+    },
+  })
+
+  await payload.updateGlobal({
+    slug: 'payment-methods',
+    locale: 'en',
+    data: {
+      cod: {
+        name: 'Cash on Delivery',
+        description: 'Cash on delivery. Please prepare the exact amount.',
+      },
+      bankTransfer: {
+        name: 'Bank Transfer / QR',
+        description: 'Fast transfer via VietQR or account number.',
+      },
+    },
+  })
+
+  payload.logger.info(`  ✓ Payment methods configured`)
+
+  // 7. Configure Footer
+  payload.logger.info(`— Configuring footer navigation...`)
+
+  const footerLinksVi = [
+    { label: 'Về Chúng Tôi', url: '/about' },
+    { label: 'Chính Sách Vận Chuyển', url: '/delivery' },
+    { label: 'Chính Sách Đổi Trả', url: '/returns' },
+    { label: 'Điều Khoản Dịch Vụ', url: '/terms' },
+    { label: 'Chính Sách Bảo Mật', url: '/privacy' },
+    { label: 'Liên Hệ', url: '/contact' },
+  ]
+
+  const footerLinksEn = [
+    { label: 'About Us', url: '/about' },
+    { label: 'Delivery Policy', url: '/delivery' },
+    { label: 'Returns Policy', url: '/returns' },
+    { label: 'Terms of Service', url: '/terms' },
+    { label: 'Privacy Policy', url: '/privacy' },
+    { label: 'Contact Us', url: '/contact' },
+  ]
+
+  await payload.updateGlobal({
+    slug: 'footer',
+    locale: 'vi',
+    data: {
+      navItems: footerLinksVi.map((link) => ({
+        link: {
+          type: 'custom' as const,
+          label: link.label,
+          url: link.url,
+          newTab: false,
+        },
+      })),
+    },
+  })
+
+  await payload.updateGlobal({
+    slug: 'footer',
+    locale: 'en',
+    data: {
+      navItems: footerLinksEn.map((link) => ({
+        link: {
+          type: 'custom' as const,
+          label: link.label,
+          url: link.url,
+          newTab: false,
+        },
+      })),
+    },
+  })
+
+  payload.logger.info(`  ✓ Footer configured`)
 
   payload.logger.info('✅ Database seeding completed!')
 }

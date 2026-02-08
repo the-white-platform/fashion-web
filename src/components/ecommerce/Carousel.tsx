@@ -103,12 +103,12 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
               ? (slide as any).backgroundImage?.url ||
                 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=3270&auto=format&fit=crop'
               : (slide as any).image
-            const slideTitle = isCmsSlide ? (slide as any).title : t((slide as any).titleKey)
-            const slideSubtitle = isCmsSlide
-              ? (slide as any).subtitle
-              : t((slide as any).subtitleKey)
-            const slideCta = isCmsSlide ? (slide as any).ctaText : t((slide as any).ctaKey)
-            const slideLink = isCmsSlide ? (slide as any).ctaLink : (slide as any).link
+            const slideTitle =
+              (isCmsSlide ? (slide as any).title : t((slide as any).titleKey)) || ''
+            const slideSubtitle =
+              (isCmsSlide ? (slide as any).subtitle : t((slide as any).subtitleKey)) || ''
+            const slideCta = (isCmsSlide ? (slide as any).ctaText : t((slide as any).ctaKey)) || ''
+            const slideLink = (isCmsSlide ? (slide as any).ctaLink : (slide as any).link) || '#'
 
             return (
               <div
