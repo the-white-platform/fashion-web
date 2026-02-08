@@ -14,18 +14,17 @@
     "lint": "cross-env NODE_OPTIONS=--no-deprecation next lint",
     "lint:fix": "cross-env NODE_OPTIONS=--no-deprecation next lint --fix",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
+    "migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "prepare": "node -e \"try { require('fs').accessSync('.git'); require('child_process').execSync('husky', { stdio: 'inherit' }); } catch(e) { console.log('Skipping husky: .git not found (Docker/CI environment)'); }\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
-    "commit": "cz",
     "release": "standard-version",
     "release:minor": "standard-version --release-as minor",
     "release:patch": "standard-version --release-as patch",
-    "release:major": "standard-version --release-as major",
-    "release:first": "standard-version --first-release",
-    "prepare-release": "./scripts/prepare-release.sh"
+    "release:major": "standard-version --release-as major"
   },
   "dependencies": {
     "@google-cloud/tasks": "^6.2.1",
@@ -66,6 +65,7 @@
     "@radix-ui/react-toggle": "^1.1.2",
     "@radix-ui/react-toggle-group": "^1.1.2",
     "@radix-ui/react-tooltip": "^1.1.8",
+    "@types/nprogress": "^0.2.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -80,6 +80,7 @@
     "next": "^15.5.8",
     "next-intl": "^4.6.1",
     "next-themes": "^0.4.6",
+    "nprogress": "^0.2.0",
     "payload": "^3.68.3",
     "payload-admin-bar": "^1.0.6",
     "prism-react-renderer": "^2.3.1",
@@ -98,8 +99,6 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@commitlint/cli": "^20.2.0",
-    "@commitlint/config-conventional": "^20.2.0",
     "@next/eslint-plugin-next": "^15.5.8",
     "@payloadcms/eslint-config": "^3.28.0",
     "@tailwindcss/typography": "^0.5.13",
@@ -109,9 +108,7 @@
     "@types/react": "^19.0.3",
     "@types/react-dom": "^19.0.3",
     "autoprefixer": "^10.4.19",
-    "commitizen": "^4.3.1",
     "copyfiles": "^2.4.1",
-    "cz-conventional-changelog": "^3.3.0",
     "eslint": "^9.39.2",
     "eslint-config-next": "^15.5.8",
     "husky": "^9.1.7",
@@ -129,11 +126,6 @@
     "overrides": {
       "@types/react": "^19.0.3",
       "@types/react-dom": "^19.0.3"
-    }
-  },
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
     }
   }
 }

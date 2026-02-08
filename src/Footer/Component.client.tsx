@@ -1,7 +1,7 @@
 'use client'
 
 import { Facebook, Instagram, Youtube, Phone, Mail } from 'lucide-react'
-import { Link } from '@/i18n/routing'
+import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/Logo/Logo'
 
@@ -15,7 +15,7 @@ export function FooterClient() {
           {/* Brand */}
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block bg-black text-white px-4 py-2 mb-4">
-              <Logo showSlogan={false} className="items-start" />
+              <Logo showSlogan={false} className="items-start [&_img]:invert" />
             </Link>
             <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
               {t('footer.aboutDesc')}

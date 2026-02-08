@@ -8,14 +8,19 @@ import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
+import { Orders } from './collections/Orders'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
+import { Products } from './collections/Products'
 import { Users } from './collections/Users'
 import { seedHandler } from './endpoints/seedHandler'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { Homepage } from './globals/Homepage'
+import { PaymentMethods } from './globals/PaymentMethods'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
+import { migrations } from './migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -31,6 +36,20 @@ if (
 }
 
 export default buildConfig({
+  localization: {
+    locales: [
+      {
+        label: 'Vietnamese',
+        code: 'vi',
+      },
+      {
+        label: 'English',
+        code: 'en',
+      },
+    ],
+    defaultLocale: 'vi',
+    fallback: true,
+  },
   admin: {
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
@@ -73,8 +92,13 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URI || '',
     },
+    // Auto-push schema changes in dev environment
+    // In production, use migrations instead
+    push: process.env.PAYLOAD_PUSH_SCHEMA === 'true',
+    // Run migrations automatically on startup in production
+    prodMigrations: migrations,
   }),
-  collections: [Pages, Posts, Media, Categories, Users],
+  collections: [Pages, Posts, Media, Categories, Users, Products, Orders],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
   endpoints: [
     // The seed endpoint is used to populate the database with some example data
@@ -85,7 +109,7 @@ export default buildConfig({
       path: '/seed',
     },
   ],
-  globals: [Header, Footer],
+  globals: [Header, Footer, Homepage, PaymentMethods],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder

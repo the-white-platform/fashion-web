@@ -2,7 +2,7 @@
 
 import { Shield, Lock, Eye, UserCheck, FileText, Mail } from 'lucide-react'
 import { motion } from 'motion/react'
-import { Link } from '@/i18n/routing'
+import { Link } from '@/i18n/Link'
 import {
   Breadcrumb,
   BreadcrumbItem,

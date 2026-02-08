@@ -22,15 +22,22 @@ export const Media: CollectionConfig = {
     read: anyone,
     update: authenticated,
   },
+  labels: {
+    singular: { vi: 'Phương Tiện', en: 'Media' },
+    plural: { vi: 'Phương Tiện', en: 'Media' },
+  },
   fields: [
     {
       name: 'alt',
       type: 'text',
       required: true,
+      localized: true,
+      label: { vi: 'Văn bản thay thế', en: 'Alt Text' },
     },
     {
       name: 'caption',
       type: 'richText',
+      label: { vi: 'Chú thích', en: 'Caption' },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {
           return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]

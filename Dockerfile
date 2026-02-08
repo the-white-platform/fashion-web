@@ -41,15 +41,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=4096
 
-# Accept build arguments for secrets
+# Accept build arguments (used only during build, not persisted in image)
 ARG PAYLOAD_SECRET
 ARG DATABASE_URI
 ARG NEXT_PUBLIC_SERVER_URL
-
-# Set as environment variables for build
-ENV PAYLOAD_SECRET=${PAYLOAD_SECRET}
-ENV DATABASE_URI=${DATABASE_URI}
-ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
 
 # Skip type generation in Docker (not needed, saves time)
 # Generate Payload types and build Next.js with cache mounts
@@ -60,8 +55,11 @@ RUN --mount=type=cache,target=/app/.next/cache,id=nextjs-cache \
     pnpm run build
 
 # Production image, copy all the files and run next
-FROM base AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
+
+# Only install the minimal runtime dependency
+RUN apk add --no-cache libc6-compat
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

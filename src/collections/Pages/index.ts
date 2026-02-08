@@ -28,6 +28,10 @@ export const Pages: CollectionConfig = {
     read: authenticatedOrPublished,
     update: authenticated,
   },
+  labels: {
+    singular: { vi: 'Trang', en: 'Page' },
+    plural: { vi: 'Trang', en: 'Pages' },
+  },
   admin: {
     defaultColumns: ['title', 'slug', 'updatedAt'],
     livePreview: {
@@ -55,13 +59,15 @@ export const Pages: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
+      label: { vi: 'Tiêu đề', en: 'Title' },
     },
     {
       type: 'tabs',
       tabs: [
         {
           fields: [hero],
-          label: 'Hero',
+          label: { vi: 'Hero', en: 'Hero' },
         },
         {
           fields: [
@@ -70,9 +76,11 @@ export const Pages: CollectionConfig = {
               type: 'blocks',
               blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock],
               required: true,
+              localized: true,
+              label: { vi: 'Bố cục', en: 'Layout' },
             },
           ],
-          label: 'Content',
+          label: { vi: 'Nội dung', en: 'Content' },
         },
         {
           name: 'meta',
@@ -106,6 +114,7 @@ export const Pages: CollectionConfig = {
     {
       name: 'publishedAt',
       type: 'date',
+      label: { vi: 'Ngày xuất bản', en: 'Published At' },
       admin: {
         position: 'sidebar',
       },

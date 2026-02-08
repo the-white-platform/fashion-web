@@ -5,8 +5,24 @@ import { seed as seedScript } from '@/endpoints/seed'
 export const seedHandler: PayloadHandler = async (req): Promise<Response> => {
   const { payload, user } = req
 
+  // Prevent seeding in production
+  if (process.env.NODE_ENV === 'production') {
+    return Response.json(
+      { error: 'Seeding is disabled in production environment' },
+      { status: 403 },
+    )
+  }
+
   if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    const { totalDocs } = await payload.find({
+      collection: 'users',
+      limit: 0,
+      depth: 0,
+    })
+
+    if (totalDocs > 0) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 })
+    }
   }
 
   try {
@@ -15,7 +31,7 @@ export const seedHandler: PayloadHandler = async (req): Promise<Response> => {
 
     await seedScript({ payload, req })
 
-    // Finalise transactiojn
+    // Finalise transaction
     await commitTransaction(req)
 
     return Response.json({ success: true })
