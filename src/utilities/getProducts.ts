@@ -2,6 +2,8 @@ import type { Product, Category, Media } from '@/payload-types'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
+import { slugify } from '@/utilities/slugify'
+import { formatPrice } from '@/utilities/formatPrice'
 
 export interface ColorVariant {
   color: string
@@ -56,25 +58,12 @@ export function transformProduct(product: Product): ProductForFrontend {
   // Use first category as primary for display/compat
   const primaryCategory = categoriesData[0]
   const categoryName = primaryCategory?.title || 'Uncategorized'
-  const categorySlug = categoryName
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd')
-    .replace(/[^a-z0-9]+/g, '-')
+  const categorySlug = slugify(categoryName)
 
   // Get all category names
   const categories = categoriesData.map((c) => c.title)
 
   // Format price
-  const formatPrice = (price: number) => {
-    return (
-      new Intl.NumberFormat('vi-VN', {
-        minimumFractionDigits: 0,
-      }).format(price) + '₫'
-    )
-  }
-
   // Transform color variants
   const colorVariants: ColorVariant[] = ((product as any).colorVariants || []).map(
     (variant: any) => {
@@ -263,12 +252,7 @@ async function getCategories(locale?: string): Promise<CategoryForFrontend[]> {
 
       return {
         name: cat.title,
-        slug: cat.title
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/đ/g, 'd')
-          .replace(/[^a-z0-9]+/g, '-'),
+        slug: slugify(cat.title),
         count: products.totalDocs,
       }
     }),

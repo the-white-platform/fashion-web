@@ -6,6 +6,7 @@ import ProductsPageClient from './page.client'
 import type { ProductForFrontend, CategoryForFrontend } from '@/utilities/getProducts'
 import { transformProduct } from '@/utilities/getProducts'
 import { getTranslations } from 'next-intl/server'
+import { slugify } from '@/utilities/slugify'
 
 // Revalidate every 10 minutes
 export const revalidate = 600
@@ -58,12 +59,7 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
         .filter((cat) => categoryCounts.has(cat.title))
         .map((cat) => ({
           name: cat.title,
-          slug: cat.title
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/đ/g, 'd')
-            .replace(/[^a-z0-9]+/g, '-'),
+          slug: slugify(cat.title),
           count: categoryCounts.get(cat.title) || 0,
         })),
     ]

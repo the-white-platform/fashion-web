@@ -1,6 +1,8 @@
 // Product seed data for development environment with color variants
 // Uses placeholder images from Unsplash for dev only
 
+import { slugify } from '@/utilities/slugify'
+
 export interface SizeInventoryItem {
   size: string
   stock: number
@@ -206,13 +208,7 @@ function generateProducts(): ProductSeedData[] {
     for (let i = 0; i < 5 && productCount < 100; i++) {
       const variation = i === 0 ? '' : ` ${variations[i]}`
       const name = `${base.name}${variation}`
-      const slug = name
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '')
+      const slug = slugify(name)
 
       const priceVariation = 1 + i * 0.1
       const price = Math.round((base.price * priceVariation) / 10000) * 10000
