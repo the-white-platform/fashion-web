@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.8.2](https://github.com/the-white-platform/fashion-web/compare/v0.8.1...v0.8.2) (2026-02-09)
+
+
+### Code Refactoring
+
+* split release and deploy into separate triggers ([#22](https://github.com/the-white-platform/fashion-web/issues/22)) ([2353e11](https://github.com/the-white-platform/fashion-web/commit/2353e11da689239fb0e5d6ec7c58fc7112fe188c))
+
 ### [0.8.1](https://github.com/the-white-platform/fashion-web/compare/v0.8.0...v0.8.1) (2026-02-08)
 
 
