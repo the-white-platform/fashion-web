@@ -8,9 +8,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 import PageClient from './page.client'
 
-// During Docker build, database may not be available - make dynamic to avoid build failures
-// In production with database, this will still be cached via revalidate
-export const dynamic = 'force-dynamic'
+// Revalidate every 10 minutes
 export const revalidate = 600
 
 export default async function Page() {

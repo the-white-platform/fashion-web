@@ -15,8 +15,8 @@ import { generateMeta } from '@/utilities/generateMeta'
 import { isBuildMode } from '@/utilities/isBuildMode'
 import PageClient from './page.client'
 
-// During Docker build, database may not be available - make dynamic
-export const dynamic = 'force-dynamic'
+// Revalidate every 10 minutes
+export const revalidate = 600
 
 export async function generateStaticParams() {
   // Skip database queries during build time to avoid connection errors
