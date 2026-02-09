@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
     paths-ignore:
       - '**.md'
       - 'docs/**'
@@ -14,10 +16,6 @@ on:
       - '**.md'
       - 'docs/**'
   workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: write
@@ -34,6 +32,9 @@ jobs:
     name: Quality Checks
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    concurrency:
+      group: quality-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,8 +62,8 @@ jobs:
       - name: Type check
         run: npx tsc --noEmit
 
-  release-and-deploy:
-    name: Release & Deploy to Prod
+  release:
+    name: Release
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -146,6 +147,25 @@ jobs:
           name: Release ${{ steps.release.outputs.version }}
           generate_release_notes: true
 
+  deploy:
+    name: Deploy to Prod
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+      || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          else
+            echo "version=manual" >> $GITHUB_OUTPUT
+          fi
+
       - name: Authenticate to Google Cloud (WIF)
         id: auth
         uses: google-github-actions/auth@v2
@@ -160,10 +180,9 @@ jobs:
       - name: Build and push Docker image
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)
-          VERSION="${{ steps.release.outputs.version || '0.0.0' }}"
+          VERSION="${{ steps.version.outputs.version }}"
           IMAGE_BASE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}"
           IMAGE_SHA="$IMAGE_BASE:$SHORT_SHA"
-          IMAGE_VERSION="$IMAGE_BASE:$VERSION"
           IMAGE_LATEST="$IMAGE_BASE:latest"
 
           # Authenticate Docker to Artifact Registry
@@ -175,10 +194,13 @@ jobs:
           # Pull cache image (ignore failure if not found)
           docker pull "$IMAGE_LATEST" 2>/dev/null || true
 
+          TAGS="-t $IMAGE_SHA -t $IMAGE_LATEST"
+          if [ "$VERSION" != "manual" ]; then
+            TAGS="$TAGS -t $IMAGE_BASE:$VERSION"
+          fi
+
           docker build \
-            -t "$IMAGE_SHA" \
-            -t "$IMAGE_VERSION" \
-            -t "$IMAGE_LATEST" \
+            $TAGS \
             --build-arg NEXT_PUBLIC_SERVER_URL="" \
             --build-arg PAYLOAD_SECRET="dummy-secret-for-build" \
             --build-arg DATABASE_URI="postgres://dummy:dummy@localhost:5432/dummy" \
@@ -186,66 +208,7 @@ jobs:
             --cache-from "$IMAGE_LATEST" \
             .
 
-          docker push "$IMAGE_SHA"
-          docker push "$IMAGE_VERSION"
-          docker push "$IMAGE_LATEST"
-
-      - name: Deploy to Cloud Run
-        run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}:$SHORT_SHA"
-
-          gcloud run services update ${{ env.SERVICE_NAME }} \
-            --image "$IMAGE" \
-            --region="${{ env.REGION }}" \
-            --project="${{ env.PROD_PROJECT }}" \
-            --quiet
-
-  deploy:
-    name: Manual Deploy to Prod
-    runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Authenticate to Google Cloud (WIF)
-        id: auth
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ secrets.WIF_PROVIDER_PROD }}
-          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT_PROD }}
-          create_credentials_file: true
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Build and push Docker image
-        run: |
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          IMAGE_BASE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROD_PROJECT }}/${{ env.AR_REPO }}/${{ env.SERVICE_NAME }}"
-          IMAGE_SHA="$IMAGE_BASE:$SHORT_SHA"
-          IMAGE_LATEST="$IMAGE_BASE:latest"
-
-          ACCESS_TOKEN=$(gcloud auth print-access-token)
-          echo "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin ${{ env.REGION }}-docker.pkg.dev
-
-          export DOCKER_BUILDKIT=1
-
-          docker pull "$IMAGE_LATEST" 2>/dev/null || true
-
-          docker build \
-            -t "$IMAGE_SHA" \
-            -t "$IMAGE_LATEST" \
-            --build-arg NEXT_PUBLIC_SERVER_URL="" \
-            --build-arg PAYLOAD_SECRET="dummy-secret-for-build" \
-            --build-arg DATABASE_URI="postgres://dummy:dummy@localhost:5432/dummy" \
-            --build-arg BUILDKIT_INLINE_CACHE=1 \
-            --cache-from "$IMAGE_LATEST" \
-            .
-
-          docker push "$IMAGE_SHA"
-          docker push "$IMAGE_LATEST"
+          docker push --all-tags "$IMAGE_BASE"
 
       - name: Deploy to Cloud Run
         run: |
