@@ -1,8 +1,6 @@
 import type { Metadata } from 'next/types'
 
-import { CollectionArchive } from '@/components/CollectionArchive'
-import { PageRange } from '@/components/PageRange'
-import { Pagination } from '@/components/Pagination'
+import { PostsLayout, PostsEmptyLayout } from '@/components/PostsLayout'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
@@ -10,8 +8,7 @@ import PageClient from './page.client'
 import { notFound } from 'next/navigation'
 import { isBuildMode } from '@/utilities/isBuildMode'
 
-// During Docker build, database may not be available - make dynamic
-export const dynamic = 'force-dynamic'
+// Revalidate every 10 minutes
 export const revalidate = 600
 
 type Args = {
@@ -37,45 +34,18 @@ export default async function Page({ params: paramsPromise }: Args) {
     })
 
     return (
-      <div className="pt-24 pb-24">
+      <>
         <PageClient />
-        <div className="container mb-16">
-          <div className="prose dark:prose-invert max-w-none">
-            <h1>Posts</h1>
-          </div>
-        </div>
-
-        <div className="container mb-8">
-          <PageRange
-            collection="posts"
-            currentPage={posts.page}
-            limit={12}
-            totalDocs={posts.totalDocs}
-          />
-        </div>
-
-        <CollectionArchive posts={posts.docs} />
-
-        <div className="container">
-          {posts.totalPages > 1 && posts.page && (
-            <Pagination page={posts.page} totalPages={posts.totalPages} />
-          )}
-        </div>
-      </div>
+        <PostsLayout posts={posts} />
+      </>
     )
   } catch (error) {
-    // During Docker build, database may not be available
-    // Return a basic page structure so build doesn't fail
     console.warn('Failed to fetch posts, returning empty page:', error)
     return (
-      <div className="pt-24 pb-24">
+      <>
         <PageClient />
-        <div className="container mb-16">
-          <div className="prose dark:prose-invert max-w-none">
-            <h1>Posts</h1>
-          </div>
-        </div>
-      </div>
+        <PostsEmptyLayout />
+      </>
     )
   }
 }
@@ -112,7 +82,6 @@ export async function generateStaticParams() {
     return pages
   } catch (error) {
     // During Docker build, database may not be available
-    // Return at least the first page so build doesn't fail
     return [{ pageNumber: '1' }]
   }
 }
