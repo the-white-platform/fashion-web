@@ -10,8 +10,7 @@ import PageClient from './page.client'
 import { notFound } from 'next/navigation'
 import { isBuildMode } from '@/utilities/isBuildMode'
 
-// During Docker build, database may not be available - make dynamic
-export const dynamic = 'force-dynamic'
+// Revalidate every 10 minutes
 export const revalidate = 600
 
 type Args = {

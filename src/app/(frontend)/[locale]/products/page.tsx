@@ -7,8 +7,7 @@ import type { ProductForFrontend, CategoryForFrontend } from '@/utilities/getPro
 import { transformProduct } from '@/utilities/getProducts'
 import { getTranslations } from 'next-intl/server'
 
-// During Docker build, database may not be available - make dynamic to avoid build failures
-export const dynamic = 'force-dynamic'
+// Revalidate every 10 minutes
 export const revalidate = 600
 
 export default async function ProductsPage({ params }: { params: Promise<{ locale: string }> }) {
