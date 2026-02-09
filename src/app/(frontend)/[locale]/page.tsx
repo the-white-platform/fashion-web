@@ -6,8 +6,7 @@ import type { Product, Category, Media } from '@/payload-types'
 import { slugify } from '@/utilities/slugify'
 import { formatPrice } from '@/utilities/formatPrice'
 
-// During Docker build, database may not be available - make dynamic
-export const dynamic = 'force-dynamic'
+// Revalidate every 10 minutes
 export const revalidate = 600
 
 interface FeaturedProduct {
