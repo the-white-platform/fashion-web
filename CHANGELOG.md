@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.9.0](https://github.com/the-white-platform/fashion-web/compare/v0.8.3...v0.9.0) (2026-02-10)
+
+
+### Features
+
+* extract price formatting and slug generation into new utilities and refactor posts display into a dedicated layout component. ([#24](https://github.com/the-white-platform/fashion-web/issues/24)) ([67da6e3](https://github.com/the-white-platform/fashion-web/commit/67da6e322505fc922f7305b3cbb18ed2854f7d0c))
+
+
+### Bug Fixes
+
+* remove deprecated installation-id from app token action ([#25](https://github.com/the-white-platform/fashion-web/issues/25)) ([9dbbdf8](https://github.com/the-white-platform/fashion-web/commit/9dbbdf89659e4158d0a8bea22ce525c5d18ffadd))
+
 ### [0.8.3](https://github.com/the-white-platform/fashion-web/compare/v0.8.2...v0.8.3) (2026-02-09)
 
 
