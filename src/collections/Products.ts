@@ -7,6 +7,7 @@ import {
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
+import { slugify } from '@/utilities/slugify'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -44,14 +45,7 @@ export const Products: CollectionConfig = {
         beforeValidate: [
           ({ value, data }) => {
             if (!value && data?.name) {
-              return data.name
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/đ/g, 'd')
-                .replace(/Đ/g, 'D')
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/(^-|-$)/g, '')
+              return slugify(data.name)
             }
             return value
           },

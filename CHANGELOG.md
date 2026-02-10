@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.8.3](https://github.com/the-white-platform/fashion-web/compare/v0.8.2...v0.8.3) (2026-02-09)
+
+
+### Performance Improvements
+
+* enable ISR caching by removing force-dynamic from pages ([#23](https://github.com/the-white-platform/fashion-web/issues/23)) ([cfa959c](https://github.com/the-white-platform/fashion-web/commit/cfa959c671d464ba16baacd02106a8677392e70c))
+
 ### [0.8.2](https://github.com/the-white-platform/fashion-web/compare/v0.8.1...v0.8.2) (2026-02-09)
 
 

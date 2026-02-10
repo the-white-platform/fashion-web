@@ -3,6 +3,8 @@ import type { Metadata } from 'next'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import type { Product, Category, Media } from '@/payload-types'
+import { slugify } from '@/utilities/slugify'
+import { formatPrice } from '@/utilities/formatPrice'
 
 // Revalidate every 10 minutes
 export const revalidate = 600
@@ -96,11 +98,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             }
           }
 
-          const formatPrice = (price: number) => {
-            if (typeof price !== 'number') return '0₫'
-            return new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 0 }).format(price) + '₫'
-          }
-
           return {
             id: product.id,
             name: product.name || 'Sản phẩm không tên',
@@ -172,13 +169,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               return {
                 id: catId,
                 title: catTitle,
-                slug: catTitle
-                  .toLowerCase()
-                  .normalize('NFD')
-                  .replace(/[\u0300-\u036f]/g, '')
-                  .replace(/đ/g, 'd')
-                  .replace(/Đ/g, 'D')
-                  .replace(/[^a-z0-9]+/g, '-'),
+                slug: slugify(catTitle),
                 productCount: productCount.totalDocs,
               }
             } catch (e) {
@@ -209,13 +200,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           return {
             id: cat.id,
             title: cat.title,
-            slug: cat.title
-              .toLowerCase()
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/đ/g, 'd')
-              .replace(/Đ/g, 'D')
-              .replace(/[^a-z0-9]+/g, '-'),
+            slug: slugify(cat.title),
           }
         })
         .filter(Boolean)
