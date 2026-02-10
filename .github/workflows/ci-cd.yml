@@ -76,7 +76,6 @@ jobs:
         with:
           app-id: ${{ secrets.RELEASE_BOT_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
-          installation-id: ${{ secrets.RELEASE_BOT_INSTALLATION_ID }}
 
       - name: Checkout code
         uses: actions/checkout@v4
