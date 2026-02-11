@@ -200,7 +200,7 @@ jobs:
 
           docker build \
             $TAGS \
-            --build-arg NEXT_PUBLIC_SERVER_URL="" \
+            --build-arg NEXT_PUBLIC_SERVER_URL="${{ vars.NEXT_PUBLIC_SERVER_URL }}" \
             --build-arg PAYLOAD_SECRET="dummy-secret-for-build" \
             --build-arg DATABASE_URI="postgres://dummy:dummy@localhost:5432/dummy" \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
