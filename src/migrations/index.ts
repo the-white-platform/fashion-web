@@ -1,6 +1,7 @@
 import * as migration_20260111_185517_localization from './20260111_185517_localization'
 import * as migration_20260111_190957_homepage_localization from './20260111_190957_homepage_localization'
 import * as migration_20260111_200215_orders_and_inventory from './20260111_200215_orders_and_inventory'
+import * as migration_20260211_000000_bootstrap_essential_data from './20260211_000000_bootstrap_essential_data'
 
 export const migrations = [
   {
@@ -17,5 +18,10 @@ export const migrations = [
     up: migration_20260111_200215_orders_and_inventory.up,
     down: migration_20260111_200215_orders_and_inventory.down,
     name: '20260111_200215_orders_and_inventory',
+  },
+  {
+    up: migration_20260211_000000_bootstrap_essential_data.up,
+    down: migration_20260211_000000_bootstrap_essential_data.down,
+    name: '20260211_000000_bootstrap_essential_data',
   },
 ]
