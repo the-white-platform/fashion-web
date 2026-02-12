@@ -23,9 +23,13 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
     payload.logger.info('  ✓ Admin user already exists, skipping')
   }
 
+  // Skip revalidateTag during migration — Next.js isn't ready at init time
+  const context = { skipRevalidation: true }
+
   // 2. Header navigation
   await payload.updateGlobal({
     slug: 'header',
+    context,
     data: {
       navItems: [
         { link: { type: 'custom', label: 'Men', url: '/products?category=nam', newTab: false } },
@@ -73,12 +77,14 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   await payload.updateGlobal({
     slug: 'footer',
     locale: 'vi',
+    context,
     data: { navItems: toNavItems(footerLinksVi) },
   })
 
   await payload.updateGlobal({
     slug: 'footer',
     locale: 'en',
+    context,
     data: { navItems: toNavItems(footerLinksEn) },
   })
   payload.logger.info('  ✓ Footer navigation configured (vi + en)')
