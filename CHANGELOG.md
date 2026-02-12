@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.10.1](https://github.com/the-white-platform/fashion-web/compare/v0.10.0...v0.10.1) (2026-02-12)
+
+
+### Bug Fixes
+
+* skip revalidateTag during migration to prevent startup crash ([#28](https://github.com/the-white-platform/fashion-web/issues/28)) ([0f0aee5](https://github.com/the-white-platform/fashion-web/commit/0f0aee59a543d5d726fb1008368b0c3cfc47429b))
+
 ## [0.10.0](https://github.com/the-white-platform/fashion-web/compare/v0.9.1...v0.10.0) (2026-02-11)
 
 
