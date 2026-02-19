@@ -24,7 +24,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header,
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
+    setTimeout(() => setMounted(true), 0)
   }, [])
 
   const menuContent = (

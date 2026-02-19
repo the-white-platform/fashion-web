@@ -40,14 +40,16 @@ export default function WishlistPage() {
   // Load wishlist from localStorage only after mount (client-side)
   // This ensures server and client initial renders match
   useEffect(() => {
-    try {
-      const savedWishlist = localStorage.getItem('thewhite_wishlist')
-      if (savedWishlist) {
-        setWishlistItems(JSON.parse(savedWishlist))
+    setTimeout(() => {
+      try {
+        const savedWishlist = localStorage.getItem('thewhite_wishlist')
+        if (savedWishlist) {
+          setWishlistItems(JSON.parse(savedWishlist))
+        }
+      } catch (e) {
+        console.error('Error loading wishlist:', e)
       }
-    } catch (e) {
-      console.error('Error loading wishlist:', e)
-    }
+    }, 0)
   }, [])
 
   // Save wishlist to localStorage whenever it changes

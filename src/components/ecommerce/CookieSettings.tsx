@@ -12,23 +12,23 @@ interface CookieSettingsProps {
 
 export function CookieSettings({ variant = 'fab', onClose }: CookieSettingsProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [preferences, setPreferences] = useState({
-    necessary: true,
-    analytics: false,
-    marketing: false,
-  })
-
-  // Load saved preferences
-  useEffect(() => {
-    const saved = localStorage.getItem('cookie-preferences')
-    if (saved) {
-      try {
-        setPreferences(JSON.parse(saved))
-      } catch (e) {
-        // Ignore parse errors
+  const [preferences, setPreferences] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cookie-preferences')
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch (e) {}
       }
     }
-  }, [])
+    return {
+      necessary: true,
+      analytics: false,
+      marketing: false,
+    }
+  })
+
+  // Removed useEffect that set preferences on load to prevent cascaded render
 
   const savePreferences = () => {
     localStorage.setItem('cookie-preferences', JSON.stringify(preferences))

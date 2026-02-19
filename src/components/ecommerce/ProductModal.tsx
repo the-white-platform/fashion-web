@@ -73,12 +73,11 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
       ? (currentVariant.images.filter((img): img is string => typeof img === 'string') as string[])
       : [product?.image || ''].filter((img) => img !== '')
 
-  // Auto-select first size when variant changes
-  useEffect(() => {
-    if (availableSizes.length > 0 && !availableSizes.includes(selectedSize)) {
-      setSelectedSize(availableSizes[0])
-    }
-  }, [selectedVariantIndex, availableSizes, selectedSize])
+  // Derive the actual selected size without using useEffect setState
+  let actualSelectedSize = selectedSize
+  if (availableSizes.length > 0 && !availableSizes.includes(selectedSize)) {
+    actualSelectedSize = availableSizes[0]
+  }
 
   if (!product) return null
 
@@ -89,7 +88,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
         name: product.name,
         price: product.priceNumber,
         image: variantImages[currentImageIndex] || product.image,
-        size: selectedSize,
+        size: actualSelectedSize,
         color: currentVariant.color,
         colorHex: currentVariant.colorHex,
       })
@@ -371,13 +370,13 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       transition={{ delay: 0.3 + idx * 0.05 }}
                       onClick={() => setSelectedSize(size)}
                       className={`relative w-10 h-10 font-bold text-xs transition-all duration-200 rounded-sm ${
-                        selectedSize === size
+                        actualSelectedSize === size
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-foreground hover:bg-muted/80'
                       }`}
                     >
                       {size}
-                      {selectedSize === size && (
+                      {actualSelectedSize === size && (
                         <motion.div
                           layoutId="size-indicator"
                           className="absolute inset-0 bg-primary rounded-sm"

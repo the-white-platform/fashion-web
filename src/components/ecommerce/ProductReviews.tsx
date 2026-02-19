@@ -41,6 +41,21 @@ interface ProductReviewsProps {
   productName: string
 }
 
+const StarRating = ({ rating, size = 'w-5 h-5' }: { rating: number; size?: string }) => {
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={`${size} ${
+            star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+          }`}
+        />
+      ))}
+    </div>
+  )
+}
+
 export function ProductReviews({ productId, productName }: ProductReviewsProps) {
   const { user } = useUser()
   const t = useTranslations('reviews')
@@ -146,21 +161,6 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
   const averageRating = calculateAverageRating()
   const distribution = getRatingDistribution()
   const totalReviews = reviews.length
-
-  const StarRating = ({ rating, size = 'w-5 h-5' }: { rating: number; size?: string }) => {
-    return (
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`${size} ${
-              star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-            }`}
-          />
-        ))}
-      </div>
-    )
-  }
 
   return (
     <div className="bg-background border-t border-border py-12">

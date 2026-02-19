@@ -32,7 +32,7 @@ const nextConfig = {
   reactStrictMode: true,
   redirects,
   output: 'standalone',
-  // Optimize build performance (swcMinify is enabled by default in Next.js 15)
+  // Optimize build performance
   compiler: {
     removeConsole:
       process.env.NODE_ENV === 'production'
@@ -41,9 +41,9 @@ const nextConfig = {
           }
         : false,
   },
-  // Enable experimental features for faster builds
   experimental: {
     // Optimize package imports to reduce bundle size and build time
+    // lucide-react and recharts are optimized by default in Next.js 16
     optimizePackageImports: [
       '@payloadcms/ui',
       '@payloadcms/richtext-lexical',
@@ -51,7 +51,6 @@ const nextConfig = {
       '@payloadcms/plugin-search',
       '@payloadcms/plugin-seo',
       '@payloadcms/plugin-nested-docs',
-      'lucide-react',
       '@radix-ui/react-checkbox',
       '@radix-ui/react-label',
       '@radix-ui/react-select',
@@ -60,8 +59,6 @@ const nextConfig = {
       'prism-react-renderer',
       'swr',
     ],
-    // Enable server-side minification
-    serverMinification: true,
   },
 }
 

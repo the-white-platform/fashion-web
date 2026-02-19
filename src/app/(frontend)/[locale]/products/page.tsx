@@ -14,6 +14,11 @@ export const revalidate = 600
 export default async function ProductsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
   const t = await getTranslations('products')
+  const allLabel = locale === 'en' ? 'All' : 'Tất Cả'
+
+  let transformedProducts: ProductForFrontend[] = []
+  let outCategories: CategoryForFrontend[] = [{ name: allLabel, slug: 'all', count: 0 }]
+  let outColors: any[] = []
 
   try {
     const payload = await getPayload({ config: configPromise })
@@ -36,10 +41,11 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
 
     // Transform products
     const products = productsResult.docs.map(transformProduct)
+    transformedProducts = products
 
     // Get unique colors from all products
     const allColors = products.flatMap((p) => p.colors)
-    const uniqueColors = Array.from(new Map(allColors.map((c) => [c.hex, c])).values())
+    outColors = Array.from(new Map(allColors.map((c) => [c.hex, c])).values())
 
     // Get product counts per category
     const categoryCounts = new Map<string, number>()
@@ -52,8 +58,7 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
     })
 
     // Build categories with counts - use translated "All" label
-    const allLabel = locale === 'en' ? 'All' : 'Tất Cả'
-    const categories: CategoryForFrontend[] = [
+    outCategories = [
       { name: allLabel, slug: 'all', count: products.length },
       ...categoriesResult.docs
         .filter((cat) => categoryCounts.has(cat.title))
@@ -63,26 +68,18 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
           count: categoryCounts.get(cat.title) || 0,
         })),
     ]
-
-    return (
-      <ProductsPageClient
-        initialProducts={products}
-        categories={categories}
-        colors={uniqueColors}
-      />
-    )
   } catch (error) {
     console.warn('Failed to fetch products:', error)
-    const allLabel = locale === 'en' ? 'All' : 'Tất Cả'
-    // Return client with empty data - it will show loading or fallback
-    return (
-      <ProductsPageClient
-        initialProducts={[]}
-        categories={[{ name: allLabel, slug: 'all', count: 0 }]}
-        colors={[]}
-      />
-    )
+    // Client page will show empty logic since products is []
   }
+
+  return (
+    <ProductsPageClient
+      initialProducts={transformedProducts}
+      categories={outCategories}
+      colors={outColors}
+    />
+  )
 }
 
 export function generateMetadata(): Metadata {

@@ -26,18 +26,24 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
 
   // Initialize welcome message on client mount to avoid hydration mismatch
   useEffect(() => {
-    if (!mounted) {
+    const timer = setTimeout(() => {
       setMounted(true)
-      setMessages([
-        {
-          id: 1,
-          text: 'Xin chào! Mình là Wolfies - trợ lý ảo của TheWhite 🐺\n\nMình có thể giúp bạn:\n• Tìm sản phẩm phù hợp\n• Tư vấn size\n• Chính sách đổi trả\n• Hỗ trợ đặt hàng\n\nBạn cần mình hỗ trợ gì nào?',
-          sender: 'bot',
-          timestamp: new Date(),
-        },
-      ])
-    }
-  }, [mounted])
+      setMessages((prev) => {
+        if (prev.length === 0) {
+          return [
+            {
+              id: 1,
+              text: 'Xin chào! Mình là Wolfies - trợ lý ảo của TheWhite 🐺\n\nMình có thể giúp bạn:\n• Tìm sản phẩm phù hợp\n• Tư vấn size\n• Chính sách đổi trả\n• Hỗ trợ đặt hàng\n\nBạn cần mình hỗ trợ gì nào?',
+              sender: 'bot',
+              timestamp: new Date(),
+            },
+          ]
+        }
+        return prev
+      })
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
