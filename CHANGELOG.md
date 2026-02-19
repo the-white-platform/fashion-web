@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.11.1](https://github.com/the-white-platform/fashion-web/compare/v0.11.0...v0.11.1) (2026-02-19)
+
+
+### Code Refactoring
+
+* migrate to NextJs 16 ([#30](https://github.com/the-white-platform/fashion-web/issues/30)) ([380db64](https://github.com/the-white-platform/fashion-web/commit/380db64f81750dc73ea7d564ea5904a74a26dcaa))
+
 ## [0.11.0](https://github.com/the-white-platform/fashion-web/compare/v0.10.1...v0.11.0) (2026-02-19)
 
 
