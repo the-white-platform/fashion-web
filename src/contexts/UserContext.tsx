@@ -77,14 +77,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // Load user from localStorage only after mount (client-side)
   // This ensures server and client initial renders match
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('thewhite-user')
-      if (storedUser) {
-        setUser(JSON.parse(storedUser))
+    const initUser = async () => {
+      try {
+        // First try to fetch from server (to support OAuth/Cookie auth)
+        const response = await fetch('/api/users/me')
+        if (response.ok) {
+          const data = await response.json()
+          if (data?.user) {
+            setUser(data.user)
+            return
+          }
+        }
+
+        // Fallback to localStorage for mock data
+        const storedUser = localStorage.getItem('thewhite-user')
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        }
+      } catch (e) {
+        console.error('Error loading user:', e)
       }
-    } catch (e) {
-      console.error('Error loading user:', e)
     }
+    initUser()
   }, [])
 
   // Save user to localStorage whenever it changes

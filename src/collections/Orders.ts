@@ -20,8 +20,19 @@ export const Orders: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'orderNumber',
-    defaultColumns: ['orderNumber', 'customerName', 'status', 'total', 'createdAt'],
-    listSearchableFields: ['orderNumber', 'customerEmail', 'customerName', 'customerPhone'],
+    defaultColumns: [
+      'orderNumber',
+      'customerInfo.customerName',
+      'status',
+      'totals.total',
+      'createdAt',
+    ],
+    listSearchableFields: [
+      'orderNumber',
+      'customerInfo.customerName',
+      'customerInfo.customerEmail',
+      'customerInfo.customerPhone',
+    ],
     group: { vi: 'Thương mại', en: 'Commerce' },
   },
   fields: [
@@ -124,12 +135,14 @@ export const Orders: CollectionConfig = {
           fields: [
             {
               name: 'ward',
-              type: 'text',
+              type: 'relationship',
+              relationTo: 'wards',
               label: { vi: 'Phường/Xã', en: 'Ward' },
             },
             {
               name: 'district',
-              type: 'text',
+              type: 'relationship',
+              relationTo: 'districts',
               required: true,
               label: { vi: 'Quận/Huyện', en: 'District' },
             },
@@ -140,7 +153,8 @@ export const Orders: CollectionConfig = {
           fields: [
             {
               name: 'city',
-              type: 'text',
+              type: 'relationship',
+              relationTo: 'provinces',
               required: true,
               label: { vi: 'Tỉnh/Thành phố', en: 'City/Province' },
             },

@@ -13,12 +13,14 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Products } from './collections/Products'
 import { Users } from './collections/Users'
+import { Provinces, Districts, Wards } from './collections/VietnamAddresses'
 import { seedHandler } from './endpoints/seedHandler'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
 import { Homepage } from './globals/Homepage'
 import { PaymentMethods } from './globals/PaymentMethods'
 import { plugins } from './plugins'
+import AccountingView from '@/components/AccountingView'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { migrations } from './migrations'
 
@@ -50,6 +52,7 @@ export default buildConfig({
     defaultLocale: 'vi',
     fallback: true,
   },
+
   admin: {
     components: {
       // The `BeforeLogin` component renders a message that you see while logging into your admin panel.
@@ -58,6 +61,13 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below and the import `BeforeDashboard` statement on line 15.
       beforeDashboard: ['@/components/BeforeDashboard'],
+      afterNavLinks: ['@/components/AccountingLink'],
+      views: {
+        Accounting: {
+          Component: AccountingView as any,
+          path: '/accounting',
+        },
+      },
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -98,7 +108,18 @@ export default buildConfig({
     // Run migrations automatically on startup in production
     prodMigrations: migrations,
   }),
-  collections: [Pages, Posts, Media, Categories, Users, Products, Orders],
+  collections: [
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    Products,
+    Orders,
+    Provinces,
+    Districts,
+    Wards,
+  ],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
   endpoints: [
     // The seed endpoint is used to populate the database with some example data

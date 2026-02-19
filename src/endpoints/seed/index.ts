@@ -1,5 +1,6 @@
 import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
 import { productSeedData, categorySeedData } from './products'
+import { seedVietnamAddresses } from './vietnamAddresses'
 
 const collections: CollectionSlug[] = [
   'categories',
@@ -25,6 +26,9 @@ export const seed = async ({
   req: PayloadRequest
 }): Promise<void> => {
   payload.logger.info('🌱 Seeding database...')
+
+  // 0. Seed Vietnam Addresses
+  await seedVietnamAddresses(payload)
 
   // 1. Clear existing data (in correct order to avoid foreign key constraints)
   payload.logger.info('— Clearing existing data...')
