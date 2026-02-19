@@ -64,7 +64,7 @@ export default buildConfig({
       afterNavLinks: ['@/components/AccountingLink'],
       views: {
         Accounting: {
-          Component: AccountingView,
+          Component: AccountingView as any,
           path: '/accounting',
         },
       },
