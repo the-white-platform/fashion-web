@@ -74,6 +74,9 @@ export interface Config {
     users: User;
     products: Product;
     orders: Order;
+    provinces: Province;
+    districts: District;
+    wards: Ward;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -92,6 +95,9 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    provinces: ProvincesSelect<false> | ProvincesSelect<true>;
+    districts: DistrictsSelect<false> | DistrictsSelect<true>;
+    wards: WardsSelect<false> | WardsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -494,6 +500,38 @@ export interface Post {
 export interface User {
   id: number;
   name?: string | null;
+  sub?: string | null;
+  provider?: ('local' | 'google' | 'facebook') | null;
+  imageUrl?: string | null;
+  shippingAddresses?:
+    | {
+        name: string;
+        phone: string;
+        address: string;
+        city: number | Province;
+        district: number | District;
+        ward?: (number | null) | Ward;
+        isDefault?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  paymentMethods?:
+    | {
+        type?: ('card' | 'bank' | 'cod' | 'momo') | null;
+        cardNumber?: string | null;
+        isDefault?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  orderHistory?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -511,6 +549,41 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provinces".
+ */
+export interface Province {
+  id: number;
+  name: string;
+  code: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "districts".
+ */
+export interface District {
+  id: number;
+  name: string;
+  code: string;
+  province: number | Province;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wards".
+ */
+export interface Ward {
+  id: number;
+  name: string;
+  code: string;
+  district: number | District;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -823,9 +896,9 @@ export interface Order {
   };
   shippingAddress: {
     address: string;
-    ward?: string | null;
-    district: string;
-    city: string;
+    ward?: (number | null) | Ward;
+    district: number | District;
+    city: number | Province;
     postalCode?: string | null;
     notes?: string | null;
   };
@@ -999,6 +1072,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'provinces';
+        value: number | Province;
+      } | null)
+    | ({
+        relationTo: 'districts';
+        value: number | District;
+      } | null)
+    | ({
+        relationTo: 'wards';
+        value: number | Ward;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1331,6 +1416,30 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  sub?: T;
+  provider?: T;
+  imageUrl?: T;
+  shippingAddresses?:
+    | T
+    | {
+        name?: T;
+        phone?: T;
+        address?: T;
+        city?: T;
+        district?: T;
+        ward?: T;
+        isDefault?: T;
+        id?: T;
+      };
+  paymentMethods?:
+    | T
+    | {
+        type?: T;
+        cardNumber?: T;
+        isDefault?: T;
+        id?: T;
+      };
+  orderHistory?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1459,6 +1568,38 @@ export interface OrdersSelect<T extends boolean = true> {
         shippedAt?: T;
         deliveredAt?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provinces_select".
+ */
+export interface ProvincesSelect<T extends boolean = true> {
+  name?: T;
+  code?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "districts_select".
+ */
+export interface DistrictsSelect<T extends boolean = true> {
+  name?: T;
+  code?: T;
+  province?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wards_select".
+ */
+export interface WardsSelect<T extends boolean = true> {
+  name?: T;
+  code?: T;
+  district?: T;
   updatedAt?: T;
   createdAt?: T;
 }

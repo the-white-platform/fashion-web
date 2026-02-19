@@ -3,7 +3,16 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '@/i18n/useRouter'
 import { motion, AnimatePresence } from 'motion/react'
-import { Check, ChevronLeft, CreditCard, Truck, Package, Plus, Tag } from 'lucide-react'
+import {
+  Check,
+  ChevronLeft,
+  CreditCard,
+  Truck,
+  Package,
+  Plus,
+  Tag,
+  ChevronsUpDown,
+} from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
 import { Button } from '@/components/ui/button'
@@ -12,9 +21,21 @@ import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/Link'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/utilities/cn'
 
 type CheckoutStep = 'shipping' | 'payment' | 'review' | 'confirmation'
 
@@ -307,6 +328,7 @@ export default function CheckoutPage() {
                             type="text"
                             value={couponCode}
                             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            onClear={() => setCouponCode('')}
                             placeholder={t('couponPlaceholder')}
                             className="flex-1 text-sm"
                           />
@@ -407,7 +429,7 @@ function ShippingStep({
 }: any) {
   const t = useTranslations('checkout')
   const [newAddress, setNewAddress] = useState({
-    fullName: '',
+    name: '',
     phone: '',
     address: '',
     city: '',
@@ -415,17 +437,102 @@ function ShippingStep({
     ward: '',
   })
 
+  const [provinces, setProvinces] = useState<any[]>([])
+  const [districts, setDistricts] = useState<any[]>([])
+  const [wards, setWards] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const res = await fetch('/api/provinces?limit=100&sort=name')
+        const data = await res.json()
+        setProvinces(data.docs || [])
+      } catch (error) {
+        console.error('Error fetching provinces:', error)
+      }
+    }
+    fetchProvinces()
+  }, [])
+
+  const handleProvinceChange = async (provinceCode: string) => {
+    const province = provinces.find((p) => String(p.code) === provinceCode)
+    setNewAddress({
+      ...newAddress,
+      city: province?.name || '',
+      district: '',
+      ward: '',
+    })
+    setDistricts([])
+    setWards([])
+
+    if (provinceCode) {
+      try {
+        const res = await fetch(
+          `/api/districts?where[province][equals]=${province.id}&limit=100&sort=name`,
+        )
+        const data = await res.json()
+        setDistricts(data.docs || [])
+      } catch (error) {
+        console.error('Error fetching districts:', error)
+      }
+    }
+  }
+
+  const handleDistrictChange = async (districtCode: string) => {
+    const district = districts.find((d) => String(d.code) === districtCode)
+    setNewAddress({
+      ...newAddress,
+      district: district?.name || '',
+      ward: '',
+    })
+    setWards([])
+
+    if (districtCode) {
+      try {
+        const res = await fetch(
+          `/api/wards?where[district][equals]=${district.id}&limit=100&sort=name`,
+        )
+        const data = await res.json()
+        setWards(data.docs || [])
+      } catch (error) {
+        console.error('Error fetching wards:', error)
+      }
+    }
+  }
+
+  const handleWardChange = (wardCode: string) => {
+    const ward = wards.find((w) => String(w.code) === wardCode)
+    setNewAddress({
+      ...newAddress,
+      ward: ward?.name || '',
+    })
+  }
+
+  const [saveAddress, setSaveAddress] = useState(false)
+  const { addShippingAddress } = useUser()
+
   const handleNext = () => {
     if (!selectedAddress && !showNewAddress) {
-      alert(t('address'))
+      alert(t('addressInfo'))
       return
     }
     if (showNewAddress) {
-      if (!newAddress.fullName || !newAddress.phone || !newAddress.address || !newAddress.city) {
-        alert(t('address'))
+      if (!newAddress.name || !newAddress.phone || !newAddress.address || !newAddress.city) {
+        alert(t('addressInfo'))
         return
       }
       onSelectAddress(newAddress)
+      if (saveAddress) {
+        addShippingAddress({
+          name: newAddress.name,
+          phone: newAddress.phone,
+          address: newAddress.address,
+          city: newAddress.city,
+          district: newAddress.district,
+          ward: newAddress.ward,
+          isDefault: user?.shippingAddresses?.length === 0,
+        })
+      }
     }
     onNext()
   }
@@ -455,7 +562,7 @@ function ShippingStep({
                 <div className="flex items-start gap-3">
                   <RadioGroupItem value={String(index)} checked={selectedAddress === address} />
                   <div className="flex-1">
-                    <p className="font-semibold mb-1">{address.fullName}</p>
+                    <p className="font-semibold mb-1">{address.name}</p>
                     <p className="text-sm text-muted-foreground">{address.phone}</p>
                     <p className="text-sm text-muted-foreground">
                       {address.address}
@@ -482,8 +589,9 @@ function ShippingStep({
           <div>
             <Label>{t('fullName')} *</Label>
             <Input
-              value={newAddress.fullName}
-              onChange={(e) => setNewAddress({ ...newAddress, fullName: e.target.value })}
+              value={newAddress.name}
+              onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })}
+              onClear={() => setNewAddress({ ...newAddress, name: '' })}
               placeholder={t('namePlaceholder')}
               required
             />
@@ -493,6 +601,7 @@ function ShippingStep({
             <Input
               value={newAddress.phone}
               onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
+              onClear={() => setNewAddress({ ...newAddress, phone: '' })}
               placeholder={t('phonePlaceholder')}
               required
             />
@@ -502,35 +611,61 @@ function ShippingStep({
             <Input
               value={newAddress.address}
               onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
+              onClear={() => setNewAddress({ ...newAddress, address: '' })}
               placeholder={t('addressPlaceholder')}
               required
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label>{t('ward')}</Label>
-              <Input
-                value={newAddress.ward}
-                onChange={(e) => setNewAddress({ ...newAddress, ward: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label>{t('district')}</Label>
-              <Input
-                value={newAddress.district}
-                onChange={(e) => setNewAddress({ ...newAddress, district: e.target.value })}
-              />
-            </div>
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex flex-col gap-2">
               <Label>{t('city')} *</Label>
-              <Input
-                value={newAddress.city}
-                onChange={(e) => setNewAddress({ ...newAddress, city: e.target.value })}
-                placeholder={t('cityPlaceholder')}
-                required
+              <AddressSelect
+                options={provinces.map((p) => ({ label: p.name, value: String(p.code) }))}
+                value={provinces.find((p) => p.name === newAddress.city)?.code}
+                onChange={handleProvinceChange}
+                placeholder={t('selectCity')}
+                emptyText={t('noCityFound')}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>{t('district')} *</Label>
+              <AddressSelect
+                options={districts.map((d) => ({ label: d.name, value: String(d.code) }))}
+                value={districts.find((d) => d.name === newAddress.district)?.code}
+                onChange={handleDistrictChange}
+                placeholder={t('selectDistrict')}
+                emptyText={t('noDistrictFound')}
+                disabled={!newAddress.city}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>{t('ward')} *</Label>
+              <AddressSelect
+                options={wards.map((w) => ({ label: w.name, value: String(w.code) }))}
+                value={wards.find((w) => w.name === newAddress.ward)?.code}
+                onChange={handleWardChange}
+                placeholder={t('selectWard')}
+                emptyText={t('noWardFound')}
+                disabled={!newAddress.district}
               />
             </div>
           </div>
+
+          {user && (
+            <div className="flex items-center space-x-2 mt-4">
+              <Checkbox
+                id="save-address"
+                checked={saveAddress}
+                onCheckedChange={(checked) => setSaveAddress(checked as boolean)}
+              />
+              <label
+                htmlFor="save-address"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {t('saveAddress')}
+              </label>
+            </div>
+          )}
         </div>
       )}
 
@@ -790,7 +925,7 @@ function ReviewStep({
         <h3 className="text-xl uppercase tracking-wide mb-4">{t('shipping')}</h3>
         {selectedAddress && (
           <div>
-            <p className="font-semibold mb-1">{selectedAddress.fullName}</p>
+            <p className="font-semibold mb-1">{selectedAddress.name}</p>
             <p className="text-sm text-muted-foreground">{selectedAddress.phone}</p>
             <p className="text-sm text-muted-foreground">
               {selectedAddress.address}
@@ -955,5 +1090,136 @@ function ConfirmationStep({
         </Button>
       </div>
     </motion.div>
+  )
+}
+
+interface AddressSelectProps {
+  value?: string
+  options: { label: string; value: string }[]
+  onChange: (value: string) => void
+  placeholder: string
+  emptyText: string
+  disabled?: boolean
+}
+
+function AddressSelect({
+  value,
+  options,
+  onChange,
+  placeholder,
+  emptyText,
+  disabled,
+}: AddressSelectProps) {
+  const [open, setOpen] = useState(false)
+  const [inputValue, setInputValue] = useState('')
+
+  useEffect(() => {
+    const selected = options.find((o) => o.value === value)
+    if (selected) {
+      setInputValue(selected.label)
+    } else if (!value) {
+      setInputValue('')
+    }
+  }, [value, options])
+
+  const filteredOptions = options.filter((option) =>
+    option.label.toLowerCase().includes(inputValue.toLowerCase()),
+  )
+
+  const handleBlur = () => {
+    // Small delay to allow click on item to register
+    setTimeout(() => {
+      const selected = options.find((o) => o.value === value)
+      if (selected) {
+        setInputValue(selected.label)
+      } else {
+        setInputValue('')
+      }
+      setOpen(false)
+    }, 200)
+  }
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <Input
+          placeholder={placeholder}
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value)
+            setOpen(true)
+            if (e.target.value === '') {
+              onChange('')
+            }
+          }}
+          onClear={() => {
+            setInputValue('')
+            onChange('')
+          }}
+          onFocus={() => setOpen(true)}
+          disabled={disabled}
+          className="pr-8"
+        />
+        {!inputValue && (
+          <ChevronsUpDown className="absolute right-2 top-2.5 h-4 w-4 opacity-50 pointer-events-none" />
+        )}
+      </div>
+
+      {open && (
+        <div className="absolute top-full z-50 w-full mt-1 rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95">
+          <Command shouldFilter={false}>
+            <CommandList className="max-h-[200px] overflow-y-auto overflow-x-hidden">
+              {filteredOptions.length === 0 ? (
+                <div className="py-6 text-center text-sm text-muted-foreground">{emptyText}</div>
+              ) : (
+                <CommandGroup>
+                  {filteredOptions.map((option) => (
+                    <CommandItem
+                      key={option.value}
+                      value={option.value}
+                      onSelect={() => {
+                        onChange(option.value)
+                        setInputValue(option.label)
+                        setOpen(false)
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <Check
+                        className={cn(
+                          'mr-2 h-4 w-4',
+                          value === option.value ? 'opacity-100' : 'opacity-0',
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
+        </div>
+      )}
+
+      {/* Overlay to handle outside clicks roughly or we rely on logic? 
+          Simple: use a click listener on document or just rely on the user clicking away?
+          If user clicks away, `onBlur` on Input triggers.
+          But if I use onBlur, clicking the item might be missed if onBlur runs before onClick.
+          So standard practice is using Popover logic.
+      */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-transparent"
+          onClick={() => {
+            setOpen(false)
+            const selected = options.find((o) => o.value === value)
+            if (selected) {
+              setInputValue(selected.label)
+            } else {
+              setInputValue('')
+            }
+          }}
+        />
+      )}
+    </div>
   )
 }
