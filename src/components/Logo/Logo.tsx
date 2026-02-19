@@ -17,7 +17,7 @@ export const Logo: React.FC<LogoProps> = ({ showSlogan = true, className }) => {
 
   // Prevent hydration mismatch by only animating after mount
   useEffect(() => {
-    setMounted(true)
+    setTimeout(() => setMounted(true), 0)
   }, [])
 
   return (

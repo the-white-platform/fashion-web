@@ -32,7 +32,7 @@ export function AlternatingSection({ children, index, className = '' }: Alternat
 
   // Prevent hydration mismatch
   useEffect(() => {
-    setMounted(true)
+    setTimeout(() => setMounted(true), 0)
   }, [])
 
   // Default to light theme during SSR

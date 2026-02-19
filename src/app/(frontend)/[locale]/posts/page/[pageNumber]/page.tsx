@@ -23,24 +23,22 @@ export default async function Page({ params: paramsPromise }: Args) {
   const sanitizedPageNumber = Number(pageNumber)
   if (!Number.isInteger(sanitizedPageNumber)) notFound()
 
+  let postsObj: any = null
+
   try {
     const payload = await getPayload({ config: configPromise })
-    const posts = await payload.find({
+    postsObj = await payload.find({
       collection: 'posts',
       depth: 1,
       limit: 12,
       page: sanitizedPageNumber,
       overrideAccess: false,
     })
-
-    return (
-      <>
-        <PageClient />
-        <PostsLayout posts={posts} />
-      </>
-    )
   } catch (error) {
     console.warn('Failed to fetch posts, returning empty page:', error)
+  }
+
+  if (!postsObj) {
     return (
       <>
         <PageClient />
@@ -48,6 +46,13 @@ export default async function Page({ params: paramsPromise }: Args) {
       </>
     )
   }
+
+  return (
+    <>
+      <PageClient />
+      <PostsLayout posts={postsObj} />
+    </>
+  )
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {

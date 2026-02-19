@@ -25,7 +25,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({ header }) => {
   const { setIsSearchOpen, setIsMobileMenuOpen } = useModal()
 
   useEffect(() => {
-    setMounted(true)
+    setTimeout(() => setMounted(true), 0)
   }, [])
 
   useEffect(() => setHeaderTheme(null), [pathname, setHeaderTheme])

@@ -57,20 +57,13 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
     [selectedVariant?.sizes, product.sizes],
   )
 
-  // Set initial size when variant changes
-  useEffect(() => {
-    if (currentSizes.length > 0 && !currentSizes.includes(selectedSize)) {
-      setSelectedSize(currentSizes[0])
-    }
-  }, [currentSizes, selectedSize])
-
-  // Reset image index when variant changes
-  useEffect(() => {
-    setSelectedImageIndex(0)
-  }, [selectedVariantIndex])
+  let actualSelectedSize = selectedSize
+  if (currentSizes.length > 0 && !currentSizes.includes(selectedSize)) {
+    actualSelectedSize = currentSizes[0]
+  }
 
   const handleAddToCart = () => {
-    if (!selectedSize) {
+    if (!actualSelectedSize) {
       alert('Vui lòng chọn size')
       return
     }
@@ -81,7 +74,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
         name: product.name,
         price: product.priceNumber,
         image: currentImages[selectedImageIndex] || product.image,
-        size: selectedSize,
+        size: actualSelectedSize,
         color: selectedVariant?.color,
         colorHex: selectedVariant?.colorHex,
       })
@@ -224,7 +217,10 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                     {product.colorVariants.map((variant, index) => (
                       <button
                         key={index}
-                        onClick={() => setSelectedVariantIndex(index)}
+                        onClick={() => {
+                          setSelectedVariantIndex(index)
+                          setSelectedImageIndex(0)
+                        }}
                         className={`w-10 h-10 rounded-sm border-2 transition-all hover:scale-110 ${
                           selectedVariantIndex === index ? 'border-foreground' : 'border-border'
                         }`}
@@ -257,7 +253,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                         key={size}
                         onClick={() => setSelectedSize(size)}
                         className={`py-3 border-2 rounded-sm transition-all hover:scale-105 ${
-                          selectedSize === size
+                          actualSelectedSize === size
                             ? 'border-foreground bg-foreground text-background'
                             : 'border-border hover:border-foreground'
                         }`}

@@ -20,7 +20,6 @@ import { Header } from './Header/config'
 import { Homepage } from './globals/Homepage'
 import { PaymentMethods } from './globals/PaymentMethods'
 import { plugins } from './plugins'
-import AccountingView from '@/components/AccountingView'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { migrations } from './migrations'
 
@@ -64,7 +63,7 @@ export default buildConfig({
       afterNavLinks: ['@/components/AccountingLink'],
       views: {
         Accounting: {
-          Component: AccountingView as any,
+          Component: '@/components/AccountingView',
           path: '/accounting',
         },
       },

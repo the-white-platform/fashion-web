@@ -77,7 +77,6 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
 
   useEffect(() => {
     if (!emblaApi) return
-    onSelect()
     emblaApi.on('select', onSelect)
     emblaApi.on('reInit', onSelect)
 

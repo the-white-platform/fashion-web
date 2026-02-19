@@ -10,24 +10,22 @@ import PageClient from './page.client'
 export const revalidate = 600
 
 export default async function Page() {
+  let postsObj: any = null
+
   try {
     const payload = await getPayload({ config: configPromise })
 
-    const posts = await payload.find({
+    postsObj = await payload.find({
       collection: 'posts',
       depth: 1,
       limit: 12,
       overrideAccess: false,
     })
-
-    return (
-      <>
-        <PageClient />
-        <PostsLayout posts={posts} />
-      </>
-    )
   } catch (error) {
     console.warn('Failed to fetch posts, returning empty page:', error)
+  }
+
+  if (!postsObj) {
     return (
       <>
         <PageClient />
@@ -35,6 +33,13 @@ export default async function Page() {
       </>
     )
   }
+
+  return (
+    <>
+      <PageClient />
+      <PostsLayout posts={postsObj} />
+    </>
+  )
 }
 
 export function generateMetadata(): Metadata {

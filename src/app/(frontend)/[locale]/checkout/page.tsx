@@ -47,7 +47,7 @@ export default function CheckoutPage() {
   const { items: cartItems, getTotalPrice, clearCart } = useCart()
   const { user, updateProfile } = useUser()
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('shipping')
-  const [orderId, setOrderId] = useState('')
+  const [orderId, setOrderId] = useState(() => `TW${Date.now()}`)
 
   // Redirect if cart is empty
   useEffect(() => {
@@ -122,12 +122,7 @@ export default function CheckoutPage() {
     setCouponError('')
   }
 
-  // Pre-generate order ID if not exists
-  useEffect(() => {
-    if (!orderId) {
-      setOrderId(`TW${Date.now()}`)
-    }
-  }, [orderId])
+  // Order ID is pre-generated in useState
 
   const handleCompleteOrder = () => {
     // Add to order history
@@ -1114,12 +1109,14 @@ function AddressSelect({
   const [inputValue, setInputValue] = useState('')
 
   useEffect(() => {
-    const selected = options.find((o) => o.value === value)
-    if (selected) {
-      setInputValue(selected.label)
-    } else if (!value) {
-      setInputValue('')
-    }
+    setTimeout(() => {
+      const selected = options.find((o) => o.value === value)
+      if (selected) {
+        setInputValue(selected.label)
+      } else if (!value) {
+        setInputValue('')
+      }
+    }, 0)
   }, [value, options])
 
   const filteredOptions = options.filter((option) =>

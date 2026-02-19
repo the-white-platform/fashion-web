@@ -16,7 +16,7 @@
     "noEmit": true,
     "incremental": true,
     "tsBuildInfoFile": ".next/cache/.tsbuildinfo",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
@@ -36,7 +36,7 @@
       ],
       "@/*": [
         "./src/*"
-      ],
+      ]
     }
   },
   "include": [
@@ -44,7 +44,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "redirects.js",
-    "next.config.js"
+    "next.config.js",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
