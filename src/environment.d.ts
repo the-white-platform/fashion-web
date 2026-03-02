@@ -4,6 +4,9 @@ declare global {
       PAYLOAD_SECRET: string
       DATABASE_URI: string
       NEXT_PUBLIC_SERVER_URL: string
+      GCP_PROJECT_ID: string
+      GCP_REGION: string
+      VTO_BUCKET_NAME: string
     }
   }
 }
