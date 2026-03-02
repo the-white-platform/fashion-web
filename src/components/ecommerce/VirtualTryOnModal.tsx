@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Upload, User, Ruler, Weight, ChevronDown, Sparkles, X } from 'lucide-react'
+import { Upload, User, Sparkles, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import Image from 'next/image'
 
@@ -18,12 +18,9 @@ interface VirtualTryOnModalProps {
 
 export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModalProps) {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
-  const [height, setHeight] = useState('')
-  const [weight, setWeight] = useState('')
-  const [gender, setGender] = useState('')
-  const [notes, setNotes] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [result, setResult] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -47,30 +44,39 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
     }
   }
 
-  const handleGenerate = () => {
-    if (!uploadedImage || !height || !weight || !gender) {
-      alert('Vui lòng điền đầy đủ thông tin!')
-      return
-    }
-
+  const handleGenerate = async () => {
+    if (!uploadedImage) return
     setIsGenerating(true)
-    // Simulate AI processing
-    setTimeout(() => {
-      setResult(uploadedImage) // In real app, this would be the AI-generated result
+    setError(null)
+    try {
+      const res = await fetch('/api/vto/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personImage: uploadedImage,
+          productImage: product.image,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setError(data.error || 'Đã xảy ra lỗi. Vui lòng thử lại.')
+        return
+      }
+      setResult(data.image)
+    } catch (err) {
+      setError('Không thể kết nối đến server. Vui lòng thử lại.')
+    } finally {
       setIsGenerating(false)
-    }, 3000)
+    }
   }
 
   const handleReset = () => {
     setResult(null)
     setUploadedImage(null)
-    setHeight('')
-    setWeight('')
-    setGender('')
-    setNotes('')
+    setError(null)
   }
 
-  const isFormComplete = uploadedImage && height && weight && gender
+  const isFormComplete = !!uploadedImage
 
   return (
     <AnimatePresence>
@@ -118,7 +124,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
 
             {/* Main Content */}
             <div className="p-8 lg:p-12 space-y-12">
-              {/* Top Section - Product and Body Info */}
+              {/* Top Section - Product Preview and Photo Upload */}
               <div className="grid lg:grid-cols-2 gap-8">
                 {/* Step 1: Product Preview */}
                 <div className="bg-muted border-2 border-border rounded-none p-8 relative overflow-hidden group">
@@ -146,94 +152,6 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                   </div>
                 </div>
 
-                {/* Step 3: Body Info */}
-                <div className="bg-muted border-2 border-border rounded-none p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-10 h-10 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold shadow-lg">
-                      <span className="text-sm">03</span>
-                    </div>
-                    <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
-                      Thông Tin Số Đo
-                    </h3>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Height */}
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-[0.2em] mb-3 text-muted-foreground">
-                          Chiều cao (cm)
-                        </label>
-                        <div className="relative">
-                          <Ruler className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                          <input
-                            type="number"
-                            value={height}
-                            onChange={(e) => setHeight(e.target.value)}
-                            placeholder="170"
-                            className="w-full pl-12 pr-4 py-4 border-2 border-border bg-background rounded-none outline-none focus:border-primary transition-all font-bold text-foreground placeholder:text-muted-foreground/50"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Weight */}
-                      <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-[0.2em] mb-3 text-muted-foreground">
-                          Cân nặng (kg)
-                        </label>
-                        <div className="relative">
-                          <Weight className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                          <input
-                            type="number"
-                            value={weight}
-                            onChange={(e) => setWeight(e.target.value)}
-                            placeholder="65"
-                            className="w-full pl-12 pr-4 py-4 border-2 border-border bg-background rounded-none outline-none focus:border-primary transition-all font-bold text-foreground placeholder:text-muted-foreground/50"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Gender */}
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-[0.2em] mb-3 text-muted-foreground">
-                        Giới tính
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                        <select
-                          value={gender}
-                          onChange={(e) => setGender(e.target.value)}
-                          className="w-full pl-12 pr-4 py-4 border-2 border-border bg-background rounded-none outline-none focus:border-primary transition-all appearance-none font-bold uppercase tracking-widest text-sm text-foreground"
-                        >
-                          <option value="">Chọn giới tính</option>
-                          <option value="male">Nam</option>
-                          <option value="female">Nữ</option>
-                          <option value="other">Khác</option>
-                        </select>
-                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-foreground" />
-                      </div>
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-[0.2em] mb-3 text-muted-foreground">
-                        Ghi chú đặc biệt (tùy chọn)
-                      </label>
-                      <textarea
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                        placeholder="Ví dụ: Tôi thích form áo rộng rãi hơn..."
-                        rows={4}
-                        className="w-full px-5 py-4 border-2 border-border bg-background rounded-none outline-none focus:border-primary transition-all focus:ring-0 resize-none font-medium text-foreground placeholder:text-muted-foreground/50"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Section - Upload and Result Side by Side */}
-              <div className="grid lg:grid-cols-2 gap-8">
                 {/* Step 2: Upload Photo */}
                 <div className="bg-muted border-2 border-border rounded-none p-8">
                   <div className="flex items-center gap-4 mb-6">
@@ -283,70 +201,82 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                     />
                   </label>
                 </div>
+              </div>
 
-                {/* Result Panel */}
-                <div className="bg-muted border-2 border-border rounded-none p-8 relative overflow-hidden">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-10 h-10 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold shadow-lg animate-pulse">
-                      <Sparkles className="w-5 h-5 text-yellow-500" />
-                    </div>
-                    <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
-                      Kết Quả AI TRy-On
-                    </h3>
+              {/* Result Section */}
+              <div className="bg-muted border-2 border-border rounded-none p-8 relative overflow-hidden">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-10 h-10 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold shadow-lg animate-pulse">
+                    <Sparkles className="w-5 h-5 text-yellow-500" />
                   </div>
+                  <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
+                    Kết Quả AI Try-On
+                  </h3>
+                </div>
 
-                  <div className="bg-card border-4 border-foreground rounded-none p-12 flex flex-col items-center justify-center min-h-[450px] relative shadow-2xl overflow-hidden">
-                    {result ? (
-                      <div className="w-full space-y-6 text-center">
-                        <div className="relative w-full h-[350px] aspect-[3/4]">
-                          <Image
-                            src={result}
-                            alt="Virtual Try-On Result"
-                            fill
-                            className="object-contain rounded-none shadow-xl"
-                          />
-                        </div>
-                        <div className="inline-block bg-green-500 text-white px-4 py-2 uppercase text-[10px] font-bold tracking-widest animate-bounce">
-                          Độ chính xác 98%
-                        </div>
-                        <p className="text-sm font-bold uppercase tracking-wider text-foreground italic">
-                          Bạn trông thật tuyệt vời trong thiết kế của TheWhite!
+                <div className="bg-card border-4 border-foreground rounded-none p-12 flex flex-col items-center justify-center min-h-[350px] relative shadow-2xl overflow-hidden">
+                  {error ? (
+                    <div className="text-center space-y-4">
+                      <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
+                        <X className="w-8 h-8 text-red-500" />
+                      </div>
+                      <p className="text-sm font-bold text-red-500 uppercase tracking-wider">
+                        {error}
+                      </p>
+                      <button
+                        onClick={() => setError(null)}
+                        className="text-xs text-muted-foreground underline hover:text-foreground transition-colors uppercase tracking-widest font-bold"
+                      >
+                        Thử lại
+                      </button>
+                    </div>
+                  ) : result ? (
+                    <div className="w-full space-y-6 text-center">
+                      <div className="relative w-full h-[350px] aspect-[3/4]">
+                        <Image
+                          src={result}
+                          alt="Virtual Try-On Result"
+                          fill
+                          className="object-contain rounded-none shadow-xl"
+                        />
+                      </div>
+                      <p className="text-sm font-bold uppercase tracking-wider text-foreground italic">
+                        Bạn trông thật tuyệt vời trong thiết kế của TheWhite!
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-6">
+                      <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-border shadow-inner">
+                        <Sparkles className="w-12 h-12 text-muted-foreground" />
+                      </div>
+                      <div className="space-y-2">
+                        <h4 className="text-lg font-bold uppercase tracking-widest italic text-foreground">
+                          Chờ Xử Lý AI
+                        </h4>
+                        <p className="text-xs text-muted-foreground max-w-[280px] mx-auto font-medium leading-relaxed">
+                          {uploadedImage
+                            ? 'Nhấn nút "Tạo Thử Đồ Ảo" để bắt đầu quá trình mô phỏng'
+                            : 'Hãy hoàn thiện các bước trước đó để đánh thức AI'}
                         </p>
                       </div>
-                    ) : (
-                      <div className="text-center space-y-6">
-                        <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-border shadow-inner">
-                          <Sparkles className="w-12 h-12 text-muted-foreground" />
-                        </div>
-                        <div className="space-y-2">
-                          <h4 className="text-lg font-bold uppercase tracking-widest italic text-foreground">
-                            Chờ Xử Lý AI
-                          </h4>
-                          <p className="text-xs text-muted-foreground max-w-[280px] mx-auto font-medium leading-relaxed">
-                            {uploadedImage
-                              ? 'Nhấn nút "Tạo Thử Đồ Ảo" để bắt đầu quá trình mô phỏng'
-                              : 'Hãy hoàn thiện các bước trước đó để đánh thức AI'}
-                          </p>
-                        </div>
-                        {isGenerating && (
-                          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center space-y-6">
-                            <div className="relative">
-                              <div className="w-24 h-24 border-8 border-muted border-t-primary rounded-full animate-spin" />
-                              <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-yellow-500 animate-pulse" />
-                            </div>
-                            <div className="text-center">
-                              <p className="font-bold uppercase tracking-[0.4em] text-sm animate-pulse text-foreground">
-                                Đang Phân Tích Cơ Thể...
-                              </p>
-                              <p className="text-[10px] text-muted-foreground mt-2 uppercase font-medium">
-                                Vui lòng không đóng cửa sổ này
-                              </p>
-                            </div>
+                      {isGenerating && (
+                        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center space-y-6">
+                          <div className="relative">
+                            <div className="w-24 h-24 border-8 border-muted border-t-primary rounded-full animate-spin" />
+                            <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-yellow-500 animate-pulse" />
                           </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                          <div className="text-center">
+                            <p className="font-bold uppercase tracking-[0.4em] text-sm animate-pulse text-foreground">
+                              AI Đang Xử Lý (~15-30s)...
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-2 uppercase font-medium">
+                              Vui lòng không đóng cửa sổ này
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -380,7 +310,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                     {isGenerating ? (
                       <span className="flex items-center justify-center gap-4">
                         <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
-                        AI Đang Làm Việc...
+                        AI Đang Xử Lý (~15-30s)...
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-3">
