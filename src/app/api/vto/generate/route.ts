@@ -163,10 +163,7 @@ export async function POST(request: Request) {
     const generatedImage = result?.predictions?.[0]?.bytesBase64Encoded
 
     if (!generatedImage) {
-      return NextResponse.json(
-        { error: 'No image returned from Vertex AI' },
-        { status: 502 },
-      )
+      return NextResponse.json({ error: 'No image returned from Vertex AI' }, { status: 502 })
     }
 
     return NextResponse.json({ image: `data:image/png;base64,${generatedImage}` })
@@ -181,4 +178,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
-
