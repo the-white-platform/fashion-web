@@ -27,6 +27,10 @@ const nextConfig = {
         hostname: 'img.vietqr.io',
         protocol: 'https',
       },
+      {
+        hostname: 'storage.googleapis.com',
+        protocol: 'https',
+      },
     ],
   },
   reactStrictMode: true,
