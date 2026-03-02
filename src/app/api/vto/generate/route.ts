@@ -20,7 +20,66 @@ async function urlToBase64(url: string): Promise<string> {
   return Buffer.from(buffer).toString('base64')
 }
 
+// ---------------------------------------------------------------------------
+// In-memory sliding-window rate limiter (per IP)
+// ---------------------------------------------------------------------------
+const RATE_LIMIT_MAX = 5
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
+
+/** IP → list of request timestamps (ms) within the current window. */
+const rateLimitMap = new Map<string, number[]>()
+let rateLimitRequestCount = 0
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for')
+  if (forwarded) {
+    const first = forwarded.split(',')[0].trim()
+    if (first) return first
+  }
+  const realIp = req.headers.get('x-real-ip')
+  if (realIp) return realIp.trim()
+  return 'unknown'
+}
+
+/** Remove stale entries to prevent unbounded memory growth. */
+function cleanupRateLimitMap(now: number) {
+  for (const [ip, timestamps] of rateLimitMap) {
+    const valid = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS)
+    if (valid.length === 0) {
+      rateLimitMap.delete(ip)
+    } else {
+      rateLimitMap.set(ip, valid)
+    }
+  }
+}
+
 export async function POST(request: Request) {
+  // --- Rate-limit check (before anything else) ---
+  const now = Date.now()
+  const clientIp = getClientIp(request)
+
+  rateLimitRequestCount++
+  if (rateLimitRequestCount % 100 === 0 || rateLimitMap.size > 1000) {
+    cleanupRateLimitMap(now)
+  }
+
+  const timestamps = (rateLimitMap.get(clientIp) ?? []).filter(
+    (t) => now - t < RATE_LIMIT_WINDOW_MS,
+  )
+
+  if (timestamps.length >= RATE_LIMIT_MAX) {
+    const oldestInWindow = timestamps[0]
+    const retryAfterSeconds = (RATE_LIMIT_WINDOW_MS - (now - oldestInWindow)) / 1000
+    return NextResponse.json(
+      { error: 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.' },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterSeconds)) } },
+    )
+  }
+
+  timestamps.push(now)
+  rateLimitMap.set(clientIp, timestamps)
+
+  // --- Original handler logic ---
   const projectId = process.env.GCP_PROJECT_ID
   const region = process.env.GCP_REGION
 
