@@ -64,6 +64,9 @@ const nextConfig = {
       'swr',
     ],
   },
+  turbopack: {
+    root: '.',
+  },
 }
 
 export default withPayload(withNextIntl(nextConfig))
