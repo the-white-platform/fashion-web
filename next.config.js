@@ -65,7 +65,7 @@ const nextConfig = {
     ],
   },
   turbopack: {
-    root: '.',
+    root: import.meta.dirname,
   },
 }
 
