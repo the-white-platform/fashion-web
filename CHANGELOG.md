@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.12.2](https://github.com/the-white-platform/fashion-web/compare/v0.12.1...v0.12.2) (2026-03-04)
+
+
+### Bug Fixes
+
+* set turbopack.root to absolute path ([#33](https://github.com/the-white-platform/fashion-web/issues/33)) ([990c721](https://github.com/the-white-platform/fashion-web/commit/990c72104033be353e5a356f1c8ebbaf3138fe53))
+
 ### [0.12.1](https://github.com/the-white-platform/fashion-web/compare/v0.12.0...v0.12.1) (2026-03-03)
 
 ## [0.12.0](https://github.com/the-white-platform/fashion-web/compare/v0.11.1...v0.12.0) (2026-03-02)
