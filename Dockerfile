@@ -45,6 +45,7 @@ ENV NODE_OPTIONS=--max-old-space-size=4096
 ARG PAYLOAD_SECRET
 ARG DATABASE_URI
 ARG NEXT_PUBLIC_SERVER_URL
+ENV NEXT_PUBLIC_SERVER_URL=$NEXT_PUBLIC_SERVER_URL
 
 # Skip type generation in Docker (not needed, saves time)
 # Generate Payload types and build Next.js with cache mounts
