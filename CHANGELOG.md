@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.13.0](https://github.com/the-white-platform/fashion-web/compare/v0.12.2...v0.13.0) (2026-03-04)
+
+
+### Features
+
+* **vto:** upgrade to virtual-try-on-001 model and improve image handling ([#34](https://github.com/the-white-platform/fashion-web/issues/34)) ([6753638](https://github.com/the-white-platform/fashion-web/commit/6753638b1c5e0caf9591bfdcef8484e70576ef2e))
+
 ### [0.12.2](https://github.com/the-white-platform/fashion-web/compare/v0.12.1...v0.12.2) (2026-03-04)
 
 
