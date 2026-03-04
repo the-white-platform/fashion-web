@@ -14,10 +14,26 @@ function stripDataUrlPrefix(value: string): string {
 async function urlToBase64(url: string): Promise<string> {
   const res = await fetch(url)
   if (!res.ok) {
-    throw new Error(`Failed to fetch product image URL: ${res.status}`)
+    throw new Error(`Failed to fetch image URL: ${res.status}`)
   }
   const buffer = await res.arrayBuffer()
   return Buffer.from(buffer).toString('base64')
+}
+
+/**
+ * Resolve an image value to base64.
+ * Handles absolute URLs (http/https), relative URLs (starting with /),
+ * and base64 / data-URL strings.
+ */
+async function resolveToBase64(value: string, requestUrl: string): Promise<string> {
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return urlToBase64(value)
+  }
+  if (value.startsWith('/')) {
+    const origin = new URL(requestUrl).origin
+    return urlToBase64(`${origin}${value}`)
+  }
+  return stripDataUrlPrefix(value)
 }
 
 // ---------------------------------------------------------------------------
@@ -107,15 +123,9 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Resolve product image — fetch if it's a URL, otherwise use as-is
-    let productBase64: string
-    if (productImage.startsWith('http://') || productImage.startsWith('https://')) {
-      productBase64 = await urlToBase64(productImage)
-    } else {
-      productBase64 = stripDataUrlPrefix(productImage)
-    }
-
-    const personBase64 = stripDataUrlPrefix(personImage)
+    // Resolve images — handles absolute URLs, relative URLs, and base64/data URLs
+    const productBase64 = await resolveToBase64(productImage, request.url)
+    const personBase64 = await resolveToBase64(personImage, request.url)
 
     // Get access token via ADC
     const client = await auth.getClient()
@@ -125,7 +135,7 @@ export async function POST(request: Request) {
       throw new Error('Failed to obtain access token')
     }
 
-    const endpoint = `https://${region}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/virtual-try-on-preview-08-04:predict`
+    const endpoint = `https://${region}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/virtual-try-on-001:predict`
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 120_000)
@@ -139,8 +149,14 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         instances: [
           {
-            personImage: { bytesBase64Encoded: personBase64 },
-            productImage: { bytesBase64Encoded: productBase64 },
+            personImage: {
+              image: { bytesBase64Encoded: personBase64 },
+            },
+            productImages: [
+              {
+                image: { bytesBase64Encoded: productBase64 },
+              },
+            ],
           },
         ],
         parameters: { sampleCount: 1 },

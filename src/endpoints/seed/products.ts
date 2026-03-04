@@ -46,20 +46,20 @@ type ImageSet = {
 const placeholderImages: Record<string, ImageSet> = {
   sportswear: {
     black: [
-      'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=800&q=80',
-      'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=800&q=80',
+      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80',
+      'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80',
     ],
     white: [
-      'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80',
-      'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80',
+      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&q=80',
+      'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&q=80',
     ],
     gray: [
-      'https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=800&q=80',
-      'https://images.unsplash.com/photo-1489987707025-afc232f7ea0f?w=800&q=80',
+      'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&q=80',
+      'https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?w=800&q=80',
     ],
     blue: [
-      'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=800&q=80',
-      'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=800&q=80',
+      'https://images.unsplash.com/photo-1564557287817-3785e38ec1f5?w=800&q=80',
+      'https://images.unsplash.com/photo-1618354691551-44de113f0164?w=800&q=80',
     ],
   },
   running: {
@@ -74,12 +74,12 @@ const placeholderImages: Record<string, ImageSet> = {
   },
   gym: {
     black: [
-      'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80',
-      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&q=80',
+      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=800&q=80',
+      'https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=800&q=80',
     ],
     gray: [
-      'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&q=80',
-      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&q=80',
+      'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&q=80',
+      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=800&q=80',
     ],
   },
 }
