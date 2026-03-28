@@ -6,7 +6,7 @@ export const Users: CollectionConfig = {
   slug: 'users',
   access: {
     admin: authenticated,
-    create: authenticated,
+    create: () => true,
     delete: authenticated,
     read: authenticated,
     update: authenticated,
@@ -19,6 +19,10 @@ export const Users: CollectionConfig = {
   fields: [
     {
       name: 'name',
+      type: 'text',
+    },
+    {
+      name: 'phone',
       type: 'text',
     },
     {
@@ -102,10 +106,10 @@ export const Users: CollectionConfig = {
           name: 'type',
           type: 'select',
           options: [
-            { label: 'Card', value: 'card' },
-            { label: 'Bank', value: 'bank' },
             { label: 'COD', value: 'cod' },
+            { label: 'Bank Transfer', value: 'bank_transfer' },
             { label: 'MoMo', value: 'momo' },
+            { label: 'VNPay', value: 'vnpay' },
           ],
         },
         {
