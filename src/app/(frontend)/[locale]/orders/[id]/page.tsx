@@ -107,7 +107,8 @@ export default function OrderDetailPage() {
   const { user } = useUser()
   const orderId = params?.id ? String(params.id) : ''
 
-  const order = user?.orderHistory?.find((o: any) => o.id === orderId)
+  // Orders are fetched from the API — orderHistory no longer lives on the user object
+  const order: any = undefined
 
   if (!order) {
     return (

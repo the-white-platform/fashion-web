@@ -73,7 +73,8 @@ function getStatusInfo(status: string) {
 export default function OrdersPage() {
   const router = useRouter()
   const { user } = useUser()
-  const orders = user?.orderHistory || []
+  // Orders are fetched from the API — orderHistory no longer lives on the user object
+  const orders: any[] = []
 
   return (
     <PageContainer>

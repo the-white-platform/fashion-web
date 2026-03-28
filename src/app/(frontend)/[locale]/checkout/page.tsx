@@ -130,8 +130,9 @@ export default function CheckoutPage() {
       coupon: appliedCoupon,
     }
 
-    const updatedOrderHistory = [...(user?.orderHistory || []), newOrder]
-    updateProfile({ orderHistory: updatedOrderHistory })
+    // TODO: POST to /api/orders to persist the order
+    // updateProfile no longer accepts orderHistory — orders live in the Orders collection
+    void newOrder
 
     clearCart()
     setCurrentStep('confirmation')

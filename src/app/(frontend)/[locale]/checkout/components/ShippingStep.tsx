@@ -35,9 +35,9 @@ export function ShippingStep({
     name: '',
     phone: '',
     address: '',
-    city: '',
-    district: '',
-    ward: '',
+    province: { id: '', name: '' },
+    district: { id: '', name: '' },
+    ward: { id: '', name: '' },
   })
 
   const [provinces, setProvinces] = useState<any[]>([])
@@ -61,14 +61,14 @@ export function ShippingStep({
     const province = provinces.find((p) => String(p.code) === provinceCode)
     setNewAddress({
       ...newAddress,
-      city: province?.name || '',
-      district: '',
-      ward: '',
+      province: province ? { id: province.id, name: province.name } : { id: '', name: '' },
+      district: { id: '', name: '' },
+      ward: { id: '', name: '' },
     })
     setDistricts([])
     setWards([])
 
-    if (provinceCode) {
+    if (provinceCode && province) {
       try {
         const res = await fetch(
           `/api/districts?where[province][equals]=${province.id}&limit=100&sort=name`,
@@ -85,12 +85,12 @@ export function ShippingStep({
     const district = districts.find((d) => String(d.code) === districtCode)
     setNewAddress({
       ...newAddress,
-      district: district?.name || '',
-      ward: '',
+      district: district ? { id: district.id, name: district.name } : { id: '', name: '' },
+      ward: { id: '', name: '' },
     })
     setWards([])
 
-    if (districtCode) {
+    if (districtCode && district) {
       try {
         const res = await fetch(
           `/api/wards?where[district][equals]=${district.id}&limit=100&sort=name`,
@@ -107,7 +107,7 @@ export function ShippingStep({
     const ward = wards.find((w) => String(w.code) === wardCode)
     setNewAddress({
       ...newAddress,
-      ward: ward?.name || '',
+      ward: ward ? { id: ward.id, name: ward.name } : { id: '', name: '' },
     })
   }
 
@@ -120,7 +120,7 @@ export function ShippingStep({
       return
     }
     if (showNewAddress) {
-      if (!newAddress.name || !newAddress.phone || !newAddress.address || !newAddress.city) {
+      if (!newAddress.name || !newAddress.phone || !newAddress.address || !newAddress.province.id) {
         alert(t('addressInfo'))
         return
       }
@@ -130,7 +130,7 @@ export function ShippingStep({
           name: newAddress.name,
           phone: newAddress.phone,
           address: newAddress.address,
-          city: newAddress.city,
+          province: newAddress.province,
           district: newAddress.district,
           ward: newAddress.ward,
           isDefault: user?.shippingAddresses?.length === 0,
@@ -224,7 +224,7 @@ export function ShippingStep({
               <Label>{t('city')} *</Label>
               <AddressSelect
                 options={provinces.map((p) => ({ label: p.name, value: String(p.code) }))}
-                value={provinces.find((p) => p.name === newAddress.city)?.code}
+                value={provinces.find((p) => p.id === newAddress.province.id)?.code}
                 onChange={handleProvinceChange}
                 placeholder={t('selectCity')}
                 emptyText={t('noCityFound')}
@@ -234,22 +234,22 @@ export function ShippingStep({
               <Label>{t('district')} *</Label>
               <AddressSelect
                 options={districts.map((d) => ({ label: d.name, value: String(d.code) }))}
-                value={districts.find((d) => d.name === newAddress.district)?.code}
+                value={districts.find((d) => d.id === newAddress.district.id)?.code}
                 onChange={handleDistrictChange}
                 placeholder={t('selectDistrict')}
                 emptyText={t('noDistrictFound')}
-                disabled={!newAddress.city}
+                disabled={!newAddress.province.id}
               />
             </div>
             <div className="flex flex-col gap-2">
               <Label>{t('ward')} *</Label>
               <AddressSelect
                 options={wards.map((w) => ({ label: w.name, value: String(w.code) }))}
-                value={wards.find((w) => w.name === newAddress.ward)?.code}
+                value={wards.find((w) => w.id === newAddress.ward.id)?.code}
                 onChange={handleWardChange}
                 placeholder={t('selectWard')}
                 emptyText={t('noWardFound')}
-                disabled={!newAddress.district}
+                disabled={!newAddress.district.id}
               />
             </div>
           </div>

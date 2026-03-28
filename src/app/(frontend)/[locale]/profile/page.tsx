@@ -239,37 +239,8 @@ export default function ProfilePage() {
           {activeTab === 'orders' && (
             <div className="bg-card rounded-sm border border-border p-6 md:p-8">
               <h2 className="text-2xl uppercase tracking-wide mb-6">{t('profile.orders')}</h2>
-              {user?.orderHistory && user.orderHistory.length > 0 ? (
-                <div className="space-y-4">
-                  {user.orderHistory
-                    .slice()
-                    .reverse()
-                    .map((order: any) => (
-                      <Link
-                        key={order.id}
-                        href={`/orders/${order.id}`}
-                        className="block border border-border rounded-sm p-4 hover:border-primary transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="font-medium text-foreground">Đơn hàng #{order.id}</p>
-                            <p className="text-muted-foreground text-sm">
-                              {new Date(order.date).toLocaleDateString('vi-VN')}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium text-foreground">
-                              {order.total.toLocaleString('vi-VN')}₫
-                            </p>
-                            <p className="text-muted-foreground text-sm capitalize">
-                              {order.status}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                </div>
-              ) : (
+              {/* TODO: fetch orders from /api/orders?where[customer][equals]=<user.id> */}
+              {false ? null : (
                 <div className="text-center py-12">
                   <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
                   <p className="text-muted-foreground mb-4">Bạn chưa có đơn hàng nào</p>

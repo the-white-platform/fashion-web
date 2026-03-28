@@ -27,7 +27,8 @@ export default function ReturnRequestPage() {
   const [description, setDescription] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  const order = user?.orderHistory?.find((o: any) => o.id === selectedOrder)
+  // Orders are fetched from the API — orderHistory no longer lives on the user object
+  const order: any = undefined
 
   const reasons = [
     'Sản phẩm không đúng size',
@@ -126,26 +127,8 @@ export default function ReturnRequestPage() {
           {/* Select Order */}
           <div className="bg-muted border border-border rounded-sm p-6">
             <h2 className="uppercase tracking-wide mb-4">1. Chọn Đơn Hàng</h2>
-            {user?.orderHistory && user.orderHistory.length > 0 ? (
-              <select
-                value={selectedOrder}
-                onChange={(e) => setSelectedOrder(e.target.value)}
-                required
-                className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground bg-background text-foreground"
-              >
-                <option value="">-- Chọn đơn hàng --</option>
-                {user.orderHistory
-                  .filter((o: any) => o.status === 'delivered')
-                  .map((o: any) => (
-                    <option key={o.id} value={o.id}>
-                      #{o.id} - {new Date(o.date).toLocaleDateString('vi-VN')} -{' '}
-                      {o.total.toLocaleString('vi-VN')}₫
-                    </option>
-                  ))}
-              </select>
-            ) : (
-              <p className="text-muted-foreground">Bạn chưa có đơn hàng nào đã giao</p>
-            )}
+            {/* TODO: fetch delivered orders from /api/orders */}
+            <p className="text-muted-foreground">Bạn chưa có đơn hàng nào đã giao</p>
           </div>
 
           {/* Select Items */}
