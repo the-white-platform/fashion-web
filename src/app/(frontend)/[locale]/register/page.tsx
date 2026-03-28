@@ -83,10 +83,14 @@ export default function RegisterPage() {
 
     // Try to register
     try {
-      await register(formData.fullName, formData.email, formData.password, formData.phone)
-      router.push('/profile')
-    } catch (err: any) {
-      setError(err.message || 'Email đã được sử dụng. Vui lòng sử dụng email khác.')
+      const success = await register(formData.fullName, formData.email, formData.password, formData.phone)
+      if (success) {
+        router.push('/profile')
+      } else {
+        setError('Đăng ký thất bại. Vui lòng kiểm tra thông tin và thử lại.')
+      }
+    } catch {
+      setError('Đăng ký thất bại. Vui lòng kiểm tra thông tin và thử lại.')
     } finally {
       setIsLoading(false)
     }

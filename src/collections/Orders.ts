@@ -98,6 +98,7 @@ export const Orders: CollectionConfig = {
               name: 'customerName',
               type: 'text',
               required: true,
+              maxLength: 100,
               label: { vi: 'Họ và tên', en: 'Full Name' },
             },
             {
@@ -115,6 +116,7 @@ export const Orders: CollectionConfig = {
               name: 'customerPhone',
               type: 'text',
               required: true,
+              maxLength: 20,
               label: { vi: 'Số điện thoại', en: 'Phone Number' },
             },
             {
@@ -144,6 +146,7 @@ export const Orders: CollectionConfig = {
           name: 'address',
           type: 'text',
           required: true,
+          maxLength: 300,
           label: { vi: 'Địa chỉ', en: 'Address' },
         },
         {
@@ -184,6 +187,7 @@ export const Orders: CollectionConfig = {
         {
           name: 'notes',
           type: 'textarea',
+          maxLength: 500,
           label: { vi: 'Ghi chú giao hàng', en: 'Delivery Notes' },
         },
       ],
@@ -211,6 +215,7 @@ export const Orders: CollectionConfig = {
               name: 'productName',
               type: 'text',
               required: true,
+              maxLength: 200,
               label: { vi: 'Tên sản phẩm', en: 'Product Name' },
               admin: {
                 description: {
@@ -222,6 +227,7 @@ export const Orders: CollectionConfig = {
             {
               name: 'variant',
               type: 'text',
+              maxLength: 100,
               label: { vi: 'Màu sắc', en: 'Color Variant' },
             },
           ],
@@ -393,6 +399,7 @@ export const Orders: CollectionConfig = {
     {
       name: 'adminNotes',
       type: 'textarea',
+      maxLength: 1000,
       label: { vi: 'Ghi chú nội bộ', en: 'Admin Notes' },
       admin: {
         description: {

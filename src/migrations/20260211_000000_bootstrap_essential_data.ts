@@ -5,7 +5,11 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
 
   // 1. Admin user
   const adminEmail = process.env.ADMIN_EMAIL || 'admin@thewhite.vn'
-  const adminPassword = process.env.ADMIN_PASSWORD || 'TheWhite@2024'
+  const adminPassword = process.env.ADMIN_PASSWORD
+  if (!adminPassword && process.env.NODE_ENV === 'production') {
+    throw new Error('ADMIN_PASSWORD environment variable is required in production')
+  }
+  const resolvedAdminPassword = adminPassword || 'TheWhite@2024'
   const adminName = process.env.ADMIN_NAME || 'Admin'
 
   const { totalDocs: userExists } = await payload.find({
@@ -16,7 +20,7 @@ export async function up({ payload, req }: MigrateUpArgs): Promise<void> {
   if (userExists === 0) {
     await payload.create({
       collection: 'users',
-      data: { name: adminName, email: adminEmail, password: adminPassword },
+      data: { name: adminName, email: adminEmail, password: resolvedAdminPassword },
     })
     payload.logger.info(`  ✓ Created admin user: ${adminEmail}`)
   } else {

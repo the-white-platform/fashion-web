@@ -16,6 +16,18 @@ export const Users: CollectionConfig = {
     useAsTitle: 'name',
   },
   auth: true,
+  hooks: {
+    beforeChange: [
+      async ({ data, operation }) => {
+        if ((operation === 'create' || data.password) && data.password) {
+          if (data.password.length < 8) {
+            throw new Error('Password must be at least 8 characters')
+          }
+        }
+        return data
+      },
+    ],
+  },
   fields: [
     {
       name: 'name',

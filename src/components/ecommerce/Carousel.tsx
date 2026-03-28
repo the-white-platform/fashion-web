@@ -141,10 +141,9 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
                         <div className="mb-6 inline-block bg-white text-black px-4 py-2 text-sm tracking-widest rounded-sm">
                           {tCommon('collection')}
                         </div>
-                        <h2
-                          className="text-6xl lg:text-9xl uppercase leading-[0.9] mb-8 font-heading font-bold tracking-tight text-white"
-                          dangerouslySetInnerHTML={{ __html: slideTitle }}
-                        />
+                        <h2 className="text-6xl lg:text-9xl uppercase leading-[0.9] mb-8 font-heading font-bold tracking-tight text-white whitespace-pre-line">
+                          {slideTitle.replace(/<br\s*\/?>/gi, '\n')}
+                        </h2>
                         <p className="text-xl lg:text-2xl text-white mb-10 font-medium tracking-wide max-w-2xl text-shadow-sm">
                           {slideSubtitle}
                         </p>
