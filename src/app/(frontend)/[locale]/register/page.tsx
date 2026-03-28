@@ -7,10 +7,12 @@ import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { Logo } from '@/components/shared/Logo/Logo'
+import { useTranslations } from 'next-intl'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { register } = useUser()
+  const t = useTranslations()
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -39,32 +41,32 @@ export default function RegisterPage() {
       !formData.password ||
       !formData.confirmPassword
     ) {
-      setError('Vui lòng nhập đầy đủ thông tin')
+      setError(t('auth.requiredFields'))
       return false
     }
 
     if (!formData.email.includes('@')) {
-      setError('Email không hợp lệ')
+      setError(t('auth.invalidEmail'))
       return false
     }
 
     if (formData.phone.length < 10) {
-      setError('Số điện thoại không hợp lệ')
+      setError(t('auth.invalidPhone'))
       return false
     }
 
     if (formData.password.length < 8) {
-      setError('Mật khẩu phải có ít nhất 8 ký tự')
+      setError(t('auth.passwordMinLength'))
       return false
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp')
+      setError(t('auth.passwordMismatch'))
       return false
     }
 
     if (!acceptTerms) {
-      setError('Vui lòng đồng ý với Điều Khoản Sử Dụng')
+      setError(t('auth.mustAcceptTerms'))
       return false
     }
 
@@ -87,10 +89,10 @@ export default function RegisterPage() {
       if (success) {
         router.push('/profile')
       } else {
-        setError('Đăng ký thất bại. Vui lòng kiểm tra thông tin và thử lại.')
+        setError(t('auth.registerFailed'))
       }
     } catch {
-      setError('Đăng ký thất bại. Vui lòng kiểm tra thông tin và thử lại.')
+      setError(t('auth.registerFailed'))
     } finally {
       setIsLoading(false)
     }
@@ -115,9 +117,9 @@ export default function RegisterPage() {
             <UserPlus className="w-8 h-8" />
           </div>
           <h1 className="text-3xl md:text-4xl uppercase tracking-wide mb-2 text-foreground">
-            Đăng Ký
+            {t('auth.register')}
           </h1>
-          <p className="text-muted-foreground">Tạo tài khoản TheWhite của bạn</p>
+          <p className="text-muted-foreground">{t('auth.createAccount')}</p>
         </div>
 
         {/* Register Form */}
@@ -127,7 +129,7 @@ export default function RegisterPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-sm text-sm"
+              className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-sm text-sm"
             >
               {error}
             </motion.div>
@@ -136,7 +138,7 @@ export default function RegisterPage() {
           {/* Full Name */}
           <div>
             <label htmlFor="fullName" className="block text-sm uppercase tracking-wide mb-2">
-              Họ và Tên
+              {t('auth.fullName')}
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -147,7 +149,7 @@ export default function RegisterPage() {
                 value={formData.fullName}
                 onChange={handleChange}
                 className="w-full pl-12 pr-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
-                placeholder="Nguyễn Văn A"
+                placeholder={t('auth.fullNamePlaceholder')}
                 required
               />
             </div>
@@ -176,7 +178,7 @@ export default function RegisterPage() {
           {/* Phone */}
           <div>
             <label htmlFor="phone" className="block text-sm uppercase tracking-wide mb-2">
-              Số Điện Thoại
+              {t('auth.phone')}
             </label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -196,7 +198,7 @@ export default function RegisterPage() {
           {/* Password */}
           <div>
             <label htmlFor="password" className="block text-sm uppercase tracking-wide mb-2">
-              Mật Khẩu
+              {t('auth.password')}
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -218,13 +220,13 @@ export default function RegisterPage() {
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Tối thiểu 8 ký tự</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('auth.passwordHint')}</p>
           </div>
 
           {/* Confirm Password */}
           <div>
             <label htmlFor="confirmPassword" className="block text-sm uppercase tracking-wide mb-2">
-              Xác Nhận Mật Khẩu
+              {t('auth.confirmPassword')}
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -259,15 +261,18 @@ export default function RegisterPage() {
               required
             />
             <label htmlFor="terms" className="text-sm text-muted-foreground">
-              Tôi đồng ý với{' '}
-              <Link href="/terms-of-use" className="text-foreground underline hover:opacity-80">
-                Điều Khoản Sử Dụng
-              </Link>{' '}
-              và{' '}
-              <Link href="/privacy-policy" className="text-foreground underline hover:opacity-80">
-                Chính Sách Bảo Mật
-              </Link>{' '}
-              của TheWhite
+              {t.rich('auth.agreeTermsRegister', {
+                terms: (chunks) => (
+                  <Link href="/terms-of-use" className="text-foreground underline hover:opacity-80">
+                    {chunks}
+                  </Link>
+                ),
+                privacy: (chunks) => (
+                  <Link href="/privacy-policy" className="text-foreground underline hover:opacity-80">
+                    {chunks}
+                  </Link>
+                ),
+              })}
             </label>
           </div>
 
@@ -280,12 +285,12 @@ export default function RegisterPage() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                <span>Đang xử lý...</span>
+                <span>{t('common.processing')}</span>
               </>
             ) : (
               <>
                 <UserPlus className="w-5 h-5" />
-                <span>Đăng Ký</span>
+                <span>{t('auth.register')}</span>
               </>
             )}
           </button>
@@ -297,19 +302,19 @@ export default function RegisterPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-background text-muted-foreground uppercase tracking-wide">
-                Hoặc
+                {t('auth.or')}
               </span>
             </div>
           </div>
 
           {/* Login Link */}
           <div className="text-center">
-            <p className="text-muted-foreground mb-4">Đã có tài khoản?</p>
+            <p className="text-muted-foreground mb-4">{t('auth.hasAccount')}</p>
             <Link
               href="/login"
               className="w-full block border-2 border-foreground text-foreground py-4 rounded-sm hover:bg-muted transition-colors uppercase tracking-wider text-center"
             >
-              Đăng Nhập
+              {t('auth.login')}
             </Link>
           </div>
         </form>

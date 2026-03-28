@@ -254,7 +254,7 @@ export default function SizeGuidePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm uppercase tracking-wide mb-2">
-                    Chiều Cao (cm) <span className="text-red-500">*</span>
+                    Chiều Cao (cm) <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -270,7 +270,7 @@ export default function SizeGuidePage() {
 
                 <div>
                   <label className="block text-sm uppercase tracking-wide mb-2">
-                    Cân Nặng (kg) <span className="text-red-500">*</span>
+                    Cân Nặng (kg) <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Weight className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -316,7 +316,7 @@ export default function SizeGuidePage() {
               </div>
 
               <p className="text-xs text-muted-foreground">
-                <span className="text-red-500">*</span> Bắt buộc. Các thông số khác giúp kết quả
+                <span className="text-destructive">*</span> Bắt buộc. Các thông số khác giúp kết quả
                 chính xác hơn.
               </p>
 
@@ -357,18 +357,18 @@ export default function SizeGuidePage() {
                     <div className="flex items-center justify-center gap-2">
                       {confidence >= 80 ? (
                         <>
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                          <span className="text-green-600 font-medium">Rất phù hợp</span>
+                          <CheckCircle className="w-5 h-5 text-success" />
+                          <span className="text-success font-medium">Rất phù hợp</span>
                         </>
                       ) : confidence >= 60 ? (
                         <>
-                          <AlertCircle className="w-5 h-5 text-yellow-600" />
-                          <span className="text-yellow-600 font-medium">Khá phù hợp</span>
+                          <AlertCircle className="w-5 h-5 text-warning" />
+                          <span className="text-warning font-medium">Khá phù hợp</span>
                         </>
                       ) : (
                         <>
-                          <TrendingUp className="w-5 h-5 text-orange-600" />
-                          <span className="text-orange-600 font-medium">Tham khảo</span>
+                          <TrendingUp className="w-5 h-5 text-warning" />
+                          <span className="text-warning font-medium">Tham khảo</span>
                         </>
                       )}
                     </div>

@@ -89,8 +89,8 @@ export default function ContactPage() {
                   animate={{ opacity: 1, scale: 1 }}
                   className="text-center py-12"
                 >
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Send className="w-8 h-8 text-green-600" />
+                  <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Send className="w-8 h-8 text-success" />
                   </div>
                   <h3 className="text-xl mb-2">Gửi Thành Công!</h3>
                   <p className="text-muted-foreground">Chúng tôi sẽ phản hồi trong vòng 24h</p>

@@ -78,7 +78,7 @@ export default function ReturnPolicyPage() {
             className="bg-card border-2 border-border rounded-sm p-8"
           >
             <div className="flex items-center gap-3 mb-4">
-              <CheckCircle className="w-6 h-6 text-green-600" />
+              <CheckCircle className="w-6 h-6 text-success" />
               <h2 className="text-2xl uppercase tracking-wide">Điều Kiện Đổi Trả</h2>
             </div>
             <div className="space-y-3 text-muted-foreground">
@@ -164,7 +164,7 @@ export default function ReturnPolicyPage() {
             className="bg-card border-2 border-border rounded-sm p-8"
           >
             <div className="flex items-center gap-3 mb-4">
-              <XCircle className="w-6 h-6 text-red-600" />
+              <XCircle className="w-6 h-6 text-destructive" />
               <h2 className="text-2xl uppercase tracking-wide">Trường Hợp Không Áp Dụng</h2>
             </div>
             <div className="space-y-3 text-muted-foreground">

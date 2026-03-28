@@ -7,10 +7,12 @@ import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { Logo } from '@/components/shared/Logo/Logo'
+import { useTranslations } from 'next-intl'
 
 export default function LoginPage() {
   const router = useRouter()
   const { login } = useUser()
+  const t = useTranslations()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -24,13 +26,13 @@ export default function LoginPage() {
 
     // Validation
     if (!email || !password) {
-      setError('Vui lòng nhập đầy đủ thông tin')
+      setError(t('auth.requiredFields'))
       setIsLoading(false)
       return
     }
 
     if (!email.includes('@')) {
-      setError('Email không hợp lệ')
+      setError(t('auth.invalidEmail'))
       setIsLoading(false)
       return
     }
@@ -40,7 +42,7 @@ export default function LoginPage() {
       await login(email, password)
       router.push('/profile')
     } catch (err: any) {
-      setError(err.message || 'Email hoặc mật khẩu không chính xác')
+      setError(err.message || t('auth.invalidCredentials'))
     } finally {
       setIsLoading(false)
     }
@@ -64,8 +66,8 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-foreground text-background rounded-sm mb-6">
             <LogIn className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl md:text-4xl uppercase tracking-wide mb-2">Đăng Nhập</h1>
-          <p className="text-muted-foreground">Chào mừng bạn trở lại TheWhite</p>
+          <h1 className="text-3xl md:text-4xl uppercase tracking-wide mb-2">{t('auth.login')}</h1>
+          <p className="text-muted-foreground">{t('auth.welcomeBack')}</p>
         </div>
 
         {/* Login Form */}
@@ -75,7 +77,7 @@ export default function LoginPage() {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-sm text-sm"
+              className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-sm text-sm"
             >
               {error}
             </motion.div>
@@ -103,7 +105,7 @@ export default function LoginPage() {
           {/* Password */}
           <div>
             <label htmlFor="password" className="block text-sm uppercase tracking-wide mb-2">
-              Mật Khẩu
+              {t('auth.password')}
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -130,10 +132,10 @@ export default function LoginPage() {
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 cursor-pointer">
               <input type="checkbox" className="w-4 h-4 rounded" />
-              <span className="text-muted-foreground">Nhớ đăng nhập</span>
+              <span className="text-muted-foreground">{t('auth.rememberMe')}</span>
             </label>
             <Link href="#" className="text-foreground hover:underline">
-              Quên mật khẩu?
+              {t('auth.forgotPassword')}
             </Link>
           </div>
 
@@ -146,12 +148,12 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                <span>Đang xử lý...</span>
+                <span>{t('common.processing')}</span>
               </>
             ) : (
               <>
                 <LogIn className="w-5 h-5" />
-                <span>Đăng Nhập</span>
+                <span>{t('auth.login')}</span>
               </>
             )}
           </button>
@@ -163,26 +165,26 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-background text-muted-foreground uppercase tracking-wide">
-                Hoặc
+                {t('auth.or')}
               </span>
             </div>
           </div>
 
           {/* Register Link */}
           <div className="text-center">
-            <p className="text-muted-foreground mb-4">Chưa có tài khoản?</p>
+            <p className="text-muted-foreground mb-4">{t('auth.noAccount')}</p>
             <Link
               href="/register"
               className="w-full block border-2 border-foreground text-foreground py-4 rounded-sm hover:bg-muted transition-colors uppercase tracking-wider text-center"
             >
-              Đăng Ký Ngay
+              {t('auth.registerNow')}
             </Link>
           </div>
 
           {/* Social Login */}
           <div className="space-y-3">
             <p className="text-center text-sm text-muted-foreground uppercase tracking-wide">
-              Hoặc đăng nhập với
+              {t('auth.orLoginWith')}
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -228,15 +230,18 @@ export default function LoginPage() {
 
         {/* Footer Note */}
         <p className="mt-8 text-center text-xs text-muted-foreground">
-          Bằng việc đăng nhập, bạn đồng ý với{' '}
-          <Link href="/terms-of-use" className="underline hover:text-foreground">
-            Điều Khoản Sử Dụng
-          </Link>{' '}
-          và{' '}
-          <Link href="/privacy-policy" className="underline hover:text-foreground">
-            Chính Sách Bảo Mật
-          </Link>{' '}
-          của TheWhite
+          {t.rich('auth.agreeTermsLogin', {
+            terms: (chunks) => (
+              <Link href="/terms-of-use" className="underline hover:text-foreground">
+                {chunks}
+              </Link>
+            ),
+            privacy: (chunks) => (
+              <Link href="/privacy-policy" className="underline hover:text-foreground">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </motion.div>
     </div>

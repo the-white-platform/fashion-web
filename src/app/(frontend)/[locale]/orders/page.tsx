@@ -17,63 +17,69 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { useTranslations } from 'next-intl'
 
-function getStatusInfo(status: string) {
-  switch (status) {
-    case 'processing':
-      return {
-        label: 'Đang Xử Lý',
-        icon: Clock,
-        color: 'text-blue-600',
-        bg: 'bg-blue-100',
-        description: 'Đơn hàng đang được xử lý',
-      }
-    case 'confirmed':
-      return {
-        label: 'Đã Xác Nhận',
-        icon: CheckCircle,
-        color: 'text-green-600',
-        bg: 'bg-green-100',
-        description: 'Đơn hàng đã được xác nhận',
-      }
-    case 'shipping':
-      return {
-        label: 'Đang Giao',
-        icon: Truck,
-        color: 'text-orange-600',
-        bg: 'bg-orange-100',
-        description: 'Đơn hàng đang được giao đến bạn',
-      }
-    case 'delivered':
-      return {
-        label: 'Đã Giao',
-        icon: CheckCircle,
-        color: 'text-green-600',
-        bg: 'bg-green-100',
-        description: 'Đơn hàng đã được giao thành công',
-      }
-    case 'cancelled':
-      return {
-        label: 'Đã Hủy',
-        icon: XCircle,
-        color: 'text-red-600',
-        bg: 'bg-red-100',
-        description: 'Đơn hàng đã bị hủy',
-      }
-    default:
-      return {
-        label: 'Không Xác Định',
-        icon: Package,
-        color: 'text-gray-600',
-        bg: 'bg-gray-100',
-        description: '',
-      }
+function useGetStatusInfo() {
+  const t = useTranslations()
+  return (status: string) => {
+    switch (status) {
+      case 'processing':
+        return {
+          label: t('orders.status.processing'),
+          icon: Clock,
+          color: 'text-primary',
+          bg: 'bg-primary/10',
+          description: t('orders.statusDesc.processing'),
+        }
+      case 'confirmed':
+        return {
+          label: t('orders.status.confirmed'),
+          icon: CheckCircle,
+          color: 'text-success',
+          bg: 'bg-success/10',
+          description: t('orders.statusDesc.confirmed'),
+        }
+      case 'shipping':
+        return {
+          label: t('orders.status.shipping'),
+          icon: Truck,
+          color: 'text-warning',
+          bg: 'bg-warning/10',
+          description: t('orders.statusDesc.shipping'),
+        }
+      case 'delivered':
+        return {
+          label: t('orders.status.delivered'),
+          icon: CheckCircle,
+          color: 'text-success',
+          bg: 'bg-success/10',
+          description: t('orders.statusDesc.delivered'),
+        }
+      case 'cancelled':
+        return {
+          label: t('orders.status.cancelled'),
+          icon: XCircle,
+          color: 'text-destructive',
+          bg: 'bg-destructive/10',
+          description: t('orders.statusDesc.cancelled'),
+        }
+      default:
+        return {
+          label: t('orders.status.unknown'),
+          icon: Package,
+          color: 'text-muted-foreground',
+          bg: 'bg-muted',
+          description: '',
+        }
+    }
   }
 }
 
 export default function OrdersPage() {
   const router = useRouter()
   const { user } = useUser()
+  const t = useTranslations()
+  const getStatusInfo = useGetStatusInfo()
   const [orders, setOrders] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(!!user)
 
@@ -105,7 +111,7 @@ export default function OrdersPage() {
         <div className="container mx-auto px-6 max-w-6xl">
           <div className="text-center py-20">
             <Clock className="w-12 h-12 mx-auto mb-4 text-muted-foreground animate-pulse" />
-            <p className="text-muted-foreground">Đang tải đơn hàng...</p>
+            <p className="text-muted-foreground">{t('orders.loading')}</p>
           </div>
         </div>
       </PageContainer>
@@ -121,12 +127,12 @@ export default function OrdersPage() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/">Trang chủ</Link>
+                  <Link href="/">{t('nav.home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Đơn Hàng</BreadcrumbPage>
+                <BreadcrumbPage>{t('orders.title')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -135,9 +141,9 @@ export default function OrdersPage() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl uppercase tracking-wide mb-2 text-foreground">
-            Đơn Hàng Của Tôi
+            {t('orders.title')}
           </h1>
-          <p className="text-muted-foreground">Theo dõi và quản lý đơn hàng của bạn</p>
+          <p className="text-muted-foreground">{t('orders.subtitle')}</p>
         </div>
 
         {/* Orders List */}
@@ -159,10 +165,12 @@ export default function OrdersPage() {
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h2 className="text-xl font-semibold mb-1 text-foreground">
-                          Đơn Hàng #{order.orderNumber}
+                          {t('orders.orderNumber', { number: order.orderNumber })}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                          Đặt ngày: {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+                          {t('orders.orderedOn', {
+                            date: new Date(order.createdAt).toLocaleDateString('vi-VN'),
+                          })}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -195,7 +203,7 @@ export default function OrdersPage() {
                               {item.productName}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              Size: {item.size} • Số lượng: {item.quantity}
+                              {t('orders.sizeAndQty', { size: item.size, qty: item.quantity })}
                             </p>
                             <p className="text-sm font-medium mt-1 text-foreground">
                               {((item.unitPrice || 0) * item.quantity).toLocaleString('vi-VN')}₫
@@ -205,7 +213,7 @@ export default function OrdersPage() {
                       ))}
                       {order.items?.length > 3 && (
                         <p className="text-sm text-muted-foreground text-center">
-                          + {order.items.length - 3} sản phẩm khác
+                          {t('orders.moreItems', { count: order.items.length - 3 })}
                         </p>
                       )}
                     </div>
@@ -213,7 +221,7 @@ export default function OrdersPage() {
                     {/* Order Summary */}
                     <div className="flex items-center justify-between pt-4 border-t border-border">
                       <div>
-                        <p className="text-sm text-muted-foreground">Tổng tiền</p>
+                        <p className="text-sm text-muted-foreground">{t('orders.total')}</p>
                         <p className="text-xl font-bold text-foreground">
                           {(order.totals?.total || 0).toLocaleString('vi-VN')}₫
                         </p>
@@ -222,7 +230,7 @@ export default function OrdersPage() {
                         onClick={() => router.push(`/orders/${order.orderNumber}`)}
                         className="flex items-center gap-2 px-4 py-2 border-2 border-border rounded-sm hover:border-foreground transition-colors bg-background text-foreground"
                       >
-                        Xem Chi Tiết
+                        {t('orders.viewDetails')}
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
@@ -242,16 +250,14 @@ export default function OrdersPage() {
               <Package className="w-12 h-12 text-muted-foreground" />
             </div>
             <h2 className="text-2xl uppercase tracking-wide mb-3 text-foreground">
-              Chưa Có Đơn Hàng
+              {t('orders.empty')}
             </h2>
-            <p className="text-muted-foreground mb-8">
-              Bạn chưa có đơn hàng nào. Hãy bắt đầu mua sắm ngay!
-            </p>
+            <p className="text-muted-foreground mb-8">{t('orders.emptyDesc')}</p>
             <button
               onClick={() => router.push('/products')}
               className="bg-foreground text-background px-8 py-4 rounded-sm hover:opacity-90 transition-colors uppercase tracking-wide"
             >
-              Khám Phá Sản Phẩm
+              {t('orders.exploreProducts')}
             </button>
           </motion.div>
         )}

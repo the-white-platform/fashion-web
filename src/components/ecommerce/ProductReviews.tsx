@@ -48,7 +48,7 @@ const StarRating = ({ rating, size = 'w-5 h-5' }: { rating: number; size?: strin
         <Star
           key={star}
           className={`${size} ${
-            star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+            star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-border'
           }`}
         />
       ))}
@@ -218,9 +218,9 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
           <div className="mb-8">
             {hasPurchased ? (
               hasReviewed ? (
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-sm p-4 flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <span className="text-blue-900 dark:text-blue-100">{t('alreadyReviewed')}</span>
+                <div className="bg-primary/10 border border-primary/20 rounded-sm p-4 flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  <span className="text-primary">{t('alreadyReviewed')}</span>
                 </div>
               ) : (
                 <Button
@@ -233,9 +233,9 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
                 </Button>
               )
             ) : (
-              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-sm p-4 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-                <span className="text-yellow-900 dark:text-yellow-100">{t('mustPurchase')}</span>
+              <div className="bg-warning/10 border border-warning/20 rounded-sm p-4 flex items-center gap-3">
+                <AlertCircle className="w-5 h-5 text-warning" />
+                <span className="text-warning">{t('mustPurchase')}</span>
               </div>
             )}
           </div>
@@ -331,11 +331,11 @@ function ReviewCard({ review }: { review: Review }) {
   const getFitLabel = (fit?: string) => {
     switch (fit) {
       case 'tight':
-        return { label: t('fit.tight'), color: 'text-orange-600 bg-orange-500/10' }
+        return { label: t('fit.tight'), color: 'text-warning bg-warning/10' }
       case 'perfect':
-        return { label: t('fit.perfect'), color: 'text-green-600 bg-green-500/10' }
+        return { label: t('fit.perfect'), color: 'text-success bg-success/10' }
       case 'loose':
-        return { label: t('fit.loose'), color: 'text-blue-600 bg-blue-500/10' }
+        return { label: t('fit.loose'), color: 'text-primary bg-primary/10' }
       default:
         return null
     }
@@ -361,7 +361,7 @@ function ReviewCard({ review }: { review: Review }) {
               {review.verified && (
                 <Badge
                   variant="secondary"
-                  className="bg-green-500/10 text-green-600 dark:text-green-400"
+                  className="bg-success/10 text-success"
                 >
                   <CheckCircle className="w-3 h-3 mr-1" />
                   {t('verified')}
@@ -420,9 +420,9 @@ function ReviewCard({ review }: { review: Review }) {
           size="sm"
           onClick={handleHelpful}
           disabled={hasVoted}
-          className={`${hasVoted ? 'text-green-600' : 'text-muted-foreground'}`}
+          className={`${hasVoted ? 'text-success' : 'text-muted-foreground'}`}
         >
-          <ThumbsUp className={`w-4 h-4 mr-2 ${hasVoted ? 'fill-green-600' : ''}`} />
+          <ThumbsUp className={`w-4 h-4 mr-2 ${hasVoted ? 'fill-success' : ''}`} />
           <span>
             {t('helpful')} ({helpful})
           </span>
@@ -487,7 +487,7 @@ function ReviewForm({
       {/* Rating */}
       <div className="mb-6">
         <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
-          {t('labels.rating')} <span className="text-red-500">*</span>
+          {t('labels.rating')} <span className="text-destructive">*</span>
         </label>
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -527,7 +527,7 @@ function ReviewForm({
       {/* Comment */}
       <div className="mb-4">
         <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
-          {t('labels.comment')} <span className="text-red-500">*</span>
+          {t('labels.comment')} <span className="text-destructive">*</span>
         </label>
         <Textarea
           value={comment}

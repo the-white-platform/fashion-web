@@ -78,8 +78,8 @@ export default function ReturnRequestPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-12"
           >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-green-600" />
+            <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-success" />
             </div>
             <h1 className="text-3xl uppercase tracking-wide mb-4">Yêu Cầu Đã Được Gửi!</h1>
             <p className="text-muted-foreground mb-8">
