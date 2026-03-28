@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
 import { NextResponse } from 'next/server'
@@ -20,10 +21,21 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Invalid OAuth state or missing code' }, { status: 400 })
   }
 
+  if (!facebookAppId || !facebookAppSecret) {
+    return NextResponse.json({ error: 'Facebook OAuth not configured' }, { status: 500 })
+  }
+
   // Exchange code for access token
-  const tokenResponse = await fetch(
-    `https://graph.facebook.com/v18.0/oauth/access_token?client_id=${facebookAppId}&redirect_uri=${serverUrl}/api/auth/facebook/callback&client_secret=${facebookAppSecret}&code=${code}`,
-  )
+  const tokenResponse = await fetch('https://graph.facebook.com/v18.0/oauth/access_token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id: facebookAppId,
+      client_secret: facebookAppSecret,
+      code,
+      redirect_uri: `${serverUrl}/api/auth/facebook/callback`,
+    }),
+  })
   const tokenData = await tokenResponse.json()
 
   if (tokenData.error) {
@@ -77,7 +89,7 @@ export async function GET(request: Request) {
         sub: fbUser.id,
         provider: 'facebook',
         imageUrl: fbUser.picture?.data?.url,
-        password: Math.random().toString(36).slice(-16),
+        password: randomBytes(32).toString('hex'),
       },
     })
     userId = newUser.id
@@ -102,7 +114,7 @@ export async function GET(request: Request) {
   response.cookies.set('payload-token', tokenValue, {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7,
   })

@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
 import { NextResponse } from 'next/server'
@@ -78,44 +79,17 @@ export async function GET(request: Request) {
         provider: 'google',
         imageUrl: userinfo.picture as string,
         // For OAuth users, we can set a random password as it won't be used
-        password: Math.random().toString(36).slice(-16),
+        password: randomBytes(32).toString('hex'),
       },
     })
     userId = newUser.id
   }
 
-  // Log user in by generating a token
-  const token = await payload.login({
-    collection: 'users',
-    data: {
-      email: userinfo.email as string,
-      password: '', // This is ignored when we use the internal login mechanism if we bypass password check, but Payload's login usually expects password.
-      // Wait, Payload's login method typically checks password.
-      // Instead, we should use `payload.createToken` or manually set the cookie.
-    },
-    // @ts-ignore
-    overrideAccess: true,
-  })
-
-  // Actually, a better way to log in after OAuth is to use the `token` directly or use `jwt.sign` if we want to match Payload's format.
-  // But Payload's `login` method is what generates the cookies if used correctly.
-
-  // Alternative: manual JWT generation if login() is too restrictive
-  // But let's try to use Payload's native session if possible.
-
-  // For now, let's redirect to home
   const response = NextResponse.redirect(`${serverUrl}/`)
 
   // Clean up cookies
   response.cookies.delete('google_code_verifier')
   response.cookies.delete('google_state')
-
-  // Note: We need to set the payload-token cookie here.
-  // To get the token without password verification, we can use a custom logic or
-  // simply use the token returned by Payload if we can bypass it.
-
-  // Actually, Payload 3's `login` method is strictly for password auth.
-  // For OAuth, we should generate the JWT ourselves and set the cookie.
 
   const tokenValue = jwt.sign(
     {
@@ -132,7 +106,7 @@ export async function GET(request: Request) {
   response.cookies.set('payload-token', tokenValue, {
     path: '/',
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 1 week
   })

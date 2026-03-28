@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
@@ -8,7 +9,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Facebook App ID not configured' }, { status: 500 })
   }
 
-  const state = Math.random().toString(36).substring(7)
+  const state = randomBytes(32).toString('hex')
   const redirectUri = encodeURIComponent(`${serverUrl}/api/auth/facebook/callback`)
 
   const facebookAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${facebookAppId}&redirect_uri=${redirectUri}&state=${state}&scope=email,public_profile`

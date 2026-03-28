@@ -51,6 +51,9 @@ export const Users: CollectionConfig = {
           value: 'facebook',
         },
       ],
+      access: {
+        update: () => false, // Only server-side code (OAuth callbacks) can set this
+      },
     },
     {
       name: 'imageUrl',
