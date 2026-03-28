@@ -1,0 +1,289 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion } from 'motion/react'
+import { Plus } from 'lucide-react'
+import { useUser } from '@/contexts/UserContext'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslations } from 'next-intl'
+import { AddressSelect } from './AddressSelect'
+
+interface ShippingStepProps {
+  user: any
+  selectedAddress: any
+  onSelectAddress: (address: any) => void
+  showNewAddress: boolean
+  onToggleNewAddress: () => void
+  onNext: () => void
+}
+
+export function ShippingStep({
+  user,
+  selectedAddress,
+  onSelectAddress,
+  showNewAddress,
+  onToggleNewAddress,
+  onNext,
+}: ShippingStepProps) {
+  const t = useTranslations('checkout')
+  const [newAddress, setNewAddress] = useState({
+    name: '',
+    phone: '',
+    address: '',
+    city: '',
+    district: '',
+    ward: '',
+  })
+
+  const [provinces, setProvinces] = useState<any[]>([])
+  const [districts, setDistricts] = useState<any[]>([])
+  const [wards, setWards] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      try {
+        const res = await fetch('/api/provinces?limit=100&sort=name')
+        const data = await res.json()
+        setProvinces(data.docs || [])
+      } catch (error) {
+        console.error('Error fetching provinces:', error)
+      }
+    }
+    fetchProvinces()
+  }, [])
+
+  const handleProvinceChange = async (provinceCode: string) => {
+    const province = provinces.find((p) => String(p.code) === provinceCode)
+    setNewAddress({
+      ...newAddress,
+      city: province?.name || '',
+      district: '',
+      ward: '',
+    })
+    setDistricts([])
+    setWards([])
+
+    if (provinceCode) {
+      try {
+        const res = await fetch(
+          `/api/districts?where[province][equals]=${province.id}&limit=100&sort=name`,
+        )
+        const data = await res.json()
+        setDistricts(data.docs || [])
+      } catch (error) {
+        console.error('Error fetching districts:', error)
+      }
+    }
+  }
+
+  const handleDistrictChange = async (districtCode: string) => {
+    const district = districts.find((d) => String(d.code) === districtCode)
+    setNewAddress({
+      ...newAddress,
+      district: district?.name || '',
+      ward: '',
+    })
+    setWards([])
+
+    if (districtCode) {
+      try {
+        const res = await fetch(
+          `/api/wards?where[district][equals]=${district.id}&limit=100&sort=name`,
+        )
+        const data = await res.json()
+        setWards(data.docs || [])
+      } catch (error) {
+        console.error('Error fetching wards:', error)
+      }
+    }
+  }
+
+  const handleWardChange = (wardCode: string) => {
+    const ward = wards.find((w) => String(w.code) === wardCode)
+    setNewAddress({
+      ...newAddress,
+      ward: ward?.name || '',
+    })
+  }
+
+  const [saveAddress, setSaveAddress] = useState(false)
+  const { addShippingAddress } = useUser()
+
+  const handleNext = () => {
+    if (!selectedAddress && !showNewAddress) {
+      alert(t('addressInfo'))
+      return
+    }
+    if (showNewAddress) {
+      if (!newAddress.name || !newAddress.phone || !newAddress.address || !newAddress.city) {
+        alert(t('addressInfo'))
+        return
+      }
+      onSelectAddress(newAddress)
+      if (saveAddress) {
+        addShippingAddress({
+          name: newAddress.name,
+          phone: newAddress.phone,
+          address: newAddress.address,
+          city: newAddress.city,
+          district: newAddress.district,
+          ward: newAddress.ward,
+          isDefault: user?.shippingAddresses?.length === 0,
+        })
+      }
+    }
+    onNext()
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      className="bg-card border border-border rounded-sm p-8"
+    >
+      <h2 className="text-2xl uppercase tracking-wide mb-6">{t('shipping')}</h2>
+
+      {/* Saved Addresses */}
+      {user?.shippingAddresses && user.shippingAddresses.length > 0 && !showNewAddress && (
+        <div className="space-y-4 mb-6">
+          {user.shippingAddresses.map((address: any, index: number) => (
+            <label
+              key={index}
+              className={`block p-4 border-2 rounded-sm cursor-pointer transition-all ${
+                selectedAddress === address
+                  ? 'border-foreground bg-background'
+                  : 'border-border hover:border-foreground'
+              }`}
+            >
+              <RadioGroup>
+                <div className="flex items-start gap-3">
+                  <RadioGroupItem value={String(index)} checked={selectedAddress === address} />
+                  <div className="flex-1">
+                    <p className="font-semibold mb-1">{address.name}</p>
+                    <p className="text-sm text-muted-foreground">{address.phone}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {address.address}
+                      {address.ward && `, ${address.ward}`}
+                      {address.district && `, ${address.district}`}
+                      {address.city && `, ${address.city}`}
+                    </p>
+                    {address.isDefault && (
+                      <Badge variant="secondary" className="mt-2">
+                        {t('default')}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </RadioGroup>
+            </label>
+          ))}
+        </div>
+      )}
+
+      {/* New Address Form */}
+      {showNewAddress && (
+        <div className="space-y-4 mb-6">
+          <div>
+            <Label>{t('fullName')} *</Label>
+            <Input
+              value={newAddress.name}
+              onChange={(e) => setNewAddress({ ...newAddress, name: e.target.value })}
+              onClear={() => setNewAddress({ ...newAddress, name: '' })}
+              placeholder={t('namePlaceholder')}
+              required
+            />
+          </div>
+          <div>
+            <Label>{t('phone')} *</Label>
+            <Input
+              value={newAddress.phone}
+              onChange={(e) => setNewAddress({ ...newAddress, phone: e.target.value })}
+              onClear={() => setNewAddress({ ...newAddress, phone: '' })}
+              placeholder={t('phonePlaceholder')}
+              required
+            />
+          </div>
+          <div>
+            <Label>{t('address')} *</Label>
+            <Input
+              value={newAddress.address}
+              onChange={(e) => setNewAddress({ ...newAddress, address: e.target.value })}
+              onClear={() => setNewAddress({ ...newAddress, address: '' })}
+              placeholder={t('addressPlaceholder')}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex flex-col gap-2">
+              <Label>{t('city')} *</Label>
+              <AddressSelect
+                options={provinces.map((p) => ({ label: p.name, value: String(p.code) }))}
+                value={provinces.find((p) => p.name === newAddress.city)?.code}
+                onChange={handleProvinceChange}
+                placeholder={t('selectCity')}
+                emptyText={t('noCityFound')}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>{t('district')} *</Label>
+              <AddressSelect
+                options={districts.map((d) => ({ label: d.name, value: String(d.code) }))}
+                value={districts.find((d) => d.name === newAddress.district)?.code}
+                onChange={handleDistrictChange}
+                placeholder={t('selectDistrict')}
+                emptyText={t('noDistrictFound')}
+                disabled={!newAddress.city}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label>{t('ward')} *</Label>
+              <AddressSelect
+                options={wards.map((w) => ({ label: w.name, value: String(w.code) }))}
+                value={wards.find((w) => w.name === newAddress.ward)?.code}
+                onChange={handleWardChange}
+                placeholder={t('selectWard')}
+                emptyText={t('noWardFound')}
+                disabled={!newAddress.district}
+              />
+            </div>
+          </div>
+
+          {user && (
+            <div className="flex items-center space-x-2 mt-4">
+              <Checkbox
+                id="save-address"
+                checked={saveAddress}
+                onCheckedChange={(checked) => setSaveAddress(checked as boolean)}
+              />
+              <label
+                htmlFor="save-address"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                {t('saveAddress')}
+              </label>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Toggle New Address */}
+      {user?.shippingAddresses && user.shippingAddresses.length > 0 && (
+        <Button variant="ghost" onClick={onToggleNewAddress} className="mb-6">
+          <Plus className="w-4 h-4 mr-2" />
+          {showNewAddress ? t('useSavedAddress') : t('addNewAddress')}
+        </Button>
+      )}
+
+      {/* Action Button */}
+      <Button onClick={handleNext} className="w-full" size="lg">
+        {t('next')}
+      </Button>
+    </motion.div>
+  )
+}
