@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from '@/i18n/Link'
 import { useRouter } from '@/i18n/useRouter'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'motion/react'
 import { Heart, ShoppingCart, Share2 } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
+import { useWishlist } from '@/contexts/WishlistContext'
 import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
@@ -19,54 +20,15 @@ import {
 import { useTranslations } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
 
-interface WishlistItem {
-  id: number
-  name: string
-  category: string
-  price: number
-  priceDisplay: string
-  image: string
-  inStock: boolean
-  sizes: string[]
-}
-
 export default function WishlistPage() {
   const router = useRouter()
   const t = useTranslations('wishlist')
   const tNav = useTranslations('nav')
   const { addToCart, setIsCartOpen } = useCart()
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
+  const { items: wishlistItems, removeFromWishlist } = useWishlist()
   const [selectedSizes, setSelectedSizes] = useState<{ [key: number]: string }>({})
 
-  // Load wishlist from localStorage only after mount (client-side)
-  // This ensures server and client initial renders match
-  useEffect(() => {
-    setTimeout(() => {
-      try {
-        const savedWishlist = localStorage.getItem('thewhite_wishlist')
-        if (savedWishlist) {
-          setWishlistItems(JSON.parse(savedWishlist))
-        }
-      } catch (e) {
-        console.error('Error loading wishlist:', e)
-      }
-    }, 0)
-  }, [])
-
-  // Save wishlist to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('thewhite_wishlist', JSON.stringify(wishlistItems))
-    } catch (e) {
-      console.error('Error saving wishlist:', e)
-    }
-  }, [wishlistItems])
-
-  const removeFromWishlist = (id: number) => {
-    setWishlistItems(wishlistItems.filter((item) => item.id !== id))
-  }
-
-  const handleAddToCart = (item: WishlistItem) => {
+  const handleAddToCart = (item: (typeof wishlistItems)[number]) => {
     const size = selectedSizes[item.id] || item.sizes[0]
     addToCart({
       id: item.id,

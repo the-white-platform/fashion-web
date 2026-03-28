@@ -5,6 +5,7 @@ import { ThemeProvider } from './Theme'
 import { CartProvider } from '@/contexts/CartContext'
 import { UserProvider } from '@/contexts/UserContext'
 import { ModalProvider } from '@/contexts/ModalContext'
+import { WishlistProvider } from '@/contexts/WishlistContext'
 
 export const Providers: React.FC<{
   children: React.ReactNode
@@ -13,9 +14,11 @@ export const Providers: React.FC<{
     <ThemeProvider>
       <UserProvider>
         <CartProvider>
-          <ModalProvider>
-            <HeaderThemeProvider>{children}</HeaderThemeProvider>
-          </ModalProvider>
+          <WishlistProvider>
+            <ModalProvider>
+              <HeaderThemeProvider>{children}</HeaderThemeProvider>
+            </ModalProvider>
+          </WishlistProvider>
         </CartProvider>
       </UserProvider>
     </ThemeProvider>

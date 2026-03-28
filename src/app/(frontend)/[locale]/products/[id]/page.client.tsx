@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useCart } from '@/contexts/CartContext'
+import { useWishlist } from '@/contexts/WishlistContext'
 import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { ProductCard } from '@/components/shared/ProductCard'
 import { ImageZoom } from '@/components/ecommerce/ImageZoom'
@@ -40,13 +41,13 @@ interface ProductDetailClientProps {
 export default function ProductDetailClient({ product, allProducts }: ProductDetailClientProps) {
   const router = useRouter()
   const { addToCart, setIsCartOpen } = useCart()
+  const { isWishlisted, toggleWishlist } = useWishlist()
 
   // State
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
   const [selectedSize, setSelectedSize] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const [isWishlisted, setIsWishlisted] = useState(false)
   const [isTryOnOpen, setIsTryOnOpen] = useState(false)
 
   // Get current variant
@@ -306,15 +307,15 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
 
                 <div className="grid grid-cols-2 gap-4">
                   <button
-                    onClick={() => setIsWishlisted(!isWishlisted)}
+                    onClick={() => toggleWishlist(product)}
                     className={`border-2 py-4 rounded-sm transition-all hover:scale-[1.02] flex items-center justify-center gap-2 uppercase tracking-[0.1em] font-bold text-[10px] ${
-                      isWishlisted
+                      isWishlisted(product.id)
                         ? 'bg-primary text-primary-foreground border-primary'
                         : 'border-border hover:border-foreground'
                     }`}
                   >
-                    <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-                    {isWishlisted ? 'Đã Lưu' : 'Yêu Thích'}
+                    <Heart className={`w-4 h-4 ${isWishlisted(product.id) ? 'fill-current' : ''}`} />
+                    {isWishlisted(product.id) ? 'Đã Lưu' : 'Yêu Thích'}
                   </button>
                   <button className="border-2 border-border py-4 rounded-sm hover:border-foreground transition-all hover:scale-[1.02] flex items-center justify-center gap-2 uppercase tracking-[0.1em] font-bold text-[10px]">
                     <Share2 className="w-4 h-4" />

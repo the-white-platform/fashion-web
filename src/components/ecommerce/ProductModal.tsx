@@ -17,8 +17,9 @@ import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { VirtualTryOnModal } from './VirtualTryOnModal'
 import Image from 'next/image'
 import { Link } from '@/i18n/Link'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useCart } from '@/contexts/CartContext'
+import { useWishlist } from '@/contexts/WishlistContext'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'motion/react'
 import type { ColorVariant, ProductForFrontend } from '@/utilities/getProducts'
@@ -35,8 +36,8 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isTryOnOpen, setIsTryOnOpen] = useState(false)
-  const [isWishlisted, setIsWishlisted] = useState(false)
   const [addedToCart, setAddedToCart] = useState(false)
+  const { isWishlisted, toggleWishlist } = useWishlist()
   const [isImageHovered, setIsImageHovered] = useState(false)
   const { addToCart, setIsCartOpen } = useCart()
 
@@ -84,10 +85,6 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
       setIsCartOpen(true)
       setAddedToCart(false)
     }, 800)
-  }
-
-  const handleWishlist = () => {
-    setIsWishlisted(!isWishlisted)
   }
 
   return (
@@ -226,15 +223,15 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.6, type: 'spring' }}
-                onClick={handleWishlist}
+                onClick={() => product && toggleWishlist(product)}
                 className={`absolute bottom-5 right-5 w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all ${
-                  isWishlisted
+                  product && isWishlisted(product.id)
                     ? 'bg-red-500 text-white'
                     : 'bg-background text-foreground hover:bg-muted'
                 }`}
               >
                 <Heart
-                  className={`w-5 h-5 transition-transform ${isWishlisted ? 'fill-white scale-110' : ''}`}
+                  className={`w-5 h-5 transition-transform ${product && isWishlisted(product.id) ? 'fill-white scale-110' : ''}`}
                 />
               </motion.button>
             </div>

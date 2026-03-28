@@ -6,6 +6,7 @@ import { motion } from 'motion/react'
 import { useState, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import type { ProductForFrontend } from '@/utilities/getProducts'
+import { useWishlist } from '@/contexts/WishlistContext'
 
 interface QuickFilter {
   id: string
@@ -116,6 +117,7 @@ export function FeaturedProducts({
   onViewAll,
 }: FeaturedProductsProps) {
   const t = useTranslations()
+  const { isWishlisted, toggleWishlist } = useWishlist()
   const [activeFilterId, setActiveFilterId] = useState<string>('')
   const [activeSort, setActiveSort] = useState('newest')
 
@@ -264,6 +266,8 @@ export function FeaturedProducts({
                 index={index}
                 onQuickView={onProductClick}
                 showWishlist
+                isWishlisted={isWishlisted(product.id)}
+                onWishlistToggle={toggleWishlist}
                 sizes="(max-width: 1024px) 50vw, 25vw"
               />
             ))}
