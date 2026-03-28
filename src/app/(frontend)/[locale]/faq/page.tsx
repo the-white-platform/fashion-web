@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
+import { PageContainer } from '@/components/layout/PageContainer'
 import { motion } from 'motion/react'
 import { Search, Package, CreditCard, Truck, RefreshCw, HelpCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'

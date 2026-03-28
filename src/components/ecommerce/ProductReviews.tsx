@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Star, ThumbsUp, MessageCircle, CheckCircle, AlertCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import { useUser } from '@/contexts/UserContext'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'

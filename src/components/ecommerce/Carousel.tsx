@@ -5,7 +5,7 @@ import useEmblaCarousel from 'embla-carousel-react'
 import { ChevronLeft, ChevronRight, MessageCircle, Cookie } from 'lucide-react'
 import { motion } from 'motion/react'
 import Image from 'next/image'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
 

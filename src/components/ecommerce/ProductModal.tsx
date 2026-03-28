@@ -16,7 +16,7 @@ import {
 import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { VirtualTryOnModal } from './VirtualTryOnModal'
 import Image from 'next/image'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import { useState, useEffect } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'

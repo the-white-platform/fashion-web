@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
 import { Package, Truck, CheckCircle, Clock, XCircle, ChevronRight } from 'lucide-react'

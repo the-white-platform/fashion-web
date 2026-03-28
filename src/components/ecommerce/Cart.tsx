@@ -1,7 +1,7 @@
 'use client'
 
 import { X, Minus, Plus, ShoppingBag } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { useCart } from '@/contexts/CartContext'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { ArrowRight } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import { motion } from 'motion/react'
 import { useTranslations } from 'next-intl'
 

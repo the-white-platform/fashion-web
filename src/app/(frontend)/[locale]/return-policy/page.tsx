@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react'
 import { Package, RefreshCw, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import {
   Breadcrumb,
   BreadcrumbItem,

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -27,6 +27,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { ScrollIndicator } from '@/components/ui/scroll-indicator'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
 import type { ProductForFrontend, CategoryForFrontend } from '@/utilities/getProducts'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 interface ProductsPageClientProps {
   initialProducts: ProductForFrontend[]

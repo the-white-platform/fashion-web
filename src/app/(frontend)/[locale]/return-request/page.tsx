@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
 import { Upload, CheckCircle } from 'lucide-react'

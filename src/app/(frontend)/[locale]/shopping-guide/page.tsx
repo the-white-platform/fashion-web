@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react'
 import { ShoppingCart, Package, UserCheck, Truck, CreditCard, CheckCircle } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import {
   Breadcrumb,
   BreadcrumbItem,

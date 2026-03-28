@@ -11,7 +11,7 @@ import {
   DollarSign,
   Smartphone,
 } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/i18n/Link'
 import {
   Breadcrumb,
   BreadcrumbItem,
