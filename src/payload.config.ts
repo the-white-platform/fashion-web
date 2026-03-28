@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
+import { Coupons } from './collections/Coupons'
 import { Orders } from './collections/Orders'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
@@ -115,6 +116,7 @@ export default buildConfig({
     Users,
     Products,
     Orders,
+    Coupons,
     Provinces,
     Districts,
     Wards,

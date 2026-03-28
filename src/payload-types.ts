@@ -74,6 +74,7 @@ export interface Config {
     users: User;
     products: Product;
     orders: Order;
+    coupons: Coupon;
     provinces: Province;
     districts: District;
     wards: Ward;
@@ -95,6 +96,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    coupons: CouponsSelect<false> | CouponsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
     wards: WardsSelect<false> | WardsSelect<true>;
@@ -498,6 +500,7 @@ export interface Post {
 export interface User {
   id: number;
   name?: string | null;
+  phone?: string | null;
   sub?: string | null;
   provider?: ('local' | 'google' | 'facebook') | null;
   imageUrl?: string | null;
@@ -515,7 +518,7 @@ export interface User {
     | null;
   paymentMethods?:
     | {
-        type?: ('card' | 'bank' | 'cod' | 'momo') | null;
+        type?: ('cod' | 'bank_transfer' | 'momo' | 'vnpay') | null;
         cardNumber?: string | null;
         isDefault?: boolean | null;
         id?: string | null;
@@ -949,6 +952,41 @@ export interface Order {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coupons".
+ */
+export interface Coupon {
+  id: number;
+  /**
+   * Uppercase coupon code, e.g. WELCOME10
+   */
+  code: string;
+  type: 'percentage' | 'fixed' | 'shipping';
+  /**
+   * Percentage (0-100) for percentage type, VND amount for fixed, 0 for shipping
+   */
+  value: number;
+  description?: string | null;
+  /**
+   * Minimum subtotal required to use this coupon (VND)
+   */
+  minOrderAmount?: number | null;
+  /**
+   * Maximum discount cap for percentage coupons (VND)
+   */
+  maxDiscount?: number | null;
+  /**
+   * 0 = unlimited uses
+   */
+  usageLimit?: number | null;
+  usageCount?: number | null;
+  validFrom?: string | null;
+  validUntil?: string | null;
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1071,6 +1109,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'coupons';
+        value: number | Coupon;
       } | null)
     | ({
         relationTo: 'provinces';
@@ -1415,6 +1457,7 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  phone?: T;
   sub?: T;
   provider?: T;
   imageUrl?: T;
@@ -1567,6 +1610,25 @@ export interface OrdersSelect<T extends boolean = true> {
         shippedAt?: T;
         deliveredAt?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coupons_select".
+ */
+export interface CouponsSelect<T extends boolean = true> {
+  code?: T;
+  type?: T;
+  value?: T;
+  description?: T;
+  minOrderAmount?: T;
+  maxDiscount?: T;
+  usageLimit?: T;
+  usageCount?: T;
+  validFrom?: T;
+  validUntil?: T;
+  active?: T;
   updatedAt?: T;
   createdAt?: T;
 }
