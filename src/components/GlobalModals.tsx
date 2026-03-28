@@ -1,7 +1,7 @@
 'use client'
 
 import { SearchModal } from '@/components/ecommerce/SearchModal'
-import { MobileMenu } from '@/Header/MobileMenu'
+import { MobileMenu } from '@/components/layout/Header/MobileMenu'
 import { useModal } from '@/contexts/ModalContext'
 import { useUser } from '@/contexts/UserContext'
 import type { Header } from '@/payload-types'

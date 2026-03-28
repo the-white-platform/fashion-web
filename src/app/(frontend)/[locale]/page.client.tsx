@@ -11,7 +11,7 @@ import { VirtualTryOnDemo } from '@/components/ecommerce/VirtualTryOnDemo'
 import { BrandStory } from '@/components/ecommerce/BrandStory'
 import { Newsletter } from '@/components/ecommerce/Newsletter'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
-import { AlternatingSection } from '@/components/AlternatingSection'
+import { AlternatingSection } from '@/components/layout/AlternatingSection'
 
 interface FeaturedProduct {
   id: number
