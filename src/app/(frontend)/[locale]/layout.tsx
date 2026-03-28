@@ -19,6 +19,8 @@ import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
 import { ProgressBar } from '@/components/shared/ProgressBar'
+import { getCachedGlobal } from '@/utilities/getGlobals'
+import type { Header as HeaderType } from '@/payload-types'
 
 import '../globals.css'
 
@@ -78,6 +80,13 @@ export default async function RootLayout({ children, params }: Props) {
   const { locale } = await params
   const messages = await getMessages()
 
+  let headerData: HeaderType | null = null
+  try {
+    headerData = await getCachedGlobal('header', 1)()
+  } catch {
+    // Header data unavailable during build or when DB is unreachable
+  }
+
   return (
     <html className={cn(inter.variable, theWhite.variable)} lang={locale} suppressHydrationWarning>
       <head>
@@ -109,7 +118,7 @@ export default async function RootLayout({ children, params }: Props) {
               <Header />
               <FloatingActions />
               <Cart />
-              <GlobalModalsWrapper />
+              <GlobalModalsWrapper header={headerData} />
               <div className="pt-0">{children}</div>
               <Footer />
             </Providers>

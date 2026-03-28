@@ -56,23 +56,26 @@ export const ImageMedia: React.FC<MediaProps> = (props) => {
         .join(', ')
 
   return (
-    <NextImage
-      alt={alt || ''}
-      className={cn(imgClassName)}
-      fill={fill}
-      height={!fill ? height : undefined}
-      onClick={onClick}
-      onLoad={() => {
-        setIsLoading(false)
-        if (typeof onLoadFromProps === 'function') {
-          onLoadFromProps()
-        }
-      }}
-      priority={priority}
-      quality={90}
-      sizes={sizes}
-      src={src}
-      width={!fill ? width : undefined}
-    />
+    <div className="relative">
+      {isLoading && <div className="absolute inset-0 bg-accent animate-pulse rounded-md" />}
+      <NextImage
+        alt={alt || ''}
+        className={cn('transition-opacity duration-300', isLoading ? 'opacity-0' : 'opacity-100', imgClassName)}
+        fill={fill}
+        height={!fill ? height : undefined}
+        onClick={onClick}
+        onLoad={() => {
+          setIsLoading(false)
+          if (typeof onLoadFromProps === 'function') {
+            onLoadFromProps()
+          }
+        }}
+        priority={priority}
+        quality={90}
+        sizes={sizes}
+        src={src}
+        width={!fill ? width : undefined}
+      />
+    </div>
   )
 }
