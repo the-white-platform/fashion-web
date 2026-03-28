@@ -658,5 +658,13 @@
       "l3": "Share your wishlist with friends via link",
       "l4": "Add all products to cart with one click"
     }
+  },
+  "features": {
+    "freeShipping": "Free Ship",
+    "freeShippingDesc": "Free\nShipping",
+    "easyReturns": "Returns",
+    "easyReturnsDesc": "Easy Returns\n30 Days",
+    "warranty": "Warranty",
+    "warrantyDesc": "Authentic\nWarranty"
   }
 }

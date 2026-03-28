@@ -658,5 +658,13 @@
       "l3": "Chia sẻ wishlist với bạn bè qua link",
       "l4": "Thêm tất cả sản phẩm vào giỏ hàng chỉ với một cú click"
     }
+  },
+  "features": {
+    "freeShipping": "Free Ship",
+    "freeShippingDesc": "Vận Chuyển\nMiễn Phí",
+    "easyReturns": "Đổi Trả",
+    "easyReturnsDesc": "Đổi Trả\n30 Ngày",
+    "warranty": "Bảo Hành",
+    "warrantyDesc": "Chính Hãng\nBảo Hành"
   }
 }

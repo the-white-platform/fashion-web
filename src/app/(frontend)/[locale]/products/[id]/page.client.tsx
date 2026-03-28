@@ -9,14 +9,12 @@ import {
   Share2,
   ChevronLeft,
   Sparkles,
-  Truck,
-  RefreshCw,
-  Shield,
   Plus,
   Minus,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useCart } from '@/contexts/CartContext'
+import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { ImageZoom } from '@/components/ecommerce/ImageZoom'
 import { ProductReviews } from '@/components/ecommerce/ProductReviews'
 import {
@@ -324,40 +322,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
               </div>
 
               {/* Features Info Cards */}
-              <div className="pt-10 border-t border-border space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="flex flex-col items-center text-center space-y-2">
-                    <div className="w-12 h-12 bg-muted flex items-center justify-center mb-1 transition-colors group-hover:bg-primary">
-                      <Truck className="w-6 h-6 text-foreground" />
-                    </div>
-                    <p className="font-bold uppercase text-[10px] tracking-widest leading-tight">
-                      Vận Chuyển
-                      <br />
-                      Miễn Phí
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center text-center space-y-2">
-                    <div className="w-12 h-12 bg-muted flex items-center justify-center mb-1">
-                      <RefreshCw className="w-6 h-6 text-foreground" />
-                    </div>
-                    <p className="font-bold uppercase text-[10px] tracking-widest leading-tight">
-                      Đổi Trả
-                      <br />
-                      30 Ngày
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-center text-center space-y-2">
-                    <div className="w-12 h-12 bg-muted flex items-center justify-center mb-1">
-                      <Shield className="w-6 h-6 text-foreground" />
-                    </div>
-                    <p className="font-bold uppercase text-[10px] tracking-widest leading-tight">
-                      Chính Hãng
-                      <br />
-                      Bảo Hành
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <FeaturesBadges variant="grid" />
 
               {/* Product Features List */}
               {product.features.length > 0 && (

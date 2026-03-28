@@ -7,15 +7,13 @@ import {
   Sparkles,
   ShoppingCart,
   X,
-  Truck,
-  RefreshCw,
-  Shield,
   Star,
   Check,
   Zap,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
+import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { VirtualTryOnModal } from './VirtualTryOnModal'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -464,32 +462,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 </motion.button>
 
                 {/* Features Strip */}
-                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mx-auto mb-1 text-foreground">
-                      <Truck className="w-4 h-4" />
-                    </div>
-                    <p className="text-[8px] uppercase tracking-wider font-bold text-muted-foreground">
-                      Free Ship
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mx-auto mb-1 text-foreground">
-                      <RefreshCw className="w-4 h-4" />
-                    </div>
-                    <p className="text-[8px] uppercase tracking-wider font-bold text-muted-foreground">
-                      Đổi Trả
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center mx-auto mb-1 text-foreground">
-                      <Shield className="w-4 h-4" />
-                    </div>
-                    <p className="text-[8px] uppercase tracking-wider font-bold text-muted-foreground">
-                      Bảo Hành
-                    </p>
-                  </div>
-                </div>
+                <FeaturesBadges variant="compact" />
               </motion.div>
             </div>
           </div>
