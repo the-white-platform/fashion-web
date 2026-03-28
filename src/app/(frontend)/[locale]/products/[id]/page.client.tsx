@@ -27,7 +27,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { VirtualTryOnModal } from '@/components/ecommerce/VirtualTryOnModal'
+import dynamic from 'next/dynamic'
+
+const VirtualTryOnModal = dynamic(
+  () => import('@/components/ecommerce/VirtualTryOnModal').then((mod) => mod.VirtualTryOnModal),
+  { ssr: false },
+)
 import type { ProductForFrontend } from '@/utilities/getProducts'
 import { getRelatedProducts } from '@/utilities/getRelatedProducts'
 import { Link } from '@/i18n/Link'

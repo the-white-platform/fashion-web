@@ -10,7 +10,12 @@ import { ExploreMore } from '@/components/ecommerce/ExploreMore'
 import { VirtualTryOnDemo } from '@/components/ecommerce/VirtualTryOnDemo'
 import { BrandStory } from '@/components/ecommerce/BrandStory'
 import { Newsletter } from '@/components/ecommerce/Newsletter'
-import { ProductModal } from '@/components/ecommerce/ProductModal'
+import dynamic from 'next/dynamic'
+
+const ProductModal = dynamic(
+  () => import('@/components/ecommerce/ProductModal').then((mod) => mod.ProductModal),
+  { ssr: false },
+)
 import { AlternatingSection } from '@/components/layout/AlternatingSection'
 import type { ProductForFrontend } from '@/utilities/getProducts'
 

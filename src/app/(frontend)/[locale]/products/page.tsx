@@ -82,9 +82,15 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'products' })
   return {
-    title: 'Sản Phẩm | THE WHITE',
-    description: 'Khám phá bộ sưu tập thời trang thể thao cao cấp của THE WHITE',
+    title: `${t('pageTitle')} | THE WHITE`,
+    description: t('pageDescription'),
   }
 }

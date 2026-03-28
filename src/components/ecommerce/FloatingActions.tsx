@@ -3,7 +3,12 @@
 import { useState } from 'react'
 import { MessageCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
-import { WolfiesChatbot } from './WolfiesChatbot'
+import dynamic from 'next/dynamic'
+
+const WolfiesChatbot = dynamic(
+  () => import('./WolfiesChatbot').then((mod) => mod.WolfiesChatbot),
+  { ssr: false },
+)
 import { ScrollToTop } from './ScrollToTop'
 import { CookieSettings } from './CookieSettings'
 

@@ -25,7 +25,12 @@ import {
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { ScrollIndicator } from '@/components/ui/scroll-indicator'
-import { ProductModal } from '@/components/ecommerce/ProductModal'
+import dynamic from 'next/dynamic'
+
+const ProductModal = dynamic(
+  () => import('@/components/ecommerce/ProductModal').then((mod) => mod.ProductModal),
+  { ssr: false },
+)
 import type { ProductForFrontend, CategoryForFrontend } from '@/utilities/getProducts'
 import { PageContainer } from '@/components/layout/PageContainer'
 
