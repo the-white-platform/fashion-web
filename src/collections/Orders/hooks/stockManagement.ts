@@ -1,6 +1,49 @@
 import type { CollectionBeforeChangeHook, CollectionAfterChangeHook } from 'payload'
 import type { Product } from '@/payload-types'
 
+/**
+ * Increments the usageCount on the matching Coupon document when an order is created with a coupon.
+ * Failure is non-blocking — the order is never rolled back due to a coupon update error.
+ */
+export const incrementCouponUsageAfterOrder: CollectionAfterChangeHook = async ({
+  doc,
+  operation,
+  req,
+}) => {
+  if (operation !== 'create') return doc
+
+  const couponCode = doc?.totals?.couponCode
+  if (!couponCode) return doc
+
+  const payload = req.payload
+
+  try {
+    const result = await payload.find({
+      collection: 'coupons',
+      where: { code: { equals: couponCode } },
+      limit: 1,
+    })
+
+    const coupon = result.docs[0]
+    if (!coupon) {
+      payload.logger.warn(`Coupon code "${couponCode}" not found — skipping usage increment`)
+      return doc
+    }
+
+    await payload.update({
+      collection: 'coupons',
+      id: coupon.id,
+      data: { usageCount: (coupon.usageCount || 0) + 1 },
+    })
+
+    payload.logger.info(`Coupon "${couponCode}" usage incremented to ${(coupon.usageCount || 0) + 1}`)
+  } catch (error) {
+    payload.logger.error(`Failed to increment coupon usage for "${couponCode}": ${error}`)
+  }
+
+  return doc
+}
+
 interface OrderItem {
   product: number | { id: number }
   variant?: string

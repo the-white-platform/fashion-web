@@ -4,6 +4,7 @@ import {
   validateStockBeforeOrder,
   decrementStockAfterOrder,
   restoreStockOnCancel,
+  incrementCouponUsageAfterOrder,
 } from './Orders/hooks/stockManagement'
 
 export const Orders: CollectionConfig = {
@@ -449,6 +450,8 @@ export const Orders: CollectionConfig = {
       decrementStockAfterOrder,
       // Restore stock if order is cancelled
       restoreStockOnCancel,
+      // Increment coupon usageCount when an order is created with a coupon
+      incrementCouponUsageAfterOrder,
     ],
   },
   timestamps: true,
