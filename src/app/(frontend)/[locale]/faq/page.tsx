@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/Link'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { motion } from 'motion/react'
@@ -23,146 +23,53 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 
-const categories = [
-  { id: 'all', label: 'Tất Cả', icon: HelpCircle },
-  { id: 'order', label: 'Đặt Hàng', icon: Package },
-  { id: 'payment', label: 'Thanh Toán', icon: CreditCard },
-  { id: 'shipping', label: 'Vận Chuyển', icon: Truck },
-  { id: 'return', label: 'Đổi Trả', icon: RefreshCw },
+const FAQ_IDS = [
+  { id: '1', category: 'order' },
+  { id: '2', category: 'order' },
+  { id: '3', category: 'order' },
+  { id: '4', category: 'payment' },
+  { id: '5', category: 'payment' },
+  { id: '6', category: 'payment' },
+  { id: '7', category: 'shipping' },
+  { id: '8', category: 'shipping' },
+  { id: '9', category: 'shipping' },
+  { id: '10', category: 'shipping' },
+  { id: '11', category: 'return' },
+  { id: '12', category: 'return' },
+  { id: '13', category: 'return' },
+  { id: '14', category: 'return' },
+  { id: '15', category: 'order' },
+  { id: '16', category: 'order' },
+  { id: '17', category: 'payment' },
+  { id: '18', category: 'order' },
 ]
 
-const faqs = [
-  {
-    id: '1',
-    category: 'order',
-    question: 'Làm thế nào để đặt hàng trên TheWhite?',
-    answer:
-      'Bạn có thể đặt hàng dễ dàng bằng cách: 1) Chọn sản phẩm và thêm vào giỏ hàng 2) Điền thông tin giao hàng 3) Chọn phương thức thanh toán 4) Xác nhận đơn hàng. Bạn sẽ nhận được email xác nhận ngay sau khi đặt hàng thành công.',
-  },
-  {
-    id: '2',
-    category: 'order',
-    question: 'Tôi có thể thay đổi hoặc hủy đơn hàng không?',
-    answer:
-      'Bạn có thể hủy đơn hàng trong vòng 24h sau khi đặt hàng nếu đơn hàng chưa được xác nhận. Để thay đổi hoặc hủy đơn, vui lòng liên hệ hotline 1900-xxxx hoặc qua trang "Đơn Hàng Của Tôi" trong tài khoản.',
-  },
-  {
-    id: '3',
-    category: 'order',
-    question: 'Tôi có cần tạo tài khoản để mua hàng không?',
-    answer:
-      'Không bắt buộc. Bạn có thể mua hàng với tư cách khách (Guest Checkout). Tuy nhiên, tạo tài khoản giúp bạn theo dõi đơn hàng dễ dàng hơn, lưu địa chỉ giao hàng và nhận ưu đãi đặc biệt.',
-  },
-  {
-    id: '4',
-    category: 'payment',
-    question: 'TheWhite chấp nhận những phương thức thanh toán nào?',
-    answer:
-      'Chúng tôi chấp nhận: 1) Thẻ tín dụng/ghi nợ (Visa, Mastercard, JCB) 2) Chuyển khoản ngân hàng 3) Ví điện tử MoMo 4) Thanh toán khi nhận hàng (COD). Tất cả giao dịch đều được mã hóa và bảo mật.',
-  },
-  {
-    id: '5',
-    category: 'payment',
-    question: 'Thanh toán khi nhận hàng (COD) có phí không?',
-    answer:
-      'Phí COD là 20.000₫ cho đơn hàng dưới 500.000₫. Miễn phí COD cho đơn hàng từ 500.000₫ trở lên.',
-  },
-  {
-    id: '6',
-    category: 'payment',
-    question: 'Thông tin thẻ của tôi có an toàn không?',
-    answer:
-      'Hoàn toàn an toàn. Chúng tôi sử dụng công nghệ mã hóa SSL và không lưu trữ thông tin thẻ trên hệ thống. Mọi giao dịch đều được xử lý qua cổng thanh toán bảo mật quốc tế.',
-  },
-  {
-    id: '7',
-    category: 'shipping',
-    question: 'Thời gian giao hàng là bao lâu?',
-    answer:
-      'Nội thành TP.HCM/Hà Nội: 1-2 ngày làm việc. Các tỉnh thành khác: 2-5 ngày làm việc. Vùng sâu vùng xa: 5-7 ngày làm việc. Thời gian có thể thay đổi tùy tình hình thực tế.',
-  },
-  {
-    id: '8',
-    category: 'shipping',
-    question: 'Phí vận chuyển là bao nhiêu?',
-    answer:
-      'Miễn phí vận chuyển cho đơn hàng từ 500.000₫. Đơn hàng dưới 500.000₫: phí vận chuyển 30.000₫ (nội thành) hoặc 50.000₫ (ngoại thành/tỉnh).',
-  },
-  {
-    id: '9',
-    category: 'shipping',
-    question: 'Tôi có thể theo dõi đơn hàng như thế nào?',
-    answer:
-      'Sau khi đơn hàng được xác nhận, bạn sẽ nhận được mã vận đơn qua email/SMS. Bạn có thể theo dõi đơn hàng trong mục "Đơn Hàng Của Tôi" hoặc qua mã vận đơn trên website đơn vị vận chuyển.',
-  },
-  {
-    id: '10',
-    category: 'shipping',
-    question: 'Tôi có thể chỉ định thời gian giao hàng không?',
-    answer:
-      'Hiện tại chúng tôi chưa hỗ trợ chỉ định giờ giao cụ thể, nhưng bạn có thể ghi chú thời gian mong muốn trong phần "Ghi chú đơn hàng". Chúng tôi sẽ cố gắng đáp ứng.',
-  },
-  {
-    id: '11',
-    category: 'return',
-    question: 'Chính sách đổi trả của TheWhite như thế nào?',
-    answer:
-      'Bạn có thể đổi/trả hàng trong vòng 30 ngày kể từ ngày nhận hàng. Sản phẩm phải còn nguyên tem mác, chưa qua sử dụng. Chúng tôi hỗ trợ đổi size miễn phí và hoàn tiền 100% cho sản phẩm lỗi.',
-  },
-  {
-    id: '12',
-    category: 'return',
-    question: 'Làm thế nào để yêu cầu đổi/trả hàng?',
-    answer:
-      'Truy cập "Đơn Hàng Của Tôi" > Chọn đơn hàng cần đổi/trả > Nhấn "Yêu Cầu Đổi/Trả". Điền thông tin và lý do, chụp ảnh sản phẩm nếu có lỗi. Chúng tôi sẽ xử lý trong vòng 24-48h.',
-  },
-  {
-    id: '13',
-    category: 'return',
-    question: 'Phí đổi trả là bao nhiêu?',
-    answer:
-      'Miễn phí đổi size lần đầu. Miễn phí trả hàng nếu sản phẩm lỗi/nhầm hàng. Đổi trả do lỗi chủ quan (đổi ý): phí vận chuyển 2 chiều do khách hàng chi trả.',
-  },
-  {
-    id: '14',
-    category: 'return',
-    question: 'Khi nào tôi nhận được hoàn tiền?',
-    answer:
-      'Sau khi chúng tôi nhận và kiểm tra sản phẩm trả lại (2-3 ngày), tiền sẽ được hoàn về tài khoản/thẻ trong vòng 5-7 ngày làm việc tùy ngân hàng.',
-  },
-  {
-    id: '15',
-    category: 'order',
-    question: 'Làm sao để biết size nào phù hợp với tôi?',
-    answer:
-      'Sử dụng "Hướng Dẫn Chọn Size" trên mỗi trang sản phẩm. Chúng tôi cũng có tính năng "AI Smart Size Selection" giúp gợi ý size dựa trên số đo cơ thể của bạn. Nếu vẫn không chắc chắn, hãy liên hệ tư vấn viên qua chat.',
-  },
-  {
-    id: '16',
-    category: 'order',
-    question: 'Sản phẩm tôi muốn đã hết hàng, khi nào có lại?',
-    answer:
-      'Nhấn nút "Thông Báo Khi Có Hàng" trên trang sản phẩm. Chúng tôi sẽ gửi email/SMS ngay khi sản phẩm về hàng. Thời gian nhập hàng thường từ 1-2 tuần.',
-  },
-  {
-    id: '17',
-    category: 'payment',
-    question: 'Tôi có thể sử dụng nhiều mã giảm giá cùng lúc không?',
-    answer:
-      'Mỗi đơn hàng chỉ áp dụng được 1 mã giảm giá. Hệ thống sẽ tự động chọn mã có lợi nhất cho bạn.',
-  },
-  {
-    id: '18',
-    category: 'order',
-    question: 'TheWhite có cửa hàng offline không?',
-    answer:
-      'Có, chúng tôi có cửa hàng tại TP.HCM và Hà Nội. Xem địa chỉ chi tiết tại mục "Cửa Hàng" hoặc liên hệ hotline để được hướng dẫn.',
-  },
-]
+const CATEGORY_ICONS = {
+  all: HelpCircle,
+  order: Package,
+  payment: CreditCard,
+  shipping: Truck,
+  return: RefreshCw,
+}
 
 export default function FAQPage() {
+  const t = useTranslations('faq')
+  const tNav = useTranslations('nav')
+
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
+
+  const categories = (['all', 'order', 'payment', 'shipping', 'return'] as const).map((id) => ({
+    id,
+    label: t(`categories.${id}`),
+    icon: CATEGORY_ICONS[id],
+  }))
+
+  const faqs = FAQ_IDS.map((faq) => ({
+    ...faq,
+    question: t(`questions.q${faq.id}.question`),
+    answer: t(`questions.q${faq.id}.answer`),
+  }))
 
   const filteredFAQs = faqs.filter((faq) => {
     const matchesCategory = selectedCategory === 'all' || faq.category === selectedCategory
@@ -181,12 +88,12 @@ export default function FAQPage() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/">Trang chủ</Link>
+                  <Link href="/">{tNav('home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Câu Hỏi Thường Gặp</BreadcrumbPage>
+                <BreadcrumbPage>{t('breadcrumb')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -199,11 +106,9 @@ export default function FAQPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl lg:text-6xl uppercase tracking-tight mb-4 font-bold"
           >
-            Câu Hỏi Thường Gặp
+            {t('title')}
           </motion.h1>
-          <p className="text-muted-foreground font-medium text-lg">
-            Tìm câu trả lời cho những câu hỏi phổ biến về TheWhite
-          </p>
+          <p className="text-muted-foreground font-medium text-lg">{t('subtitle')}</p>
         </div>
 
         {/* Search */}
@@ -214,7 +119,7 @@ export default function FAQPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm câu hỏi..."
+              placeholder={t('searchPlaceholder')}
               className="pl-12 py-6 text-base border-2 border-border rounded-sm focus:border-foreground transition-colors bg-background text-foreground"
             />
           </div>
@@ -270,9 +175,7 @@ export default function FAQPage() {
         {filteredFAQs.length === 0 && (
           <div className="text-center py-16 bg-muted rounded-sm">
             <HelpCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-6 text-lg font-medium">
-              Không tìm thấy câu hỏi phù hợp
-            </p>
+            <p className="text-muted-foreground mb-6 text-lg font-medium">{t('noResults')}</p>
             <Button
               variant="outline"
               onClick={() => {
@@ -281,7 +184,7 @@ export default function FAQPage() {
               }}
               className="rounded-sm border-2 border-foreground hover:bg-foreground hover:text-background font-bold uppercase tracking-wide"
             >
-              Xóa bộ lọc
+              {t('noResults')}
             </Button>
           </div>
         )}
@@ -294,10 +197,10 @@ export default function FAQPage() {
           className="mt-20 bg-foreground text-background rounded-sm p-12 text-center shadow-2xl"
         >
           <h3 className="text-3xl lg:text-4xl uppercase tracking-tight mb-4 font-bold">
-            Không Tìm Thấy Câu Trả Lời?
+            {t('noResults')}
           </h3>
           <p className="opacity-80 mb-8 text-lg font-medium max-w-2xl mx-auto">
-            Đội ngũ hỗ trợ của TheWhite sẵn sàng giúp đỡ bạn 24/7
+            {t('subtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -306,13 +209,13 @@ export default function FAQPage() {
               className="rounded-sm px-8 py-6 font-bold uppercase tracking-wide"
               asChild
             >
-              <Link href="/contact">Chat Với Chúng Tôi</Link>
+              <Link href="/contact">{tNav('contact')}</Link>
             </Button>
             <Link
               href="/contact"
               className="inline-flex items-center justify-center border-2 border-background text-background hover:bg-background hover:text-foreground rounded-sm px-8 py-6 font-bold uppercase tracking-wide transition-colors h-12"
             >
-              Gọi Hotline: 1900-xxxx
+              {t('categories.all')}
             </Link>
           </div>
         </motion.div>

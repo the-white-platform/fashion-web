@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { motion } from 'motion/react'
 import { Mail, Phone, MapPin, Clock, Send, Facebook, Instagram, MessageCircle } from 'lucide-react'
 import { PageContainer } from '@/components/layout/PageContainer'
@@ -15,6 +16,9 @@ import {
 import { Link } from '@/i18n/Link'
 
 export default function ContactPage() {
+  const t = useTranslations('contact')
+  const tNav = useTranslations('nav')
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -60,12 +64,12 @@ export default function ContactPage() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/">Trang chủ</Link>
+                  <Link href="/">{tNav('home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Liên Hệ</BreadcrumbPage>
+                <BreadcrumbPage>{t('breadcrumb')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -73,15 +77,15 @@ export default function ContactPage() {
 
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl uppercase tracking-wide mb-4">Liên Hệ</h1>
-          <p className="text-muted-foreground">Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn</p>
+          <h1 className="text-4xl uppercase tracking-wide mb-4">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Form */}
           <div>
             <div className="bg-muted border border-border rounded-sm p-8">
-              <h2 className="text-2xl uppercase tracking-wide mb-6">Gửi Tin Nhắn</h2>
+              <h2 className="text-2xl uppercase tracking-wide mb-6">{t('form.title')}</h2>
 
               {submitted ? (
                 <motion.div
@@ -92,21 +96,21 @@ export default function ContactPage() {
                   <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Send className="w-8 h-8 text-success" />
                   </div>
-                  <h3 className="text-xl mb-2">Gửi Thành Công!</h3>
-                  <p className="text-muted-foreground">Chúng tôi sẽ phản hồi trong vòng 24h</p>
+                  <h3 className="text-xl mb-2">{t('form.successTitle')}</h3>
+                  <p className="text-muted-foreground">{t('form.successDesc')}</p>
                 </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
                     <label className="block text-sm uppercase tracking-wide mb-2">
-                      Họ và tên *
+                      {t('form.namePlaceholder')} *
                     </label>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
-                      placeholder="Nguyễn Văn A"
+                      placeholder={t('form.namePlaceholder')}
                       className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
                     />
                   </div>
@@ -119,61 +123,67 @@ export default function ContactPage() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
-                        placeholder="email@example.com"
+                        placeholder={t('form.emailPlaceholder')}
                         className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
                       />
                     </div>
                     <div>
                       <label className="block text-sm uppercase tracking-wide mb-2">
-                        Số điện thoại
+                        {t('info.phoneLabel')}
                       </label>
                       <input
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="0901234567"
+                        placeholder={t('form.phonePlaceholder')}
                         className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm uppercase tracking-wide mb-2">Danh mục *</label>
+                    <label className="block text-sm uppercase tracking-wide mb-2">
+                      {t('form.categoryLabel')} *
+                    </label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       required
                       className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
                     >
-                      <option value="general">Câu hỏi chung</option>
-                      <option value="order">Đơn hàng</option>
-                      <option value="product">Sản phẩm</option>
-                      <option value="return">Đổi trả</option>
-                      <option value="partnership">Hợp tác</option>
-                      <option value="other">Khác</option>
+                      <option value="general">{t('form.categoryDefault')}</option>
+                      <option value="order">{t('form.categoryOrder')}</option>
+                      <option value="product">{t('form.categoryProduct')}</option>
+                      <option value="return">{t('form.categoryReturn')}</option>
+                      <option value="partnership">{t('form.categoryOther')}</option>
+                      <option value="other">{t('form.categoryOther')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm uppercase tracking-wide mb-2">Tiêu đề *</label>
+                    <label className="block text-sm uppercase tracking-wide mb-2">
+                      {t('form.categoryShipping')} *
+                    </label>
                     <input
                       type="text"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
-                      placeholder="Vấn đề cần hỗ trợ"
+                      placeholder={t('form.messagePlaceholder')}
                       className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm uppercase tracking-wide mb-2">Nội dung *</label>
+                    <label className="block text-sm uppercase tracking-wide mb-2">
+                      {t('form.messagePlaceholder')} *
+                    </label>
                     <textarea
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                       required
                       rows={6}
-                      placeholder="Mô tả chi tiết vấn đề của bạn..."
+                      placeholder={t('form.messagePlaceholder')}
                       className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground transition-colors resize-none bg-background text-foreground"
                     />
                   </div>
@@ -186,12 +196,12 @@ export default function ContactPage() {
                     {isSubmitting ? (
                       <>
                         <div className="w-5 h-5 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                        <span>Đang Gửi...</span>
+                        <span>{t('form.submitting')}</span>
                       </>
                     ) : (
                       <>
                         <Send className="w-5 h-5" />
-                        <span>Gửi Tin Nhắn</span>
+                        <span>{t('form.submit')}</span>
                       </>
                     )}
                   </button>
@@ -204,16 +214,15 @@ export default function ContactPage() {
           <div className="space-y-6">
             {/* Contact Details */}
             <div className="bg-muted border border-border rounded-sm p-8">
-              <h2 className="text-2xl uppercase tracking-wide mb-6">Thông Tin Liên Hệ</h2>
+              <h2 className="text-2xl uppercase tracking-wide mb-6">{t('info.title')}</h2>
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="w-12 h-12 bg-foreground text-background rounded-sm flex items-center justify-center shrink-0">
                     <Phone className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="uppercase tracking-wide mb-1">Hotline</h3>
-                    <p className="text-foreground">1900-xxxx (8:00 - 22:00)</p>
-                    <p className="text-sm text-muted-foreground">Miễn phí cuộc gọi</p>
+                    <h3 className="uppercase tracking-wide mb-1">{t('info.phoneLabel')}</h3>
+                    <p className="text-foreground">{t('info.phoneValue')}</p>
                   </div>
                 </div>
 
@@ -222,9 +231,8 @@ export default function ContactPage() {
                     <Mail className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="uppercase tracking-wide mb-1">Email</h3>
-                    <p className="text-foreground">support@thewhite.vn</p>
-                    <p className="text-sm text-muted-foreground">Phản hồi trong 24h</p>
+                    <h3 className="uppercase tracking-wide mb-1">{t('info.emailLabel')}</h3>
+                    <p className="text-foreground">{t('info.emailValue')}</p>
                   </div>
                 </div>
 
@@ -233,12 +241,8 @@ export default function ContactPage() {
                     <MapPin className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="uppercase tracking-wide mb-1">Địa chỉ</h3>
-                    <p className="text-foreground">
-                      123 Đường ABC, Quận 1,
-                      <br />
-                      TP. Hồ Chí Minh, Việt Nam
-                    </p>
+                    <h3 className="uppercase tracking-wide mb-1">{t('info.addressLabel')}</h3>
+                    <p className="text-foreground">{t('info.addressValue')}</p>
                   </div>
                 </div>
 
@@ -247,9 +251,8 @@ export default function ContactPage() {
                     <Clock className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="uppercase tracking-wide mb-1">Giờ làm việc</h3>
-                    <p className="text-foreground">Thứ 2 - Chủ Nhật</p>
-                    <p className="text-sm text-muted-foreground">8:00 - 22:00</p>
+                    <h3 className="uppercase tracking-wide mb-1">{t('info.hoursLabel')}</h3>
+                    <p className="text-foreground">{t('info.hoursValue')}</p>
                   </div>
                 </div>
               </div>
@@ -257,7 +260,7 @@ export default function ContactPage() {
 
             {/* Social Media */}
             <div className="bg-foreground text-background rounded-sm p-8">
-              <h2 className="text-2xl uppercase tracking-wide mb-6">Kết Nối Với Chúng Tôi</h2>
+              <h2 className="text-2xl uppercase tracking-wide mb-6">{t('social.title')}</h2>
               <div className="space-y-4">
                 <a
                   href="#"
@@ -296,31 +299,31 @@ export default function ContactPage() {
 
             {/* Quick Links */}
             <div className="bg-muted border border-border rounded-sm p-8">
-              <h3 className="uppercase tracking-wide mb-4">Liên Kết Nhanh</h3>
+              <h3 className="uppercase tracking-wide mb-4">{t('quickLinks.title')}</h3>
               <div className="space-y-2 text-sm">
                 <Link
                   href="/faq"
                   className="block text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  → Câu hỏi thường gặp (FAQ)
+                  → {t('quickLinks.faq')}
                 </Link>
                 <Link
                   href="/return-policy"
                   className="block text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  → Chính sách đổi trả
+                  → {t('quickLinks.returnPolicy')}
                 </Link>
                 <Link
                   href="/size-guide"
                   className="block text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  → Hướng dẫn chọn size
+                  → {t('quickLinks.sizeGuide')}
                 </Link>
                 <Link
                   href="/orders"
                   className="block text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  → Theo dõi đơn hàng
+                  → {t('quickLinks.faq')}
                 </Link>
               </div>
             </div>

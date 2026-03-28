@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
@@ -20,6 +21,9 @@ import {
 export default function ReturnRequestPage() {
   const router = useRouter()
   const { user } = useUser()
+  const t = useTranslations('returnRequest')
+  const tNav = useTranslations('nav')
+
   const [selectedOrder, setSelectedOrder] = useState('')
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [returnType, setReturnType] = useState<'return' | 'exchange'>('return')
@@ -41,14 +45,9 @@ export default function ReturnRequestPage() {
 
   const order = deliveredOrders.find((o) => o.orderNumber === selectedOrder) || null
 
-  const reasons = [
-    'Sản phẩm không đúng size',
-    'Sản phẩm bị lỗi/hỏng',
-    'Sản phẩm không đúng mô tả',
-    'Nhầm sản phẩm',
-    'Đổi ý',
-    'Khác',
-  ]
+  const reasons = (
+    ['r1', 'r2', 'r3', 'r4', 'r5', 'r6'] as const
+  ).map((key) => t(`reason.${key}`))
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,25 +80,22 @@ export default function ReturnRequestPage() {
             <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle className="w-10 h-10 text-success" />
             </div>
-            <h1 className="text-3xl uppercase tracking-wide mb-4">Yêu Cầu Đã Được Gửi!</h1>
+            <h1 className="text-3xl uppercase tracking-wide mb-4">{t('success.title')}</h1>
             <p className="text-muted-foreground mb-8">
-              Chúng tôi sẽ xử lý yêu cầu {returnType === 'return' ? 'trả hàng' : 'đổi hàng'} của bạn
-              trong vòng 24-48h.
-              <br />
-              Bạn sẽ nhận được email xác nhận sớm nhất.
+              {returnType === 'return' ? t('success.descReturn') : t('success.descExchange')}
             </p>
             <div className="flex gap-3 justify-center">
               <Link
                 href="/"
                 className="px-8 py-4 border-2 border-border rounded-sm hover:border-foreground transition-colors uppercase tracking-wide"
               >
-                Về Trang Chủ
+                {t('success.home')}
               </Link>
               <button
                 onClick={() => setSubmitted(false)}
                 className="px-8 py-4 bg-foreground text-background rounded-sm hover:opacity-90 transition-colors uppercase tracking-wide"
               >
-                Gửi Yêu Cầu Khác
+                {t('success.another')}
               </button>
             </div>
           </motion.div>
@@ -117,12 +113,12 @@ export default function ReturnRequestPage() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/">Trang chủ</Link>
+                  <Link href="/">{tNav('home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Yêu Cầu Đổi/Trả Hàng</BreadcrumbPage>
+                <BreadcrumbPage>{t('breadcrumb')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -130,14 +126,14 @@ export default function ReturnRequestPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl uppercase tracking-wide mb-2">Yêu Cầu Đổi/Trả Hàng</h1>
-          <p className="text-muted-foreground">Vui lòng điền đầy đủ thông tin bên dưới</p>
+          <h1 className="text-3xl uppercase tracking-wide mb-2">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Select Order */}
           <div className="bg-muted border border-border rounded-sm p-6">
-            <h2 className="uppercase tracking-wide mb-4">1. Chọn Đơn Hàng</h2>
+            <h2 className="uppercase tracking-wide mb-4">{t('steps.s1')}</h2>
             {deliveredOrders.length > 0 ? (
               <select
                 value={selectedOrder}
@@ -147,7 +143,7 @@ export default function ReturnRequestPage() {
                 }}
                 className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground bg-background text-foreground"
               >
-                <option value="">-- Chọn đơn hàng --</option>
+                <option value="">{t('order.selectDefault')}</option>
                 {deliveredOrders.map((o: any) => (
                   <option key={o.id} value={o.orderNumber}>
                     #{o.orderNumber} —{' '}
@@ -157,14 +153,14 @@ export default function ReturnRequestPage() {
                 ))}
               </select>
             ) : (
-              <p className="text-muted-foreground">Bạn chưa có đơn hàng nào đã giao</p>
+              <p className="text-muted-foreground">{t('order.noOrders')}</p>
             )}
           </div>
 
           {/* Select Items */}
           {order && (
             <div className="bg-muted border border-border rounded-sm p-6">
-              <h2 className="uppercase tracking-wide mb-4">2. Chọn Sản Phẩm</h2>
+              <h2 className="uppercase tracking-wide mb-4">{t('steps.s2')}</h2>
               <div className="space-y-3">
                 {order.items.map((item: any, index: number) => (
                   <label
@@ -195,7 +191,7 @@ export default function ReturnRequestPage() {
                     <div className="flex-1">
                       <p className="mb-1">{item.productName}</p>
                       <p className="text-sm text-muted-foreground">
-                        Size: {item.size} | Số lượng: {item.quantity}
+                        {t('items.size')}: {item.size} | {t('items.qty')}: {item.quantity}
                       </p>
                       <p className="text-sm">{(item.unitPrice || 0).toLocaleString('vi-VN')}₫</p>
                     </div>
@@ -208,7 +204,7 @@ export default function ReturnRequestPage() {
           {/* Return or Exchange */}
           {selectedItems.length > 0 && (
             <div className="bg-muted border border-border rounded-sm p-6">
-              <h2 className="uppercase tracking-wide mb-4">3. Loại Yêu Cầu</h2>
+              <h2 className="uppercase tracking-wide mb-4">{t('steps.s3')}</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <label
                   className={`p-6 border-2 rounded-sm cursor-pointer transition-all text-center ${
@@ -225,8 +221,8 @@ export default function ReturnRequestPage() {
                     onChange={(e) => setReturnType(e.target.value as any)}
                     className="mb-3"
                   />
-                  <p className="uppercase tracking-wide mb-1">Trả Hàng & Hoàn Tiền</p>
-                  <p className="text-sm text-muted-foreground">Sản phẩm sẽ được hoàn tiền 100%</p>
+                  <p className="uppercase tracking-wide mb-1">{t('type.return')}</p>
+                  <p className="text-sm text-muted-foreground">{t('type.returnDesc')}</p>
                 </label>
 
                 <label
@@ -244,8 +240,8 @@ export default function ReturnRequestPage() {
                     onChange={(e) => setReturnType(e.target.value as any)}
                     className="mb-3"
                   />
-                  <p className="uppercase tracking-wide mb-1">Đổi Sản Phẩm</p>
-                  <p className="text-sm text-muted-foreground">Đổi size hoặc màu khác</p>
+                  <p className="uppercase tracking-wide mb-1">{t('type.exchange')}</p>
+                  <p className="text-sm text-muted-foreground">{t('type.exchangeDesc')}</p>
                 </label>
               </div>
             </div>
@@ -254,14 +250,14 @@ export default function ReturnRequestPage() {
           {/* Reason */}
           {selectedItems.length > 0 && (
             <div className="bg-muted border border-border rounded-sm p-6">
-              <h2 className="uppercase tracking-wide mb-4">4. Lý Do</h2>
+              <h2 className="uppercase tracking-wide mb-4">{t('steps.s4')}</h2>
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 required
                 className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground bg-background text-foreground"
               >
-                <option value="">-- Chọn lý do --</option>
+                <option value="">{t('reason.selectDefault')}</option>
                 {reasons.map((r) => (
                   <option key={r} value={r}>
                     {r}
@@ -269,14 +265,16 @@ export default function ReturnRequestPage() {
                 ))}
               </select>
 
-              <label className="block text-sm uppercase tracking-wide mb-2">Mô Tả Chi Tiết</label>
+              <label className="block text-sm uppercase tracking-wide mb-2 mt-4">
+                {t('reason.descLabel')}
+              </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
                 rows={5}
                 className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground resize-none bg-background text-foreground"
-                placeholder="Mô tả chi tiết vấn đề với sản phẩm..."
+                placeholder={t('reason.descPlaceholder')}
               />
             </div>
           )}
@@ -284,16 +282,11 @@ export default function ReturnRequestPage() {
           {/* Upload Images */}
           {selectedItems.length > 0 && (
             <div className="bg-muted border border-border rounded-sm p-6">
-              <h2 className="uppercase tracking-wide mb-4">5. Hình Ảnh (Tùy Chọn)</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Đính kèm hình ảnh sản phẩm nếu có lỗi
-              </p>
+              <h2 className="uppercase tracking-wide mb-4">{t('steps.s5')}</h2>
               <div className="border-2 border-dashed border-border rounded-sm p-8 text-center hover:border-muted-foreground transition-colors">
                 <Upload className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground mb-2">
-                  Kéo thả hoặc click để tải ảnh lên
-                </p>
-                <p className="text-xs text-muted-foreground/60">PNG, JPG tối đa 5MB</p>
+                <p className="text-sm text-muted-foreground mb-2">{t('images.dragDrop')}</p>
+                <p className="text-xs text-muted-foreground/60">{t('images.format')}</p>
               </div>
             </div>
           )}
@@ -305,13 +298,13 @@ export default function ReturnRequestPage() {
                 href="/profile"
                 className="flex-1 text-center border-2 border-border py-4 rounded-sm hover:bg-muted transition-colors uppercase tracking-wide"
               >
-                Hủy
+                {t('buttons.cancel')}
               </Link>
               <button
                 type="submit"
                 className="flex-1 bg-foreground text-background py-4 rounded-sm hover:opacity-90 transition-colors uppercase tracking-wide"
               >
-                Gửi Yêu Cầu
+                {t('buttons.submit')}
               </button>
             </div>
           )}
@@ -319,16 +312,16 @@ export default function ReturnRequestPage() {
 
         {/* Policy Info */}
         <div className="mt-8 bg-muted border border-border rounded-sm p-6">
-          <h3 className="uppercase tracking-wide mb-3">📋 Chính Sách Đổi/Trả</h3>
+          <h3 className="uppercase tracking-wide mb-3">{t('policy.title')}</h3>
           <ul className="space-y-2 text-sm text-foreground/80">
-            <li>• Đổi/trả trong vòng 30 ngày kể từ ngày nhận hàng</li>
-            <li>• Sản phẩm phải còn nguyên tem mác, chưa qua sử dụng</li>
-            <li>• Miễn phí đổi size lần đầu và trả hàng nếu sản phẩm lỗi</li>
-            <li>• Hoàn tiền trong vòng 5-7 ngày sau khi nhận hàng trả</li>
+            <li>• {t('policy.p1')}</li>
+            <li>• {t('policy.p2')}</li>
+            <li>• {t('policy.p3')}</li>
+            <li>• {t('policy.p4')}</li>
             <li>
-              • Xem chi tiết tại{' '}
+              • {t('policy.p5')}{' '}
               <Link href="/return-policy" className="text-foreground underline font-bold">
-                Chính Sách Đổi Trả
+                {t('policy.policyLink')}
               </Link>
             </li>
           </ul>

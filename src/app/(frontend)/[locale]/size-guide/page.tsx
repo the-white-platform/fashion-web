@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/Link'
 import { motion } from 'motion/react'
 import { Ruler, User, Weight, Sparkles, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react'
@@ -55,7 +56,10 @@ const sizeCharts = {
 }
 
 export default function SizeGuidePage() {
+  const t = useTranslations('sizeGuide')
+  const tNav = useTranslations('nav')
   const router = useRouter()
+
   const [gender, setGender] = useState<'men' | 'women'>('men')
   const [productType, setProductType] = useState<'shirt' | 'pants'>('shirt')
 
@@ -74,7 +78,7 @@ export default function SizeGuidePage() {
     const wa = parseInt(waist) || 0
 
     if (!h || !w) {
-      alert('Vui lòng nhập chiều cao và cân nặng!')
+      alert(t('calculator.alertRequired'))
       return
     }
 
@@ -155,12 +159,12 @@ export default function SizeGuidePage() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/">Trang chủ</Link>
+                  <Link href="/">{tNav('home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Hướng Dẫn Chọn Size</BreadcrumbPage>
+                <BreadcrumbPage>{t('breadcrumb')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -172,10 +176,8 @@ export default function SizeGuidePage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12 text-center"
         >
-          <h1 className="text-4xl md:text-5xl mb-4 uppercase tracking-wide">Hướng Dẫn Chọn Size</h1>
-          <p className="text-muted-foreground text-lg">
-            Tìm size hoàn hảo với công nghệ AI thông minh
-          </p>
+          <h1 className="text-4xl md:text-5xl mb-4 uppercase tracking-wide">{t('title')}</h1>
+          <p className="text-muted-foreground text-lg">{t('subtitle')}</p>
         </motion.div>
 
         {/* AI Size Calculator */}
@@ -187,18 +189,18 @@ export default function SizeGuidePage() {
         >
           <div className="flex items-center gap-3 mb-6">
             <Sparkles className="w-8 h-8" />
-            <h2 className="text-3xl uppercase tracking-wide">Chọn Size Thông Minh AI</h2>
+            <h2 className="text-3xl uppercase tracking-wide">{t('calculator.title')}</h2>
           </div>
-          <p className="opacity-80 mb-8">
-            Công nghệ AI phân tích số đo của bạn để gợi ý size chính xác nhất
-          </p>
+          <p className="opacity-80 mb-8">{t('calculator.desc')}</p>
 
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Input Form */}
             <div className="bg-background text-foreground rounded-sm p-6 space-y-6">
               {/* Gender Selection */}
               <div>
-                <label className="block text-sm uppercase tracking-wide mb-3">Giới Tính</label>
+                <label className="block text-sm uppercase tracking-wide mb-3">
+                  {t('calculator.gender.label')}
+                </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setGender('men')}
@@ -208,7 +210,7 @@ export default function SizeGuidePage() {
                         : 'bg-background text-foreground border-border hover:border-foreground'
                     }`}
                   >
-                    Nam
+                    {t('calculator.gender.male')}
                   </button>
                   <button
                     onClick={() => setGender('women')}
@@ -218,14 +220,16 @@ export default function SizeGuidePage() {
                         : 'bg-background text-foreground border-border hover:border-foreground'
                     }`}
                   >
-                    Nữ
+                    {t('calculator.gender.female')}
                   </button>
                 </div>
               </div>
 
               {/* Product Type */}
               <div>
-                <label className="block text-sm uppercase tracking-wide mb-3">Loại Sản Phẩm</label>
+                <label className="block text-sm uppercase tracking-wide mb-3">
+                  {t('calculator.type.label')}
+                </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setProductType('shirt')}
@@ -235,7 +239,7 @@ export default function SizeGuidePage() {
                         : 'bg-background text-foreground border-border hover:border-foreground'
                     }`}
                   >
-                    Áo
+                    {t('calculator.type.shirt')}
                   </button>
                   <button
                     onClick={() => setProductType('pants')}
@@ -245,7 +249,7 @@ export default function SizeGuidePage() {
                         : 'bg-background text-foreground border-border hover:border-foreground'
                     }`}
                   >
-                    Quần
+                    {t('calculator.type.pants')}
                   </button>
                 </div>
               </div>
@@ -254,7 +258,7 @@ export default function SizeGuidePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm uppercase tracking-wide mb-2">
-                    Chiều Cao (cm) <span className="text-destructive">*</span>
+                    {t('calculator.height')} <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -270,7 +274,7 @@ export default function SizeGuidePage() {
 
                 <div>
                   <label className="block text-sm uppercase tracking-wide mb-2">
-                    Cân Nặng (kg) <span className="text-destructive">*</span>
+                    {t('calculator.weight')} <span className="text-destructive">*</span>
                   </label>
                   <div className="relative">
                     <Weight className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -286,7 +290,7 @@ export default function SizeGuidePage() {
 
                 <div>
                   <label className="block text-sm uppercase tracking-wide mb-2">
-                    Vòng Ngực (cm)
+                    {t('chart.headers.chest')}
                   </label>
                   <div className="relative">
                     <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -301,7 +305,9 @@ export default function SizeGuidePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm uppercase tracking-wide mb-2">Vòng Eo (cm)</label>
+                  <label className="block text-sm uppercase tracking-wide mb-2">
+                    {t('chart.headers.waist')}
+                  </label>
                   <div className="relative">
                     <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                     <input
@@ -315,11 +321,6 @@ export default function SizeGuidePage() {
                 </div>
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                <span className="text-destructive">*</span> Bắt buộc. Các thông số khác giúp kết quả
-                chính xác hơn.
-              </p>
-
               {/* Action Buttons */}
               <div className="flex gap-3">
                 <button
@@ -327,13 +328,13 @@ export default function SizeGuidePage() {
                   className="flex-1 bg-foreground text-background py-3 rounded-sm hover:opacity-90 transition-all uppercase tracking-wide flex items-center justify-center gap-2"
                 >
                   <Sparkles className="w-5 h-5" />
-                  Tính Size AI
+                  {t('calculator.find')}
                 </button>
                 <button
                   onClick={resetCalculator}
                   className="px-6 border-2 border-border bg-background text-foreground py-3 rounded-sm hover:border-foreground transition-all uppercase tracking-wide"
                 >
-                  Làm Mới
+                  {t('calculator.find')}
                 </button>
               </div>
             </div>
@@ -350,25 +351,34 @@ export default function SizeGuidePage() {
                     {recommendedSize}
                   </div>
                   <div>
-                    <h3 className="text-2xl uppercase tracking-wide mb-2">Size Đề Xuất</h3>
+                    <h3 className="text-2xl uppercase tracking-wide mb-2">
+                      {t('calculator.result.title')}
+                    </h3>
                     <p className="text-muted-foreground mb-4">
-                      Độ tin cậy: <span className="font-bold text-foreground">{confidence}%</span>
+                      {t('calculator.result.fit')}:{' '}
+                      <span className="font-bold text-foreground">{confidence}%</span>
                     </p>
                     <div className="flex items-center justify-center gap-2">
                       {confidence >= 80 ? (
                         <>
                           <CheckCircle className="w-5 h-5 text-success" />
-                          <span className="text-success font-medium">Rất phù hợp</span>
+                          <span className="text-success font-medium">
+                            {t('calculator.result.fit')}
+                          </span>
                         </>
                       ) : confidence >= 60 ? (
                         <>
                           <AlertCircle className="w-5 h-5 text-warning" />
-                          <span className="text-warning font-medium">Khá phù hợp</span>
+                          <span className="text-warning font-medium">
+                            {t('calculator.result.fit')}
+                          </span>
                         </>
                       ) : (
                         <>
                           <TrendingUp className="w-5 h-5 text-warning" />
-                          <span className="text-warning font-medium">Tham khảo</span>
+                          <span className="text-warning font-medium">
+                            {t('calculator.result.fit')}
+                          </span>
                         </>
                       )}
                     </div>
@@ -377,13 +387,13 @@ export default function SizeGuidePage() {
                     onClick={() => router.push(`/products?size=${recommendedSize}`)}
                     className="w-full mt-4 py-3 border-2 border-foreground bg-background text-foreground rounded-sm hover:bg-foreground hover:text-background transition-all uppercase tracking-wide"
                   >
-                    Xem Sản Phẩm Size {recommendedSize}
+                    {t('calculator.result.viewProducts', { size: recommendedSize })}
                   </button>
                 </motion.div>
               ) : (
                 <div className="text-center py-12 text-muted-foreground">
                   <User className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>Nhập thông tin để nhận gợi ý size</p>
+                  <p>{t('calculator.desc')}</p>
                 </div>
               )}
             </div>
@@ -398,7 +408,9 @@ export default function SizeGuidePage() {
           className="bg-muted rounded-sm p-8"
         >
           <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-            <h2 className="text-2xl uppercase tracking-wide">Bảng Size Chi Tiết</h2>
+            <h2 className="text-2xl uppercase tracking-wide">
+              {gender === 'men' ? t('chart.title') : t('chart.womenTitle')}
+            </h2>
             <div className="flex gap-3">
               <button
                 onClick={() => setGender('men')}
@@ -408,7 +420,7 @@ export default function SizeGuidePage() {
                     : 'bg-background text-foreground border-border hover:border-foreground'
                 }`}
               >
-                Nam
+                {t('chart.gender.men')}
               </button>
               <button
                 onClick={() => setGender('women')}
@@ -418,7 +430,7 @@ export default function SizeGuidePage() {
                     : 'bg-background text-foreground border-border hover:border-foreground'
                 }`}
               >
-                Nữ
+                {t('chart.gender.women')}
               </button>
             </div>
           </div>
@@ -432,7 +444,7 @@ export default function SizeGuidePage() {
                   : 'bg-background text-foreground border-border hover:border-foreground'
               }`}
             >
-              Áo
+              {t('chart.shirt')}
             </button>
             <button
               onClick={() => setProductType('pants')}
@@ -442,7 +454,7 @@ export default function SizeGuidePage() {
                   : 'bg-background text-foreground border-border hover:border-foreground'
               }`}
             >
-              Quần
+              {t('chart.pants')}
             </button>
           </div>
 
@@ -451,36 +463,36 @@ export default function SizeGuidePage() {
               <thead>
                 <tr className="bg-foreground text-background">
                   <th className="border border-border px-4 py-3 text-left uppercase tracking-wide">
-                    Size
+                    {t('chart.headers.size')}
                   </th>
                   {productType === 'shirt' ? (
                     <>
                       <th className="border border-border px-4 py-3 uppercase tracking-wide">
-                        Vòng Ngực (cm)
+                        {t('chart.headers.chest')}
                       </th>
                       <th className="border border-border px-4 py-3 uppercase tracking-wide">
-                        Vòng Eo (cm)
+                        {t('chart.headers.waist')}
                       </th>
                       <th className="border border-border px-4 py-3 uppercase tracking-wide">
-                        Chiều Cao (cm)
+                        {t('chart.headers.height')}
                       </th>
                       <th className="border border-border px-4 py-3 uppercase tracking-wide">
-                        Cân Nặng (kg)
+                        {t('chart.headers.weight')}
                       </th>
                     </>
                   ) : (
                     <>
                       <th className="border border-border px-4 py-3 uppercase tracking-wide">
-                        Vòng Eo (cm)
+                        {t('chart.headers.waist')}
                       </th>
                       <th className="border border-border px-4 py-3 uppercase tracking-wide">
-                        Vòng Mông (cm)
+                        {t('chart.headers.hip')}
                       </th>
                       <th className="border border-border px-4 py-3 uppercase tracking-wide">
-                        Chiều Dài (cm)
+                        {t('chart.headers.inseam')}
                       </th>
                       <th className="border border-border px-4 py-3 uppercase tracking-wide">
-                        Chiều Cao (cm)
+                        {t('chart.headers.height')}
                       </th>
                     </>
                   )}
@@ -521,32 +533,13 @@ export default function SizeGuidePage() {
           transition={{ delay: 0.3 }}
           className="mt-12 bg-foreground text-background rounded-sm p-8"
         >
-          <h3 className="text-2xl uppercase tracking-wide mb-6">💡 Mẹo Chọn Size</h3>
+          <h3 className="text-2xl uppercase tracking-wide mb-6">{t('tips.title')}</h3>
           <div className="grid md:grid-cols-2 gap-6 opacity-80">
-            <div>
-              <h4 className="opacity-100 font-semibold mb-2">Đo Chính Xác</h4>
-              <p className="text-sm">
-                Đo số đo khi mặc đồ lót, đứng thẳng và thở bình thường. Sử dụng thước dây mềm.
-              </p>
-            </div>
-            <div>
-              <h4 className="opacity-100 font-semibold mb-2">Kích Thước Cơ Thể</h4>
-              <p className="text-sm">
-                Nếu số đo của bạn nằm giữa 2 size, chọn size lớn hơn để thoải mái hơn.
-              </p>
-            </div>
-            <div>
-              <h4 className="opacity-100 font-semibold mb-2">Kiểu Dáng</h4>
-              <p className="text-sm">
-                Áo oversize nên chọn size nhỏ hơn 1-2 size so với size thường.
-              </p>
-            </div>
-            <div>
-              <h4 className="opacity-100 font-semibold mb-2">Đổi Size Miễn Phí</h4>
-              <p className="text-sm">
-                Chúng tôi hỗ trợ đổi size miễn phí trong 30 ngày. Đừng ngại thử!
-              </p>
-            </div>
+            {(['t1', 't2', 't3', 't4'] as const).map((key) => (
+              <div key={key}>
+                <p className="text-sm">• {t(`tips.${key}`)}</p>
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>

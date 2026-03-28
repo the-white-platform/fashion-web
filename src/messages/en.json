@@ -769,5 +769,432 @@
     "errorUsageLimit": "Coupon usage limit reached",
     "errorMinOrder": "Order does not meet the minimum amount for this coupon",
     "errorNetwork": "Could not validate coupon. Please try again."
+  },
+  "contact": {
+    "breadcrumb": "Contact",
+    "title": "Contact Us",
+    "subtitle": "We're always here to help you",
+    "form": {
+      "title": "Send Us a Message",
+      "namePlaceholder": "Your full name",
+      "emailPlaceholder": "your@email.com",
+      "phonePlaceholder": "Your phone number",
+      "categoryLabel": "Category",
+      "categoryDefault": "-- Select category --",
+      "categoryOrder": "Order / Payment",
+      "categoryReturn": "Return / Exchange",
+      "categoryProduct": "Product Information",
+      "categoryShipping": "Shipping",
+      "categoryOther": "Other",
+      "messagePlaceholder": "Describe your question in detail...",
+      "submit": "Send Message",
+      "submitting": "Sending...",
+      "successTitle": "Message Sent!",
+      "successDesc": "We've received your message and will reply within 24 hours.",
+      "sendAnother": "Send Another Message"
+    },
+    "info": {
+      "title": "Contact Information",
+      "addressLabel": "Address",
+      "addressValue": "123 Fashion Street, District 1, Ho Chi Minh City",
+      "phoneLabel": "Phone",
+      "phoneValue": "1900 xxxx",
+      "emailLabel": "Email",
+      "emailValue": "hello@thewhite.vn",
+      "hoursLabel": "Business Hours",
+      "hoursValue": "Mon–Sat: 9:00 – 18:00"
+    },
+    "social": {
+      "title": "Follow Us"
+    },
+    "quickLinks": {
+      "title": "Quick Links",
+      "faq": "Frequently Asked Questions",
+      "returnPolicy": "Return Policy",
+      "shoppingGuide": "Shopping Guide",
+      "sizeGuide": "Size Guide"
+    }
+  },
+  "faq": {
+    "breadcrumb": "FAQ",
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions",
+    "searchPlaceholder": "Search questions...",
+    "noResults": "No matching questions found",
+    "categories": {
+      "all": "All",
+      "order": "Orders & Payment",
+      "shipping": "Shipping",
+      "return": "Returns & Exchanges",
+      "product": "Products",
+      "account": "Account"
+    },
+    "questions": {
+      "q1": {
+        "question": "How do I place an order?",
+        "answer": "Select your desired product, choose size and quantity, then click \"Add to Cart\". Go to your cart, click \"Checkout\", fill in your shipping information and select a payment method to complete the order."
+      },
+      "q2": {
+        "question": "What payment methods does TheWhite accept?",
+        "answer": "We accept: Cash on Delivery (COD), Bank Transfer, Credit/Debit Card (Visa, Mastercard), E-wallets (MoMo, ZaloPay, VNPay), and 0% installment payment."
+      },
+      "q3": {
+        "question": "Can I cancel or change my order?",
+        "answer": "You can cancel or change your order within 2 hours of placing it, as long as the order hasn't been packed and handed to the carrier. Please contact us immediately via hotline or live chat."
+      },
+      "q4": {
+        "question": "How can I track my order?",
+        "answer": "After the order is shipped, you'll receive an email with a tracking code. You can also track your order in the \"Order History\" section of your account on our website."
+      },
+      "q5": {
+        "question": "How long does delivery take?",
+        "answer": "Ho Chi Minh City & Hanoi: 1–2 business days. Other provinces/cities: 2–4 business days. Remote areas: 4–7 business days. Delivery times may vary during peak seasons."
+      },
+      "q6": {
+        "question": "What are the shipping fees?",
+        "answer": "Free shipping on orders over 500,000₫. For orders under 500,000₫: Ho Chi Minh City/Hanoi: 25,000₫, other provinces: 35,000₫. Express shipping (same-day): 50,000–80,000₫."
+      },
+      "q7": {
+        "question": "Does TheWhite ship internationally?",
+        "answer": "Currently TheWhite only ships within Vietnam. We plan to expand international shipping in the future. Stay tuned for updates!"
+      },
+      "q8": {
+        "question": "What is the return and exchange policy?",
+        "answer": "TheWhite accepts returns and exchanges within 30 days of receipt. Products must be unworn, unwashed, with all original tags attached. Defective products are returned free of charge. Size/color exchanges are free for the first time."
+      },
+      "q9": {
+        "question": "How do I request a return?",
+        "answer": "Log in to your account, go to \"Order History\", select the order and click \"Request Return/Exchange\". Or visit our Return Request page and fill in the form. We'll process within 24–48 hours."
+      },
+      "q10": {
+        "question": "How long does a refund take?",
+        "answer": "After receiving and inspecting the returned item: Bank transfer/e-wallet: 3–5 business days. Credit/debit card: 5–7 business days. Store credit: Immediate."
+      },
+      "q11": {
+        "question": "How do I find the right size?",
+        "answer": "Visit our Size Guide page for detailed measurement instructions and size charts. You can also use our AI Size Finder tool — enter your height and weight and we'll recommend the best size for you."
+      },
+      "q12": {
+        "question": "Is the product on the website exactly what I'll receive?",
+        "answer": "Yes, product images on TheWhite are shot directly on the actual product. However, slight color variations may occur due to screen display differences. If you receive a product that doesn't match the description, please contact us immediately."
+      },
+      "q13": {
+        "question": "How do I care for TheWhite products?",
+        "answer": "Each product has a care label inside. General guidelines: machine or hand wash in cold water (under 30°C), do not bleach, dry flat to avoid stretching, low-heat iron if needed. Detailed instructions are on each product page."
+      },
+      "q14": {
+        "question": "How do I create an account?",
+        "answer": "Click \"Sign Up\" at the top right of the website. Fill in your full name, email and password. Verify your email to activate your account. You can also sign in with Google or Facebook for convenience."
+      },
+      "q15": {
+        "question": "I forgot my password. What should I do?",
+        "answer": "Click \"Forgot Password\" on the login page. Enter your registered email address. Check your inbox for a password reset email. Follow the instructions to create a new password. The link is valid for 24 hours."
+      },
+      "q16": {
+        "question": "How do I update my account information?",
+        "answer": "Log in to your account, go to \"Profile\" or \"Account Settings\". You can update your full name, phone number, address, and profile picture. Email cannot be changed — please contact us if needed."
+      },
+      "q17": {
+        "question": "Does TheWhite have a loyalty program?",
+        "answer": "Yes! TheWhite Members program: Silver (0–4,999,000₫ spent): 1% cashback. Gold (5,000,000–19,999,000₫ spent): 2% cashback + free express shipping. Platinum (20,000,000₫+ spent): 3% cashback + dedicated support + exclusive events."
+      },
+      "q18": {
+        "question": "How can I contact TheWhite?",
+        "answer": "Hotline: 1900 xxxx (8:00–22:00 daily). Email: hello@thewhite.vn (reply within 24h). Live chat on website (8:00–22:00). Facebook/Instagram: @thewhite.vn. In-store: 123 Fashion Street, District 1, HCMC."
+      }
+    }
+  },
+  "returnPolicy": {
+    "breadcrumb": "Return Policy",
+    "title": "Return & Exchange Policy",
+    "subtitle": "Simple, transparent and hassle-free",
+    "highlights": {
+      "days": {
+        "title": "30 Days",
+        "desc": "Return window from receipt date"
+      },
+      "shipping": {
+        "title": "Free Shipping",
+        "desc": "Free return for defective items"
+      },
+      "process": {
+        "title": "Simple Process",
+        "desc": "Online request, pickup at home"
+      }
+    },
+    "conditions": {
+      "title": "Return Conditions",
+      "c1": "Within 30 days of receipt",
+      "c2": "Item unused, unwashed, all tags intact",
+      "c3": "Original packaging (if applicable)",
+      "c4": "Accompanied by order confirmation",
+      "c5": "Free return/exchange for defective items",
+      "c6": "First size/color exchange is free"
+    },
+    "process": {
+      "title": "Return Process",
+      "step1": {
+        "title": "Submit Request",
+        "desc": "Log in and submit an online return/exchange request"
+      },
+      "step2": {
+        "title": "Package Item",
+        "desc": "Pack the item and attach the return slip we provide"
+      },
+      "step3": {
+        "title": "Receive Refund",
+        "desc": "Refund within 5–7 business days after inspection"
+      }
+    },
+    "exceptions": {
+      "title": "Non-Returnable Items",
+      "e1": "Items worn, washed or altered",
+      "e2": "Items missing tags or packaging",
+      "e3": "Sale items (unless defective)",
+      "e4": "Custom or made-to-order items",
+      "e5": "Intimate apparel for hygiene reasons"
+    },
+    "notes": {
+      "title": "Important Notes",
+      "n1": "We inspect all returned items before processing",
+      "n2": "Refunds credited to original payment method",
+      "n3": "Cash refunds for COD orders within 5–7 days",
+      "n4": "Contact us if you have any questions"
+    },
+    "cta": {
+      "request": "Submit Return/Exchange Request",
+      "contact": "Contact Support"
+    }
+  },
+  "shoppingGuide": {
+    "breadcrumb": "Shopping Guide",
+    "title": "Shopping Guide",
+    "subtitle": "6 simple steps to shop at TheWhite",
+    "steps": {
+      "s1": {
+        "title": "Browse & Select Products",
+        "desc": "Browse our collection by category, new arrivals, or sale items. Use filters to narrow by size, color, and price range."
+      },
+      "s2": {
+        "title": "Add to Cart",
+        "desc": "Select your size and quantity, then click \"Add to Cart\". You can continue shopping or proceed to checkout."
+      },
+      "s3": {
+        "title": "Fill in Shipping Info",
+        "desc": "Enter your full name, phone number and delivery address. You can save multiple addresses for convenience."
+      },
+      "s4": {
+        "title": "Choose Shipping Method",
+        "desc": "Select Standard (2–4 days), Express (same day/next day), or In-store Pickup based on your preference."
+      },
+      "s5": {
+        "title": "Payment",
+        "desc": "Choose your payment method: COD, bank transfer, credit/debit card, e-wallet (MoMo, ZaloPay), or 0% installment."
+      },
+      "s6": {
+        "title": "Order Confirmed",
+        "desc": "You'll receive an order confirmation email. Track your order status in the \"Order History\" section of your account."
+      }
+    },
+    "tips": {
+      "title": "Helpful Tips",
+      "t1": "Use the Size Guide to find your perfect fit",
+      "t2": "Save items to Wishlist to buy later",
+      "t3": "Apply coupon codes at checkout for discounts",
+      "t4": "Create an account to earn loyalty points"
+    },
+    "cta": {
+      "shop": "Shop Now",
+      "contact": "Contact Support"
+    }
+  },
+  "sizeGuide": {
+    "breadcrumb": "Size Guide",
+    "title": "Size Guide",
+    "subtitle": "Find your perfect fit",
+    "tabs": {
+      "calculator": "AI Size Finder",
+      "chart": "Size Chart"
+    },
+    "calculator": {
+      "title": "AI Size Finder",
+      "desc": "Enter your measurements and we'll recommend the best size",
+      "gender": {
+        "label": "Gender",
+        "male": "Male",
+        "female": "Female"
+      },
+      "type": {
+        "label": "Product Type",
+        "shirt": "Shirt / Top",
+        "pants": "Pants / Shorts"
+      },
+      "height": "Height (cm)",
+      "weight": "Weight (kg)",
+      "find": "Find My Size",
+      "alertRequired": "Please enter your height and weight!",
+      "result": {
+        "title": "Recommended Size",
+        "fit": "Best fit for your measurements",
+        "viewProducts": "View {size} Products"
+      }
+    },
+    "chart": {
+      "title": "Men's Size Chart",
+      "womenTitle": "Women's Size Chart",
+      "shirt": "Shirt / Top",
+      "pants": "Pants / Bottom",
+      "gender": {
+        "men": "Men",
+        "women": "Women"
+      },
+      "headers": {
+        "size": "Size",
+        "height": "Height (cm)",
+        "weight": "Weight (kg)",
+        "chest": "Chest (cm)",
+        "waist": "Waist (cm)",
+        "hip": "Hip (cm)",
+        "inseam": "Inseam (cm)"
+      }
+    },
+    "tips": {
+      "title": "Fitting Tips",
+      "t1": "Take measurements in the morning when your body is at its natural state",
+      "t2": "Use a flexible measuring tape for accuracy",
+      "t3": "If between sizes, go one size up for a comfortable fit",
+      "t4": "Different fabrics may fit differently — check each product's notes"
+    }
+  },
+  "shipping": {
+    "redirecting": "Redirecting..."
+  },
+  "paymentShipping": {
+    "breadcrumb": "Payment & Shipping",
+    "title": "Payment & Shipping",
+    "subtitle": "Flexible payment methods and fast delivery",
+    "tabs": {
+      "payment": "Payment Methods",
+      "shipping": "Shipping Options"
+    },
+    "payment": {
+      "title": "Payment Methods",
+      "cod": {
+        "name": "Cash on Delivery (COD)",
+        "desc": "Pay when you receive your order",
+        "note": "Available nationwide · No extra fee"
+      },
+      "bank": {
+        "name": "Bank Transfer",
+        "desc": "Transfer to TheWhite's bank account",
+        "note": "Order processed after payment confirmed"
+      },
+      "card": {
+        "name": "Credit / Debit Card",
+        "desc": "Visa, Mastercard, JCB",
+        "note": "Secured by SSL · No surcharge"
+      },
+      "wallet": {
+        "name": "E-Wallets",
+        "desc": "MoMo, ZaloPay, VNPay",
+        "note": "Fast & convenient"
+      },
+      "installment": {
+        "name": "0% Installment",
+        "desc": "3–12 months, orders over 3,000,000₫",
+        "note": "Partnered with major banks"
+      }
+    },
+    "shipping": {
+      "title": "Shipping Options",
+      "standard": {
+        "name": "Standard Shipping",
+        "time": "2–4 business days",
+        "fee": "25,000₫ · Free for orders over 500,000₫"
+      },
+      "express": {
+        "name": "Express Shipping",
+        "time": "Same day / Next day",
+        "fee": "50,000–80,000₫"
+      },
+      "fast": {
+        "name": "Fast Delivery",
+        "time": "Within 4 hours",
+        "fee": "80,000–120,000₫ (HCMC only)"
+      },
+      "pickup": {
+        "name": "In-store Pickup",
+        "time": "Ready in 2 hours",
+        "fee": "Free"
+      }
+    },
+    "partners": {
+      "title": "Delivery Partners"
+    },
+    "security": {
+      "title": "Secure Payment",
+      "desc": "All transactions are encrypted and secured with SSL technology. We never store your card information."
+    }
+  },
+  "returnRequest": {
+    "breadcrumb": "Return / Exchange Request",
+    "title": "Return / Exchange Request",
+    "subtitle": "Please fill in all required information below",
+    "success": {
+      "title": "Request Submitted!",
+      "descReturn": "We will process your return request within 24–48 hours. You will receive a confirmation email shortly.",
+      "descExchange": "We will process your exchange request within 24–48 hours. You will receive a confirmation email shortly.",
+      "home": "Back to Home",
+      "another": "Submit Another Request"
+    },
+    "steps": {
+      "s1": "1. Select Order",
+      "s2": "2. Select Items",
+      "s3": "3. Request Type",
+      "s4": "4. Reason",
+      "s5": "5. Images (Optional)"
+    },
+    "order": {
+      "selectDefault": "-- Select order --",
+      "noOrders": "You have no delivered orders"
+    },
+    "items": {
+      "size": "Size",
+      "qty": "Quantity"
+    },
+    "type": {
+      "return": "Return & Refund",
+      "returnDesc": "Full 100% refund",
+      "exchange": "Exchange Product",
+      "exchangeDesc": "Exchange for a different size or color"
+    },
+    "reason": {
+      "selectDefault": "-- Select reason --",
+      "r1": "Wrong size",
+      "r2": "Defective / damaged item",
+      "r3": "Item not as described",
+      "r4": "Wrong item sent",
+      "r5": "Changed my mind",
+      "r6": "Other",
+      "descLabel": "Detailed Description",
+      "descPlaceholder": "Describe the issue with the product in detail..."
+    },
+    "images": {
+      "dragDrop": "Drag & drop or click to upload",
+      "format": "PNG, JPG up to 5MB"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "submit": "Submit Request"
+    },
+    "policy": {
+      "title": "Return & Exchange Policy",
+      "p1": "Return/exchange within 30 days of receipt",
+      "p2": "Item must have all original tags, unused",
+      "p3": "Free first size exchange and free return for defective items",
+      "p4": "Refund within 5–7 days after receiving the return",
+      "p5": "View details at",
+      "policyLink": "Return Policy"
+    }
   }
 }
