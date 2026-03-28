@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.15.0](https://github.com/the-white-platform/fashion-web/compare/v0.14.2...v0.15.0) (2026-03-28)
+
+
+### Features
+
+* add Gemini AI chat and VTO API routes ([4d064be](https://github.com/the-white-platform/fashion-web/commit/4d064becd8ad6f5b1fa121b8ed9375c60616625b))
+* add multi-garment AI Outfit Advisor to VTO modal ([f4725ec](https://github.com/the-white-platform/fashion-web/commit/f4725ec36b1c4a51933221a96fe9615c1cc093a4))
+
 ### [0.14.2](https://github.com/the-white-platform/fashion-web/compare/v0.14.1...v0.14.2) (2026-03-28)
 
 
