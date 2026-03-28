@@ -1,142 +1,197 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import { X, Send, Minimize2, Maximize2, MessageCircle } from 'lucide-react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { X, Send, Minimize2, Maximize2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
+import { useTranslations, useLocale } from 'next-intl'
+import Link from 'next/link'
 
 interface Message {
-  id: number
-  text: string
-  sender: 'user' | 'bot'
-  timestamp: Date
+  id: string
+  role: 'user' | 'model'
+  content: string
+  isStreaming?: boolean
+}
+
+interface ProductContext {
+  name: string
+  category: string
+  price: string
 }
 
 interface WolfiesChatbotProps {
   isOpen: boolean
   onClose: () => void
+  productContext?: ProductContext
 }
 
-export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
+export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatbotProps) {
+  const t = useTranslations('chatbot')
+  const locale = useLocale()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isMinimized, setIsMinimized] = useState(false)
-  const [isTyping, setIsTyping] = useState(false)
+  const [isStreaming, setIsStreaming] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [errorType, setErrorType] = useState<'auth' | 'ratelimit' | 'generic' | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Initialize welcome message on client mount to avoid hydration mismatch
+  // Avoid hydration mismatch — show timestamps only after mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setMounted(true)
-      setMessages((prev) => {
-        if (prev.length === 0) {
-          return [
-            {
-              id: 1,
-              text: 'Xin chào! Mình là Wolfies - trợ lý ảo của TheWhite 🐺\n\nMình có thể giúp bạn:\n• Tìm sản phẩm phù hợp\n• Tư vấn size\n• Chính sách đổi trả\n• Hỗ trợ đặt hàng\n\nBạn cần mình hỗ trợ gì nào?',
-              sender: 'bot',
-              timestamp: new Date(),
-            },
-          ]
-        }
-        return prev
-      })
-    }, 0)
-    return () => clearTimeout(timer)
+    setMounted(true)
   }, [])
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
+  // Initialize welcome message when chat opens; reset when it closes
   useEffect(() => {
     if (isOpen) {
+      setMessages([
+        {
+          id: 'welcome',
+          role: 'model',
+          content: t('welcomeMessage'),
+        },
+      ])
+      setErrorType(null)
+    } else {
+      // Abort any in-flight stream when closing
+      abortControllerRef.current?.abort()
+      setMessages([])
+      setIsStreaming(false)
+      setErrorType(null)
+    }
+  }, [isOpen, t])
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [])
+
+  useEffect(() => {
+    if (isOpen && !isMinimized) {
       scrollToBottom()
     }
-  }, [messages, isOpen])
+  }, [messages, isOpen, isMinimized, scrollToBottom])
 
   const quickReplies = [
-    'Tìm áo thể thao',
-    'Hướng dẫn chọn size',
-    'Chính sách đổi trả',
-    'Kiểm tra đơn hàng',
+    t('quickReply.outfitAdvice'),
+    t('quickReply.sizeGuide'),
+    t('quickReply.returnPolicy'),
+    t('quickReply.bestSellers'),
   ]
 
-  const botResponses: { [key: string]: string } = {
-    'tìm áo':
-      'Chúng mình có nhiều mẫu áo thể thao cao cấp:\n\n✓ Áo thun tập gym\n✓ Áo ba lỗ thể thao\n✓ Áo chạy bộ\n✓ Áo bóng đá\n\nBạn muốn xem loại nào ạ?',
-    size: 'Để chọn size phù hợp, bạn có thể:\n\n1️⃣ Xem bảng size chi tiết trên mỗi sản phẩm\n2️⃣ Dùng tính năng AI Size Selection\n3️⃣ Liên hệ hotline: 0123 456 789\n\nBạn cao bao nhiêu và nặng bao nhiêu kg để mình tư vấn nhé!',
-    'đổi trả':
-      'Chính sách đổi trả của TheWhite:\n\n✓ Đổi size miễn phí trong 7 ngày\n✓ Hoàn tiền 100% nếu lỗi nhà sản xuất\n✓ Miễn phí vận chuyển đổi trả\n\nSản phẩm cần còn nguyên tem mác và chưa qua sử dụng nhé!',
-    'đơn hàng':
-      'Để kiểm tra đơn hàng, bạn cần:\n\n📧 Mã đơn hàng (trong email xác nhận)\n📱 Số điện thoại đặt hàng\n\nBạn có thể gửi mã đơn hàng cho mình hoặc liên hệ:\n• Hotline: 0123 456 789\n• Email: support@thewhite.vn',
-    giá: 'Sản phẩm TheWhite có giá từ:\n\n👕 Áo: 299,000đ - 599,000đ\n👖 Quần: 399,000đ - 799,000đ\n🎽 Bộ đồ: 699,000đ - 1,299,000đ\n\nHiện đang có nhiều ưu đãi hấp dẫn! Bạn muốn xem sản phẩm nào?',
-    'mặc định':
-      'Cảm ơn bạn đã nhắn tin! 😊\n\nMình chưa hiểu rõ câu hỏi của bạn lắm. Bạn có thể:\n\n• Chọn câu hỏi gợi ý bên dưới\n• Liên hệ trực tiếp qua:\n  - Hotline: 0123 456 789\n  - Email: support@thewhite.vn\n  - Zalo: 0123456789',
-  }
+  const sendMessage = useCallback(
+    async (text: string) => {
+      if (!text.trim() || isStreaming) return
 
-  const getBotResponse = (userMessage: string): string => {
-    const lowerMessage = userMessage.toLowerCase()
+      setErrorType(null)
 
-    if (lowerMessage.includes('áo') || lowerMessage.includes('tìm')) {
-      return botResponses['tìm áo']
-    }
-    if (lowerMessage.includes('size') || lowerMessage.includes('chọn')) {
-      return botResponses['size']
-    }
-    if (
-      lowerMessage.includes('đổi') ||
-      lowerMessage.includes('trả') ||
-      lowerMessage.includes('hoàn')
-    ) {
-      return botResponses['đổi trả']
-    }
-    if (
-      lowerMessage.includes('đơn') ||
-      lowerMessage.includes('kiểm tra') ||
-      lowerMessage.includes('order')
-    ) {
-      return botResponses['đơn hàng']
-    }
-    if (lowerMessage.includes('giá') || lowerMessage.includes('bao nhiêu')) {
-      return botResponses['giá']
-    }
+      const userMsg: Message = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        content: text.trim(),
+      }
 
-    return botResponses['mặc định']
-  }
+      const streamingMsgId = `model-${Date.now()}`
+      const streamingMsg: Message = {
+        id: streamingMsgId,
+        role: 'model',
+        content: '',
+        isStreaming: true,
+      }
 
-  const handleSend = async () => {
-    if (!inputValue.trim()) return
+      setMessages((prev) => [...prev, userMsg, streamingMsg])
+      setIsStreaming(true)
+      setInputValue('')
 
-    const userMessage: Message = {
-      id: messages.length + 1,
-      text: inputValue,
-      sender: 'user',
-      timestamp: new Date(),
-    }
+      // Build conversation history to send (exclude the placeholder streaming message)
+      const conversationHistory = messages
+        .concat(userMsg)
+        .filter((m) => !m.isStreaming && m.id !== 'welcome')
+        .map((m) => ({ role: m.role, content: m.content }))
 
-    setMessages((prev) => [...prev, userMessage])
-    setInputValue('')
-    setIsTyping(true)
+      // Keep welcome for context but skip it if it's the only thing
+      const historyToSend =
+        conversationHistory.length === 0
+          ? [{ role: 'user' as const, content: userMsg.content }]
+          : conversationHistory
 
-    // Simulate bot thinking
-    setTimeout(
-      () => {
-        const botMessage: Message = {
-          id: messages.length + 2,
-          text: getBotResponse(inputValue),
-          sender: 'bot',
-          timestamp: new Date(),
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+
+      try {
+        const response = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ messages: historyToSend, productContext }),
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            setErrorType('auth')
+          } else if (response.status === 429) {
+            setErrorType('ratelimit')
+          } else {
+            setErrorType('generic')
+          }
+          // Remove the empty streaming placeholder
+          setMessages((prev) => prev.filter((m) => m.id !== streamingMsgId))
+          setIsStreaming(false)
+          return
         }
-        setMessages((prev) => [...prev, botMessage])
-        setIsTyping(false)
-      },
-      1000 + Math.random() * 1000,
-    )
+
+        if (!response.body) {
+          setErrorType('generic')
+          setMessages((prev) => prev.filter((m) => m.id !== streamingMsgId))
+          setIsStreaming(false)
+          return
+        }
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let fullContent = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          fullContent += decoder.decode(value, { stream: true })
+          setMessages((prev) =>
+            prev.map((m) => (m.id === streamingMsgId ? { ...m, content: fullContent } : m)),
+          )
+        }
+
+        // Mark streaming complete
+        setMessages((prev) =>
+          prev.map((m) => (m.id === streamingMsgId ? { ...m, isStreaming: false } : m)),
+        )
+      } catch (err) {
+        if (err instanceof Error && err.name === 'AbortError') {
+          // User closed chat; silently discard
+          return
+        }
+        setErrorType('generic')
+        setMessages((prev) => prev.filter((m) => m.id !== streamingMsgId))
+      } finally {
+        setIsStreaming(false)
+      }
+    },
+    [isStreaming, messages, productContext],
+  )
+
+  const handleSend = () => {
+    sendMessage(inputValue)
   }
 
   const handleQuickReply = (reply: string) => {
-    setInputValue(reply)
+    sendMessage(reply)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
   }
 
   return (
@@ -150,15 +205,15 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
           style={{ height: isMinimized ? '64px' : '600px', maxHeight: '90vh' }}
         >
           {/* Header */}
-          <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between shadow-lg">
+          <div className="bg-primary text-primary-foreground p-4 flex items-center justify-between shadow-lg flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-background rounded flex items-center justify-center shadow-lg">
                 <span className="text-2xl">🐺</span>
               </div>
               <div>
-                <h3 className="uppercase tracking-widest font-bold text-sm">Wolfies</h3>
+                <h3 className="uppercase tracking-widest font-bold text-sm">{t('title')}</h3>
                 <p className="text-[10px] text-primary-foreground/80 uppercase tracking-tighter">
-                  Trợ lý ảo TheWhite
+                  {t('subtitle')}
                 </p>
               </div>
             </div>
@@ -166,7 +221,7 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
                 className="p-2 hover:bg-primary-foreground/10 rounded-sm transition-colors"
-                title={isMinimized ? 'Phóng to' : 'Thu nhỏ'}
+                title={isMinimized ? t('maximize') : t('minimize')}
               >
                 {isMinimized ? (
                   <Maximize2 className="w-4 h-4" />
@@ -177,7 +232,7 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
               <button
                 onClick={onClose}
                 className="p-2 hover:bg-primary-foreground/10 rounded-sm transition-colors"
-                title="Đóng"
+                title={t('close')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -187,23 +242,46 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
           {!isMinimized && (
             <>
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30 scrollbar-hide">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/30 scrollbar-hide min-h-0">
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
                       className={`max-w-[85%] p-4 rounded-sm shadow-sm ${
-                        message.sender === 'user'
+                        message.role === 'user'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-card border border-border text-foreground'
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-line leading-relaxed">{message.text}</p>
-                      {mounted && (
+                      {message.isStreaming && message.content === '' ? (
+                        // Typing indicator while waiting for first chunk
+                        <div className="flex gap-1.5 py-1">
+                          <div
+                            className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
+                            style={{ animationDelay: '0ms' }}
+                          />
+                          <div
+                            className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
+                            style={{ animationDelay: '150ms' }}
+                          />
+                          <div
+                            className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
+                            style={{ animationDelay: '300ms' }}
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-sm whitespace-pre-line leading-relaxed">
+                          {message.content}
+                          {message.isStreaming && (
+                            <span className="inline-block w-0.5 h-4 bg-current ml-0.5 animate-pulse align-middle" />
+                          )}
+                        </p>
+                      )}
+                      {mounted && !message.isStreaming && (
                         <span className="text-[10px] opacity-60 mt-2 block font-medium">
-                          {message.timestamp.toLocaleTimeString('vi-VN', {
+                          {new Date().toLocaleTimeString(locale === 'vi' ? 'vi-VN' : 'en-US', {
                             hour: '2-digit',
                             minute: '2-digit',
                           })}
@@ -213,37 +291,47 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
                   </div>
                 ))}
 
-                {isTyping && (
+                {/* Error banners */}
+                {errorType === 'auth' && (
                   <div className="flex justify-start">
-                    <div className="bg-card border border-border p-4 rounded-sm">
-                      <div className="flex gap-1.5">
-                        <div
-                          className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
-                          style={{ animationDelay: '0ms' }}
-                        />
-                        <div
-                          className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
-                          style={{ animationDelay: '150ms' }}
-                        />
-                        <div
-                          className="w-1.5 h-1.5 bg-foreground rounded-full animate-bounce"
-                          style={{ animationDelay: '300ms' }}
-                        />
-                      </div>
+                    <div className="max-w-[85%] p-4 rounded-sm bg-destructive/10 border border-destructive/30 text-sm">
+                      <p className="text-foreground">{t('errorAuth')}</p>
+                      <Link
+                        href={`/${locale}/login`}
+                        className="text-primary font-semibold underline underline-offset-2 mt-1 inline-block"
+                      >
+                        {t('loginLink')}
+                      </Link>
                     </div>
                   </div>
                 )}
+                {errorType === 'ratelimit' && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] p-4 rounded-sm bg-orange-50 border border-orange-200 text-sm text-foreground">
+                      {t('errorRateLimit')}
+                    </div>
+                  </div>
+                )}
+                {errorType === 'generic' && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] p-4 rounded-sm bg-destructive/10 border border-destructive/30 text-sm text-foreground">
+                      {t('errorGeneric')}
+                    </div>
+                  </div>
+                )}
+
                 <div ref={messagesEndRef} />
               </div>
 
               {/* Quick Replies */}
-              <div className="p-3 bg-background border-t border-border overflow-x-auto">
+              <div className="p-3 bg-background border-t border-border overflow-x-auto flex-shrink-0">
                 <div className="flex gap-2 pb-1">
                   {quickReplies.map((reply, index) => (
                     <button
                       key={index}
                       onClick={() => handleQuickReply(reply)}
-                      className="text-[10px] whitespace-nowrap px-3 py-2 border border-border rounded-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-all uppercase font-bold tracking-wider"
+                      disabled={isStreaming}
+                      className="text-[10px] whitespace-nowrap px-3 py-2 border border-border rounded-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-all uppercase font-bold tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {reply}
                     </button>
@@ -252,19 +340,21 @@ export function WolfiesChatbot({ isOpen, onClose }: WolfiesChatbotProps) {
               </div>
 
               {/* Input */}
-              <div className="p-4 bg-background border-t border-border rounded-b-sm">
+              <div className="p-4 bg-background border-t border-border rounded-b-sm flex-shrink-0">
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                    placeholder="Nhập tin nhắn..."
-                    className="flex-1 px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors text-sm bg-background text-foreground placeholder:text-muted-foreground"
+                    onKeyDown={handleKeyDown}
+                    placeholder={t('inputPlaceholder')}
+                    disabled={isStreaming}
+                    className="flex-1 px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors text-sm bg-background text-foreground placeholder:text-muted-foreground disabled:opacity-60"
                   />
                   <button
                     onClick={handleSend}
-                    className="p-3 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors shadow-lg"
+                    disabled={isStreaming || !inputValue.trim()}
+                    className="p-3 bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Send className="w-5 h-5" />
                   </button>

@@ -587,7 +587,19 @@
     "disclaimer": "AI TRY-ON là công nghệ mô phỏng, kết quả có thể chênh lệch 2-5% so với thực tế.",
     "errorGeneric": "Đã xảy ra lỗi. Vui lòng thử lại.",
     "errorNetwork": "Không thể kết nối đến server. Vui lòng thử lại.",
-    "tryRetry": "Thử lại"
+    "tryRetry": "Thử lại",
+    "modeHd": "Thử Đồ HD",
+    "modeAi": "Tư Vấn Outfit AI",
+    "modeHdDesc": "Tạo ảnh thực tế bạn mặc sản phẩm này (1 sản phẩm, Vertex AI)",
+    "modeAiDesc": "Nhận mô tả outfit từ AI cho nhiều sản phẩm cùng lúc (Gemini)",
+    "selectedProducts": "Sản Phẩm Đã Chọn",
+    "additionalItems": "Sản Phẩm Thêm",
+    "addItem": "Thêm",
+    "aiResultTitle": "Kết Quả Tư Vấn Outfit AI",
+    "aiAdvisorLabel": "Phân Tích Outfit bởi Gemini",
+    "aiResultCaption": "Được tư vấn bởi TheWhite AI — kết quả là mô tả, không phải ảnh",
+    "aiProcessing": "AI Đang Phân Tích Outfit (~10-20s)...",
+    "generateAi": "Phân Tích Outfit Của Tôi"
   },
   "filter": {
     "title": "Bộ Lọc",
@@ -1290,5 +1302,24 @@
     "errorUsageLimit": "Mã giảm giá đã hết lượt sử dụng",
     "errorMinOrder": "Đơn hàng chưa đạt giá trị tối thiểu để dùng mã này",
     "errorNetwork": "Không thể kiểm tra mã giảm giá. Vui lòng thử lại."
+  },
+  "chatbot": {
+    "title": "Wolfies",
+    "subtitle": "Trợ lý AI THE WHITE",
+    "minimize": "Thu nhỏ",
+    "maximize": "Phóng to",
+    "close": "Đóng",
+    "welcomeMessage": "Xin chào! Tôi là trợ lý AI của THE WHITE. Tôi có thể giúp bạn tư vấn thời trang, chọn size, hoặc trả lời bất kỳ câu hỏi nào. Hãy hỏi tôi!",
+    "inputPlaceholder": "Nhập tin nhắn...",
+    "quickReply": {
+      "outfitAdvice": "Tư vấn outfit",
+      "sizeGuide": "Hướng dẫn chọn size",
+      "returnPolicy": "Chính sách đổi trả",
+      "bestSellers": "Sản phẩm bán chạy"
+    },
+    "errorAuth": "Vui lòng đăng nhập để sử dụng trợ lý AI.",
+    "loginLink": "Đăng nhập ngay",
+    "errorRateLimit": "Bạn đang gửi quá nhiều tin nhắn. Vui lòng chờ một chút.",
+    "errorGeneric": "Đã có lỗi xảy ra. Vui lòng thử lại sau."
   }
 }
