@@ -1,17 +1,20 @@
 import { getRequestConfig } from 'next-intl/server'
 import { routing } from './routing'
+import viMessages from '../messages/vi.json'
 
 export default getRequestConfig(async ({ requestLocale }) => {
-  // This typically corresponds to the `[locale]` segment
   let locale = await requestLocale
 
-  // Ensure that a valid locale is used
   if (!locale || !routing.locales.includes(locale as any)) {
     locale = routing.defaultLocale
   }
 
-  return {
-    locale,
-    messages: (await import(`../messages/${locale}.json`)).default,
-  }
+  // Vietnamese is statically bundled — zero async overhead for default locale
+  // Other locales are dynamically imported only when needed
+  const messages =
+    locale === 'vi'
+      ? viMessages
+      : (await import(`../messages/${locale}.json`)).default
+
+  return { locale, messages }
 })
