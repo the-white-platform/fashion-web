@@ -1,143 +1,40 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from '@/i18n/useRouter'
 import { AnimatePresence } from 'motion/react'
-import {
-  ChevronLeft,
-  Package,
-  Tag,
-} from 'lucide-react'
+import { ChevronLeft, Package, Tag } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
+
+import { useCheckout } from './hooks/useCheckout'
+import { useCoupon } from './hooks/useCoupon'
 import { CheckoutProgress } from './components/CheckoutProgress'
 import { ShippingStep } from './components/ShippingStep'
 import { PaymentStep } from './components/PaymentStep'
 import { ReviewStep } from './components/ReviewStep'
 import { ConfirmationStep } from './components/ConfirmationStep'
 
-type CheckoutStep = 'shipping' | 'payment' | 'review' | 'confirmation'
-
 export default function CheckoutPage() {
   const t = useTranslations('checkout')
-  const tNav = useTranslations('nav')
   const tCart = useTranslations('cart')
   const router = useRouter()
-  const { items: cartItems, getTotalPrice, clearCart } = useCart()
-  const { user, updateProfile } = useUser()
-  const [currentStep, setCurrentStep] = useState<CheckoutStep>('shipping')
-  const [orderId, setOrderId] = useState(() => `TW${Date.now()}`)
+  const { items: cartItems } = useCart()
+  const { user } = useUser()
 
-  // Redirect if cart is empty
-  useEffect(() => {
-    if (!cartItems || cartItems.length === 0) {
-      router.push('/products')
-    }
-  }, [cartItems, router])
+  const checkout = useCheckout()
+  const coupon = useCoupon()
 
-  // Shipping info
-  const [selectedAddress, setSelectedAddress] = useState<any>(user?.shippingAddresses?.[0] || null)
+  // UI toggle state (local to page — not shared with hooks)
   const [showNewAddress, setShowNewAddress] = useState(!user?.shippingAddresses?.length)
-
-  // Payment info
-  const [selectedPayment, setSelectedPayment] = useState<any>(user?.paymentMethods?.[0] || null)
   const [showNewPayment, setShowNewPayment] = useState(!user?.paymentMethods?.length)
 
-  // Coupon
-  const [couponCode, setCouponCode] = useState('')
-  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
-  const [couponError, setCouponError] = useState('')
-
-  // Order notes
-  const [orderNotes, setOrderNotes] = useState('')
-
-  // Mock coupons
-  const mockCoupons = {
-    WELCOME10: {
-      type: 'percentage',
-      value: 10,
-      description: t('WELCOME10_desc', { defaultMessage: 'Giảm 10% cho đơn hàng đầu' }),
-    },
-    FREESHIP: {
-      type: 'shipping',
-      value: 0,
-      description: t('FREESHIP_desc', { defaultMessage: 'Miễn phí vận chuyển' }),
-    },
-    SAVE50K: {
-      type: 'fixed',
-      value: 50000,
-      description: t('SAVE50K_desc', { defaultMessage: 'Giảm 50.000₫' }),
-    },
-  }
-
-  const calculateSubtotal = () => getTotalPrice()
-  const calculateShipping = () => (appliedCoupon?.type === 'shipping' ? 0 : 30000)
-  const calculateDiscount = () => {
-    if (!appliedCoupon) return 0
-    if (appliedCoupon.type === 'percentage') {
-      return calculateSubtotal() * (appliedCoupon.value / 100)
-    }
-    if (appliedCoupon.type === 'fixed') {
-      return appliedCoupon.value
-    }
-    return 0
-  }
-  const calculateTotal = () => calculateSubtotal() + calculateShipping() - calculateDiscount()
-
-  const applyCoupon = () => {
-    const coupon = mockCoupons[couponCode.toUpperCase() as keyof typeof mockCoupons]
-    if (coupon) {
-      setAppliedCoupon({ code: couponCode.toUpperCase(), ...coupon })
-      setCouponError('')
-    } else {
-      setCouponError(t('invalidCoupon'))
-      setAppliedCoupon(null)
-    }
-  }
-
-  const removeCoupon = () => {
-    setAppliedCoupon(null)
-    setCouponCode('')
-    setCouponError('')
-  }
-
-  // Order ID is pre-generated in useState
-
-  const handleCompleteOrder = () => {
-    // Add to order history
-    const newOrder = {
-      id: orderId,
-      date: new Date().toISOString(),
-      status: 'processing' as const,
-      total: calculateTotal(),
-      items: cartItems.map((item) => ({
-        productId: item.id,
-        name: item.name,
-        price: item.price,
-        size: item.size,
-        quantity: item.quantity,
-        image: item.image,
-      })),
-      shipping: selectedAddress,
-      payment: selectedPayment,
-      notes: orderNotes,
-      coupon: appliedCoupon,
-    }
-
-    // TODO: POST to /api/orders to persist the order
-    // updateProfile no longer accepts orderHistory — orders live in the Orders collection
-    void newOrder
-
-    clearCart()
-    setCurrentStep('confirmation')
-  }
-
+  // Guard: redirect if cart is empty (also shows empty state while redirecting)
   if (!cartItems || cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-background pb-12">
@@ -155,6 +52,15 @@ export default function CheckoutPage() {
     )
   }
 
+  // Compute coupon-adjusted totals for display and ReviewStep
+  const shippingFee = coupon.appliedCoupon?.type === 'shipping' ? 0 : checkout.totals.shipping
+  const discount = coupon.appliedCoupon?.discount ?? 0
+  const adjustedTotal = checkout.totals.subtotal + shippingFee - discount
+
+  // Derive order ID and total from API result for ConfirmationStep
+  const confirmedOrderId: string = checkout.orderResult?.doc?.id ?? checkout.orderResult?.id ?? ''
+  const confirmedTotal: number = checkout.orderResult?.doc?.totals?.total ?? adjustedTotal
+
   return (
     <div className="min-h-screen bg-background pb-12">
       <div className="container mx-auto px-6 max-w-7xl">
@@ -164,58 +70,63 @@ export default function CheckoutPage() {
           <span>{t('backToCart')}</span>
         </Button>
 
-        {currentStep !== 'confirmation' && (
+        {checkout.step !== 'confirmation' && (
           <>
             {/* Progress Steps */}
-            <CheckoutProgress currentStep={currentStep} />
+            <CheckoutProgress currentStep={checkout.step} />
 
             <div className="grid lg:grid-cols-3 gap-8">
               {/* Main Content */}
               <div className="lg:col-span-2">
                 <AnimatePresence mode="wait">
-                  {currentStep === 'shipping' && (
+                  {checkout.step === 'shipping' && (
                     <ShippingStep
                       key="shipping"
                       user={user}
-                      selectedAddress={selectedAddress}
-                      onSelectAddress={setSelectedAddress}
+                      selectedAddress={checkout.selectedAddress}
+                      onSelectAddress={checkout.setSelectedAddress}
                       showNewAddress={showNewAddress}
-                      onToggleNewAddress={() => setShowNewAddress(!showNewAddress)}
-                      onNext={() => setCurrentStep('payment')}
+                      onToggleNewAddress={() => setShowNewAddress((prev) => !prev)}
+                      onNext={() => checkout.setStep('payment')}
                     />
                   )}
-                  {currentStep === 'payment' && (
+                  {checkout.step === 'payment' && (
                     <PaymentStep
                       key="payment"
                       user={user}
-                      selectedPayment={selectedPayment}
-                      onSelectPayment={setSelectedPayment}
+                      selectedPayment={checkout.selectedPayment}
+                      onSelectPayment={checkout.setSelectedPayment}
                       showNewPayment={showNewPayment}
-                      onToggleNewPayment={() => setShowNewPayment(!showNewPayment)}
-                      total={calculateTotal()}
-                      orderId={orderId}
-                      onBack={() => setCurrentStep('shipping')}
-                      onNext={() => setCurrentStep('review')}
+                      onToggleNewPayment={() => setShowNewPayment((prev) => !prev)}
+                      total={adjustedTotal}
+                      orderId={confirmedOrderId || `TW${Date.now()}`}
+                      onBack={() => checkout.setStep('shipping')}
+                      onNext={() => checkout.setStep('review')}
                     />
                   )}
-                  {currentStep === 'review' && (
+                  {checkout.step === 'review' && (
                     <ReviewStep
                       key="review"
                       cartItems={cartItems}
-                      selectedAddress={selectedAddress}
-                      selectedPayment={selectedPayment}
-                      orderNotes={orderNotes}
-                      onNotesChange={setOrderNotes}
-                      subtotal={calculateSubtotal()}
-                      shipping={calculateShipping()}
-                      discount={calculateDiscount()}
-                      total={calculateTotal()}
-                      appliedCoupon={appliedCoupon}
-                      onBack={() => setCurrentStep('payment')}
-                      onComplete={handleCompleteOrder}
+                      selectedAddress={checkout.selectedAddress}
+                      selectedPayment={checkout.selectedPayment}
+                      orderNotes={checkout.orderNotes}
+                      onNotesChange={checkout.setOrderNotes}
+                      subtotal={checkout.totals.subtotal}
+                      shipping={shippingFee}
+                      discount={discount}
+                      total={adjustedTotal}
+                      appliedCoupon={coupon.appliedCoupon}
+                      onBack={() => checkout.setStep('payment')}
+                      onComplete={() => checkout.completeOrder(coupon.appliedCoupon)}
                     />
                   )}
                 </AnimatePresence>
+
+                {/* Order error from API */}
+                {checkout.orderError && (
+                  <p className="mt-4 text-sm text-red-600 text-center">{checkout.orderError}</p>
+                )}
               </div>
 
               {/* Order Summary Sidebar */}
@@ -249,39 +160,44 @@ export default function CheckoutPage() {
 
                   {/* Coupon */}
                   <div className="mb-6 pb-6 border-b border-border">
-                    {!appliedCoupon ? (
+                    {!coupon.appliedCoupon ? (
                       <div className="space-y-2">
                         <Label className="text-sm uppercase tracking-wide">{t('couponCode')}</Label>
                         <div className="flex gap-2">
                           <Input
                             type="text"
-                            value={couponCode}
-                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                            onClear={() => setCouponCode('')}
+                            value={coupon.couponCode}
+                            onChange={(e) => coupon.setCouponCode(e.target.value.toUpperCase())}
+                            onClear={() => coupon.setCouponCode('')}
                             placeholder={t('couponPlaceholder')}
                             className="flex-1 text-sm"
                           />
-                          <Button onClick={applyCoupon} size="sm">
+                          <Button
+                            onClick={() => coupon.applyCoupon(checkout.totals.subtotal)}
+                            size="sm"
+                          >
                             {t('apply')}
                           </Button>
                         </div>
-                        {couponError && <p className="text-xs text-red-600">{couponError}</p>}
+                        {coupon.couponError && (
+                          <p className="text-xs text-red-600">{coupon.couponError}</p>
+                        )}
                       </div>
                     ) : (
                       <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-sm">
                         <div className="flex items-center gap-2">
                           <Tag className="w-4 h-4 text-green-600" />
                           <div>
-                            <p className="text-sm font-semibold">{appliedCoupon.code}</p>
+                            <p className="text-sm font-semibold">{coupon.appliedCoupon.code}</p>
                             <p className="text-xs text-muted-foreground">
-                              {appliedCoupon.description}
+                              {coupon.appliedCoupon.description}
                             </p>
                           </div>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={removeCoupon}
+                          onClick={coupon.removeCoupon}
                           className="text-red-600 hover:text-red-700"
                         >
                           {t('remove')}
@@ -294,37 +210,30 @@ export default function CheckoutPage() {
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{t('subtotal')}</span>
-                      <span>{calculateSubtotal().toLocaleString('vi-VN')}₫</span>
+                      <span>{checkout.totals.subtotal.toLocaleString('vi-VN')}₫</span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{t('shippingFee')}</span>
                       <span>
-                        {calculateShipping() === 0 ? (
+                        {shippingFee === 0 ? (
                           <span className="text-green-600">{t('free')}</span>
                         ) : (
-                          `${calculateShipping().toLocaleString('vi-VN')}₫`
+                          `${shippingFee.toLocaleString('vi-VN')}₫`
                         )}
                       </span>
                     </div>
-                    {appliedCoupon && calculateDiscount() > 0 && (
+                    {coupon.appliedCoupon && discount > 0 && (
                       <div className="flex justify-between text-sm text-green-600">
                         <span>{t('discount')}</span>
-                        <span>-{calculateDiscount().toLocaleString('vi-VN')}₫</span>
+                        <span>-{discount.toLocaleString('vi-VN')}₫</span>
                       </div>
                     )}
                     <div className="pt-3 border-t border-border flex justify-between">
                       <span className="uppercase tracking-wide">{t('total')}</span>
                       <span className="text-xl font-bold">
-                        {calculateTotal().toLocaleString('vi-VN')}₫
+                        {adjustedTotal.toLocaleString('vi-VN')}₫
                       </span>
                     </div>
-                  </div>
-
-                  {/* Tip */}
-                  <div className="text-xs text-muted-foreground bg-background p-3 rounded-sm border border-border">
-                    💡 Mã giảm giá: <span className="font-semibold">WELCOME10</span>,{' '}
-                    <span className="font-semibold">FREESHIP</span>,{' '}
-                    <span className="font-semibold">SAVE50K</span>
                   </div>
                 </div>
               </div>
@@ -333,11 +242,11 @@ export default function CheckoutPage() {
         )}
 
         {/* Confirmation Step */}
-        {currentStep === 'confirmation' && (
+        {checkout.step === 'confirmation' && (
           <ConfirmationStep
-            orderId={orderId}
-            total={calculateTotal()}
-            selectedPayment={selectedPayment}
+            orderId={confirmedOrderId}
+            total={confirmedTotal}
+            selectedPayment={checkout.selectedPayment}
             onViewOrders={() => router.push('/orders')}
             onContinueShopping={() => router.push('/products')}
           />
