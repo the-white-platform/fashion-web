@@ -26,23 +26,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { ScrollIndicator } from '@/components/ui/scroll-indicator'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
-import type { ProductForFrontend, CategoryForFrontend, ColorVariant } from '@/utilities/getProducts'
-
-// Product Type for display
-interface Product {
-  id: number
-  name: string
-  slug?: string
-  category: string
-  categories: string[]
-  price: string
-  priceNumber: number
-  image: string
-  colors: { name: string; hex: string }[]
-  sizes: string[]
-  tag: string
-  inStock: boolean
-}
+import type { ProductForFrontend, CategoryForFrontend } from '@/utilities/getProducts'
 
 interface ProductsPageClientProps {
   initialProducts: ProductForFrontend[]
@@ -64,7 +48,7 @@ function ProductsPageContent({
   categories,
   colors,
 }: {
-  allProducts: Product[]
+  allProducts: ProductForFrontend[]
   categories: CategoryForFrontend[]
   colors: { name: string; hex: string }[]
 }) {
@@ -885,46 +869,11 @@ function ProductsPageContent({
   )
 }
 
-interface Product {
-  id: number
-  name: string
-  slug?: string
-  category: string
-  categories: string[]
-  price: string
-  priceNumber: number
-  image: string
-  images: string[]
-  colorVariants: ColorVariant[]
-  colors: { name: string; hex: string }[]
-  sizes: string[]
-  tag: string
-  inStock: boolean
-}
-
 export default function ProductsPageClient({
   initialProducts,
   categories,
   colors,
 }: ProductsPageClientProps) {
-  // Transform initialProducts to the format expected by ProductsPageContent
-  const allProducts: Product[] = initialProducts.map((p) => ({
-    id: p.id,
-    name: p.name,
-    slug: p.slug,
-    category: p.category,
-    categories: p.categories || [p.category], // Ensure categories array exists
-    price: p.price,
-    priceNumber: p.priceNumber,
-    image: p.image,
-    images: p.images,
-    colorVariants: p.colorVariants,
-    colors: p.colors,
-    sizes: p.sizes,
-    tag: p.tag,
-    inStock: p.inStock,
-  }))
-
   return (
     <Suspense
       fallback={
@@ -933,7 +882,7 @@ export default function ProductsPageClient({
         </div>
       }
     >
-      <ProductsPageContent allProducts={allProducts} categories={categories} colors={colors} />
+      <ProductsPageContent allProducts={initialProducts} categories={categories} colors={colors} />
     </Suspense>
   )
 }

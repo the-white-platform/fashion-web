@@ -6,18 +6,7 @@ import { Link } from '@/i18n/Link'
 import { motion } from 'motion/react'
 import { useState, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-
-interface Product {
-  id: number
-  name: string
-  category: string
-  categoryId?: number
-  categoryIds?: number[]
-  price: string
-  priceNumber: number
-  image: string
-  tag: string
-}
+import type { ProductForFrontend } from '@/utilities/getProducts'
 
 interface QuickFilter {
   id: string
@@ -28,53 +17,93 @@ interface QuickFilter {
 }
 
 interface FeaturedProductsProps {
-  products?: Product[]
+  products?: ProductForFrontend[]
   quickFilters?: QuickFilter[]
-  onProductClick?: (product: Product) => void
+  onProductClick?: (product: ProductForFrontend) => void
   onViewAll?: () => void
 }
 
 // Default products fallback (shown if no products passed from server)
-const defaultProducts: Product[] = [
+const defaultProducts: ProductForFrontend[] = [
   {
     id: 1,
     name: 'Áo Training Performance',
+    slug: 'ao-training-performance',
     category: 'Áo Thể Thao',
+    categories: ['Áo Thể Thao'],
+    categorySlug: 'ao-the-thao',
     price: '890.000₫',
     priceNumber: 890000,
     image:
       'https://images.unsplash.com/photo-1679768763201-e07480531b49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
+    images: [],
+    colorVariants: [],
+    colors: [],
+    sizes: [],
     tag: 'MỚI',
+    inStock: true,
+    featured: false,
+    features: [],
   },
   {
     id: 2,
     name: 'Giày Chạy Bộ Elite',
+    slug: 'giay-chay-bo-elite',
     category: 'Giày Thể Thao',
+    categories: ['Giày Thể Thao'],
+    categorySlug: 'giay-the-thao',
     price: '1.890.000₫',
     priceNumber: 1890000,
     image:
       'https://images.unsplash.com/photo-1619253341026-74c609e6ce50?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
+    images: [],
+    colorVariants: [],
+    colors: [],
+    sizes: [],
     tag: 'BÁN CHẠY',
+    inStock: true,
+    featured: false,
+    features: [],
   },
   {
     id: 3,
     name: 'Set Tập Gym Premium',
+    slug: 'set-tap-gym-premium',
     category: 'Bộ Tập Luyện',
+    categories: ['Bộ Tập Luyện'],
+    categorySlug: 'bo-tap-luyen',
     price: '1.590.000₫',
     priceNumber: 1590000,
     image:
       'https://images.unsplash.com/photo-1734191979156-57972139dfee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
+    images: [],
+    colorVariants: [],
+    colors: [],
+    sizes: [],
     tag: 'GIẢM 20%',
+    inStock: true,
+    featured: false,
+    features: [],
   },
   {
     id: 4,
     name: 'Quần Short Training',
+    slug: 'quan-short-training',
     category: 'Quần Thể Thao',
+    categories: ['Quần Thể Thao'],
+    categorySlug: 'quan-the-thao',
     price: '690.000₫',
     priceNumber: 690000,
     image:
       'https://images.unsplash.com/photo-1599058917212-d750089bc07e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
+    images: [],
+    colorVariants: [],
+    colors: [],
+    sizes: [],
     tag: 'MỚI',
+    inStock: true,
+    featured: false,
+    features: [],
   },
 ]
 
@@ -113,12 +142,12 @@ export function FeaturedProducts({
       filtered = filtered.filter((product) => {
         switch (activeFilter.filterType) {
           case 'category':
-            // Filter by category ID (check if product belongs to category)
+            // Filter by category name (check if product belongs to category)
             return (
-              activeFilter.categoryId &&
-              (product.categoryIds
-                ? product.categoryIds.includes(activeFilter.categoryId)
-                : product.categoryId === activeFilter.categoryId)
+              activeFilter.label &&
+              (product.categories
+                ? product.categories.includes(activeFilter.label)
+                : product.category === activeFilter.label)
             )
           case 'tag':
             // Filter by tag

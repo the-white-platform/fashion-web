@@ -2,24 +2,12 @@ import HomePageClient from './page.client'
 import type { Metadata } from 'next'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import type { Product, Category, Media } from '@/payload-types'
+import type { Product, Category } from '@/payload-types'
 import { slugify } from '@/utilities/slugify'
-import { formatPrice } from '@/utilities/formatPrice'
+import { transformProduct, type ProductForFrontend } from '@/utilities/getProducts'
 
 // Revalidate every 10 minutes
 export const revalidate = 600
-
-interface FeaturedProduct {
-  id: number
-  name: string
-  category: string
-  categoryId?: number
-  categoryIds?: number[]
-  price: string
-  priceNumber: number
-  image: string
-  tag: string
-}
 
 interface QuickFilter {
   id: string
@@ -41,7 +29,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     console.error('Error resolving params:', e)
   }
 
-  let featuredProducts: FeaturedProduct[] = []
+  let featuredProducts: ProductForFrontend[] = []
   let carouselSlides: any[] = []
   let featuredCategories: any[] = []
   let activityCategories: any[] = []
@@ -71,46 +59,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
     if (result?.docs) {
       featuredProducts = result.docs
-        .map((product: Product) => {
-          if (!product) return null
-
-          // Handle category as array or object
-          const categories = Array.isArray(product.category)
-            ? product.category
-            : product.category
-              ? [product.category]
-              : []
-
-          const primaryCategory = categories[0] as Category | undefined
-          const categoryIds = categories
-            .map((cat) => (typeof cat === 'object' ? cat?.id : cat))
-            .filter(Boolean) as number[]
-
-          // Get image from first color variant
-          let imageUrl = '/assets/placeholder.jpg'
-          if (product.colorVariants && product.colorVariants.length > 0) {
-            const firstVariant = product.colorVariants[0]
-            if (firstVariant?.images && firstVariant.images.length > 0) {
-              const firstImage = firstVariant.images[0]
-              if (typeof firstImage === 'object' && firstImage !== null) {
-                imageUrl = (firstImage as Media).url || '/assets/placeholder.jpg'
-              }
-            }
-          }
-
-          return {
-            id: product.id,
-            name: product.name || 'Sản phẩm không tên',
-            category: primaryCategory?.title || 'Chưa phân loại',
-            categoryId: primaryCategory?.id,
-            categoryIds: categoryIds,
-            price: formatPrice(product.price),
-            priceNumber: product.price || 0,
-            image: imageUrl,
-            tag: product.tag || '',
-          }
-        })
-        .filter(Boolean) as FeaturedProduct[]
+        .filter((product): product is Product => Boolean(product))
+        .map((product: Product) => transformProduct(product))
     }
 
     // Fetch carousel slides, activity categories, and quick filters from homepage global

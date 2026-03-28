@@ -21,23 +21,10 @@ import { useState, useEffect } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { motion, AnimatePresence } from 'motion/react'
-import type { ColorVariant } from '@/utilities/getProducts'
-
-interface Product {
-  id: number
-  name: string
-  category: string
-  price: string
-  priceNumber: number
-  image: string
-  images: string[]
-  colorVariants: ColorVariant[]
-  sizes: string[]
-  description?: string
-}
+import type { ColorVariant, ProductForFrontend } from '@/utilities/getProducts'
 
 interface ProductModalProps {
-  product: Product | null
+  product: ProductForFrontend | null
   isOpen: boolean
   onClose: () => void
 }

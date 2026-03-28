@@ -12,18 +12,7 @@ import { BrandStory } from '@/components/ecommerce/BrandStory'
 import { Newsletter } from '@/components/ecommerce/Newsletter'
 import { ProductModal } from '@/components/ecommerce/ProductModal'
 import { AlternatingSection } from '@/components/layout/AlternatingSection'
-
-interface FeaturedProduct {
-  id: number
-  name: string
-  category: string
-  categoryId?: number
-  categoryIds?: number[]
-  price: string
-  priceNumber: number
-  image: string
-  tag: string
-}
+import type { ProductForFrontend } from '@/utilities/getProducts'
 
 interface QuickFilter {
   id: string
@@ -34,7 +23,7 @@ interface QuickFilter {
 }
 
 interface HomePageClientProps {
-  featuredProducts?: FeaturedProduct[]
+  featuredProducts?: ProductForFrontend[]
   carouselSlides?: any[]
   featuredCategories?: any[]
   activityCategories?: any[]
