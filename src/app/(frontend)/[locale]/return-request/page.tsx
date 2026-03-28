@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import Image from 'next/image'
@@ -26,9 +26,20 @@ export default function ReturnRequestPage() {
   const [reason, setReason] = useState('')
   const [description, setDescription] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [deliveredOrders, setDeliveredOrders] = useState<any[]>([])
 
-  // Orders are fetched from the API — orderHistory no longer lives on the user object
-  const order: any = undefined
+  useEffect(() => {
+    if (!user) return
+    fetch(
+      `/api/orders?where[customerInfo.user][equals]=${user.id}&where[status][equals]=delivered&sort=-createdAt&limit=20`,
+      { credentials: 'include' },
+    )
+      .then((res) => res.json())
+      .then((data) => setDeliveredOrders(data.docs || []))
+      .catch(() => {})
+  }, [user])
+
+  const order = deliveredOrders.find((o) => o.orderNumber === selectedOrder) || null
 
   const reasons = [
     'Sản phẩm không đúng size',
@@ -127,8 +138,27 @@ export default function ReturnRequestPage() {
           {/* Select Order */}
           <div className="bg-muted border border-border rounded-sm p-6">
             <h2 className="uppercase tracking-wide mb-4">1. Chọn Đơn Hàng</h2>
-            {/* TODO: fetch delivered orders from /api/orders */}
-            <p className="text-muted-foreground">Bạn chưa có đơn hàng nào đã giao</p>
+            {deliveredOrders.length > 0 ? (
+              <select
+                value={selectedOrder}
+                onChange={(e) => {
+                  setSelectedOrder(e.target.value)
+                  setSelectedItems([])
+                }}
+                className="w-full px-4 py-3 border border-border rounded-sm focus:outline-none focus:border-foreground bg-background text-foreground"
+              >
+                <option value="">-- Chọn đơn hàng --</option>
+                {deliveredOrders.map((o: any) => (
+                  <option key={o.id} value={o.orderNumber}>
+                    #{o.orderNumber} —{' '}
+                    {new Date(o.createdAt).toLocaleDateString('vi-VN')} —{' '}
+                    {(o.totals?.total || 0).toLocaleString('vi-VN')}₫
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-muted-foreground">Bạn chưa có đơn hàng nào đã giao</p>
+            )}
           </div>
 
           {/* Select Items */}
@@ -152,10 +182,10 @@ export default function ReturnRequestPage() {
                       className="w-5 h-5"
                     />
                     <div className="w-16 h-20 bg-muted/50 rounded-sm overflow-hidden relative">
-                      {item.image && (
+                      {item.productImage && (
                         <Image
-                          src={item.image}
-                          alt={item.name}
+                          src={item.productImage}
+                          alt={item.productName}
                           fill
                           className="object-cover"
                           sizes="64px"
@@ -163,11 +193,11 @@ export default function ReturnRequestPage() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <p className="mb-1">{item.name}</p>
+                      <p className="mb-1">{item.productName}</p>
                       <p className="text-sm text-muted-foreground">
                         Size: {item.size} | Số lượng: {item.quantity}
                       </p>
-                      <p className="text-sm">{item.price.toLocaleString('vi-VN')}₫</p>
+                      <p className="text-sm">{(item.unitPrice || 0).toLocaleString('vi-VN')}₫</p>
                     </div>
                   </label>
                 ))}

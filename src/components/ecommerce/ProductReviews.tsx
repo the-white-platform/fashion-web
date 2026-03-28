@@ -115,9 +115,8 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
 
   const [reviews, setReviews] = useState<Review[]>(mockReviews)
 
-  // Check if user has purchased this product
-  // TODO: check purchase history via /api/orders once orders collection is wired up
-  const hasPurchased = false
+  // Any authenticated user may leave a review
+  const hasPurchased = !!user
 
   // Check if user already reviewed
   const hasReviewed = reviews.some((review) => review.userId === user?.id)

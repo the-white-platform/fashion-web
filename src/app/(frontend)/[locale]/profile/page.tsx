@@ -16,6 +16,7 @@ export default function ProfilePage() {
   const { user, logout } = useUser()
   const t = useTranslations()
   const [activeTab, setActiveTab] = useState<Tab>('profile')
+  const [orders, setOrders] = useState<any[]>([])
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -23,6 +24,18 @@ export default function ProfilePage() {
       router.push('/login')
     }
   }, [user, router])
+
+  // Fetch latest 5 orders for the orders tab
+  useEffect(() => {
+    if (!user) return
+    fetch(
+      `/api/orders?where[customerInfo.user][equals]=${user.id}&sort=-createdAt&limit=5`,
+      { credentials: 'include' },
+    )
+      .then((res) => res.json())
+      .then((data) => setOrders(data.docs || []))
+      .catch(() => {})
+  }, [user])
 
   const tabs = [
     { id: 'profile' as Tab, label: t('profile.info'), icon: User },
@@ -238,9 +251,44 @@ export default function ProfilePage() {
           )}
           {activeTab === 'orders' && (
             <div className="bg-card rounded-sm border border-border p-6 md:p-8">
-              <h2 className="text-2xl uppercase tracking-wide mb-6">{t('profile.orders')}</h2>
-              {/* TODO: fetch orders from /api/orders?where[customer][equals]=<user.id> */}
-              {false ? null : (
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl uppercase tracking-wide">{t('profile.orders')}</h2>
+                {orders.length > 0 && (
+                  <Link
+                    href="/orders"
+                    className="text-sm text-muted-foreground hover:text-foreground underline uppercase tracking-wide"
+                  >
+                    Xem tất cả
+                  </Link>
+                )}
+              </div>
+              {orders.length > 0 ? (
+                <div className="space-y-4">
+                  {orders.map((order: any) => (
+                    <Link
+                      key={order.id}
+                      href={`/orders/${order.orderNumber}`}
+                      className="flex items-center justify-between p-4 border border-border rounded-sm hover:border-foreground transition-colors"
+                    >
+                      <div>
+                        <p className="font-medium text-foreground">#{order.orderNumber}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(order.createdAt).toLocaleDateString('vi-VN')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {order.items?.length || 0} sản phẩm
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-foreground">
+                          {(order.totals?.total || 0).toLocaleString('vi-VN')}₫
+                        </p>
+                        <p className="text-sm text-muted-foreground capitalize">{order.status}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
                 <div className="text-center py-12">
                   <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
                   <p className="text-muted-foreground mb-4">Bạn chưa có đơn hàng nào</p>
