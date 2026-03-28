@@ -15,6 +15,7 @@ import {
 import { motion } from 'motion/react'
 import { useCart } from '@/contexts/CartContext'
 import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
+import { ProductCard } from '@/components/shared/ProductCard'
 import { ImageZoom } from '@/components/ecommerce/ImageZoom'
 import { ProductReviews } from '@/components/ecommerce/ProductReviews'
 import {
@@ -29,6 +30,7 @@ import { VirtualTryOnModal } from '@/components/ecommerce/VirtualTryOnModal'
 import type { ProductForFrontend } from '@/utilities/getProducts'
 import { getRelatedProducts } from '@/utilities/getRelatedProducts'
 import { Link } from '@/i18n/Link'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 interface ProductDetailClientProps {
   product: ProductForFrontend
@@ -356,22 +358,13 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
           >
             <h2 className="text-2xl mb-8 uppercase">Sản Phẩm Liên Quan</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((item) => (
-                <Link key={item.id} href={`/products/${item.id}`} className="group">
-                  <div className="relative overflow-hidden bg-muted mb-4 aspect-[3/4] rounded-sm">
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      sizes="(max-width: 1024px) 50vw, 25vw"
-                    />
-                  </div>
-                  <h3 className="mb-2 font-medium group-hover:text-muted-foreground transition-colors">
-                    {item.name}
-                  </h3>
-                  <div className="font-bold">{item.price}</div>
-                </Link>
+              {relatedProducts.map((item, index) => (
+                <ProductCard
+                  key={item.id}
+                  product={item}
+                  index={index}
+                  sizes="(max-width: 1024px) 50vw, 25vw"
+                />
               ))}
             </div>
           </motion.section>

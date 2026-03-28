@@ -3,8 +3,8 @@
 import { useState, useMemo, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { Link } from '@/i18n/Link'
-import Image from 'next/image'
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
+import { ProductCard } from '@/components/shared/ProductCard'
 import { motion } from 'motion/react'
 import {
   Breadcrumb,
@@ -683,82 +683,13 @@ function ProductsPageContent({
             <div className="flex-1">
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 {currentProducts.map((product, index) => (
-                  <motion.div
+                  <ProductCard
                     key={product.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="group"
-                  >
-                    <Link href={`/products/${product.id}`} className="block">
-                      <div className="relative overflow-hidden bg-muted mb-4 aspect-[3/4] rounded-sm">
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
-                          sizes="(max-width: 1024px) 50vw, 33vw"
-                        />
-
-                        {/* Tag */}
-                        <div className="absolute top-4 left-4 bg-background text-foreground px-3 py-1 text-xs font-bold rounded-sm border border-border">
-                          {product.tag}
-                        </div>
-
-                        {/* Stock Status */}
-                        {!product.inStock && (
-                          <div className="absolute top-4 right-4 bg-destructive text-destructive-foreground px-3 py-1 text-xs rounded-sm">
-                            HẾT HÀNG
-                          </div>
-                        )}
-
-                        {/* Quick View Button */}
-                        <button
-                          className="hidden lg:block absolute bottom-4 left-4 right-4 bg-background text-foreground py-3 text-center opacity-0 group-hover:opacity-100 transition-all hover:bg-muted rounded-sm font-medium border border-border"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            setSelectedProduct(product)
-                          }}
-                        >
-                          Xem Nhanh
-                        </button>
-                      </div>
-
-                      <div className="text-sm text-muted-foreground mb-1 uppercase tracking-wide">
-                        {product.category}
-                      </div>
-                      <h3 className="mb-2 font-medium group-hover:text-muted-foreground transition-colors">
-                        {product.name}
-                      </h3>
-
-                      {/* Available Sizes */}
-                      {product.sizes && product.sizes.length > 0 && (
-                        <div className="flex gap-1 mb-2 flex-wrap">
-                          {product.sizes.map((size) => (
-                            <span
-                              key={size}
-                              className="text-[10px] px-2 py-0.5 border border-border rounded-sm text-muted-foreground uppercase"
-                            >
-                              {size}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold">{product.price}</span>
-                        <div className="flex gap-1">
-                          {product.colors.map((color) => (
-                            <div
-                              key={color.hex}
-                              className="w-3 h-3 rounded-full border border-border"
-                              style={{ backgroundColor: color.hex }}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </Link>
-                  </motion.div>
+                    product={product}
+                    index={index}
+                    onQuickView={(p) => setSelectedProduct(p)}
+                    sizes="(max-width: 1024px) 50vw, 33vw"
+                  />
                 ))}
               </div>
 

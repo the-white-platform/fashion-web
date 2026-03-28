@@ -1,8 +1,7 @@
 'use client'
 
-import { Heart, ChevronDown } from 'lucide-react'
-import Image from 'next/image'
-import { Link } from '@/i18n/Link'
+import { ChevronDown } from 'lucide-react'
+import { ProductCard } from '@/components/shared/ProductCard'
 import { motion } from 'motion/react'
 import { useState, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
@@ -259,67 +258,14 @@ export function FeaturedProducts({
         {displayProducts.length > 0 ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-8">
             {displayProducts.map((product, index) => (
-              <motion.div
+              <ProductCard
                 key={product.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="group"
-              >
-                <Link href={`/products/${product.id}`} className="block">
-                  <div className="relative overflow-hidden bg-muted mb-4 aspect-[3/4] rounded-sm shadow-lg">
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      sizes="(max-width: 1024px) 50vw, 25vw"
-                    />
-
-                    {/* Tag */}
-                    <div className="absolute top-0 left-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold uppercase tracking-wider">
-                      {product.tag}
-                    </div>
-
-                    {/* Wishlist Button - Always visible on mobile, hover on desktop */}
-                    <button
-                      className="absolute top-3 right-3 bg-background text-foreground p-2 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:scale-110 shadow-md"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        // TODO: Add to wishlist
-                      }}
-                    >
-                      <Heart className="w-4 h-4" />
-                    </button>
-
-                    {/* Quick View Button - Always visible on mobile, slide up on desktop hover */}
-                    <button
-                      className="absolute bottom-0 left-0 right-0 bg-primary text-primary-foreground py-3 lg:py-4 text-center lg:translate-y-full lg:group-hover:translate-y-0 transition-transform duration-300 uppercase text-xs lg:text-sm font-bold tracking-widest hover:bg-background hover:text-foreground"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        if (onProductClick) {
-                          onProductClick(product)
-                        }
-                      }}
-                    >
-                      {t('products.quickView')}
-                    </button>
-                  </div>
-
-                  <div>
-                    <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-[0.2em] font-medium">
-                      {product.category}
-                    </div>
-                    <h3 className="mb-1 text-lg uppercase font-semibold group-hover:text-muted-foreground transition-colors line-clamp-1 leading-none">
-                      {product.name}
-                    </h3>
-                    <div className="font-bold text-foreground">{product.price}</div>
-                  </div>
-                </Link>
-              </motion.div>
+                product={product}
+                index={index}
+                onQuickView={onProductClick}
+                showWishlist
+                sizes="(max-width: 1024px) 50vw, 25vw"
+              />
             ))}
           </div>
         ) : (
