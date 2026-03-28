@@ -1,5 +1,6 @@
 import type { CollectionConfig } from 'payload'
 import {
+  validateAndRecalculateOrder,
   validateStockBeforeOrder,
   decrementStockAfterOrder,
   restoreStockOnCancel,
@@ -447,6 +448,8 @@ export const Orders: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
+      // Server-side price, coupon, and totals recalculation (must run first)
+      validateAndRecalculateOrder,
       // Validate stock availability before creating order
       validateStockBeforeOrder,
       // Auto-generate order number

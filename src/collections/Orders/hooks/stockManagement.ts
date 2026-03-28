@@ -37,9 +37,8 @@ export const validateAndRecalculateOrder: CollectionBeforeChangeHook = async ({
       throw new Error(`Product ${productId} not found`)
     }
 
-    // Use salePrice if available and non-zero, otherwise basePrice
-    const serverPrice =
-      product.salePrice != null && product.salePrice > 0 ? product.salePrice : product.basePrice
+    // `price` is the current selling price (already reflects any discount)
+    const serverPrice = product.price
 
     if (serverPrice == null) {
       throw new Error(`Product ${productId} has no price`)

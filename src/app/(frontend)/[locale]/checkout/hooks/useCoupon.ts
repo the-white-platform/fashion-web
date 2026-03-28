@@ -46,12 +46,12 @@ export function useCoupon(): UseCouponReturn {
 
       // Validate date range
       const now = new Date()
-      if (coupon.startDate && new Date(coupon.startDate) > now) {
+      if (coupon.validFrom && new Date(coupon.validFrom) > now) {
         setCouponError('Mã giảm giá chưa có hiệu lực')
         setAppliedCoupon(null)
         return
       }
-      if (coupon.endDate && new Date(coupon.endDate) < now) {
+      if (coupon.validUntil && new Date(coupon.validUntil) < now) {
         setCouponError('Mã giảm giá đã hết hạn')
         setAppliedCoupon(null)
         return
