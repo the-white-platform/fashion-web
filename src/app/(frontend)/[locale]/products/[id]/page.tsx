@@ -42,5 +42,53 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     notFound()
   }
 
-  return <ProductDetailClient product={product} allProducts={allProductsResult} />
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.description || '',
+    image: product.image,
+    brand: {
+      '@type': 'Brand',
+      name: 'THE WHITE',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: product.priceNumber,
+      priceCurrency: 'VND',
+      availability: product.inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      url: `${process.env.NEXT_PUBLIC_SERVER_URL}/products/${product.slug || product.id}`,
+    },
+  }
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: process.env.NEXT_PUBLIC_SERVER_URL },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Products',
+        item: `${process.env.NEXT_PUBLIC_SERVER_URL}/products`,
+      },
+      { '@type': 'ListItem', position: 3, name: product.name },
+    ],
+  }
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <ProductDetailClient product={product} allProducts={allProductsResult} />
+    </>
+  )
 }
