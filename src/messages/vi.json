@@ -668,5 +668,535 @@
     "easyReturnsDesc": "Đổi Trả\n30 Ngày",
     "warranty": "Bảo Hành",
     "warrantyDesc": "Chính Hãng\nBảo Hành"
+  },
+  "contact": {
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbPage": "Liên Hệ",
+    "title": "Liên Hệ",
+    "subtitle": "Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn",
+    "form": {
+      "title": "Gửi Tin Nhắn",
+      "successTitle": "Gửi Thành Công!",
+      "successMessage": "Chúng tôi sẽ phản hồi trong vòng 24h",
+      "name": "Họ và tên *",
+      "namePlaceholder": "Nguyễn Văn A",
+      "email": "Email *",
+      "emailPlaceholder": "email@example.com",
+      "phone": "Số điện thoại",
+      "phonePlaceholder": "0901234567",
+      "category": "Danh mục *",
+      "categoryGeneral": "Câu hỏi chung",
+      "categoryOrder": "Đơn hàng",
+      "categoryProduct": "Sản phẩm",
+      "categoryReturn": "Đổi trả",
+      "categoryPartnership": "Hợp tác",
+      "categoryOther": "Khác",
+      "subject": "Tiêu đề *",
+      "subjectPlaceholder": "Vấn đề cần hỗ trợ",
+      "message": "Nội dung *",
+      "messagePlaceholder": "Mô tả chi tiết vấn đề của bạn...",
+      "submitting": "Đang Gửi...",
+      "submit": "Gửi Tin Nhắn"
+    },
+    "info": {
+      "title": "Thông Tin Liên Hệ",
+      "hotline": "Hotline",
+      "hotlineValue": "1900-xxxx (8:00 - 22:00)",
+      "hotlineFree": "Miễn phí cuộc gọi",
+      "email": "Email",
+      "emailValue": "support@thewhite.vn",
+      "emailResponse": "Phản hồi trong 24h",
+      "address": "Địa chỉ",
+      "addressValue": "123 Đường ABC, Quận 1,\nTP. Hồ Chí Minh, Việt Nam",
+      "hours": "Giờ làm việc",
+      "hoursValue": "Thứ 2 - Chủ Nhật",
+      "hoursTime": "8:00 - 22:00"
+    },
+    "social": {
+      "title": "Kết Nối Với Chúng Tôi",
+      "zaloChat": "Chat trực tiếp"
+    },
+    "quickLinks": {
+      "title": "Liên Kết Nhanh",
+      "faq": "→ Câu hỏi thường gặp (FAQ)",
+      "returnPolicy": "→ Chính sách đổi trả",
+      "sizeGuide": "→ Hướng dẫn chọn size",
+      "trackOrder": "→ Theo dõi đơn hàng"
+    }
+  },
+  "faq": {
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbPage": "Câu Hỏi Thường Gặp",
+    "title": "Câu Hỏi Thường Gặp",
+    "subtitle": "Tìm câu trả lời cho những câu hỏi phổ biến về TheWhite",
+    "searchPlaceholder": "Tìm kiếm câu hỏi...",
+    "categories": {
+      "all": "Tất Cả",
+      "order": "Đặt Hàng",
+      "payment": "Thanh Toán",
+      "shipping": "Vận Chuyển",
+      "return": "Đổi Trả"
+    },
+    "noResults": "Không tìm thấy câu hỏi phù hợp",
+    "clearFilter": "Xóa bộ lọc",
+    "support": {
+      "title": "Không Tìm Thấy Câu Trả Lời?",
+      "subtitle": "Đội ngũ hỗ trợ của TheWhite sẵn sàng giúp đỡ bạn 24/7",
+      "chat": "Chat Với Chúng Tôi",
+      "hotline": "Gọi Hotline: 1900-xxxx"
+    },
+    "questions": {
+      "q1": {
+        "question": "Làm thế nào để đặt hàng trên TheWhite?",
+        "answer": "Bạn có thể đặt hàng dễ dàng bằng cách: 1) Chọn sản phẩm và thêm vào giỏ hàng 2) Điền thông tin giao hàng 3) Chọn phương thức thanh toán 4) Xác nhận đơn hàng. Bạn sẽ nhận được email xác nhận ngay sau khi đặt hàng thành công."
+      },
+      "q2": {
+        "question": "Tôi có thể thay đổi hoặc hủy đơn hàng không?",
+        "answer": "Bạn có thể hủy đơn hàng trong vòng 24h sau khi đặt hàng nếu đơn hàng chưa được xác nhận. Để thay đổi hoặc hủy đơn, vui lòng liên hệ hotline 1900-xxxx hoặc qua trang \"Đơn Hàng Của Tôi\" trong tài khoản."
+      },
+      "q3": {
+        "question": "Tôi có cần tạo tài khoản để mua hàng không?",
+        "answer": "Không bắt buộc. Bạn có thể mua hàng với tư cách khách (Guest Checkout). Tuy nhiên, tạo tài khoản giúp bạn theo dõi đơn hàng dễ dàng hơn, lưu địa chỉ giao hàng và nhận ưu đãi đặc biệt."
+      },
+      "q4": {
+        "question": "TheWhite chấp nhận những phương thức thanh toán nào?",
+        "answer": "Chúng tôi chấp nhận: 1) Thẻ tín dụng/ghi nợ (Visa, Mastercard, JCB) 2) Chuyển khoản ngân hàng 3) Ví điện tử MoMo 4) Thanh toán khi nhận hàng (COD). Tất cả giao dịch đều được mã hóa và bảo mật."
+      },
+      "q5": {
+        "question": "Thanh toán khi nhận hàng (COD) có phí không?",
+        "answer": "Phí COD là 20.000₫ cho đơn hàng dưới 500.000₫. Miễn phí COD cho đơn hàng từ 500.000₫ trở lên."
+      },
+      "q6": {
+        "question": "Thông tin thẻ của tôi có an toàn không?",
+        "answer": "Hoàn toàn an toàn. Chúng tôi sử dụng công nghệ mã hóa SSL và không lưu trữ thông tin thẻ trên hệ thống. Mọi giao dịch đều được xử lý qua cổng thanh toán bảo mật quốc tế."
+      },
+      "q7": {
+        "question": "Thời gian giao hàng là bao lâu?",
+        "answer": "Nội thành TP.HCM/Hà Nội: 1-2 ngày làm việc. Các tỉnh thành khác: 2-5 ngày làm việc. Vùng sâu vùng xa: 5-7 ngày làm việc. Thời gian có thể thay đổi tùy tình hình thực tế."
+      },
+      "q8": {
+        "question": "Phí vận chuyển là bao nhiêu?",
+        "answer": "Miễn phí vận chuyển cho đơn hàng từ 500.000₫. Đơn hàng dưới 500.000₫: phí vận chuyển 30.000₫ (nội thành) hoặc 50.000₫ (ngoại thành/tỉnh)."
+      },
+      "q9": {
+        "question": "Tôi có thể theo dõi đơn hàng như thế nào?",
+        "answer": "Sau khi đơn hàng được xác nhận, bạn sẽ nhận được mã vận đơn qua email/SMS. Bạn có thể theo dõi đơn hàng trong mục \"Đơn Hàng Của Tôi\" hoặc qua mã vận đơn trên website đơn vị vận chuyển."
+      },
+      "q10": {
+        "question": "Tôi có thể chỉ định thời gian giao hàng không?",
+        "answer": "Hiện tại chúng tôi chưa hỗ trợ chỉ định giờ giao cụ thể, nhưng bạn có thể ghi chú thời gian mong muốn trong phần \"Ghi chú đơn hàng\". Chúng tôi sẽ cố gắng đáp ứng."
+      },
+      "q11": {
+        "question": "Chính sách đổi trả của TheWhite như thế nào?",
+        "answer": "Bạn có thể đổi/trả hàng trong vòng 30 ngày kể từ ngày nhận hàng. Sản phẩm phải còn nguyên tem mác, chưa qua sử dụng. Chúng tôi hỗ trợ đổi size miễn phí và hoàn tiền 100% cho sản phẩm lỗi."
+      },
+      "q12": {
+        "question": "Làm thế nào để yêu cầu đổi/trả hàng?",
+        "answer": "Truy cập \"Đơn Hàng Của Tôi\" > Chọn đơn hàng cần đổi/trả > Nhấn \"Yêu Cầu Đổi/Trả\". Điền thông tin và lý do, chụp ảnh sản phẩm nếu có lỗi. Chúng tôi sẽ xử lý trong vòng 24-48h."
+      },
+      "q13": {
+        "question": "Phí đổi trả là bao nhiêu?",
+        "answer": "Miễn phí đổi size lần đầu. Miễn phí trả hàng nếu sản phẩm lỗi/nhầm hàng. Đổi trả do lỗi chủ quan (đổi ý): phí vận chuyển 2 chiều do khách hàng chi trả."
+      },
+      "q14": {
+        "question": "Khi nào tôi nhận được hoàn tiền?",
+        "answer": "Sau khi chúng tôi nhận và kiểm tra sản phẩm trả lại (2-3 ngày), tiền sẽ được hoàn về tài khoản/thẻ trong vòng 5-7 ngày làm việc tùy ngân hàng."
+      },
+      "q15": {
+        "question": "Làm sao để biết size nào phù hợp với tôi?",
+        "answer": "Sử dụng \"Hướng Dẫn Chọn Size\" trên mỗi trang sản phẩm. Chúng tôi cũng có tính năng \"AI Smart Size Selection\" giúp gợi ý size dựa trên số đo cơ thể của bạn. Nếu vẫn không chắc chắn, hãy liên hệ tư vấn viên qua chat."
+      },
+      "q16": {
+        "question": "Sản phẩm tôi muốn đã hết hàng, khi nào có lại?",
+        "answer": "Nhấn nút \"Thông Báo Khi Có Hàng\" trên trang sản phẩm. Chúng tôi sẽ gửi email/SMS ngay khi sản phẩm về hàng. Thời gian nhập hàng thường từ 1-2 tuần."
+      },
+      "q17": {
+        "question": "Tôi có thể sử dụng nhiều mã giảm giá cùng lúc không?",
+        "answer": "Mỗi đơn hàng chỉ áp dụng được 1 mã giảm giá. Hệ thống sẽ tự động chọn mã có lợi nhất cho bạn."
+      },
+      "q18": {
+        "question": "TheWhite có cửa hàng offline không?",
+        "answer": "Có, chúng tôi có cửa hàng tại TP.HCM và Hà Nội. Xem địa chỉ chi tiết tại mục \"Cửa Hàng\" hoặc liên hệ hotline để được hướng dẫn."
+      }
+    }
+  },
+  "returnPolicy": {
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbPage": "Chính Sách Đổi Trả",
+    "title": "Chính Sách Đổi Trả",
+    "subtitle": "Cam kết hài lòng 100% với TheWhite",
+    "highlights": {
+      "days": "30 Ngày Đổi Trả",
+      "daysDesc": "Hoàn tiền hoặc đổi size miễn phí",
+      "freeShipping": "Miễn Phí Vận Chuyển",
+      "freeShippingDesc": "Gửi trả hàng không mất phí",
+      "simple": "Quy Trình Đơn Giản",
+      "simpleDesc": "Chỉ 3 bước là hoàn tất"
+    },
+    "conditions": {
+      "title": "Điều Kiện Đổi Trả",
+      "c1": "Sản phẩm chưa qua sử dụng, giặt, còn nguyên tem mác",
+      "c2": "Trong vòng 30 ngày kể từ ngày nhận hàng",
+      "c3": "Có hóa đơn hoặc email xác nhận đơn hàng",
+      "c4": "Đóng gói đầy đủ, đúng bao bì ban đầu",
+      "c5": "Không có vết bẩn, mùi hôi, hoặc hư hỏng do người dùng"
+    },
+    "process": {
+      "title": "Quy Trình Đổi Trả",
+      "step1Title": "Liên Hệ Với Chúng Tôi",
+      "step1Desc": "Gửi email tới support@thewhite.vn hoặc gọi hotline 1900-xxxx để thông báo đổi trả. Cung cấp mã đơn hàng và lý do đổi trả.",
+      "step2Title": "Gửi Sản Phẩm Về",
+      "step2Desc": "Đóng gói sản phẩm cẩn thận. Chúng tôi sẽ gửi email hướng dẫn chi tiết và nhãn vận chuyển miễn phí.",
+      "step3Title": "Nhận Hoàn Tiền Hoặc Sản Phẩm Mới",
+      "step3Desc": "Sau khi kiểm tra (2-3 ngày làm việc), bạn sẽ nhận hoàn tiền (7-10 ngày) hoặc sản phẩm đổi mới (3-5 ngày)."
+    },
+    "exceptions": {
+      "title": "Trường Hợp Không Áp Dụng",
+      "e1": "Sản phẩm đã qua sử dụng, giặt, hoặc mất tem mác",
+      "e2": "Quá 30 ngày kể từ ngày nhận hàng",
+      "e3": "Sản phẩm giảm giá từ 50% trở lên (chỉ đổi, không hoàn tiền)",
+      "e4": "Đồ lót, vớ, và các sản phẩm vệ sinh cá nhân",
+      "e5": "Sản phẩm bị hư hỏng do người dùng gây ra"
+    },
+    "important": {
+      "title": "Lưu Ý Quan Trọng",
+      "n1": "Hoàn tiền sẽ được chuyển về phương thức thanh toán ban đầu",
+      "n2": "Đổi size miễn phí trong vòng 30 ngày (áp dụng 1 lần/đơn hàng)",
+      "n3": "Khách hàng vui lòng giữ lại email xác nhận đổi trả",
+      "n4": "Liên hệ ngay nếu nhận sản phẩm bị lỗi hoặc sai hàng"
+    },
+    "cta": {
+      "title": "Cần Hỗ Trợ?",
+      "subtitle": "Đội ngũ chăm sóc khách hàng TheWhite luôn sẵn sàng hỗ trợ bạn",
+      "email": "Email: support@thewhite.vn",
+      "hotline": "Hotline: 1900-xxxx"
+    }
+  },
+  "shoppingGuide": {
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbPage": "Hướng Dẫn Mua Hàng",
+    "title": "Hướng Dẫn Mua Hàng",
+    "subtitle": "Mua sắm dễ dàng tại TheWhite",
+    "step1": {
+      "title": "Chọn Sản Phẩm",
+      "p1": "• Duyệt qua các danh mục sản phẩm hoặc sử dụng thanh tìm kiếm",
+      "p2": "• Xem chi tiết sản phẩm: hình ảnh, mô tả, giá cả, size có sẵn",
+      "p3aiPrefix": "• Sử dụng tính năng ",
+      "p3aiFeature": "Chọn Size Thông Minh AI",
+      "p3aiSuffix": " để tìm size phù hợp",
+      "p4vtoPrefix": "• Thử nghiệm với tính năng ",
+      "p4vtoFeature": "Virtual Try-On",
+      "p4vtoSuffix": " để xem sản phẩm trên bạn",
+      "p5": "• Chọn size, màu sắc và số lượng mong muốn",
+      "p6addBtn": "\"THÊM VÀO GIỎ\"",
+      "p6buyBtn": "\"MUA NGAY\"",
+      "tip": "Lưu sản phẩm yêu thích bằng biểu tượng ❤️ để mua sau!"
+    },
+    "step2": {
+      "title": "Kiểm Tra Giỏ Hàng",
+      "p1": "• Nhấn vào biểu tượng giỏ hàng ở góc trên cùng",
+      "p2": "• Xem lại các sản phẩm đã chọn: tên, size, màu, số lượng, giá",
+      "p3": "• Cập nhật số lượng hoặc xóa sản phẩm nếu cần",
+      "p4": "• Nhập mã giảm giá (nếu có) vào ô \"MÃ GIẢM GIÁ\"",
+      "p5": "• Kiểm tra tổng tiền tạm tính",
+      "p6checkoutBtn": "\"THANH TOÁN\"",
+      "note": "Giỏ hàng được lưu trong 7 ngày"
+    },
+    "step3": {
+      "title": "Điền Thông Tin",
+      "recipientInfo": "Thông tin người nhận:",
+      "r1": "• Họ và tên (bắt buộc)",
+      "r2": "• Số điện thoại liên hệ (bắt buộc)",
+      "r3": "• Email để nhận thông tin đơn hàng (bắt buộc)",
+      "addressInfo": "Địa chỉ giao hàng:",
+      "a1": "• Địa chỉ chi tiết (số nhà, tên đường)",
+      "a2": "• Phường/Xã, Quận/Huyện, Tỉnh/Thành phố",
+      "a3": "• Ghi chú thêm cho người giao hàng (tùy chọn)",
+      "security": "Thông tin cá nhân của bạn được mã hóa và bảo mật tuyệt đối"
+    },
+    "step4": {
+      "title": "Chọn Vận Chuyển",
+      "methodsTitle": "Các phương thức vận chuyển:",
+      "standard": "Giao hàng tiêu chuẩn",
+      "standardDesc": "3-5 ngày (Miễn phí cho đơn từ 500K)",
+      "fast": "Giao hàng nhanh",
+      "fastDesc": "1-2 ngày (Phí 30K)",
+      "express": "Giao hàng hỏa tốc",
+      "expressDesc": "Trong ngày (Phí 50K, chỉ nội thành HN, HCM)",
+      "pickup": "Nhận tại cửa hàng",
+      "pickupDesc": "Miễn phí (Chọn cửa hàng gần nhất)",
+      "promo": "Miễn phí ship toàn quốc cho đơn hàng từ 500.000đ"
+    },
+    "step5": {
+      "title": "Thanh Toán",
+      "methodsTitle": "Phương thức thanh toán:",
+      "cod": "COD",
+      "codDesc": "Thanh toán khi nhận hàng (Áp dụng toàn quốc)",
+      "bank": "Chuyển khoản ngân hàng",
+      "bankDesc": "Giảm 2% (Quét QR hoặc nhập STK)",
+      "card": "Thẻ ATM/Visa/MasterCard",
+      "cardDesc": "Thanh toán trực tuyến an toàn",
+      "wallet": "Ví điện tử",
+      "walletDesc": "MoMo, ZaloPay, VNPay (Nhiều ưu đãi)",
+      "installment": "Trả góp 0%",
+      "installmentDesc": "Qua thẻ tín dụng (Cho đơn từ 3 triệu)",
+      "security": "Mọi giao dịch được mã hóa SSL 256-bit"
+    },
+    "step6": {
+      "title": "Hoàn Tất Đơn Hàng",
+      "p1": "• Kiểm tra lại toàn bộ thông tin đơn hàng",
+      "p2ConfirmBtn": "\"XÁC NHẬN ĐẶT HÀNG\"",
+      "p3": "• Nhận email/SMS xác nhận đơn hàng ngay lập tức",
+      "p4": "• Theo dõi đơn hàng qua link trong email hoặc tài khoản TheWhite",
+      "p5": "• Nhận thông báo khi đơn hàng đang được giao",
+      "p6": "• Kiểm tra hàng kỹ trước khi thanh toán (với COD)"
+    },
+    "tips": {
+      "title": "Mẹo Mua Sắm Thông Minh",
+      "t1Title": "✓ Đăng ký tài khoản",
+      "t1Desc": "Để lưu địa chỉ, theo dõi đơn hàng và nhận ưu đãi độc quyền",
+      "t2Title": "✓ Theo dõi khuyến mãi",
+      "t2Desc": "Đăng ký email để nhận mã giảm giá và flash sale",
+      "t3Title": "✓ Mua nhiều tiết kiệm hơn",
+      "t3Desc": "Combo 3 sản phẩm giảm 10%, từ 5 sản phẩm giảm 15%",
+      "t4Title": "✓ Tham gia Loyalty Program",
+      "t4Desc": "Tích điểm mỗi đơn hàng, đổi quà và nhận ưu đãi VIP"
+    },
+    "cta": {
+      "title": "Sẵn Sàng Mua Sắm?",
+      "subtitle": "Khám phá bộ sưu tập thể thao cao cấp TheWhite ngay hôm nay!",
+      "button": "Xem Sản Phẩm"
+    }
+  },
+  "sizeGuide": {
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbPage": "Hướng Dẫn Chọn Size",
+    "title": "Hướng Dẫn Chọn Size",
+    "subtitle": "Tìm size hoàn hảo với công nghệ AI thông minh",
+    "calculator": {
+      "title": "Chọn Size Thông Minh AI",
+      "subtitle": "Công nghệ AI phân tích số đo của bạn để gợi ý size chính xác nhất",
+      "genderLabel": "Giới Tính",
+      "genderMen": "Nam",
+      "genderWomen": "Nữ",
+      "productTypeLabel": "Loại Sản Phẩm",
+      "productTypeShirt": "Áo",
+      "productTypePants": "Quần",
+      "heightLabel": "Chiều Cao (cm)",
+      "weightLabel": "Cân Nặng (kg)",
+      "chestLabel": "Vòng Ngực (cm)",
+      "waistLabel": "Vòng Eo (cm)",
+      "required": "Bắt buộc. Các thông số khác giúp kết quả chính xác hơn.",
+      "calculate": "Tính Size AI",
+      "reset": "Làm Mới",
+      "alertRequired": "Vui lòng nhập chiều cao và cân nặng!",
+      "resultTitle": "Size Đề Xuất",
+      "confidenceLabel": "Độ tin cậy:",
+      "veryGood": "Rất phù hợp",
+      "good": "Khá phù hợp",
+      "reference": "Tham khảo",
+      "viewProducts": "Xem Sản Phẩm Size {size}",
+      "enterInfo": "Nhập thông tin để nhận gợi ý size"
+    },
+    "chart": {
+      "title": "Bảng Size Chi Tiết",
+      "men": "Nam",
+      "women": "Nữ",
+      "shirt": "Áo",
+      "pants": "Quần",
+      "size": "Size",
+      "chest": "Vòng Ngực (cm)",
+      "waist": "Vòng Eo (cm)",
+      "height": "Chiều Cao (cm)",
+      "weight": "Cân Nặng (kg)",
+      "hip": "Vòng Mông (cm)",
+      "length": "Chiều Dài (cm)"
+    },
+    "tips": {
+      "title": "💡 Mẹo Chọn Size",
+      "t1Title": "Đo Chính Xác",
+      "t1Desc": "Đo số đo khi mặc đồ lót, đứng thẳng và thở bình thường. Sử dụng thước dây mềm.",
+      "t2Title": "Kích Thước Cơ Thể",
+      "t2Desc": "Nếu số đo của bạn nằm giữa 2 size, chọn size lớn hơn để thoải mái hơn.",
+      "t3Title": "Kiểu Dáng",
+      "t3Desc": "Áo oversize nên chọn size nhỏ hơn 1-2 size so với size thường.",
+      "t4Title": "Đổi Size Miễn Phí",
+      "t4Desc": "Chúng tôi hỗ trợ đổi size miễn phí trong 30 ngày. Đừng ngại thử!"
+    }
+  },
+  "shipping": {
+    "redirecting": "Đang chuyển hướng..."
+  },
+  "paymentShipping": {
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbPage": "Thanh Toán & Vận Chuyển",
+    "title": "Thanh Toán & Vận Chuyển",
+    "subtitle": "Linh hoạt, an toàn và nhanh chóng",
+    "paymentHeader": "Phương Thức Thanh Toán",
+    "paymentHeaderDesc": "TheWhite chấp nhận nhiều phương thức thanh toán để bạn lựa chọn thuận tiện nhất",
+    "cod": {
+      "title": "COD - Thanh Toán Khi Nhận Hàng",
+      "fee": "Miễn phí",
+      "time": "Thanh toán khi shipper giao hàng",
+      "scope": "Toàn quốc",
+      "advantage": "An toàn, kiểm tra hàng trước khi trả tiền",
+      "note": "Chỉ nhận tiền mặt, vui lòng chuẩn bị đủ tiền lẻ"
+    },
+    "bank": {
+      "title": "Chuyển Khoản Ngân Hàng",
+      "fee": "Miễn phí",
+      "discount": "Giảm 2% tổng đơn hàng",
+      "time": "Xử lý trong 1-2 giờ sau khi nhận chuyển khoản",
+      "accountInfo": "Thông tin tài khoản:",
+      "bankName": "Ngân hàng: Vietcombank",
+      "accountNumber": "Số TK: 1234 5678 9012",
+      "accountHolder": "Tên: CONG TY THEWHITE",
+      "transferNote": "Nội dung: [Mã đơn hàng] [Số điện thoại]"
+    },
+    "card": {
+      "title": "Thẻ ATM / Visa / MasterCard",
+      "fee": "Miễn phí",
+      "security": "Mã hóa SSL 256-bit, chuẩn PCI-DSS",
+      "auth": "3D Secure / OTP",
+      "banks": "Vietcombank, Techcombank, VCB, ACB, MB, Sacombank, và hơn 30 ngân hàng khác",
+      "international": "Visa, MasterCard, JCB, AMEX"
+    },
+    "wallet": {
+      "title": "Ví Điện Tử",
+      "fee": "Miễn phí",
+      "support": "MoMo, ZaloPay, VNPay, ShopeePay",
+      "cashback": "Hoàn tiền 5-10% (tùy chương trình từng ví)",
+      "payment": "Quét mã QR hoặc liên kết tài khoản",
+      "time": "Tức thì, xử lý đơn hàng ngay"
+    },
+    "installment": {
+      "title": "Trả Góp 0% Lãi Suất",
+      "condition": "Đơn hàng từ 3.000.000đ",
+      "term": "3, 6, 9, 12 tháng",
+      "banks": "Sacombank, VPBank, Home Credit, FE Credit",
+      "interest": "0% (TheWhite hỗ trợ)",
+      "approval": "5-10 phút",
+      "docs": "CMND/CCCD + Bằng lái (tùy ngân hàng)"
+    },
+    "shippingHeader": "Vận Chuyển",
+    "shippingHeaderDesc": "Giao hàng toàn quốc với đối tác vận chuyển uy tín",
+    "standard": {
+      "title": "Giao Hàng Tiêu Chuẩn",
+      "time": "3-5 ngày làm việc",
+      "fee": "30.000đ",
+      "area": "Toàn quốc",
+      "free": "Đơn từ 500.000đ"
+    },
+    "fast": {
+      "title": "Giao Hàng Nhanh",
+      "time": "1-2 ngày làm việc",
+      "fee": "50.000đ",
+      "area": "63 tỉnh thành",
+      "free": "Đơn từ 1.000.000đ"
+    },
+    "express": {
+      "title": "Giao Hàng Hỏa Tốc",
+      "time": "Trong ngày (đặt trước 12h)",
+      "fee": "70.000đ",
+      "area": "Nội thành HN, HCM",
+      "within": "2-4 giờ"
+    },
+    "pickup": {
+      "title": "Nhận Tại Cửa Hàng",
+      "time": "Sẵn sàng sau 2 giờ",
+      "fee": "Miễn phí",
+      "area": "HN, HCM, Đà Nẵng",
+      "hours": "9h-21h hàng ngày"
+    },
+    "partners": {
+      "title": "Đối Tác Vận Chuyển",
+      "p1": "Giao Hàng Nhanh",
+      "p2": "Giao Hàng Tiết Kiệm",
+      "p3": "J&T Express",
+      "p4": "Viettel Post"
+    },
+    "security": {
+      "title": "Bảo Mật & An Toàn",
+      "desc": "Mọi giao dịch thanh toán đều được mã hóa SSL 256-bit và tuân thủ chuẩn bảo mật quốc tế PCI-DSS. TheWhite cam kết bảo vệ thông tin cá nhân và tài chính của bạn tuyệt đối."
+    },
+    "labels": {
+      "fee": "Phí:",
+      "time": "Thời gian:",
+      "scope": "Áp dụng:",
+      "advantage": "Ưu điểm:",
+      "note": "Lưu ý:",
+      "discount": "Ưu đãi:",
+      "security": "Bảo mật:",
+      "auth": "Xác thực:",
+      "banks": "Ngân hàng hỗ trợ:",
+      "international": "Thẻ quốc tế:",
+      "support": "Hỗ trợ:",
+      "cashback": "Ưu đãi:",
+      "payment": "Thanh toán:",
+      "condition": "Điều kiện:",
+      "term": "Kỳ hạn:",
+      "interest": "Lãi suất:",
+      "approval": "Duyệt nhanh:",
+      "docs": "Giấy tờ:",
+      "area": "Khu vực:",
+      "free": "Miễn phí:",
+      "within": "Giao trong:"
+    }
+  },
+  "returnRequest": {
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbPage": "Yêu Cầu Đổi/Trả Hàng",
+    "title": "Yêu Cầu Đổi/Trả Hàng",
+    "subtitle": "Vui lòng điền đầy đủ thông tin bên dưới",
+    "successTitle": "Yêu Cầu Đã Được Gửi!",
+    "successMessageReturn": "Chúng tôi sẽ xử lý yêu cầu trả hàng của bạn trong vòng 24-48h.",
+    "successMessageExchange": "Chúng tôi sẽ xử lý yêu cầu đổi hàng của bạn trong vòng 24-48h.",
+    "successEmail": "Bạn sẽ nhận được email xác nhận sớm nhất.",
+    "backToHome": "Về Trang Chủ",
+    "submitAnother": "Gửi Yêu Cầu Khác",
+    "selectOrder": "1. Chọn Đơn Hàng",
+    "selectOrderPlaceholder": "-- Chọn đơn hàng --",
+    "noOrders": "Bạn chưa có đơn hàng nào đã giao",
+    "selectItems": "2. Chọn Sản Phẩm",
+    "itemSize": "Size: {size} | Số lượng: {quantity}",
+    "requestType": "3. Loại Yêu Cầu",
+    "returnRefund": "Trả Hàng & Hoàn Tiền",
+    "returnRefundDesc": "Sản phẩm sẽ được hoàn tiền 100%",
+    "exchange": "Đổi Sản Phẩm",
+    "exchangeDesc": "Đổi size hoặc màu khác",
+    "reason": "4. Lý Do",
+    "reasonPlaceholder": "-- Chọn lý do --",
+    "reasonWrongSize": "Sản phẩm không đúng size",
+    "reasonDefective": "Sản phẩm bị lỗi/hỏng",
+    "reasonWrongDesc": "Sản phẩm không đúng mô tả",
+    "reasonWrongItem": "Nhầm sản phẩm",
+    "reasonChangedMind": "Đổi ý",
+    "reasonOther": "Khác",
+    "descriptionLabel": "Mô Tả Chi Tiết",
+    "descriptionPlaceholder": "Mô tả chi tiết vấn đề với sản phẩm...",
+    "images": "5. Hình Ảnh (Tùy Chọn)",
+    "imagesDesc": "Đính kèm hình ảnh sản phẩm nếu có lỗi",
+    "uploadDrop": "Kéo thả hoặc click để tải ảnh lên",
+    "uploadLimit": "PNG, JPG tối đa 5MB",
+    "cancel": "Hủy",
+    "submit": "Gửi Yêu Cầu",
+    "policy": {
+      "title": "📋 Chính Sách Đổi/Trả",
+      "p1": "• Đổi/trả trong vòng 30 ngày kể từ ngày nhận hàng",
+      "p2": "• Sản phẩm phải còn nguyên tem mác, chưa qua sử dụng",
+      "p3": "• Miễn phí đổi size lần đầu và trả hàng nếu sản phẩm lỗi",
+      "p4": "• Hoàn tiền trong vòng 5-7 ngày sau khi nhận hàng trả",
+      "p5prefix": "• Xem chi tiết tại ",
+      "p5link": "Chính Sách Đổi Trả"
+    }
+  },
+  "coupon": {
+    "errorEmpty": "Vui lòng nhập mã giảm giá",
+    "errorInvalid": "Mã giảm giá không hợp lệ hoặc đã hết hạn",
+    "errorNotYetValid": "Mã giảm giá chưa có hiệu lực",
+    "errorExpired": "Mã giảm giá đã hết hạn",
+    "errorUsageLimit": "Mã giảm giá đã hết lượt sử dụng",
+    "errorMinOrder": "Đơn hàng chưa đạt giá trị tối thiểu để dùng mã này",
+    "errorNetwork": "Không thể kiểm tra mã giảm giá. Vui lòng thử lại."
   }
 }

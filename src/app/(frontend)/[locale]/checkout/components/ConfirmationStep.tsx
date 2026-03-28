@@ -32,8 +32,8 @@ export function ConfirmationStep({
       animate={{ opacity: 1, scale: 1 }}
       className="max-w-2xl mx-auto text-center py-12"
     >
-      <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-        <Check className="w-10 h-10 text-green-500" />
+      <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
+        <Check className="w-10 h-10 text-success" />
       </div>
 
       <h1 className="text-3xl uppercase tracking-wide mb-4">{t('success')}</h1>
@@ -52,7 +52,7 @@ export function ConfirmationStep({
             <div className="bg-white p-6 rounded-lg shadow-inner">
               <Image
                 src={qrUrl}
-                alt="QR Code thanh toán"
+                alt={t("scanQR")}
                 width={320}
                 height={320}
                 className="mx-auto"

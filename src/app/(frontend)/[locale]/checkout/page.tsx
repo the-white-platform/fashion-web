@@ -23,6 +23,7 @@ import { ConfirmationStep } from './components/ConfirmationStep'
 export default function CheckoutPage() {
   const t = useTranslations('checkout')
   const tCart = useTranslations('cart')
+  const tCoupon = useTranslations('coupon')
   const router = useRouter()
   const { items: cartItems } = useCart()
   const { user } = useUser()
@@ -129,7 +130,7 @@ export default function CheckoutPage() {
 
                 {/* Order error from API */}
                 {checkout.orderError && (
-                  <p className="mt-4 text-sm text-red-600 text-center">{checkout.orderError}</p>
+                  <p className="mt-4 text-sm text-destructive text-center">{checkout.orderError}</p>
                 )}
               </div>
 
@@ -184,13 +185,13 @@ export default function CheckoutPage() {
                           </Button>
                         </div>
                         {coupon.couponError && (
-                          <p className="text-xs text-red-600">{coupon.couponError}</p>
+                          <p className="text-xs text-destructive">{tCoupon(coupon.couponError as any)}</p>
                         )}
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between p-3 bg-green-500/10 border border-green-500/20 rounded-sm">
+                      <div className="flex items-center justify-between p-3 bg-success/10 border border-success/20 rounded-sm">
                         <div className="flex items-center gap-2">
-                          <Tag className="w-4 h-4 text-green-600" />
+                          <Tag className="w-4 h-4 text-success" />
                           <div>
                             <p className="text-sm font-semibold">{coupon.appliedCoupon.code}</p>
                             <p className="text-xs text-muted-foreground">
@@ -202,7 +203,7 @@ export default function CheckoutPage() {
                           variant="ghost"
                           size="sm"
                           onClick={coupon.removeCoupon}
-                          className="text-red-600 hover:text-red-700"
+                          className="text-destructive hover:text-destructive/90"
                         >
                           {t('remove')}
                         </Button>
@@ -220,14 +221,14 @@ export default function CheckoutPage() {
                       <span className="text-muted-foreground">{t('shippingFee')}</span>
                       <span>
                         {shippingFee === 0 ? (
-                          <span className="text-green-600">{t('free')}</span>
+                          <span className="text-success">{t('free')}</span>
                         ) : (
                           `${shippingFee.toLocaleString('vi-VN')}₫`
                         )}
                       </span>
                     </div>
                     {coupon.appliedCoupon && discount > 0 && (
-                      <div className="flex justify-between text-sm text-green-600">
+                      <div className="flex justify-between text-sm text-success">
                         <span>{t('discount')}</span>
                         <span>-{discount.toLocaleString('vi-VN')}₫</span>
                       </div>

@@ -114,13 +114,15 @@ export function PaymentStep({
                 className="p-4 h-auto flex-col"
               >
                 <span className="text-lg mb-1">
-                  {type === 'card' && '💳 Thẻ'}
-                  {type === 'bank' && '🏦 QR'}
-                  {type === 'momo' && '📱 MoMo'}
-                  {type === 'cod' && '💵 COD'}
+                  {type === 'card' && '💳'}
+                  {type === 'bank' && '🏦'}
+                  {type === 'momo' && '📱'}
+                  {type === 'cod' && '💵'}
                 </span>
                 <span className="text-sm">
+                  {type === 'card' && t('paymentMethods.card')}
                   {type === 'bank' && t('paymentMethods.bank')}
+                  {type === 'momo' && t('paymentMethods.momo')}
                   {type === 'cod' && t('paymentMethods.cod')}
                 </span>
               </Button>
@@ -170,7 +172,7 @@ export function PaymentStep({
           )}
 
           {newPayment.type === 'cod' && (
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-sm p-4 text-yellow-600 dark:text-yellow-500">
+            <div className="bg-warning/10 border border-warning/20 rounded-sm p-4 text-warning">
               <p className="text-sm">{t('codNote')}</p>
             </div>
           )}

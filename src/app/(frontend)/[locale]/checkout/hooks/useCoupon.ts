@@ -19,7 +19,7 @@ export function useCoupon(): UseCouponReturn {
 
   const applyCoupon = async (subtotal: number) => {
     if (!couponCode.trim()) {
-      setCouponError('Vui lòng nhập mã giảm giá')
+      setCouponError('coupon.errorEmpty')
       return
     }
 
@@ -31,7 +31,7 @@ export function useCoupon(): UseCouponReturn {
       )
 
       if (!res.ok) {
-        setCouponError('Không thể kiểm tra mã giảm giá. Vui lòng thử lại.')
+        setCouponError('coupon.errorNetwork')
         return
       }
 
@@ -39,7 +39,7 @@ export function useCoupon(): UseCouponReturn {
       const coupon = data?.docs?.[0]
 
       if (!coupon) {
-        setCouponError('Mã giảm giá không hợp lệ hoặc đã hết hạn')
+        setCouponError('coupon.errorInvalid')
         setAppliedCoupon(null)
         return
       }
@@ -47,12 +47,12 @@ export function useCoupon(): UseCouponReturn {
       // Validate date range
       const now = new Date()
       if (coupon.validFrom && new Date(coupon.validFrom) > now) {
-        setCouponError('Mã giảm giá chưa có hiệu lực')
+        setCouponError('coupon.errorNotYetValid')
         setAppliedCoupon(null)
         return
       }
       if (coupon.validUntil && new Date(coupon.validUntil) < now) {
-        setCouponError('Mã giảm giá đã hết hạn')
+        setCouponError('coupon.errorExpired')
         setAppliedCoupon(null)
         return
       }
@@ -63,16 +63,14 @@ export function useCoupon(): UseCouponReturn {
         coupon.usageCount != null &&
         coupon.usageCount >= coupon.usageLimit
       ) {
-        setCouponError('Mã giảm giá đã hết lượt sử dụng')
+        setCouponError('coupon.errorUsageLimit')
         setAppliedCoupon(null)
         return
       }
 
       // Validate minimum order amount
       if (coupon.minOrderAmount != null && subtotal < coupon.minOrderAmount) {
-        setCouponError(
-          `Đơn hàng tối thiểu ${coupon.minOrderAmount.toLocaleString('vi-VN')}₫ để dùng mã này`,
-        )
+        setCouponError('coupon.errorMinOrder')
         setAppliedCoupon(null)
         return
       }
@@ -101,7 +99,7 @@ export function useCoupon(): UseCouponReturn {
       setCouponError('')
     } catch (err) {
       console.error('Error applying coupon:', err)
-      setCouponError('Không thể kiểm tra mã giảm giá. Vui lòng thử lại.')
+      setCouponError('coupon.errorNetwork')
       setAppliedCoupon(null)
     }
   }

@@ -668,5 +668,14 @@
     "easyReturnsDesc": "Easy Returns\n30 Days",
     "warranty": "Warranty",
     "warrantyDesc": "Authentic\nWarranty"
+  },
+  "coupon": {
+    "errorEmpty": "Please enter a coupon code",
+    "errorInvalid": "Invalid or expired coupon code",
+    "errorNotYetValid": "Coupon is not yet valid",
+    "errorExpired": "Coupon has expired",
+    "errorUsageLimit": "Coupon usage limit reached",
+    "errorMinOrder": "Order does not meet the minimum amount for this coupon",
+    "errorNetwork": "Could not validate coupon. Please try again."
   }
 }
