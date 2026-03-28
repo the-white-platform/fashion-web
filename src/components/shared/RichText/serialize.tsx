@@ -3,7 +3,7 @@ import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { CodeBlock, CodeBlockProps } from '@/blocks/Code/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import React, { Fragment, JSX } from 'react'
-import { CMSLink } from '@/components/Link'
+import { CMSLink } from '@/components/shared/Link'
 import { DefaultNodeTypes, SerializedBlockNode } from '@payloadcms/richtext-lexical'
 import type { BannerBlock as BannerBlockProps } from '@/payload-types'
 

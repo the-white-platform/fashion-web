@@ -3,7 +3,7 @@ import type { Post, ArchiveBlock as ArchiveBlockProps } from '@/payload-types'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
-import RichText from '@/components/RichText'
+import RichText from '@/components/shared/RichText'
 
 import { CollectionArchive } from '@/components/CollectionArchive'
 

@@ -6,11 +6,11 @@ import { motion, AnimatePresence } from 'motion/react'
 import { X, User, ShoppingBag, ChevronRight, Search } from 'lucide-react'
 import { Link } from '@/i18n/Link'
 import { cn } from '@/utilities/cn'
-import { CMSLink } from '@/components/Link'
+import { CMSLink } from '@/components/shared/Link'
 import type { Header as HeaderType } from '@/payload-types'
 import { LanguageSwitcher } from '@/components/ecommerce/LanguageSwitcher'
 import { ThemeSwitcher } from '@/components/ecommerce/ThemeSwitcher'
-import { Logo } from '@/components/Logo/Logo'
+import { Logo } from '@/components/shared/Logo/Logo'
 
 interface MobileMenuProps {
   isOpen: boolean

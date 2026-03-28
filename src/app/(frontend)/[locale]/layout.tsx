@@ -18,7 +18,7 @@ import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
-import { ProgressBar } from '@/components/ProgressBar'
+import { ProgressBar } from '@/components/shared/ProgressBar'
 
 import '../globals.css'
 

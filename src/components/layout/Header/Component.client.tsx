@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react'
 
 import type { Header } from '@/payload-types'
 
-import { Logo } from '@/components/Logo/Logo'
+import { Logo } from '@/components/shared/Logo/Logo'
 import { HeaderNav } from './Nav'
 import { Menu, Search } from 'lucide-react'
 import { useModal } from '@/contexts/ModalContext'

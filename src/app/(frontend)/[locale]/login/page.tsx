@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
-import { Logo } from '@/components/Logo/Logo'
+import { Logo } from '@/components/shared/Logo/Logo'
 
 export default function LoginPage() {
   const router = useRouter()

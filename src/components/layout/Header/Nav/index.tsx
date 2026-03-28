@@ -5,7 +5,7 @@ import { cn } from '@/utilities/cn'
 
 import type { Header as HeaderType } from '@/payload-types'
 
-import { CMSLink } from '@/components/Link'
+import { CMSLink } from '@/components/shared/Link'
 import { Link } from '@/i18n/Link'
 import { Search, ShoppingBag, User } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'

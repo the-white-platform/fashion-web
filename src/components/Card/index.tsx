@@ -6,7 +6,7 @@ import React, { Fragment } from 'react'
 
 import type { Post } from '@/payload-types'
 
-import { Media } from '@/components/Media'
+import { Media } from '@/components/shared/Media'
 
 export const Card: React.FC<{
   alignItems?: 'center'

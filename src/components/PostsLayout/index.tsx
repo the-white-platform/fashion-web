@@ -3,7 +3,7 @@ import type { Post } from '@/payload-types'
 
 import { CollectionArchive } from '@/components/CollectionArchive'
 import { PageRange } from '@/components/PageRange'
-import { Pagination } from '@/components/Pagination'
+import { Pagination } from '@/components/shared/Pagination'
 
 interface PostsLayoutProps {
   posts: {
