@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
 interface CartItem {
   id: number
@@ -28,8 +28,18 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
+  const [items, setItems] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      const saved = localStorage.getItem('thewhite_cart')
+      return saved ? JSON.parse(saved) : []
+    } catch { return [] }
+  })
   const [isCartOpen, setIsCartOpen] = useState(false)
+
+  useEffect(() => {
+    localStorage.setItem('thewhite_cart', JSON.stringify(items))
+  }, [items])
 
   const addToCart = (item: Omit<CartItem, 'quantity'>) => {
     setItems((prev) => {
@@ -68,6 +78,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => {
     setItems([])
+    localStorage.removeItem('thewhite_cart')
   }
 
   const getTotalItems = () => {
