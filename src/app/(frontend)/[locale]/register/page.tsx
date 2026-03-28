@@ -82,21 +82,14 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     // Try to register
-    const success = await register(
-      formData.email,
-      formData.password,
-      formData.fullName,
-      formData.phone,
-    )
-
-    setTimeout(() => {
+    try {
+      await register(formData.fullName, formData.email, formData.password, formData.phone)
+      router.push('/profile')
+    } catch (err: any) {
+      setError(err.message || 'Email đã được sử dụng. Vui lòng sử dụng email khác.')
+    } finally {
       setIsLoading(false)
-      if (success) {
-        router.push('/profile')
-      } else {
-        setError('Email đã được sử dụng. Vui lòng sử dụng email khác.')
-      }
-    }, 1000)
+    }
   }
 
   return (

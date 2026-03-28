@@ -36,16 +36,14 @@ export default function LoginPage() {
     }
 
     // Try to login
-    const success = await login(email, password)
-
-    setTimeout(() => {
+    try {
+      await login(email, password)
+      router.push('/profile')
+    } catch (err: any) {
+      setError(err.message || 'Email hoặc mật khẩu không chính xác')
+    } finally {
       setIsLoading(false)
-      if (success) {
-        router.push('/profile')
-      } else {
-        setError('Email hoặc mật khẩu không chính xác')
-      }
-    }, 1000)
+    }
   }
 
   return (
