@@ -75,23 +75,28 @@ export default function OrdersPage() {
   const router = useRouter()
   const { user } = useUser()
   const [orders, setOrders] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!!user)
 
   useEffect(() => {
-    if (!user) {
-      setIsLoading(false)
-      return
-    }
+    if (!user) return
+    let cancelled = false
     fetch(
       `/api/orders?where[customerInfo.user][equals]=${user.id}&sort=-createdAt&limit=50`,
       { credentials: 'include' },
     )
       .then((res) => res.json())
       .then((data) => {
-        setOrders(data.docs || [])
-        setIsLoading(false)
+        if (!cancelled) {
+          setOrders(data.docs || [])
+          setIsLoading(false)
+        }
       })
-      .catch(() => setIsLoading(false))
+      .catch(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [user])
 
   if (isLoading) {

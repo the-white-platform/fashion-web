@@ -31,76 +31,97 @@ export function useAddressCascade(): UseAddressCascadeReturn {
   const [selectedDistrict, setSelectedDistrict] = useState<AddressLocation | null>(null)
   const [selectedWard, setSelectedWard] = useState<AddressLocation | null>(null)
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Fetch provinces on mount
   useEffect(() => {
-    setIsLoading(true)
+    let cancelled = false
     fetch('/api/provinces?limit=100&sort=name')
       .then((res) => res.json())
       .then((data) => {
-        setProvinces(data?.docs ?? [])
+        if (!cancelled) setProvinces(data?.docs ?? [])
       })
       .catch((err) => {
         console.error('Failed to fetch provinces:', err)
       })
       .finally(() => {
-        setIsLoading(false)
+        if (!cancelled) setIsLoading(false)
       })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // Fetch districts when province changes
   useEffect(() => {
-    if (!selectedProvince) {
-      setDistricts([])
-      setSelectedDistrict(null)
-      setWards([])
-      setSelectedWard(null)
-      return
+    let cancelled = false
+    Promise.resolve()
+      .then(() => {
+        if (cancelled) return
+        if (!selectedProvince) {
+          setDistricts([])
+          setSelectedDistrict(null)
+          setWards([])
+          setSelectedWard(null)
+          return
+        }
+        setIsLoading(true)
+        return fetch(
+          `/api/districts?where[province][equals]=${selectedProvince.id}&limit=100&sort=name`,
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (!cancelled) {
+              setDistricts(data?.docs ?? [])
+              setSelectedDistrict(null)
+              setWards([])
+              setSelectedWard(null)
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to fetch districts:', err)
+          })
+          .finally(() => {
+            if (!cancelled) setIsLoading(false)
+          })
+      })
+    return () => {
+      cancelled = true
     }
-
-    setIsLoading(true)
-    fetch(
-      `/api/districts?where[province][equals]=${selectedProvince.id}&limit=100&sort=name`,
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setDistricts(data?.docs ?? [])
-        setSelectedDistrict(null)
-        setWards([])
-        setSelectedWard(null)
-      })
-      .catch((err) => {
-        console.error('Failed to fetch districts:', err)
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
   }, [selectedProvince])
 
   // Fetch wards when district changes
   useEffect(() => {
-    if (!selectedDistrict) {
-      setWards([])
-      setSelectedWard(null)
-      return
+    let cancelled = false
+    Promise.resolve()
+      .then(() => {
+        if (cancelled) return
+        if (!selectedDistrict) {
+          setWards([])
+          setSelectedWard(null)
+          return
+        }
+        setIsLoading(true)
+        return fetch(
+          `/api/wards?where[district][equals]=${selectedDistrict.id}&limit=100&sort=name`,
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            if (!cancelled) {
+              setWards(data?.docs ?? [])
+              setSelectedWard(null)
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to fetch wards:', err)
+          })
+          .finally(() => {
+            if (!cancelled) setIsLoading(false)
+          })
+      })
+    return () => {
+      cancelled = true
     }
-
-    setIsLoading(true)
-    fetch(
-      `/api/wards?where[district][equals]=${selectedDistrict.id}&limit=100&sort=name`,
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setWards(data?.docs ?? [])
-        setSelectedWard(null)
-      })
-      .catch((err) => {
-        console.error('Failed to fetch wards:', err)
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
   }, [selectedDistrict])
 
   const setProvince = (code: string) => {

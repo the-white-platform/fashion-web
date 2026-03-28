@@ -117,20 +117,25 @@ export default function OrderDetailPage() {
   const orderId = params?.id ? String(params.id) : ''
 
   const [order, setOrder] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!!orderId)
 
   useEffect(() => {
-    if (!orderId) {
-      setIsLoading(false)
-      return
-    }
+    if (!orderId) return
+    let cancelled = false
     fetch(`/api/orders?where[orderNumber][equals]=${orderId}&limit=1`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => {
-        setOrder(data.docs?.[0] || null)
-        setIsLoading(false)
+        if (!cancelled) {
+          setOrder(data.docs?.[0] || null)
+          setIsLoading(false)
+        }
       })
-      .catch(() => setIsLoading(false))
+      .catch(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
   }, [orderId])
 
   if (isLoading) {

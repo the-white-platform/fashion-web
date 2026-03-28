@@ -30,6 +30,10 @@ export default function CheckoutPage() {
   const checkout = useCheckout()
   const coupon = useCoupon()
 
+  // Stable fallback order ID for PaymentStep — useState lazy initializer runs only once,
+  // keeping Date.now() out of the render path (satisfies react-hooks/purity)
+  const [fallbackOrderId] = useState<string>(() => `TW${Date.now()}`)
+
   // UI toggle state (local to page — not shared with hooks)
   const [showNewAddress, setShowNewAddress] = useState(!user?.shippingAddresses?.length)
   const [showNewPayment, setShowNewPayment] = useState(!user?.paymentMethods?.length)
@@ -99,7 +103,7 @@ export default function CheckoutPage() {
                       showNewPayment={showNewPayment}
                       onToggleNewPayment={() => setShowNewPayment((prev) => !prev)}
                       total={adjustedTotal}
-                      orderId={confirmedOrderId || `TW${Date.now()}`}
+                      orderId={confirmedOrderId || fallbackOrderId}
                       onBack={() => checkout.setStep('shipping')}
                       onNext={() => checkout.setStep('review')}
                     />
