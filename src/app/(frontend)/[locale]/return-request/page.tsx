@@ -6,6 +6,7 @@ import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
 import { Upload, CheckCircle } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 import { useUser } from '@/contexts/UserContext'
 import {
   Breadcrumb,
@@ -58,7 +59,7 @@ export default function ReturnRequestPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-background pt-32 pb-12">
+      <PageContainer>
         <div className="container mx-auto px-6 max-w-2xl">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -91,12 +92,12 @@ export default function ReturnRequestPage() {
             </div>
           </motion.div>
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-12">
+    <PageContainer>
       <div className="container mx-auto px-6 max-w-4xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -320,6 +321,6 @@ export default function ReturnRequestPage() {
           </ul>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

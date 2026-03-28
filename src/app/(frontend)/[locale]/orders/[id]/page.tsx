@@ -5,6 +5,7 @@ import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
 import { Package, Truck, CheckCircle, Clock, XCircle, ChevronLeft, MapPin } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 import { useUser } from '@/contexts/UserContext'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -110,7 +111,7 @@ export default function OrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="min-h-screen bg-white pt-32 pb-12">
+      <PageContainer>
         <div className="container mx-auto px-6 max-w-6xl">
           <div className="text-center py-20">
             <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -124,7 +125,7 @@ export default function OrderDetailPage() {
             </button>
           </div>
         </div>
-      </div>
+      </PageContainer>
     )
   }
 
@@ -133,7 +134,7 @@ export default function OrderDetailPage() {
   const timeline = getTimeline(order.status, order)
 
   return (
-    <div className="min-h-screen bg-white pt-32 pb-12">
+    <PageContainer>
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -319,6 +320,6 @@ export default function OrderDetailPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

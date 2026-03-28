@@ -89,7 +89,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
   )
 
   return (
-    <div className="min-h-screen pt-32 bg-background text-foreground pb-12 relative">
+    <PageContainer>
       {/* Noisy Background Texture */}
       <div className="fixed inset-0 opacity-20 pointer-events-none mix-blend-multiply z-0">
         <div
@@ -391,6 +391,6 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
         isOpen={isTryOnOpen}
         onClose={() => setIsTryOnOpen(false)}
       />
-    </div>
+    </PageContainer>
   )
 }

@@ -3,6 +3,7 @@
 import { motion } from 'motion/react'
 import { Package, RefreshCw, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import { Link } from '@/i18n/Link'
+import { PageContainer } from '@/components/layout/PageContainer'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,7 +15,7 @@ import {
 
 export default function ReturnPolicyPage() {
   return (
-    <div className="min-h-screen bg-background pt-32 text-foreground pb-12 relative overflow-hidden">
+    <PageContainer className="overflow-hidden">
       <div className="container mx-auto px-6 relative z-10 max-w-4xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -249,6 +250,6 @@ export default function ReturnPolicyPage() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

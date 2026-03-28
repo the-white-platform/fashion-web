@@ -297,7 +297,7 @@ function ProductsPageContent({
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-24 pb-12 relative">
+    <PageContainer className="pt-24">
       {/* Noisy Background Texture */}
       <div className="fixed inset-0 opacity-20 pointer-events-none mix-blend-multiply z-0">
         <div
@@ -797,7 +797,7 @@ function ProductsPageContent({
           onClose={() => setSelectedProduct(null)}
         />
       )}
-    </div>
+    </PageContainer>
   )
 }
 

@@ -5,6 +5,7 @@ import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
 import { Package, Truck, CheckCircle, Clock, XCircle, ChevronRight } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 import { useUser } from '@/contexts/UserContext'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -75,7 +76,7 @@ export default function OrdersPage() {
   const orders = user?.orderHistory || []
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-12">
+    <PageContainer>
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -221,6 +222,6 @@ export default function OrdersPage() {
           </motion.div>
         )}
       </div>
-    </div>
+    </PageContainer>
   )
 }

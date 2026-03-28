@@ -7,6 +7,7 @@ import { User, MapPin, CreditCard, Ruler, Sparkles, Package, LogOut } from 'luci
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { useTranslations } from 'next-intl'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 type Tab = 'profile' | 'size' | 'vto' | 'shipping' | 'payment' | 'orders'
 
@@ -42,7 +43,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen pt-32 bg-background pb-12">
+    <PageContainer>
       <div className="container mx-auto px-4 md:px-6 max-w-7xl">
         {/* Header */}
         <motion.div
@@ -284,6 +285,6 @@ export default function ProfilePage() {
           )}
         </motion.div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

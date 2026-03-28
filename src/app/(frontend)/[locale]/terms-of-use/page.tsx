@@ -12,6 +12,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { useTranslations, useLocale } from 'next-intl'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 export default function TermsOfUsePage() {
   const t = useTranslations('termsOfUse')
@@ -53,7 +54,7 @@ export default function TermsOfUsePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-12 transition-colors duration-300">
+    <PageContainer className="transition-colors duration-300">
       <div className="container mx-auto px-6 max-w-4xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -235,6 +236,6 @@ export default function TermsOfUsePage() {
           </Link>
         </motion.div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

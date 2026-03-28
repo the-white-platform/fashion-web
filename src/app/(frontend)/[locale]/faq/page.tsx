@@ -173,7 +173,7 @@ export default function FAQPage() {
   })
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-12 pt-32">
+    <PageContainer>
       <div className="container mx-auto px-6 max-w-5xl">
         {/* Breadcrumb */}
         <div className="mb-8 font-medium">
@@ -317,6 +317,6 @@ export default function FAQPage() {
           </div>
         </motion.div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

@@ -52,7 +52,7 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground pt-32 pb-12 relative overflow-hidden">
+    <PageContainer className="overflow-hidden">
       <div className="container mx-auto px-6 max-w-6xl relative z-10">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -327,6 +327,6 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

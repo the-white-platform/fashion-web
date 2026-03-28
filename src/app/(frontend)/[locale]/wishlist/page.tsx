@@ -17,6 +17,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { useTranslations } from 'next-intl'
+import { PageContainer } from '@/components/layout/PageContainer'
 
 interface WishlistItem {
   id: number
@@ -101,7 +102,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-32 pb-12 transition-colors duration-300">
+    <PageContainer className="transition-colors duration-300">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -298,6 +299,6 @@ export default function WishlistPage() {
           </motion.div>
         )}
       </div>
-    </div>
+    </PageContainer>
   )
 }

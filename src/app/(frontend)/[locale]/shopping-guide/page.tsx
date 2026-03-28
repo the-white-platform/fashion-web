@@ -3,6 +3,7 @@
 import { motion } from 'motion/react'
 import { ShoppingCart, Package, UserCheck, Truck, CreditCard, CheckCircle } from 'lucide-react'
 import { Link } from '@/i18n/Link'
+import { PageContainer } from '@/components/layout/PageContainer'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,7 +15,7 @@ import {
 
 export default function ShoppingGuidePage() {
   return (
-    <div className="min-h-screen bg-background pt-32 text-foreground pb-12 relative overflow-hidden">
+    <PageContainer className="overflow-hidden">
       {/* Noisy Background Texture */}
       <div className="fixed inset-0 opacity-20 dark:opacity-5 pointer-events-none z-0">
         <div
@@ -348,6 +349,6 @@ export default function ShoppingGuidePage() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import { motion } from 'motion/react'
 import { Ruler, User, Weight, Sparkles, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react'
+import { PageContainer } from '@/components/layout/PageContainer'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -146,7 +147,7 @@ export default function SizeGuidePage() {
   const currentChart = sizeCharts[gender][productType]
 
   return (
-    <div className="min-h-screen bg-background text-foreground pb-12 pt-32 relative overflow-hidden">
+    <PageContainer className="overflow-hidden">
       <div className="container mx-auto px-6 relative z-10 max-w-6xl">
         {/* Breadcrumb */}
         <div className="mb-8">
@@ -549,6 +550,6 @@ export default function SizeGuidePage() {
           </div>
         </motion.div>
       </div>
-    </div>
+    </PageContainer>
   )
 }
