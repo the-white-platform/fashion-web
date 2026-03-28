@@ -122,10 +122,6 @@ export const Users: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'orderHistory',
-      type: 'json',
-    },
   ],
   timestamps: true,
 }

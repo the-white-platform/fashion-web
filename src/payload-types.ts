@@ -524,15 +524,6 @@ export interface User {
         id?: string | null;
       }[]
     | null;
-  orderHistory?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1481,7 +1472,6 @@ export interface UsersSelect<T extends boolean = true> {
         isDefault?: T;
         id?: T;
       };
-  orderHistory?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
