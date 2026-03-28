@@ -1,3 +1,4 @@
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { GoogleAuth } from 'google-auth-library'
 
@@ -10,8 +11,31 @@ function stripDataUrlPrefix(value: string): string {
   return value.replace(/^data:image\/[^;]+;base64,/, '')
 }
 
+/** Validate that a URL is safe to fetch (no SSRF). */
+function assertUrlSafe(url: string): void {
+  const parsed = new URL(url)
+
+  // Only allow http/https
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new Error('Only HTTP(S) URLs are allowed')
+  }
+
+  // Block private/internal IP ranges
+  const hostname = parsed.hostname.toLowerCase()
+  if (
+    hostname === 'localhost' ||
+    hostname === '::1' ||
+    hostname.endsWith('.internal') ||
+    /^(10\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|127\.|169\.254\.|0\.)/.test(hostname) ||
+    hostname === 'metadata.google.internal'
+  ) {
+    throw new Error('Internal addresses are not allowed')
+  }
+}
+
 /** Fetch a URL and return its content as base64. */
 async function urlToBase64(url: string): Promise<string> {
+  assertUrlSafe(url)
   const res = await fetch(url)
   if (!res.ok) {
     throw new Error(`Failed to fetch image URL: ${res.status}`)
@@ -42,19 +66,13 @@ async function resolveToBase64(value: string, requestUrl: string): Promise<strin
 const RATE_LIMIT_MAX = 5
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 
-/** IP → list of request timestamps (ms) within the current window. */
+/** token-key → list of request timestamps (ms) within the current window. */
 const rateLimitMap = new Map<string, number[]>()
 let rateLimitRequestCount = 0
 
-function getClientIp(req: Request): string {
-  const forwarded = req.headers.get('x-forwarded-for')
-  if (forwarded) {
-    const first = forwarded.split(',')[0].trim()
-    if (first) return first
-  }
-  const realIp = req.headers.get('x-real-ip')
-  if (realIp) return realIp.trim()
-  return 'unknown'
+function getRateLimitKey(token: string): string {
+  // Use first 16 chars of token as key (enough to distinguish users)
+  return `vto_${token.slice(0, 16)}`
 }
 
 /** Remove stale entries to prevent unbounded memory growth. */
@@ -70,9 +88,16 @@ function cleanupRateLimitMap(now: number) {
 }
 
 export async function POST(request: Request) {
-  // --- Rate-limit check (before anything else) ---
+  // --- Auth check ---
+  const cookieStore = await cookies()
+  const token = cookieStore.get('payload-token')?.value
+  if (!token) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
+  }
+
+  // --- Rate-limit check (keyed by auth token) ---
   const now = Date.now()
-  const clientIp = getClientIp(request)
+  const clientIp = getRateLimitKey(token)
 
   rateLimitRequestCount++
   if (rateLimitRequestCount % 100 === 0 || rateLimitMap.size > 1000) {
@@ -184,13 +209,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ image: `data:image/png;base64,${generatedImage}` })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('VTO generate error:', message)
+    console.error('VTO generate error:', err)
 
+    const message = err instanceof Error ? err.message : ''
     if (message.includes('aborted')) {
       return NextResponse.json({ error: 'Request timed out' }, { status: 504 })
     }
 
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Virtual try-on failed. Please try again later.' },
+      { status: 500 },
+    )
   }
 }
