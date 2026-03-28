@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '../access/authenticated'
 import {
   validateStockBeforeOrder,
   decrementStockAfterOrder,
@@ -10,10 +9,25 @@ import {
 export const Orders: CollectionConfig = {
   slug: 'orders',
   access: {
-    read: authenticated,
+    read: ({ req: { user } }) => {
+      if (!user) return false
+      // Return a query constraint — user can only read their own orders
+      // Payload admin panel bypasses access control, so admins can still see all
+      return {
+        'customerInfo.user': {
+          equals: user.id,
+        },
+      }
+    },
     create: () => true, // Public can create orders (checkout)
-    update: authenticated,
-    delete: authenticated,
+    update: ({ req: { user } }) => {
+      if (!user) return false
+      return { 'customerInfo.user': { equals: user.id } }
+    },
+    delete: ({ req: { user } }) => {
+      if (!user) return false
+      return { 'customerInfo.user': { equals: user.id } }
+    },
   },
   labels: {
     singular: { vi: 'Đơn Hàng', en: 'Order' },
