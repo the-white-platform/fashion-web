@@ -13,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { VirtualTryOnModal } from './VirtualTryOnModal'
 import Image from 'next/image'
@@ -31,6 +32,7 @@ interface ProductModalProps {
 }
 
 export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
+  const t = useTranslations()
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
   const [selectedSize, setSelectedSize] = useState('')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
@@ -196,7 +198,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 transition={{ delay: 0.4 }}
                 className="absolute top-5 right-16"
               >
-                <div className="bg-red-500 text-white px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
+                <div className="bg-destructive text-destructive-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
                   -25%
                 </div>
               </motion.div>
@@ -215,7 +217,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 </div>
                 <div className="h-4 w-px bg-border" />
                 <span className="text-sm font-bold text-foreground">4.9</span>
-                <span className="text-xs text-muted-foreground">(127 đánh giá)</span>
+                <span className="text-xs text-muted-foreground">{t('reviews.count', { count: 127 })}</span>
               </motion.div>
 
               {/* Wishlist Button on Image */}
@@ -226,7 +228,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 onClick={() => product && toggleWishlist(product)}
                 className={`absolute bottom-5 right-5 w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all ${
                   product && isWishlisted(product.id)
-                    ? 'bg-red-500 text-white'
+                    ? 'bg-destructive text-destructive-foreground'
                     : 'bg-background text-foreground hover:bg-muted'
                 }`}
               >
@@ -258,8 +260,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   </span>
                 </div>
                 <p className="text-muted-foreground text-xs leading-relaxed">
-                  {product.description ||
-                    'Thiết kế hiện đại với chất liệu cao cấp, thấm hút mồ hôi và co giãn 4 chiều.'}
+                  {product.description || t('products.noDescription')}
                 </p>
               </motion.div>
 
@@ -272,7 +273,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   className="mb-4"
                 >
                   <label className="block mb-2 text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
-                    Màu Sắc - {currentVariant.color}
+                    {t('products.color')} - {currentVariant.color}
                   </label>
                   <div className="flex gap-2 flex-wrap">
                     {/* Sort variants: in-stock first, then out-of-stock */}
@@ -307,7 +308,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                                 : 'border-border hover:border-foreground'
                             } ${!variant.inStock ? 'opacity-40' : ''}`}
                             style={{ backgroundColor: variant.colorHex }}
-                            title={`${variant.color}${!variant.inStock ? ' (Hết hàng)' : ''}`}
+                            title={`${variant.color}${!variant.inStock ? ` (${t('products.outOfStock')})` : ''}`}
                             disabled={!variant.inStock}
                           >
                             {/* Strikethrough indicator for out-of-stock */}
@@ -332,7 +333,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               >
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
-                    Chọn Size
+                    {t('products.size')}
                   </label>
                   <Link
                     href="/size-guide"
@@ -340,7 +341,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                     rel="noopener noreferrer"
                     className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Hướng dẫn
+                    {t('products.guide')}
                   </Link>
                 </div>
                 <div className="flex gap-2 flex-wrap">
@@ -379,7 +380,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 className="mb-4"
               >
                 <label className="block mb-2 text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
-                  Số Lượng
+                  {t('products.quantity')}
                 </label>
                 <div className="inline-flex items-center bg-muted rounded-sm overflow-hidden">
                   <button
@@ -414,10 +415,10 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="w-full bg-green-500 text-white h-12 flex items-center justify-center gap-2 font-bold uppercase tracking-[0.15em] text-xs rounded-sm"
+                      className="w-full bg-primary text-primary-foreground h-12 flex items-center justify-center gap-2 font-bold uppercase tracking-[0.15em] text-xs rounded-sm"
                     >
                       <Check className="w-4 h-4" />
-                      Đã Thêm Vào Giỏ Hàng
+                      {t('products.addedToCart')}
                     </motion.div>
                   ) : (
                     <motion.button
@@ -428,7 +429,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       className="w-full bg-primary text-primary-foreground h-12 flex items-center justify-center gap-2 font-bold uppercase tracking-[0.15em] text-xs shadow-lg hover:shadow-xl transition-shadow group rounded-sm"
                     >
                       <ShoppingCart className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
-                      Thêm Vào Giỏ Hàng
+                      {t('products.addToCart')}
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -442,7 +443,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                   <Sparkles className="w-4 h-4 animate-pulse" />
-                  Thử Đồ Ảo AI
+                  {t('vto.tryOn')}
                 </motion.button>
 
                 {/* Features Strip */}

@@ -5,6 +5,7 @@ import { Link } from '@/i18n/Link'
 import { motion } from 'motion/react'
 import { Heart } from 'lucide-react'
 import { cn } from '@/utilities/cn'
+import { useTranslations } from 'next-intl'
 import type { ProductForFrontend } from '@/utilities/getProducts'
 
 interface ProductCardProps {
@@ -30,6 +31,7 @@ export function ProductCard({
   className,
   index = 0,
 }: ProductCardProps) {
+  const t = useTranslations()
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -57,7 +59,7 @@ export function ProductCard({
 
           {!product.inStock && (
             <div className="absolute top-4 right-4 bg-destructive text-destructive-foreground px-3 py-1 text-xs rounded-sm">
-              HET HANG
+              {t('products.outOfStock')}
             </div>
           )}
 
@@ -83,7 +85,7 @@ export function ProductCard({
                 onQuickView(product)
               }}
             >
-              Xem Nhanh
+              {t('products.quickView')}
             </button>
           )}
         </div>

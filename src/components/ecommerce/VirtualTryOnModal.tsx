@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Upload, User, Sparkles, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 interface VirtualTryOnModalProps {
   isOpen: boolean
@@ -17,6 +18,7 @@ interface VirtualTryOnModalProps {
 }
 
 export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModalProps) {
+  const t = useTranslations()
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [result, setResult] = useState<string | null>(null)
@@ -59,12 +61,12 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
       })
       const data = await res.json()
       if (!res.ok || data.error) {
-        setError(data.error || 'Đã xảy ra lỗi. Vui lòng thử lại.')
+        setError(data.error || t('vto.errorGeneric'))
         return
       }
       setResult(data.image)
     } catch (err) {
-      setError('Không thể kết nối đến server. Vui lòng thử lại.')
+      setError(t('vto.errorNetwork'))
     } finally {
       setIsGenerating(false)
     }
@@ -115,10 +117,10 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                 </span>
               </div>
               <h2 className="text-5xl lg:text-6xl uppercase mb-4 font-bold italic tracking-tighter italic text-foreground">
-                Thử Đồ <span className="text-muted-foreground">Ảo</span>
+                {t('vto.title')}
               </h2>
               <p className="text-muted-foreground font-medium tracking-wide">
-                Trải nghiệm công nghệ AI Try-On độc quyền từ TheWhite
+                {t('vto.subtitle')}
               </p>
             </div>
 
@@ -133,7 +135,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                       <span className="text-sm">01</span>
                     </div>
                     <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
-                      Sản Phẩm Đã Chọn
+                      {t('vto.selectedProduct')}
                     </h3>
                   </div>
 
@@ -159,7 +161,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                       <span className="text-sm">02</span>
                     </div>
                     <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
-                      Tải Ảnh Của Bạn
+                      {t('vto.uploadYourPhoto')}
                     </h3>
                   </div>
 
@@ -176,7 +178,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                         </div>
                         <div className="mt-6 flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 uppercase text-[10px] font-bold tracking-widest">
                           <Upload className="w-3 h-3" />
-                          Thay đổi ảnh
+                          {t('vto.changePhoto')}
                         </div>
                       </>
                     ) : (
@@ -185,11 +187,10 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                           <User className="w-12 h-12 text-muted-foreground" />
                         </div>
                         <p className="text-lg font-bold uppercase tracking-widest mb-2 text-foreground">
-                          Tải Ảnh Toàn Thân
+                          {t('vto.uploadPhoto')}
                         </p>
                         <p className="text-xs text-muted-foreground text-center max-w-[250px] font-medium leading-relaxed">
-                          Sử dụng ảnh đứng thẳng, rõ nét, nền trơn để có kết quả chính xác nhất vượt
-                          mong đợi
+                          {t('vto.instructions1')}
                         </p>
                       </>
                     )}
@@ -210,7 +211,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                     <Sparkles className="w-5 h-5 text-yellow-500" />
                   </div>
                   <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
-                    Kết Quả AI Try-On
+                    {t('vto.resultTitle')}
                   </h3>
                 </div>
 
@@ -227,7 +228,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                         onClick={() => setError(null)}
                         className="text-xs text-muted-foreground underline hover:text-foreground transition-colors uppercase tracking-widest font-bold"
                       >
-                        Thử lại
+                        {t('vto.tryRetry')}
                       </button>
                     </div>
                   ) : result ? (
@@ -241,7 +242,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                         />
                       </div>
                       <p className="text-sm font-bold uppercase tracking-wider text-foreground italic">
-                        Bạn trông thật tuyệt vời trong thiết kế của TheWhite!
+                        {t('vto.resultCaption')}
                       </p>
                     </div>
                   ) : (
@@ -251,12 +252,10 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                       </div>
                       <div className="space-y-2">
                         <h4 className="text-lg font-bold uppercase tracking-widest italic text-foreground">
-                          Chờ Xử Lý AI
+                          {t('vto.waitingTitle')}
                         </h4>
                         <p className="text-xs text-muted-foreground max-w-[280px] mx-auto font-medium leading-relaxed">
-                          {uploadedImage
-                            ? 'Nhấn nút "Tạo Thử Đồ Ảo" để bắt đầu quá trình mô phỏng'
-                            : 'Hãy hoàn thiện các bước trước đó để đánh thức AI'}
+                          {uploadedImage ? t('vto.instructions2') : t('vto.instructions3')}
                         </p>
                       </div>
                       {isGenerating && (
@@ -267,10 +266,10 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                           </div>
                           <div className="text-center">
                             <p className="font-bold uppercase tracking-[0.4em] text-sm animate-pulse text-foreground">
-                              AI Đang Xử Lý (~15-30s)...
+                              {t('vto.processing')}
                             </p>
                             <p className="text-[10px] text-muted-foreground mt-2 uppercase font-medium">
-                              Vui lòng không đóng cửa sổ này
+                              {t('vto.doNotClose')}
                             </p>
                           </div>
                         </div>
@@ -288,13 +287,13 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                       onClick={handleReset}
                       className="border-4 border-foreground px-12 py-5 rounded-none hover:bg-primary hover:text-primary-foreground transition-all uppercase tracking-[0.2em] font-bold text-sm shadow-xl text-foreground"
                     >
-                      Thử Lại Với Ảnh Khác
+                      {t('vto.tryAgain')}
                     </button>
                     <button
                       onClick={onClose}
                       className="bg-primary text-primary-foreground px-12 py-5 rounded-none hover:bg-primary/90 transition-all uppercase tracking-[0.2em] font-bold text-sm shadow-xl"
                     >
-                      Xong & Đóng
+                      {t('vto.doneClose')}
                     </button>
                   </>
                 ) : (
@@ -310,12 +309,12 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                     {isGenerating ? (
                       <span className="flex items-center justify-center gap-4">
                         <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
-                        AI Đang Xử Lý (~15-30s)...
+                        {t('vto.processing')}
                       </span>
                     ) : (
                       <span className="flex items-center justify-center gap-3">
                         <Sparkles className="w-5 h-5 text-yellow-500 group-hover:rotate-12 transition-transform" />
-                        Tạo Thử Đồ Ảo Ngay
+                        {t('vto.generate')}
                       </span>
                     )}
                   </button>
@@ -325,7 +324,7 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
 
             {/* Disclaimer */}
             <div className="p-8 bg-muted text-muted-foreground text-[10px] uppercase font-bold tracking-[0.2em] text-center border-t-2 border-border">
-              AI TRY-ON là công nghệ mô phỏng, kết quả có thể chênh lệch 2-5% so với thực tế.
+              {t('vto.disclaimer')}
             </div>
           </motion.div>
         </div>
