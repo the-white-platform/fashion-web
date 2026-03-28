@@ -4,6 +4,58 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.14.0](https://github.com/the-white-platform/fashion-web/compare/v0.13.0...v0.14.0) (2026-03-28)
+
+
+### Features
+
+* add checkout hooks (useCheckout, useAddressCascade, useCoupon) ([468a134](https://github.com/the-white-platform/fashion-web/commit/468a134127a40a048831894dfd9994819b758321))
+* add Coupons Payload collection ([01bb14c](https://github.com/the-white-platform/fashion-web/commit/01bb14cfe42069d6cec4124bbd88d63abacacdd7))
+* add JSON-LD structured data to product detail pages ([d9243d8](https://github.com/the-white-platform/fashion-web/commit/d9243d876b2d68a9bed632858218fcea52747b87))
+* add loading.tsx skeleton screens for key routes ([9a97fe1](https://github.com/the-white-platform/fashion-web/commit/9a97fe1d539e20aea9c5f444c306ece6e7183f63))
+* add PageContainer layout component ([1969782](https://github.com/the-white-platform/fashion-web/commit/1969782ea4aad407ca2a53d4c95058dd348529b2))
+* add shared checkout types and update Users collection ([f4b8ce9](https://github.com/the-white-platform/fashion-web/commit/f4b8ce908b3bd5b1c7635d87623fbd524ea67c86))
+* add shared FeaturesBadges component ([2db14b5](https://github.com/the-white-platform/fashion-web/commit/2db14b576d8c6cc3bf1d35ca3be27229d956ec54))
+* add shared ProductCard component ([70f70a9](https://github.com/the-white-platform/fashion-web/commit/70f70a9704ffb6c9b2039609cfa1429f3a54f385))
+* create WishlistContext and unify wishlist state ([f4c5749](https://github.com/the-white-platform/fashion-web/commit/f4c5749ccdca63a157fd9e1361ac0923abb1dae4))
+* increment coupon usage count on order creation ([9172bef](https://github.com/the-white-platform/fashion-web/commit/9172bef320103c20805f6c21ff93bd3fdb927043))
+* persist cart to localStorage ([9a063f4](https://github.com/the-white-platform/fashion-web/commit/9a063f4fdd6ac270fefa9f238192846f57fb6ec8))
+
+
+### Bug Fixes
+
+* add image loading effect and remove GlobalModals double-fetch ([a7e23ce](https://github.com/the-white-platform/fashion-web/commit/a7e23ce504955b7446144f7d6a8bc3692217fcbc))
+* replace next/link with locale-aware @/i18n/Link ([96db952](https://github.com/the-white-platform/fashion-web/commit/96db952c8865bd45fade53cbccbd31ea91febd5e))
+* resolve react-hooks lint errors in orders and checkout pages ([67eeb97](https://github.com/the-white-platform/fashion-web/commit/67eeb978d5eecbae7ad4536a444f3349538806a2))
+* update login and register pages for Payload auth ([e48e853](https://github.com/the-white-platform/fashion-web/commit/e48e8534825939934179c118fbed4bb1eacb0149))
+* update Payload importMap.js with new admin component paths ([5a9083e](https://github.com/the-white-platform/fashion-web/commit/5a9083ec6fb508a62ff02a68b157202622c7f9f6))
+* update remaining relative imports after shared component move ([0a33e18](https://github.com/the-white-platform/fashion-web/commit/0a33e18140cedfac93a3befe3e9fb40fda6a3a3f))
+
+
+### Performance Improvements
+
+* add dynamic imports for heavy modal components ([a5f325e](https://github.com/the-white-platform/fashion-web/commit/a5f325e327deeef1687da8c5777363f3111aab69))
+
+
+### Documentation
+
+* add Phase 2A logic decoupling design spec ([056c7ca](https://github.com/the-white-platform/fashion-web/commit/056c7cace425237506a816fb2676397c32cfa71d))
+
+
+### Code Refactoring
+
+* adopt PageContainer across inner pages ([9b03663](https://github.com/the-white-platform/fashion-web/commit/9b03663363cdd0b09fccdd321b9025a57356eb5d))
+* adopt shared ProductCard in consumer components ([f038752](https://github.com/the-white-platform/fashion-web/commit/f038752e855ff3612171c4e3bb706af7da4e9a06))
+* consolidate Product type to ProductForFrontend ([4c8e7b0](https://github.com/the-white-platform/fashion-web/commit/4c8e7b0294b80a54ba408282f8bf0986bfe5b17b))
+* extract checkout step components into separate files ([e9231a4](https://github.com/the-white-platform/fashion-web/commit/e9231a4931c050f02170121f0e0f0b627484951c))
+* fetch orders from Payload API instead of localStorage ([49849bf](https://github.com/the-white-platform/fashion-web/commit/49849bfe7e693f79abddb44b1f63bcb662cc7b92))
+* move admin components to src/admin/ ([7a5f18f](https://github.com/the-white-platform/fashion-web/commit/7a5f18f28b1fe721c6a3cc8b86ddeb5ea681c750))
+* move GlobalModals to src/components/ecommerce/ ([296c567](https://github.com/the-white-platform/fashion-web/commit/296c567bb35969d34d11bb9d40ee63faabf94fc1))
+* move Header, Footer, AlternatingSection to components/layout/ ([a310437](https://github.com/the-white-platform/fashion-web/commit/a3104371034fda17de847e2e51177b39d900c0db))
+* move shared components to src/components/shared/ ([6dac412](https://github.com/the-white-platform/fashion-web/commit/6dac412ecdadd87c28cf67e14da8f88b6fe0879a))
+* rewrite checkout page as slim orchestrator ([ed89fc7](https://github.com/the-white-platform/fashion-web/commit/ed89fc7866d43f0152d938c5b8c3d84ad6b7151f))
+* rewrite UserContext to use Payload REST API ([019dbaa](https://github.com/the-white-platform/fashion-web/commit/019dbaaf826dd7eaae0281e3cfe1593a560eab65))
+
 ## [0.13.0](https://github.com/the-white-platform/fashion-web/compare/v0.12.2...v0.13.0) (2026-03-04)
 
 
