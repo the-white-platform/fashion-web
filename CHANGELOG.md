@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.16.0](https://github.com/the-white-platform/fashion-web/compare/v0.15.0...v0.16.0) (2026-03-29)
+
+
+### Documentation
+
+* add admin missing features specs (RBAC, orders, inventory, reporting) ([4aeb6e5](https://github.com/the-white-platform/fashion-web/commit/4aeb6e51de7ea5a545f96ce5040d923a2970fa32))
+* add notification and chat specs (admin inbox, email, push, newsletter, chat dashboard, live support, Zalo) ([5163d45](https://github.com/the-white-platform/fashion-web/commit/5163d45be56bcacb0db1a7237c0b0f76068112e3))
+* add user-facing feature specs (account, reviews, compare, loyalty, recommendations) ([4b77cc5](https://github.com/the-white-platform/fashion-web/commit/4b77cc5911e168618256ca46a788de15449ceaa4))
+
 ## [0.15.0](https://github.com/the-white-platform/fashion-web/compare/v0.14.2...v0.15.0) (2026-03-28)
 
 
