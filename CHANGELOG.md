@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.16.2](https://github.com/the-white-platform/fashion-web/compare/v0.16.1...v0.16.2) (2026-03-29)
+
+
+### Bug Fixes
+
+* remove old migrations for fresh Neon DB setup ([71f71d5](https://github.com/the-white-platform/fashion-web/commit/71f71d5a1851740e992f2a164614805354897fe7))
+
 ### [0.16.1](https://github.com/the-white-platform/fashion-web/compare/v0.16.0...v0.16.1) (2026-03-29)
 
 
