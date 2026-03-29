@@ -14,6 +14,9 @@ importers:
       '@google-cloud/tasks':
         specifier: ^6.2.1
         version: 6.2.1
+      '@google/generative-ai':
+        specifier: ^0.24.1
+        version: 0.24.1
       '@payloadcms/db-postgres':
         specifier: ^3.77.0
         version: 3.77.0(payload@3.77.0(graphql@16.12.0)(typescript@5.9.3))
@@ -1785,6 +1788,13 @@ packages:
         integrity: sha512-Y21jNAdaUwZvYQijJSE9E27NA87c/Wl9fZxNDGx6WsWFFGEBmJmc1zg2fXLXTW0kPvKIxHQC+IcKa9SNgvIEsQ==,
       }
     engines: { node: '>=18' }
+
+  '@google/generative-ai@0.24.1':
+    resolution:
+      {
+        integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==,
+      }
+    engines: { node: '>=18.0.0' }
 
   '@grpc/grpc-js@1.14.3':
     resolution:
@@ -11994,6 +12004,8 @@ snapshots:
       google-gax: 5.0.6
     transitivePeerDependencies:
       - supports-color
+
+  '@google/generative-ai@0.24.1': {}
 
   '@grpc/grpc-js@1.14.3':
     dependencies:
