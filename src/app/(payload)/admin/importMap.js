@@ -19,10 +19,10 @@ import { HorizontalRuleFeatureClient as HorizontalRuleFeatureClient_e70f5e05f09f
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
-import { default as default_9f2d3c33ea4bb274a81372b51d3df973 } from '@/admin/AccountingLink'
-import { default as default_1a7510af427896d367a49dbf838d2de6 } from '@/admin/BeforeDashboard'
-import { default as default_8a7ab0eb7ab5c511aba12e68480bfe5e } from '@/admin/BeforeLogin'
-import { default as default_82170afff16ea693a4bec4078cf434c1 } from '@/admin/AccountingView'
+import { default as default_51a6e40b6ddc3fbdb01078836e427115 } from '@/admin/AccountingLink'
+import { default as default_62498e5670a6a05a1ccb8f71ecbf1b4f } from '@/admin/BeforeDashboard'
+import { default as default_1e475d4d9f6f0b236e7d4025a88a35a4 } from '@/admin/BeforeLogin'
+import { default as default_f701f49052515c0db2071812a1dd17d6 } from '@/admin/AccountingView'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 export const importMap = {
@@ -65,9 +65,9 @@ export const importMap = {
     BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   '@payloadcms/plugin-search/client#LinkToDoc': LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   '@payloadcms/plugin-search/client#ReindexButton': ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
-  '@/admin/AccountingLink#default': default_9f2d3c33ea4bb274a81372b51d3df973,
-  '@/admin/BeforeDashboard#default': default_1a7510af427896d367a49dbf838d2de6,
-  '@/admin/BeforeLogin#default': default_8a7ab0eb7ab5c511aba12e68480bfe5e,
-  '@/admin/AccountingView#default': default_82170afff16ea693a4bec4078cf434c1,
+  '@/admin/AccountingLink#default': default_51a6e40b6ddc3fbdb01078836e427115,
+  '@/admin/BeforeDashboard#default': default_62498e5670a6a05a1ccb8f71ecbf1b4f,
+  '@/admin/BeforeLogin#default': default_1e475d4d9f6f0b236e7d4025a88a35a4,
+  '@/admin/AccountingView#default': default_f701f49052515c0db2071812a1dd17d6,
   '@payloadcms/next/rsc#CollectionCards': CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
 }
