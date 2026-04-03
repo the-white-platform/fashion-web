@@ -13,6 +13,7 @@ import { Header } from '@/components/layout/Header/Component'
 import { FloatingActions } from '@/components/ecommerce/FloatingActions'
 import { Cart } from '@/components/ecommerce/Cart'
 import { GlobalModalsWrapper } from '@/components/ecommerce/GlobalModalsWrapper'
+import { CompareBar } from '@/components/ecommerce/CompareBar'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
@@ -119,6 +120,7 @@ export default async function RootLayout({ children, params }: Props) {
               <FloatingActions />
               <Cart />
               <GlobalModalsWrapper header={headerData} />
+              <CompareBar />
               <div className="pt-0">{children}</div>
               <Footer />
             </Providers>

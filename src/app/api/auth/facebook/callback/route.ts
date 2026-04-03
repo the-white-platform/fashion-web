@@ -83,11 +83,13 @@ export async function GET(request: Request) {
   } else {
     const newUser = await payload.create({
       collection: 'users',
+      draft: false,
       data: {
         email: fbUser.email,
         name: fbUser.name,
         sub: fbUser.id,
         provider: 'facebook',
+        role: 'customer',
         imageUrl: fbUser.picture?.data?.url,
         password: randomBytes(32).toString('hex'),
       },

@@ -1,5 +1,6 @@
 // storage-adapter-import-placeholder
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { resendAdapter } from '@payloadcms/email-resend'
 
 import sharp from 'sharp' // sharp-import
 import path from 'path'
@@ -7,15 +8,31 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Categories } from './collections/Categories'
+import { LoyaltyAccounts } from './collections/LoyaltyAccounts'
+import { LoyaltyTransactions } from './collections/LoyaltyTransactions'
+import { Referrals } from './collections/Referrals'
+import { ChatConversations } from './collections/ChatConversations'
+import { ChatMessages } from './collections/ChatMessages'
 import { Media } from './collections/Media'
 import { Coupons } from './collections/Coupons'
+import { Notifications } from './collections/Notifications'
+import { NotificationPreferences } from './collections/NotificationPreferences'
+import { PushSubscriptions } from './collections/PushSubscriptions'
+import { NewsletterSubscribers } from './collections/NewsletterSubscribers'
+import { NewsletterCampaigns } from './collections/NewsletterCampaigns'
 import { Orders } from './collections/Orders'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Products } from './collections/Products'
+import { Reviews } from './collections/Reviews'
+import { StockMovements } from './collections/StockMovements'
 import { Users } from './collections/Users'
 import { Provinces, Districts, Wards } from './collections/VietnamAddresses'
 import { seedHandler } from './endpoints/seedHandler'
+import { bulkOrderStatusHandler } from './endpoints/bulkOrderStatus'
+import { exportCsvHandler } from './endpoints/exportCsv'
+import { sendNewsletterHandler } from './endpoints/sendNewsletter'
+import { newsletterUnsubscribeHandler } from './endpoints/newsletterUnsubscribe'
 import { Footer } from './components/layout/Footer/config'
 import { Header } from './components/layout/Header/config'
 import { Homepage } from './globals/Homepage'
@@ -61,11 +78,29 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below and the import `BeforeDashboard` statement on line 15.
       beforeDashboard: ['@/admin/BeforeDashboard'],
-      afterNavLinks: ['@/admin/AccountingLink'],
+      afterNavLinks: [
+        '@/admin/AccountingLink',
+        '@/admin/InventoryAlertsLink',
+        '@/admin/BulkOrderStatusLink',
+        '@/admin/NotificationBell',
+        '@/admin/ChatDashboardLink',
+      ],
       views: {
         Accounting: {
           Component: '@/admin/AccountingView',
           path: '/accounting',
+        },
+        InventoryAlerts: {
+          Component: '@/admin/InventoryAlerts',
+          path: '/inventory-alerts',
+        },
+        BulkOrders: {
+          Component: '@/admin/BulkOrderStatus',
+          path: '/bulk-orders',
+        },
+        ChatDashboard: {
+          Component: '@/admin/ChatDashboard',
+          path: '/chat-dashboard',
         },
       },
     },
@@ -115,11 +150,23 @@ export default buildConfig({
     Categories,
     Users,
     Products,
+    Reviews,
     Orders,
     Coupons,
+    StockMovements,
     Provinces,
     Districts,
     Wards,
+    Notifications,
+    NotificationPreferences,
+    PushSubscriptions,
+    NewsletterSubscribers,
+    NewsletterCampaigns,
+    ChatConversations,
+    ChatMessages,
+    LoyaltyAccounts,
+    LoyaltyTransactions,
+    Referrals,
   ],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
   endpoints: [
@@ -130,12 +177,37 @@ export default buildConfig({
       method: 'get',
       path: '/seed',
     },
+    {
+      handler: bulkOrderStatusHandler,
+      method: 'post',
+      path: '/bulk-order-status',
+    },
+    {
+      handler: exportCsvHandler,
+      method: 'get',
+      path: '/export-csv',
+    },
+    {
+      handler: sendNewsletterHandler,
+      method: 'post',
+      path: '/send-newsletter',
+    },
+    {
+      handler: newsletterUnsubscribeHandler,
+      method: 'post',
+      path: '/newsletter-subscribers/unsubscribe',
+    },
   ],
   globals: [Header, Footer, Homepage, PaymentMethods],
   plugins: [
     ...plugins,
     // storage-adapter-placeholder
   ],
+  email: resendAdapter({
+    apiKey: process.env.RESEND_API_KEY ?? '',
+    defaultFromAddress: 'noreply@thewhite.vn',
+    defaultFromName: 'The White',
+  }),
   secret: process.env.PAYLOAD_SECRET,
   sharp,
   typescript: {

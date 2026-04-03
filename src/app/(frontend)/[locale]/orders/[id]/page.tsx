@@ -5,9 +5,20 @@ import { useParams, useRouter } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
-import { Package, Truck, CheckCircle, Clock, XCircle, ChevronLeft, MapPin } from 'lucide-react'
+import {
+  Package,
+  Truck,
+  CheckCircle,
+  Clock,
+  XCircle,
+  ChevronLeft,
+  MapPin,
+  ShoppingBag,
+  RotateCcw,
+} from 'lucide-react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { useUser } from '@/contexts/UserContext'
+import { useCart } from '@/contexts/CartContext'
 import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
@@ -18,6 +29,8 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { useTranslations } from 'next-intl'
+import { reorderItems } from '@/utilities/reorder'
+import { toast } from 'sonner'
 
 function useGetStatusInfo() {
   const t = useTranslations()
@@ -119,6 +132,7 @@ export default function OrderDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { user } = useUser()
+  const { addToCart, setIsCartOpen } = useCart()
   const t = useTranslations()
   const getStatusInfo = useGetStatusInfo()
   const getTimeline = useGetTimeline()
@@ -126,6 +140,29 @@ export default function OrderDetailPage() {
 
   const [order, setOrder] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(!!orderId)
+  const [isReordering, setIsReordering] = useState(false)
+
+  const handleReorder = async () => {
+    if (!order?.items) return
+    setIsReordering(true)
+    try {
+      const { added, skipped } = await reorderItems(order.items, addToCart)
+      if (added > 0) {
+        setIsCartOpen(true)
+        toast.success(
+          skipped > 0
+            ? `Đã thêm ${added} sản phẩm (${skipped} hết hàng)`
+            : `Đã thêm ${added} sản phẩm vào giỏ hàng`,
+        )
+      } else {
+        toast.error('Tất cả sản phẩm đã hết hàng')
+      }
+    } catch {
+      toast.error('Không thể đặt lại đơn hàng')
+    } finally {
+      setIsReordering(false)
+    }
+  }
 
   useEffect(() => {
     if (!orderId) return
@@ -221,7 +258,7 @@ export default function OrderDetailPage() {
 
         {/* Order Header */}
         <div className="bg-muted rounded-sm p-6 mb-8">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start justify-between mb-4 flex-wrap gap-4">
             <div>
               <h1 className="text-3xl uppercase tracking-wide mb-2">
                 {t('orders.orderNumber', { number: order.orderNumber })}
@@ -236,10 +273,24 @@ export default function OrderDetailPage() {
                 })}
               </p>
             </div>
-            <Badge className={`${statusInfo.bg} ${statusInfo.color} border-0 text-base px-4 py-2`}>
-              <StatusIcon className="w-5 h-5 mr-2" />
-              {statusInfo.label}
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge
+                className={`${statusInfo.bg} ${statusInfo.color} border-0 text-base px-4 py-2`}
+              >
+                <StatusIcon className="w-5 h-5 mr-2" />
+                {statusInfo.label}
+              </Badge>
+              {order.status === 'delivered' && (
+                <button
+                  onClick={handleReorder}
+                  disabled={isReordering}
+                  className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-sm hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  {isReordering ? 'Đang xử lý...' : 'Đặt lại'}
+                </button>
+              )}
+            </div>
           </div>
           <p className="text-foreground">{statusInfo.description}</p>
         </div>
@@ -300,10 +351,7 @@ export default function OrderDetailPage() {
               <h2 className="text-xl uppercase tracking-wide mb-6">{t('orders.products')}</h2>
               <div className="space-y-4">
                 {order.items?.map((item: any, index: number) => (
-                  <div
-                    key={index}
-                    className="flex gap-4 pb-4 border-b border-border last:border-0"
-                  >
+                  <div key={index} className="flex gap-4 pb-4 border-b border-border last:border-0">
                     <div className="relative w-24 h-24 bg-muted rounded-sm overflow-hidden shrink-0">
                       <Image
                         src={item.productImage || '/assets/placeholder.jpg'}
@@ -324,6 +372,23 @@ export default function OrderDetailPage() {
                       <p className="text-lg font-bold mt-2">
                         {((item.unitPrice || 0) * item.quantity).toLocaleString('vi-VN')}₫
                       </p>
+                      {order.status === 'delivered' && (
+                        <button
+                          onClick={async () => {
+                            const { added } = await reorderItems([item], addToCart)
+                            if (added > 0) {
+                              setIsCartOpen(true)
+                              toast.success('Đã thêm vào giỏ hàng')
+                            } else {
+                              toast.error('Sản phẩm đã hết hàng')
+                            }
+                          }}
+                          className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
+                        >
+                          <ShoppingBag className="w-3 h-3" />
+                          {t('orders.buyAgain')}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -367,7 +432,9 @@ export default function OrderDetailPage() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t('orders.subtotal')}</span>
-                  <span>{(order.totals?.subtotal ?? order.totals?.total ?? 0).toLocaleString('vi-VN')}₫</span>
+                  <span>
+                    {(order.totals?.subtotal ?? order.totals?.total ?? 0).toLocaleString('vi-VN')}₫
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{t('orders.shippingFee')}</span>

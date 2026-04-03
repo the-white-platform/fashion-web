@@ -23,11 +23,11 @@ interface UserContextType {
   logout: () => void
   updateProfile: (data: Partial<{ name: string; phone: string; email: string }>) => Promise<void>
   addShippingAddress: (address: Omit<ShippingAddress, 'id'>) => Promise<void>
-  updateShippingAddress: (id: string, address: Partial<ShippingAddress>) => void
-  deleteShippingAddress: (id: string) => void
-  addPaymentMethod: (method: Omit<PaymentMethod, 'id'>) => void
-  updatePaymentMethod: (id: string, method: Partial<PaymentMethod>) => void
-  deletePaymentMethod: (id: string) => void
+  updateShippingAddress: (id: string, address: Partial<ShippingAddress>) => Promise<void>
+  deleteShippingAddress: (id: string) => Promise<void>
+  addPaymentMethod: (method: Omit<PaymentMethod, 'id'>) => Promise<void>
+  updatePaymentMethod: (id: string, method: Partial<PaymentMethod>) => Promise<void>
+  deletePaymentMethod: (id: string) => Promise<void>
 }
 
 // ---------------------------------------------------------------------------
@@ -64,7 +64,9 @@ type PayloadUser = {
   paymentMethods?: PayloadPaymentMethod[] | null
 }
 
-function toAddressLocation(val: string | { id: string; name?: string } | null | undefined): AddressLocation {
+function toAddressLocation(
+  val: string | { id: string; name?: string } | null | undefined,
+): AddressLocation {
   if (!val) return { id: '', name: '' }
   if (typeof val === 'string') return { id: val, name: val }
   return { id: val.id, name: val.name ?? '' }
@@ -253,7 +255,36 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setUser(mapPayloadUser(updated.doc))
   }
 
-  function updateShippingAddress(id: string, updates: Partial<ShippingAddress>): void {
+  async function patchUser(data: Record<string, unknown>): Promise<void> {
+    if (!user) return
+    const res = await fetch(`/api/users/${user.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('Update failed')
+    const updated = await res.json()
+    setUser(mapPayloadUser(updated.doc))
+  }
+
+  function toPayloadAddress(addr: ShippingAddress) {
+    return {
+      id: addr.id,
+      name: addr.name,
+      phone: addr.phone,
+      address: addr.address,
+      city: addr.province.id,
+      district: addr.district.id,
+      ward: addr.ward.id,
+      isDefault: addr.isDefault,
+    }
+  }
+
+  async function updateShippingAddress(
+    id: string,
+    updates: Partial<ShippingAddress>,
+  ): Promise<void> {
     if (!user) return
     const addresses = user.shippingAddresses.map((addr) => {
       if (addr.id === id) return { ...addr, ...updates }
@@ -261,27 +292,35 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return addr
     })
     setUser({ ...user, shippingAddresses: addresses })
+    await patchUser({ shippingAddresses: addresses.map(toPayloadAddress) })
   }
 
-  function deleteShippingAddress(id: string): void {
+  async function deleteShippingAddress(id: string): Promise<void> {
     if (!user) return
-    setUser({ ...user, shippingAddresses: user.shippingAddresses.filter((a) => a.id !== id) })
+    const addresses = user.shippingAddresses.filter((a) => a.id !== id)
+    setUser({ ...user, shippingAddresses: addresses })
+    await patchUser({ shippingAddresses: addresses.map(toPayloadAddress) })
   }
 
   // ------------------------------------------------------------------
-  // Payment methods (local-only until payments collection exists)
+  // Payment methods
   // ------------------------------------------------------------------
 
-  function addPaymentMethod(method: Omit<PaymentMethod, 'id'>): void {
+  function toPayloadPayment(m: PaymentMethod) {
+    return { id: m.id, type: m.type, cardNumber: m.details, isDefault: m.isDefault }
+  }
+
+  async function addPaymentMethod(method: Omit<PaymentMethod, 'id'>): Promise<void> {
     if (!user) return
     const newMethod: PaymentMethod = { ...method, id: crypto.randomUUID() }
     const methods = method.isDefault
       ? [newMethod, ...user.paymentMethods.map((m) => ({ ...m, isDefault: false }))]
       : [...user.paymentMethods, newMethod]
     setUser({ ...user, paymentMethods: methods })
+    await patchUser({ paymentMethods: methods.map(toPayloadPayment) })
   }
 
-  function updatePaymentMethod(id: string, updates: Partial<PaymentMethod>): void {
+  async function updatePaymentMethod(id: string, updates: Partial<PaymentMethod>): Promise<void> {
     if (!user) return
     const methods = user.paymentMethods.map((m) => {
       if (m.id === id) return { ...m, ...updates }
@@ -289,11 +328,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       return m
     })
     setUser({ ...user, paymentMethods: methods })
+    await patchUser({ paymentMethods: methods.map(toPayloadPayment) })
   }
 
-  function deletePaymentMethod(id: string): void {
+  async function deletePaymentMethod(id: string): Promise<void> {
     if (!user) return
-    setUser({ ...user, paymentMethods: user.paymentMethods.filter((m) => m.id !== id) })
+    const methods = user.paymentMethods.filter((m) => m.id !== id)
+    setUser({ ...user, paymentMethods: methods })
+    await patchUser({ paymentMethods: methods.map(toPayloadPayment) })
   }
 
   return (

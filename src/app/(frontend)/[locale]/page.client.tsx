@@ -10,6 +10,8 @@ import { ExploreMore } from '@/components/ecommerce/ExploreMore'
 import { VirtualTryOnDemo } from '@/components/ecommerce/VirtualTryOnDemo'
 import { BrandStory } from '@/components/ecommerce/BrandStory'
 import { Newsletter } from '@/components/ecommerce/Newsletter'
+import { RecentlyViewed } from '@/components/ecommerce/RecentlyViewed'
+import { Recommendations } from '@/components/ecommerce/Recommendations'
 import dynamic from 'next/dynamic'
 
 const ProductModal = dynamic(
@@ -89,6 +91,13 @@ export default function HomePageClient({
       </AlternatingSection>
 
       <AlternatingSection index={6}>
+        <div className="container mx-auto px-6">
+          <RecentlyViewed />
+          <Recommendations type="popular" className="mt-8" />
+        </div>
+      </AlternatingSection>
+
+      <AlternatingSection index={7}>
         <Newsletter />
       </AlternatingSection>
 

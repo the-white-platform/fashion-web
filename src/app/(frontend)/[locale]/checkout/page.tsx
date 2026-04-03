@@ -60,7 +60,11 @@ export default function CheckoutPage() {
   // Compute coupon-adjusted totals for display and ReviewStep
   const shippingFee = coupon.appliedCoupon?.type === 'shipping' ? 0 : checkout.totals.shipping
   const discount = coupon.appliedCoupon?.discount ?? 0
-  const adjustedTotal = checkout.totals.subtotal + shippingFee - discount
+  const pointsDiscount = checkout.totals.pointsDiscount ?? 0
+  const adjustedTotal = Math.max(
+    0,
+    checkout.totals.subtotal + shippingFee - discount - pointsDiscount,
+  )
 
   // Derive order ID and total from API result for ConfirmationStep
   const confirmedOrderId: string = checkout.orderResult?.doc?.id ?? checkout.orderResult?.id ?? ''
@@ -124,6 +128,10 @@ export default function CheckoutPage() {
                       appliedCoupon={coupon.appliedCoupon}
                       onBack={() => checkout.setStep('payment')}
                       onComplete={() => checkout.completeOrder(coupon.appliedCoupon)}
+                      pointsAvailable={checkout.pointsAvailable}
+                      pointsToRedeem={checkout.pointsToRedeem}
+                      onPointsChange={checkout.setPointsToRedeem}
+                      pointsDiscount={pointsDiscount}
                     />
                   )}
                 </AnimatePresence>
@@ -185,7 +193,9 @@ export default function CheckoutPage() {
                           </Button>
                         </div>
                         {coupon.couponError && (
-                          <p className="text-xs text-destructive">{tCoupon(coupon.couponError as any)}</p>
+                          <p className="text-xs text-destructive">
+                            {tCoupon(coupon.couponError as any)}
+                          </p>
                         )}
                       </div>
                     ) : (
@@ -231,6 +241,12 @@ export default function CheckoutPage() {
                       <div className="flex justify-between text-sm text-success">
                         <span>{t('discount')}</span>
                         <span>-{discount.toLocaleString('vi-VN')}₫</span>
+                      </div>
+                    )}
+                    {pointsDiscount > 0 && (
+                      <div className="flex justify-between text-sm text-success">
+                        <span>Điểm thưởng ({checkout.pointsToRedeem} điểm)</span>
+                        <span>-{pointsDiscount.toLocaleString('vi-VN')}₫</span>
                       </div>
                     )}
                     <div className="pt-3 border-t border-border flex justify-between">

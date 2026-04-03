@@ -478,8 +478,20 @@
       "title": "Viết Đánh Giá Của Bạn",
       "submit": "Gửi Đánh Giá",
       "cancel": "Hủy",
-      "alert": "Vui lòng nhập đánh giá và nhận xét"
-    }
+      "alert": "Vui lòng nhập đánh giá và nhận xét",
+      "submitting": "Đang Gửi...",
+      "successApproved": "Đánh giá của bạn đã được đăng. Cảm ơn!",
+      "successPending": "Đánh giá của bạn đã được gửi và đang chờ duyệt."
+    },
+    "images": {
+      "label": "Hình Ảnh (tuỳ chọn)",
+      "hint": "Tối đa 5 ảnh — JPG, PNG hoặc WebP",
+      "uploading": "Đang tải lên...",
+      "uploadError": "Tải lên thất bại. Vui lòng thử lại.",
+      "remove": "Xóa ảnh",
+      "addMore": "Thêm ảnh"
+    },
+    "storeResponse": "Phản Hồi Từ Cửa Hàng"
   },
   "search": {
     "placeholder": "Tìm kiếm sản phẩm...",
@@ -1321,5 +1333,63 @@
     "loginLink": "Đăng nhập ngay",
     "errorRateLimit": "Bạn đang gửi quá nhiều tin nhắn. Vui lòng chờ một chút.",
     "errorGeneric": "Đã có lỗi xảy ra. Vui lòng thử lại sau."
+  },
+  "recentlyViewed": {
+    "title": "Đã Xem Gần Đây"
+  },
+  "compare": {
+    "add": "Thêm vào so sánh",
+    "remove": "Bỏ khỏi so sánh",
+    "comparing": "Đang so sánh",
+    "clearAll": "Xóa tất cả",
+    "compareCount": "So sánh ({count})",
+    "minRequired": "Chọn ít nhất 2 sản phẩm để so sánh",
+    "pageTitle": "So Sánh Sản Phẩm",
+    "emptyTitle": "Chưa có sản phẩm để so sánh",
+    "emptyDesc": "Chọn ít nhất 2 sản phẩm để so sánh cạnh nhau",
+    "browseProducts": "Khám Phá Sản Phẩm",
+    "addMore": "Thêm sản phẩm",
+    "backToProducts": "Quay lại sản phẩm",
+    "product": "Sản Phẩm",
+    "price": "Giá",
+    "category": "Danh Mục",
+    "colors": "Màu Sắc",
+    "sizes": "Size",
+    "stock": "Tình Trạng",
+    "inStock": "Còn Hàng",
+    "outOfStock": "Hết Hàng",
+    "description": "Mô Tả",
+    "features": "Đặc Điểm",
+    "actions": "Thao Tác",
+    "addToCart": "Thêm vào giỏ",
+    "addToWishlist": "Yêu thích",
+    "wishlisted": "Đã yêu thích"
+  },
+  "loyalty": {
+    "title": "Điểm Thưởng & Hạng Thành Viên",
+    "points": "Điểm",
+    "tier": "Hạng",
+    "bronze": "Đồng",
+    "silver": "Bạc",
+    "gold": "Vàng",
+    "platinum": "Bạch Kim",
+    "availablePoints": "Điểm khả dụng",
+    "lifetimePoints": "Tổng điểm tích lũy",
+    "redeemPoints": "Dùng điểm thưởng",
+    "pointsDiscount": "Giảm từ điểm",
+    "noPointsAvailable": "Chưa có điểm thưởng",
+    "history": "Lịch sử điểm",
+    "earnRules": "Cách tích điểm",
+    "benefits": "Quyền lợi hạng",
+    "referral": "Giới thiệu bạn bè",
+    "referralDesc": "Chia sẻ mã giới thiệu. Nhận 200 điểm khi bạn bè đặt đơn đầu tiên.",
+    "copyLink": "Sao chép link",
+    "copiedLink": "Đã sao chép!"
+  },
+  "recommendations": {
+    "forYou": "Gợi Ý Cho Bạn",
+    "similar": "Sản Phẩm Tương Tự",
+    "cartBased": "Có Thể Bạn Cũng Thích",
+    "popular": "Sản Phẩm Phổ Biến"
   }
 }

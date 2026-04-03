@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
@@ -11,14 +11,18 @@ import {
   Sparkles,
   Plus,
   Minus,
+  ArrowRightLeft,
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useCart } from '@/contexts/CartContext'
 import { useWishlist } from '@/contexts/WishlistContext'
+import { useRecentlyViewed } from '@/contexts/RecentlyViewedContext'
+import { useCompare } from '@/contexts/CompareContext'
 import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { ProductCard } from '@/components/shared/ProductCard'
 import { ImageZoom } from '@/components/ecommerce/ImageZoom'
 import { ProductReviews } from '@/components/ecommerce/ProductReviews'
+import { RecentlyViewed } from '@/components/ecommerce/RecentlyViewed'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -47,6 +51,12 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
   const router = useRouter()
   const { addToCart, setIsCartOpen } = useCart()
   const { isWishlisted, toggleWishlist } = useWishlist()
+  const { trackProduct } = useRecentlyViewed()
+
+  // Track this product as recently viewed on mount
+  useEffect(() => {
+    trackProduct(product)
+  }, [product.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // State
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0)
@@ -319,7 +329,9 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                         : 'border-border hover:border-foreground'
                     }`}
                   >
-                    <Heart className={`w-4 h-4 ${isWishlisted(product.id) ? 'fill-current' : ''}`} />
+                    <Heart
+                      className={`w-4 h-4 ${isWishlisted(product.id) ? 'fill-current' : ''}`}
+                    />
                     {isWishlisted(product.id) ? 'Đã Lưu' : 'Yêu Thích'}
                   </button>
                   <button className="border-2 border-border py-4 rounded-sm hover:border-foreground transition-all hover:scale-[1.02] flex items-center justify-center gap-2 uppercase tracking-[0.1em] font-bold text-[10px]">
@@ -384,6 +396,9 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
           >
             <ProductReviews productId={product.id} productName={product.name} />
           </motion.section>
+
+          {/* Recently Viewed Section */}
+          <RecentlyViewed excludeId={product.id} />
         </div>
       </div>
 

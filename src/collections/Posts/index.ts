@@ -9,7 +9,7 @@ import {
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 
-import { authenticated } from '../../access/authenticated'
+import { isAdmin, isAdminOrEditor } from '../../access/roles'
 import { authenticatedOrPublished } from '../../access/authenticatedOrPublished'
 import { Banner } from '../../blocks/Banner/config'
 import { Code } from '../../blocks/Code/config'
@@ -30,10 +30,10 @@ import { slugField } from '@/fields/slug'
 export const Posts: CollectionConfig = {
   slug: 'posts',
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: isAdminOrEditor,
+    delete: isAdmin,
     read: authenticatedOrPublished,
-    update: authenticated,
+    update: isAdminOrEditor,
   },
   labels: {
     singular: { vi: 'Bài Viết', en: 'Post' },

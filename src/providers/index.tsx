@@ -6,6 +6,8 @@ import { CartProvider } from '@/contexts/CartContext'
 import { UserProvider } from '@/contexts/UserContext'
 import { ModalProvider } from '@/contexts/ModalContext'
 import { WishlistProvider } from '@/contexts/WishlistContext'
+import { RecentlyViewedProvider } from '@/contexts/RecentlyViewedContext'
+import { CompareProvider } from '@/contexts/CompareContext'
 
 export const Providers: React.FC<{
   children: React.ReactNode
@@ -15,9 +17,13 @@ export const Providers: React.FC<{
       <UserProvider>
         <CartProvider>
           <WishlistProvider>
-            <ModalProvider>
-              <HeaderThemeProvider>{children}</HeaderThemeProvider>
-            </ModalProvider>
+            <RecentlyViewedProvider>
+              <CompareProvider>
+                <ModalProvider>
+                  <HeaderThemeProvider>{children}</HeaderThemeProvider>
+                </ModalProvider>
+              </CompareProvider>
+            </RecentlyViewedProvider>
           </WishlistProvider>
         </CartProvider>
       </UserProvider>

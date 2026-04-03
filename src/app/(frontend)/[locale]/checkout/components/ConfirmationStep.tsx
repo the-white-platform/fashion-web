@@ -5,6 +5,7 @@ import { Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
+import { Recommendations } from '@/components/ecommerce/Recommendations'
 
 interface ConfirmationStepProps {
   orderId: string
@@ -50,13 +51,7 @@ export function ConfirmationStep({
 
           <div className="flex flex-col md:flex-row items-center gap-10 justify-center mb-6">
             <div className="bg-white p-6 rounded-lg shadow-inner">
-              <Image
-                src={qrUrl}
-                alt={t("scanQR")}
-                width={320}
-                height={320}
-                className="mx-auto"
-              />
+              <Image src={qrUrl} alt={t('scanQR')} width={320} height={320} className="mx-auto" />
             </div>
             <div className="text-left space-y-4 max-w-xs">
               <div>
@@ -107,13 +102,18 @@ export function ConfirmationStep({
         <p className="text-sm">📦 {t('successTrack')}</p>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 mb-12">
         <Button variant="outline" onClick={onContinueShopping} className="flex-1" size="lg">
           {tNav('products')}
         </Button>
         <Button onClick={onViewOrders} className="flex-1" size="lg">
           {t('viewOrders')}
         </Button>
+      </div>
+
+      {/* Post-checkout recommendations */}
+      <div className="text-left">
+        <Recommendations type="popular" title="Có Thể Bạn Cũng Thích" limit={8} />
       </div>
     </motion.div>
   )

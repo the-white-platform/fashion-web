@@ -20,9 +20,16 @@ import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { default as default_51a6e40b6ddc3fbdb01078836e427115 } from '@/admin/AccountingLink'
+import { default as default_5ee73bafc5dc5e9e94b86a038ef6604d } from '@/admin/InventoryAlertsLink'
+import { default as default_5a15bf22c9d3e7396c8c885ae62ce4b8 } from '@/admin/BulkOrderStatusLink'
+import { default as default_c9372ec41e76e69a1c7b738fe83dba41 } from '@/admin/NotificationBell'
+import { default as default_92fb8a94f89337664d7cb7eba28b409c } from '@/admin/ChatDashboardLink'
 import { default as default_62498e5670a6a05a1ccb8f71ecbf1b4f } from '@/admin/BeforeDashboard'
 import { default as default_1e475d4d9f6f0b236e7d4025a88a35a4 } from '@/admin/BeforeLogin'
 import { default as default_f701f49052515c0db2071812a1dd17d6 } from '@/admin/AccountingView'
+import { default as default_d802c4dff5c9350833d77694f8c24f6b } from '@/admin/InventoryAlerts'
+import { default as default_355a2cd2b3baf95da9c194ff842fb703 } from '@/admin/BulkOrderStatus'
+import { default as default_dbf1e08658259c442d6ae03d6337f3f2 } from '@/admin/ChatDashboard'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 export const importMap = {
@@ -66,8 +73,15 @@ export const importMap = {
   '@payloadcms/plugin-search/client#LinkToDoc': LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   '@payloadcms/plugin-search/client#ReindexButton': ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   '@/admin/AccountingLink#default': default_51a6e40b6ddc3fbdb01078836e427115,
+  '@/admin/InventoryAlertsLink#default': default_5ee73bafc5dc5e9e94b86a038ef6604d,
+  '@/admin/BulkOrderStatusLink#default': default_5a15bf22c9d3e7396c8c885ae62ce4b8,
+  '@/admin/NotificationBell#default': default_c9372ec41e76e69a1c7b738fe83dba41,
+  '@/admin/ChatDashboardLink#default': default_92fb8a94f89337664d7cb7eba28b409c,
   '@/admin/BeforeDashboard#default': default_62498e5670a6a05a1ccb8f71ecbf1b4f,
   '@/admin/BeforeLogin#default': default_1e475d4d9f6f0b236e7d4025a88a35a4,
   '@/admin/AccountingView#default': default_f701f49052515c0db2071812a1dd17d6,
+  '@/admin/InventoryAlerts#default': default_d802c4dff5c9350833d77694f8c24f6b,
+  '@/admin/BulkOrderStatus#default': default_355a2cd2b3baf95da9c194ff842fb703,
+  '@/admin/ChatDashboard#default': default_dbf1e08658259c442d6ae03d6337f3f2,
   '@payloadcms/next/rsc#CollectionCards': CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1,
 }

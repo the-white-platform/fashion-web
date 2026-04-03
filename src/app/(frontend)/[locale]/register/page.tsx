@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/Link'
-import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff } from 'lucide-react'
+import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, Gift } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { Logo } from '@/components/shared/Logo/Logo'
@@ -11,6 +11,7 @@ import { useTranslations } from 'next-intl'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { register } = useUser()
   const t = useTranslations()
   const [formData, setFormData] = useState({
@@ -25,6 +26,27 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Read referral code from URL or localStorage
+    const refFromUrl = searchParams?.get('ref')
+    if (refFromUrl) {
+      setReferralCode(refFromUrl)
+      try {
+        localStorage.setItem('referralCode', refFromUrl)
+      } catch {
+        // ignore storage errors
+      }
+    } else {
+      try {
+        const stored = localStorage.getItem('referralCode')
+        if (stored) setReferralCode(stored)
+      } catch {
+        // ignore storage errors
+      }
+    }
+  }, [searchParams])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -85,8 +107,54 @@ export default function RegisterPage() {
 
     // Try to register
     try {
-      const success = await register(formData.fullName, formData.email, formData.password, formData.phone)
+      const success = await register(
+        formData.fullName,
+        formData.email,
+        formData.password,
+        formData.phone,
+      )
       if (success) {
+        // If we have a referral code, create a referral record
+        if (referralCode) {
+          try {
+            // Find the referrer by their referral code
+            const refRes = await fetch(
+              `/api/users?where[referralCode][equals]=${encodeURIComponent(referralCode)}&limit=1`,
+              { credentials: 'include' },
+            )
+            const refData = await refRes.json()
+            const referrer = refData.docs?.[0]
+
+            if (referrer) {
+              // Get current user ID
+              const meRes = await fetch('/api/users/me', { credentials: 'include' })
+              const meData = await meRes.json()
+              const newUserId = meData?.user?.id
+
+              if (newUserId) {
+                await fetch('/api/referrals', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    referrer: referrer.id,
+                    referee: newUserId,
+                    referralCode,
+                    status: 'pending',
+                  }),
+                })
+              }
+            }
+            // Clear the stored referral code
+            try {
+              localStorage.removeItem('referralCode')
+            } catch {
+              /* ignore */
+            }
+          } catch {
+            // Non-blocking: referral creation failure should not block registration
+          }
+        }
         router.push('/profile')
       } else {
         setError(t('auth.registerFailed'))
@@ -121,6 +189,21 @@ export default function RegisterPage() {
           </h1>
           <p className="text-muted-foreground">{t('auth.createAccount')}</p>
         </div>
+
+        {/* Referral Banner */}
+        {referralCode && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-sm text-sm flex items-center gap-2 mb-4"
+          >
+            <Gift className="w-5 h-5 shrink-0" />
+            <span>
+              Bạn được giới thiệu bởi một thành viên The White. Đăng ký ngay để cả hai nhận điểm
+              thưởng!
+            </span>
+          </motion.div>
+        )}
 
         {/* Register Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -268,7 +351,10 @@ export default function RegisterPage() {
                   </Link>
                 ),
                 privacy: (chunks) => (
-                  <Link href="/privacy-policy" className="text-foreground underline hover:opacity-80">
+                  <Link
+                    href="/privacy-policy"
+                    className="text-foreground underline hover:opacity-80"
+                  >
                     {chunks}
                   </Link>
                 ),

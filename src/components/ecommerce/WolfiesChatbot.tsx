@@ -8,9 +8,10 @@ import Link from 'next/link'
 
 interface Message {
   id: string
-  role: 'user' | 'model'
+  role: 'user' | 'model' | 'admin'
   content: string
   isStreaming?: boolean
+  senderName?: string
 }
 
 interface ProductContext {
@@ -34,8 +35,14 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
   const [isStreaming, setIsStreaming] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [errorType, setErrorType] = useState<'auth' | 'ratelimit' | 'generic' | null>(null)
+  const [isAdminTakeover, setIsAdminTakeover] = useState(false)
+  const [adminTyping, setAdminTyping] = useState(false)
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const conversationIdRef = useRef<string | null>(null)
+  const sseRef = useRef<EventSource | null>(null)
+  const seenMessageIdsRef = useRef<Set<string>>(new Set())
 
   // Avoid hydration mismatch — show timestamps only after mount
   useEffect(() => {
@@ -53,14 +60,77 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
         },
       ])
       setErrorType(null)
+      setIsAdminTakeover(false)
+      setAdminTyping(false)
     } else {
       // Abort any in-flight stream when closing
       abortControllerRef.current?.abort()
+      sseRef.current?.close()
+      sseRef.current = null
+      conversationIdRef.current = null
+      seenMessageIdsRef.current.clear()
       setMessages([])
       setIsStreaming(false)
       setErrorType(null)
+      setIsAdminTakeover(false)
     }
   }, [isOpen, t])
+
+  // SSE listener for real-time messages (admin replies, takeover)
+  useEffect(() => {
+    if (!isOpen || !conversationIdRef.current) return
+
+    const convId = conversationIdRef.current
+    const es = new EventSource(`/api/chat/stream?conversationId=${convId}`)
+    sseRef.current = es
+
+    es.addEventListener('message', (e) => {
+      try {
+        const msg = JSON.parse(e.data)
+        // Only show admin messages (user + AI messages are already in state)
+        if (msg.role === 'admin' && !seenMessageIdsRef.current.has(String(msg.id))) {
+          seenMessageIdsRef.current.add(String(msg.id))
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `admin-${msg.id}`,
+              role: 'admin',
+              content: msg.content,
+              senderName: msg.senderName,
+            },
+          ])
+          setAdminTyping(false)
+        }
+      } catch {}
+    })
+
+    es.onerror = () => {
+      // auto-reconnect is built into EventSource
+    }
+
+    return () => {
+      es.close()
+    }
+  }, [isOpen, conversationIdRef.current]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Poll for admin typing indicator
+  useEffect(() => {
+    if (!isOpen || !conversationIdRef.current || !isAdminTakeover) return
+
+    const convId = conversationIdRef.current
+    const poll = async () => {
+      try {
+        const res = await fetch(`/api/chat/typing?conversationId=${convId}`)
+        if (res.ok) {
+          const data = await res.json()
+          setAdminTyping(!!data.typing && data.typing.senderId !== 'user')
+        }
+      } catch {}
+    }
+
+    const interval = setInterval(poll, 2000)
+    return () => clearInterval(interval)
+  }, [isOpen, isAdminTakeover])
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -91,6 +161,25 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
         content: text.trim(),
       }
 
+      // In admin_takeover mode, just add user message and notify typing
+      if (isAdminTakeover) {
+        setMessages((prev) => [...prev, userMsg])
+        setInputValue('')
+        // Notify admin of user typing (best-effort)
+        if (conversationIdRef.current) {
+          fetch('/api/chat/typing', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              conversationId: conversationIdRef.current,
+              senderId: 'user',
+              name: 'Khách',
+            }),
+          }).catch(() => {})
+        }
+        return
+      }
+
       const streamingMsgId = `model-${Date.now()}`
       const streamingMsg: Message = {
         id: streamingMsgId,
@@ -107,7 +196,7 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
       const conversationHistory = messages
         .concat(userMsg)
         .filter((m) => !m.isStreaming && m.id !== 'welcome')
-        .map((m) => ({ role: m.role, content: m.content }))
+        .map((m) => ({ role: m.role === 'admin' ? 'model' : m.role, content: m.content }))
 
       // Keep welcome for context but skip it if it's the only thing
       const historyToSend =
@@ -123,15 +212,28 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ messages: historyToSend, productContext }),
+          body: JSON.stringify({
+            messages: historyToSend,
+            productContext,
+            conversationId: conversationIdRef.current,
+          }),
           signal: controller.signal,
         })
+
+        // Capture conversation ID from response header on first message
+        const newConvId = response.headers.get('X-Conversation-Id')
+        if (newConvId && !conversationIdRef.current) {
+          conversationIdRef.current = newConvId
+        }
 
         if (!response.ok) {
           if (response.status === 401) {
             setErrorType('auth')
           } else if (response.status === 429) {
             setErrorType('ratelimit')
+          } else if (response.status === 423) {
+            // Admin takeover — don't show error, just set state
+            setIsAdminTakeover(true)
           } else {
             setErrorType('generic')
           }
@@ -176,7 +278,7 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
         setIsStreaming(false)
       }
     },
-    [isStreaming, messages, productContext],
+    [isStreaming, isAdminTakeover, messages, productContext],
   )
 
   const handleSend = () => {
@@ -192,6 +294,19 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
       e.preventDefault()
       handleSend()
     }
+  }
+
+  const handleTyping = () => {
+    if (!conversationIdRef.current) return
+    fetch('/api/chat/typing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        conversationId: conversationIdRef.current,
+        senderId: 'user',
+        name: 'Khách',
+      }),
+    }).catch(() => {})
   }
 
   return (
@@ -211,7 +326,12 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
                 <span className="text-2xl">🐺</span>
               </div>
               <div>
-                <h3 className="uppercase tracking-widest font-bold text-sm">{t('title')}</h3>
+                <h3 className="uppercase tracking-widest font-bold text-sm">
+                  {t('title')}
+                  {isAdminTakeover && (
+                    <span className="ml-2 text-xs font-normal opacity-80">(Nhân viên hỗ trợ)</span>
+                  )}
+                </h3>
                 <p className="text-[10px] text-primary-foreground/80 uppercase tracking-tighter">
                   {t('subtitle')}
                 </p>
@@ -252,9 +372,16 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
                       className={`max-w-[85%] p-4 rounded-sm shadow-sm ${
                         message.role === 'user'
                           ? 'bg-primary text-primary-foreground'
-                          : 'bg-card border border-border text-foreground'
+                          : message.role === 'admin'
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-card border border-border text-foreground'
                       }`}
                     >
+                      {message.role === 'admin' && message.senderName && (
+                        <p className="text-[10px] font-semibold opacity-80 mb-1">
+                          {message.senderName}
+                        </p>
+                      )}
                       {message.isStreaming && message.content === '' ? (
                         // Typing indicator while waiting for first chunk
                         <div className="flex gap-1.5 py-1">
@@ -291,6 +418,28 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
                   </div>
                 ))}
 
+                {/* Admin typing indicator */}
+                {adminTyping && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] p-4 rounded-sm bg-blue-50 border border-blue-200">
+                      <div className="flex gap-1.5 py-1">
+                        <div
+                          className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
+                          style={{ animationDelay: '0ms' }}
+                        />
+                        <div
+                          className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
+                          style={{ animationDelay: '150ms' }}
+                        />
+                        <div
+                          className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
+                          style={{ animationDelay: '300ms' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 {/* Error banners */}
                 {errorType === 'auth' && (
                   <div className="flex justify-start">
@@ -324,20 +473,22 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
               </div>
 
               {/* Quick Replies */}
-              <div className="p-3 bg-background border-t border-border overflow-x-auto flex-shrink-0">
-                <div className="flex gap-2 pb-1">
-                  {quickReplies.map((reply, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleQuickReply(reply)}
-                      disabled={isStreaming}
-                      className="text-[10px] whitespace-nowrap px-3 py-2 border border-border rounded-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-all uppercase font-bold tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {reply}
-                    </button>
-                  ))}
+              {!isAdminTakeover && (
+                <div className="p-3 bg-background border-t border-border overflow-x-auto flex-shrink-0">
+                  <div className="flex gap-2 pb-1">
+                    {quickReplies.map((reply, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleQuickReply(reply)}
+                        disabled={isStreaming}
+                        className="text-[10px] whitespace-nowrap px-3 py-2 border border-border rounded-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-all uppercase font-bold tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {reply}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Input */}
               <div className="p-4 bg-background border-t border-border rounded-b-sm flex-shrink-0">
@@ -345,9 +496,14 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
                   <input
                     type="text"
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e) => {
+                      setInputValue(e.target.value)
+                      handleTyping()
+                    }}
                     onKeyDown={handleKeyDown}
-                    placeholder={t('inputPlaceholder')}
+                    placeholder={
+                      isAdminTakeover ? 'Nhắn tin cho nhân viên hỗ trợ...' : t('inputPlaceholder')
+                    }
                     disabled={isStreaming}
                     className="flex-1 px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors text-sm bg-background text-foreground placeholder:text-muted-foreground disabled:opacity-60"
                   />

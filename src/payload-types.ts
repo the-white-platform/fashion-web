@@ -73,11 +73,23 @@ export interface Config {
     categories: Category;
     users: User;
     products: Product;
+    reviews: Review;
     orders: Order;
     coupons: Coupon;
+    'stock-movements': StockMovement;
     provinces: Province;
     districts: District;
     wards: Ward;
+    notifications: Notification;
+    'notification-preferences': NotificationPreference;
+    'push-subscriptions': PushSubscription;
+    'newsletter-subscribers': NewsletterSubscriber;
+    'newsletter-campaigns': NewsletterCampaign;
+    'chat-conversations': ChatConversation;
+    'chat-messages': ChatMessage;
+    'loyalty-accounts': LoyaltyAccount;
+    'loyalty-transactions': LoyaltyTransaction;
+    referrals: Referral;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -95,11 +107,23 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     coupons: CouponsSelect<false> | CouponsSelect<true>;
+    'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
     wards: WardsSelect<false> | WardsSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
+    'notification-preferences': NotificationPreferencesSelect<false> | NotificationPreferencesSelect<true>;
+    'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
+    'newsletter-subscribers': NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
+    'newsletter-campaigns': NewsletterCampaignsSelect<false> | NewsletterCampaignsSelect<true>;
+    'chat-conversations': ChatConversationsSelect<false> | ChatConversationsSelect<true>;
+    'chat-messages': ChatMessagesSelect<false> | ChatMessagesSelect<true>;
+    'loyalty-accounts': LoyaltyAccountsSelect<false> | LoyaltyAccountsSelect<true>;
+    'loyalty-transactions': LoyaltyTransactionsSelect<false> | LoyaltyTransactionsSelect<true>;
+    referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -499,11 +523,29 @@ export interface Post {
  */
 export interface User {
   id: number;
+  role: 'admin' | 'editor' | 'staff' | 'customer';
   name?: string | null;
   phone?: string | null;
   sub?: string | null;
   provider?: ('local' | 'google' | 'facebook') | null;
   imageUrl?: string | null;
+  emailVerified?: boolean | null;
+  emailVerifyToken?: string | null;
+  cart?:
+    | {
+        product: number | Product;
+        variant?: string | null;
+        size?: string | null;
+        quantity: number;
+        id?: string | null;
+      }[]
+    | null;
+  wishlist?:
+    | {
+        product: number | Product;
+        id?: string | null;
+      }[]
+    | null;
   shippingAddresses?:
     | {
         name: string;
@@ -516,6 +558,18 @@ export interface User {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Unique referral code (auto-generated)
+   */
+  referralCode?: string | null;
+  /**
+   * Customer Zalo user ID
+   */
+  zaloUserId?: string | null;
+  /**
+   * Send order notifications via Zalo ZNS
+   */
+  zaloNotifications?: boolean | null;
   paymentMethods?:
     | {
         type?: ('cod' | 'bank_transfer' | 'momo' | 'vnpay') | null;
@@ -542,6 +596,107 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  name: string;
+  slug?: string | null;
+  category: (number | Category)[];
+  price: number;
+  /**
+   * Leave empty if no discount
+   */
+  originalPrice?: number | null;
+  /**
+   * Add separate images for each color. The first color will be the default.
+   */
+  colorVariants?:
+    | {
+        /**
+         * Example: Black, White, Navy Blue
+         */
+        color: string;
+        /**
+         * Example: #1d2122
+         */
+        colorHex: string;
+        /**
+         * Manage stock quantity for each size
+         */
+        sizeInventory?:
+          | {
+              size: 'XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45';
+              stock: number;
+              /**
+               * Alert when stock falls below this
+               */
+              lowStockThreshold?: number | null;
+              id?: string | null;
+            }[]
+          | null;
+        /**
+         * Images for this color (applies to all sizes of this color)
+         */
+        images: (number | Media)[];
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Auto-aggregated from colorVariants. Can be added manually if needed.
+   */
+  colors?:
+    | {
+        name: string;
+        /**
+         * Example: #1d2122
+         */
+        hex: string;
+        id?: string | null;
+      }[]
+    | null;
+  sizes?: ('XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45')[] | null;
+  tag?: ('MỚI' | 'BÁN CHẠY' | 'GIẢM 20%' | 'GIẢM 30%' | 'GIẢM 50%' | 'HOT') | null;
+  inStock?: boolean | null;
+  stockStatus?: ('in_stock' | 'low_stock' | 'out_of_stock') | null;
+  /**
+   * Display on homepage
+   */
+  featured?: boolean | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  features?:
+    | {
+        feature: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Auto-updated from approved reviews
+   */
+  averageRating?: number | null;
+  /**
+   * Count of approved reviews
+   */
+  reviewCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -780,93 +935,36 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
+ * via the `definition` "reviews".
  */
-export interface Product {
+export interface Review {
   id: number;
-  name: string;
-  slug?: string | null;
-  category: (number | Category)[];
-  price: number;
+  product: number | Product;
+  user: number | User;
   /**
-   * Leave empty if no discount
+   * Verified purchase order (auto)
    */
-  originalPrice?: number | null;
+  order?: (number | null) | Order;
+  rating: number;
+  title?: string | null;
+  comment: string;
+  fit?: ('runs_small' | 'true_to_size' | 'runs_large') | null;
+  sizeOrdered?: string | null;
+  height?: number | null;
+  weight?: number | null;
+  images?: (number | Media)[] | null;
   /**
-   * Add separate images for each color. The first color will be the default.
+   * Auto-set when a delivered order is found
    */
-  colorVariants?:
-    | {
-        /**
-         * Example: Black, White, Navy Blue
-         */
-        color: string;
-        /**
-         * Example: #1d2122
-         */
-        colorHex: string;
-        /**
-         * Manage stock quantity for each size
-         */
-        sizeInventory?:
-          | {
-              size: 'XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45';
-              stock: number;
-              /**
-               * Alert when stock falls below this
-               */
-              lowStockThreshold?: number | null;
-              id?: string | null;
-            }[]
-          | null;
-        /**
-         * Images for this color (applies to all sizes of this color)
-         */
-        images: (number | Media)[];
-        id?: string | null;
-      }[]
-    | null;
+  verified?: boolean | null;
+  moderationStatus?: ('pending' | 'approved' | 'rejected') | null;
+  helpfulCount?: number | null;
   /**
-   * Auto-aggregated from colorVariants. Can be added manually if needed.
+   * Users who voted helpful (dedup)
    */
-  colors?:
-    | {
-        name: string;
-        /**
-         * Example: #1d2122
-         */
-        hex: string;
-        id?: string | null;
-      }[]
-    | null;
-  sizes?: ('XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45')[] | null;
-  tag?: ('MỚI' | 'BÁN CHẠY' | 'GIẢM 20%' | 'GIẢM 30%' | 'GIẢM 50%' | 'HOT') | null;
-  inStock?: boolean | null;
-  /**
-   * Display on homepage
-   */
-  featured?: boolean | null;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  features?:
-    | {
-        feature: string;
-        id?: string | null;
-      }[]
-    | null;
+  helpfulVoters?: (number | User)[] | null;
+  adminReply?: string | null;
+  adminReplyAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -927,6 +1025,14 @@ export interface Order {
     discount?: number | null;
     total: number;
     couponCode?: string | null;
+    /**
+     * Loyalty points applied to this order
+     */
+    pointsRedeemed?: number | null;
+    /**
+     * 100 points = 10,000 VND
+     */
+    pointsDiscount?: number | null;
   };
   /**
    * Notes visible only to admins
@@ -938,6 +1044,35 @@ export interface Order {
     shippedAt?: string | null;
     deliveredAt?: string | null;
   };
+  returnRequest?: {
+    returnStatus?: ('none' | 'requested' | 'approved' | 'rejected' | 'received' | 'refunded') | null;
+    returnReason?: string | null;
+    returnItems?:
+      | {
+          product: number | Product;
+          variant?: string | null;
+          size?: string | null;
+          quantity: number;
+          id?: string | null;
+        }[]
+      | null;
+    refundAmount?: number | null;
+    returnRequestedAt?: string | null;
+  };
+  /**
+   * Auto-populated order change history
+   */
+  activityLog?:
+    | {
+        action: 'created' | 'status_change' | 'payment_update' | 'note' | 'return_requested' | 'refund';
+        timestamp: string;
+        fromValue?: string | null;
+        toValue?: string | null;
+        performedBy?: (number | null) | User;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -973,6 +1108,250 @@ export interface Coupon {
   validFrom?: string | null;
   validUntil?: string | null;
   active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements".
+ */
+export interface StockMovement {
+  id: number;
+  product: number | Product;
+  variant: string;
+  size: string;
+  type: 'sale' | 'cancellation' | 'return' | 'restock' | 'adjustment';
+  /**
+   * Negative = stock deducted, positive = stock added
+   */
+  quantity: number;
+  previousStock: number;
+  newStock: number;
+  order?: (number | null) | Order;
+  performedBy?: (number | null) | User;
+  note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: number;
+  recipient: number | User;
+  type:
+    | 'new_order'
+    | 'order_status_change'
+    | 'low_stock'
+    | 'out_of_stock'
+    | 'return_request'
+    | 'new_user'
+    | 'new_form_submission';
+  title: string;
+  message: string;
+  link?: string | null;
+  read?: boolean | null;
+  readAt?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notification-preferences".
+ */
+export interface NotificationPreference {
+  id: number;
+  user: number | User;
+  inApp?: {
+    newOrder?: boolean | null;
+    lowStock?: boolean | null;
+    returnRequest?: boolean | null;
+    newUser?: boolean | null;
+  };
+  email?: {
+    newOrder?: boolean | null;
+    lowStock?: boolean | null;
+    returnRequest?: boolean | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-subscriptions".
+ */
+export interface PushSubscription {
+  id: number;
+  user: number | User;
+  endpoint: string;
+  keys: {
+    p256dh: string;
+    auth: string;
+  };
+  userAgent?: string | null;
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-subscribers".
+ */
+export interface NewsletterSubscriber {
+  id: number;
+  email: string;
+  name?: string | null;
+  status: 'active' | 'unsubscribed' | 'bounced';
+  subscribedAt?: string | null;
+  unsubscribedAt?: string | null;
+  source?: ('footer_form' | 'checkout' | 'manual') | null;
+  unsubscribeToken?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-campaigns".
+ */
+export interface NewsletterCampaign {
+  id: number;
+  subject: string;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  status: 'draft' | 'sending' | 'sent' | 'failed';
+  sentAt?: string | null;
+  recipientCount?: number | null;
+  targetAudience?: ('all_active' | 'custom_segment') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-conversations".
+ */
+export interface ChatConversation {
+  id: number;
+  user?: (number | null) | User;
+  /**
+   * Anonymous ID for guests
+   */
+  guestId?: string | null;
+  status: 'active' | 'closed' | 'admin_takeover';
+  startedAt?: string | null;
+  lastMessageAt?: string | null;
+  messageCount?: number | null;
+  summary?: string | null;
+  tags?:
+    | {
+        tag?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  assignedTo?: (number | null) | User;
+  channel: 'web' | 'zalo';
+  zaloUserId?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-messages".
+ */
+export interface ChatMessage {
+  id: number;
+  conversation: number | ChatConversation;
+  role: 'user' | 'assistant' | 'admin';
+  content?: string | null;
+  senderName?: string | null;
+  metadata?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  channel?: ('web' | 'zalo') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loyalty-accounts".
+ */
+export interface LoyaltyAccount {
+  id: number;
+  user: number | User;
+  /**
+   * Redeemable points
+   */
+  points: number;
+  /**
+   * Total points earned all time
+   */
+  lifetimePoints: number;
+  tier: 'bronze' | 'silver' | 'gold' | 'platinum';
+  tierUpdatedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loyalty-transactions".
+ */
+export interface LoyaltyTransaction {
+  id: number;
+  user: number | User;
+  type: 'earn_purchase' | 'earn_review' | 'earn_referral' | 'redeem' | 'expire' | 'adjustment';
+  /**
+   * Positive = earn, Negative = deduct
+   */
+  points: number;
+  balance: number;
+  description?: string | null;
+  order?: (number | null) | Order;
+  review?: (number | null) | Review;
+  expiresAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrals".
+ */
+export interface Referral {
+  id: number;
+  referrer: number | User;
+  referee?: (number | null) | User;
+  referralCode: string;
+  status: 'pending' | 'completed' | 'expired';
+  referrerReward?: ('pending' | 'credited') | null;
+  refereeReward?: ('pending' | 'credited') | null;
+  completedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1098,12 +1477,20 @@ export interface PayloadLockedDocument {
         value: number | Product;
       } | null)
     | ({
+        relationTo: 'reviews';
+        value: number | Review;
+      } | null)
+    | ({
         relationTo: 'orders';
         value: number | Order;
       } | null)
     | ({
         relationTo: 'coupons';
         value: number | Coupon;
+      } | null)
+    | ({
+        relationTo: 'stock-movements';
+        value: number | StockMovement;
       } | null)
     | ({
         relationTo: 'provinces';
@@ -1116,6 +1503,46 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'wards';
         value: number | Ward;
+      } | null)
+    | ({
+        relationTo: 'notifications';
+        value: number | Notification;
+      } | null)
+    | ({
+        relationTo: 'notification-preferences';
+        value: number | NotificationPreference;
+      } | null)
+    | ({
+        relationTo: 'push-subscriptions';
+        value: number | PushSubscription;
+      } | null)
+    | ({
+        relationTo: 'newsletter-subscribers';
+        value: number | NewsletterSubscriber;
+      } | null)
+    | ({
+        relationTo: 'newsletter-campaigns';
+        value: number | NewsletterCampaign;
+      } | null)
+    | ({
+        relationTo: 'chat-conversations';
+        value: number | ChatConversation;
+      } | null)
+    | ({
+        relationTo: 'chat-messages';
+        value: number | ChatMessage;
+      } | null)
+    | ({
+        relationTo: 'loyalty-accounts';
+        value: number | LoyaltyAccount;
+      } | null)
+    | ({
+        relationTo: 'loyalty-transactions';
+        value: number | LoyaltyTransaction;
+      } | null)
+    | ({
+        relationTo: 'referrals';
+        value: number | Referral;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1447,11 +1874,29 @@ export interface CategoriesSelect<T extends boolean = true> {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   name?: T;
   phone?: T;
   sub?: T;
   provider?: T;
   imageUrl?: T;
+  emailVerified?: T;
+  emailVerifyToken?: T;
+  cart?:
+    | T
+    | {
+        product?: T;
+        variant?: T;
+        size?: T;
+        quantity?: T;
+        id?: T;
+      };
+  wishlist?:
+    | T
+    | {
+        product?: T;
+        id?: T;
+      };
   shippingAddresses?:
     | T
     | {
@@ -1464,6 +1909,9 @@ export interface UsersSelect<T extends boolean = true> {
         isDefault?: T;
         id?: T;
       };
+  referralCode?: T;
+  zaloUserId?: T;
+  zaloNotifications?: T;
   paymentMethods?:
     | T
     | {
@@ -1525,6 +1973,7 @@ export interface ProductsSelect<T extends boolean = true> {
   sizes?: T;
   tag?: T;
   inStock?: T;
+  stockStatus?: T;
   featured?: T;
   description?: T;
   features?:
@@ -1533,6 +1982,33 @@ export interface ProductsSelect<T extends boolean = true> {
         feature?: T;
         id?: T;
       };
+  averageRating?: T;
+  reviewCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  product?: T;
+  user?: T;
+  order?: T;
+  rating?: T;
+  title?: T;
+  comment?: T;
+  fit?: T;
+  sizeOrdered?: T;
+  height?: T;
+  weight?: T;
+  images?: T;
+  verified?: T;
+  moderationStatus?: T;
+  helpfulCount?: T;
+  helpfulVoters?: T;
+  adminReply?: T;
+  adminReplyAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1590,6 +2066,8 @@ export interface OrdersSelect<T extends boolean = true> {
         discount?: T;
         total?: T;
         couponCode?: T;
+        pointsRedeemed?: T;
+        pointsDiscount?: T;
       };
   adminNotes?: T;
   fulfillment?:
@@ -1599,6 +2077,34 @@ export interface OrdersSelect<T extends boolean = true> {
         trackingNumber?: T;
         shippedAt?: T;
         deliveredAt?: T;
+      };
+  returnRequest?:
+    | T
+    | {
+        returnStatus?: T;
+        returnReason?: T;
+        returnItems?:
+          | T
+          | {
+              product?: T;
+              variant?: T;
+              size?: T;
+              quantity?: T;
+              id?: T;
+            };
+        refundAmount?: T;
+        returnRequestedAt?: T;
+      };
+  activityLog?:
+    | T
+    | {
+        action?: T;
+        timestamp?: T;
+        fromValue?: T;
+        toValue?: T;
+        performedBy?: T;
+        note?: T;
+        id?: T;
       };
   updatedAt?: T;
   createdAt?: T;
@@ -1619,6 +2125,24 @@ export interface CouponsSelect<T extends boolean = true> {
   validFrom?: T;
   validUntil?: T;
   active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements_select".
+ */
+export interface StockMovementsSelect<T extends boolean = true> {
+  product?: T;
+  variant?: T;
+  size?: T;
+  type?: T;
+  quantity?: T;
+  previousStock?: T;
+  newStock?: T;
+  order?: T;
+  performedBy?: T;
+  note?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1651,6 +2175,175 @@ export interface WardsSelect<T extends boolean = true> {
   name?: T;
   code?: T;
   district?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  recipient?: T;
+  type?: T;
+  title?: T;
+  message?: T;
+  link?: T;
+  read?: T;
+  readAt?: T;
+  metadata?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notification-preferences_select".
+ */
+export interface NotificationPreferencesSelect<T extends boolean = true> {
+  user?: T;
+  inApp?:
+    | T
+    | {
+        newOrder?: T;
+        lowStock?: T;
+        returnRequest?: T;
+        newUser?: T;
+      };
+  email?:
+    | T
+    | {
+        newOrder?: T;
+        lowStock?: T;
+        returnRequest?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-subscriptions_select".
+ */
+export interface PushSubscriptionsSelect<T extends boolean = true> {
+  user?: T;
+  endpoint?: T;
+  keys?:
+    | T
+    | {
+        p256dh?: T;
+        auth?: T;
+      };
+  userAgent?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-subscribers_select".
+ */
+export interface NewsletterSubscribersSelect<T extends boolean = true> {
+  email?: T;
+  name?: T;
+  status?: T;
+  subscribedAt?: T;
+  unsubscribedAt?: T;
+  source?: T;
+  unsubscribeToken?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-campaigns_select".
+ */
+export interface NewsletterCampaignsSelect<T extends boolean = true> {
+  subject?: T;
+  content?: T;
+  status?: T;
+  sentAt?: T;
+  recipientCount?: T;
+  targetAudience?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-conversations_select".
+ */
+export interface ChatConversationsSelect<T extends boolean = true> {
+  user?: T;
+  guestId?: T;
+  status?: T;
+  startedAt?: T;
+  lastMessageAt?: T;
+  messageCount?: T;
+  summary?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  assignedTo?: T;
+  channel?: T;
+  zaloUserId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-messages_select".
+ */
+export interface ChatMessagesSelect<T extends boolean = true> {
+  conversation?: T;
+  role?: T;
+  content?: T;
+  senderName?: T;
+  metadata?: T;
+  channel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loyalty-accounts_select".
+ */
+export interface LoyaltyAccountsSelect<T extends boolean = true> {
+  user?: T;
+  points?: T;
+  lifetimePoints?: T;
+  tier?: T;
+  tierUpdatedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "loyalty-transactions_select".
+ */
+export interface LoyaltyTransactionsSelect<T extends boolean = true> {
+  user?: T;
+  type?: T;
+  points?: T;
+  balance?: T;
+  description?: T;
+  order?: T;
+  review?: T;
+  expiresAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "referrals_select".
+ */
+export interface ReferralsSelect<T extends boolean = true> {
+  referrer?: T;
+  referee?: T;
+  referralCode?: T;
+  status?: T;
+  referrerReward?: T;
+  refereeReward?: T;
+  completedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

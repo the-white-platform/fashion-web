@@ -34,6 +34,8 @@ export interface ProductForFrontend {
   featured: boolean
   description?: string
   features: string[]
+  averageRating?: number
+  reviewCount?: number
 }
 
 export interface CategoryForFrontend {
@@ -153,6 +155,8 @@ export function transformProduct(product: Product): ProductForFrontend {
     featured: product.featured ?? false,
     description,
     features: (product.features || []).map((f) => f.feature),
+    averageRating: (product as any).averageRating ?? 0,
+    reviewCount: (product as any).reviewCount ?? 0,
   }
 }
 

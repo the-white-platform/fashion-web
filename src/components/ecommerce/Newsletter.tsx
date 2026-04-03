@@ -9,14 +9,44 @@ export function Newsletter() {
   const t = useTranslations('newsletter')
   const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
-    setTimeout(() => {
-      setSubmitted(false)
-      setEmail('')
-    }, 3000)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/newsletter-subscribers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, source: 'footer_form' }),
+      })
+
+      if (res.ok) {
+        setSubmitted(true)
+        setTimeout(() => {
+          setSubmitted(false)
+          setEmail('')
+        }, 3000)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        // Handle duplicate email gracefully
+        if (
+          res.status === 400 &&
+          data?.errors?.some?.((err: { message?: string }) => err?.message?.includes('unique'))
+        ) {
+          setSubmitted(true)
+          setTimeout(() => {
+            setSubmitted(false)
+            setEmail('')
+          }, 3000)
+        } else {
+          setError(data?.message ?? 'Có lỗi xảy ra. Vui lòng thử lại.')
+        }
+      }
+    } catch {
+      setError('Có lỗi xảy ra. Vui lòng thử lại.')
+    }
   }
 
   return (
@@ -55,6 +85,7 @@ export function Newsletter() {
             </button>
           </form>
 
+          {error && <p className="text-sm text-destructive mt-2">{error}</p>}
           <p className="text-sm text-muted-foreground mt-4">{t('note')}</p>
         </motion.div>
       </div>

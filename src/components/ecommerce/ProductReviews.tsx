@@ -1,7 +1,18 @@
 'use client'
 
-import { useState } from 'react'
-import { Star, ThumbsUp, MessageCircle, CheckCircle, AlertCircle } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  Star,
+  ThumbsUp,
+  MessageCircle,
+  CheckCircle,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Store,
+  ImagePlus,
+  X,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Link } from '@/i18n/Link'
 import { useUser } from '@/contexts/UserContext'
@@ -18,22 +29,19 @@ import {
 } from '@/components/ui/select'
 import { Progress } from '@/components/ui/progress'
 import { useTranslations } from 'next-intl'
+import type { Review, User, Media } from '@/payload-types'
 
-interface Review {
-  id: string
-  userId: string
-  userName: string
-  rating: number
-  title: string
-  comment: string
-  date: string
-  verified: boolean
-  helpful: number
-  images?: string[]
-  size?: string
-  fit?: 'tight' | 'perfect' | 'loose'
-  height?: string
-  weight?: string
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+interface ReviewWithUser extends Review {
+  user: User | number
+}
+
+interface ReviewsResponse {
+  docs: ReviewWithUser[]
+  totalDocs: number
+  totalPages: number
+  page: number
 }
 
 interface ProductReviewsProps {
@@ -41,123 +49,124 @@ interface ProductReviewsProps {
   productName: string
 }
 
-const StarRating = ({ rating, size = 'w-5 h-5' }: { rating: number; size?: string }) => {
-  return (
-    <div className="flex gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`${size} ${
-            star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-border'
-          }`}
-        />
-      ))}
-    </div>
-  )
-}
+type SortOption = 'recent' | 'helpful' | 'rating'
+
+// ─── Helper: Star display ────────────────────────────────────────────────────
+
+const StarRating = ({ rating, size = 'w-5 h-5' }: { rating: number; size?: string }) => (
+  <div className="flex gap-1">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <Star
+        key={star}
+        className={`${size} ${star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-border'}`}
+      />
+    ))}
+  </div>
+)
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 
 export function ProductReviews({ productId, productName }: ProductReviewsProps) {
   const { user } = useUser()
   const t = useTranslations('reviews')
-  const [showReviewForm, setShowReviewForm] = useState(false)
-  const [sortBy, setSortBy] = useState<'recent' | 'helpful' | 'rating'>('recent')
+
+  const [reviews, setReviews] = useState<ReviewWithUser[]>([])
+  const [totalDocs, setTotalDocs] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [sortBy, setSortBy] = useState<SortOption>('recent')
   const [filterRating, setFilterRating] = useState<number | 'all'>('all')
+  const [showReviewForm, setShowReviewForm] = useState(false)
+  const [hasReviewed, setHasReviewed] = useState(false)
 
-  // Mock reviews data
-  const mockReviews: Review[] = [
-    {
-      id: '1',
-      userId: '123',
-      userName: 'Nguyễn Văn A',
-      rating: 5,
-      title: 'Chất lượng tuyệt vời!',
-      comment:
-        'Áo rất đẹp, vải mát, form chuẩn. Tôi cao 1m75, nặng 68kg mặc size M vừa vặn. Rất hài lòng với sản phẩm này.',
-      date: '2024-12-10',
-      verified: true,
-      helpful: 12,
-      size: 'M',
-      fit: 'perfect',
-      height: '175cm',
-      weight: '68kg',
-    },
-    {
-      id: '2',
-      userId: '456',
-      userName: 'Trần Thị B',
-      rating: 4,
-      title: 'Tốt nhưng hơi nhỏ',
-      comment:
-        'Chất vải ok, thiết kế đẹp nhưng mình thấy size hơi nhỏ so với bảng size. Nên lên size để thoải mái hơn.',
-      date: '2024-12-08',
-      verified: true,
-      helpful: 8,
-      size: 'L',
-      fit: 'tight',
-      height: '170cm',
-      weight: '65kg',
-    },
-    {
-      id: '3',
-      userId: '789',
-      userName: 'Lê Minh C',
-      rating: 5,
-      title: 'Đáng tiền!',
-      comment:
-        'Mua lần 2 rồi, chất lượng ổn định. Giặt nhiều không ra màu, không nhăn. Ship nhanh, đóng gói cẩn thận.',
-      date: '2024-12-05',
-      verified: true,
-      helpful: 15,
-      size: 'L',
-      fit: 'perfect',
-    },
-  ]
+  const PAGE_SIZE = 10
 
-  const [reviews, setReviews] = useState<Review[]>(mockReviews)
-
-  // Any authenticated user may leave a review
-  const hasPurchased = !!user
-
-  // Check if user already reviewed
-  const hasReviewed = reviews.some((review) => review.userId === user?.id)
-
-  const calculateAverageRating = (): string => {
-    if (reviews.length === 0) return '0.0'
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
-    return (sum / reviews.length).toFixed(1)
-  }
-
-  const getRatingDistribution = () => {
-    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
-    reviews.forEach((review) => {
-      distribution[review.rating as keyof typeof distribution]++
-    })
-    return distribution
-  }
-
-  const filteredAndSortedReviews = () => {
-    let filtered = reviews
-
-    // Filter by rating
-    if (filterRating !== 'all') {
-      filtered = filtered.filter((r) => r.rating === filterRating)
-    }
-
-    // Sort
+  const sortParam = (() => {
     switch (sortBy) {
       case 'helpful':
-        return [...filtered].sort((a, b) => b.helpful - a.helpful)
+        return '-helpfulCount'
       case 'rating':
-        return [...filtered].sort((a, b) => b.rating - a.rating)
+        return '-rating'
       case 'recent':
       default:
-        return [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        return '-createdAt'
     }
-  }
+  })()
 
-  const averageRating = calculateAverageRating()
-  const distribution = getRatingDistribution()
-  const totalReviews = reviews.length
+  const fetchReviews = useCallback(async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        'where[product][equals]': String(productId),
+        'where[moderationStatus][equals]': 'approved',
+        sort: sortParam,
+        limit: String(PAGE_SIZE),
+        page: String(page),
+        depth: '1',
+      })
+      if (filterRating !== 'all') {
+        params.set('where[rating][equals]', String(filterRating))
+      }
+
+      const res = await fetch(`/api/reviews?${params}`)
+      if (!res.ok) throw new Error('fetch failed')
+      const data: ReviewsResponse = await res.json()
+
+      setReviews(data.docs)
+      setTotalDocs(data.totalDocs)
+      setTotalPages(data.totalPages)
+    } catch {
+      setReviews([])
+      setTotalDocs(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [productId, sortParam, filterRating, page])
+
+  useEffect(() => {
+    fetchReviews()
+  }, [fetchReviews])
+
+  // Check if the current user has already left a review for this product
+  useEffect(() => {
+    if (!user?.id) {
+      setHasReviewed(false)
+      return
+    }
+    const check = async () => {
+      const params = new URLSearchParams({
+        'where[product][equals]': String(productId),
+        'where[user][equals]': String(user.id),
+        limit: '1',
+        depth: '0',
+      })
+      const res = await fetch(`/api/reviews?${params}`)
+      if (res.ok) {
+        const data = await res.json()
+        setHasReviewed((data.totalDocs ?? 0) > 0)
+      }
+    }
+    check()
+  }, [user, productId])
+
+  const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  reviews.forEach((r) => {
+    const k = r.rating as keyof typeof distribution
+    if (k in distribution) distribution[k]++
+  })
+
+  const averageRating =
+    reviews.length > 0
+      ? (reviews.reduce((a, r) => a + r.rating, 0) / reviews.length).toFixed(1)
+      : '0.0'
+
+  const handleReviewSubmitted = () => {
+    setHasReviewed(true)
+    setShowReviewForm(false)
+    setPage(1)
+    fetchReviews()
+  }
 
   return (
     <div className="bg-background border-t border-border py-12">
@@ -171,29 +180,29 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
         {/* Rating Summary */}
         <div className="bg-muted/50 rounded-sm p-8 mb-8">
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Average Rating */}
             <div className="text-center md:text-left">
               <div className="flex items-end justify-center md:justify-start gap-4 mb-4">
                 <div className="text-6xl text-foreground">{averageRating}</div>
                 <div className="pb-2">
                   <StarRating rating={Math.round(parseFloat(averageRating))} />
                   <p className="text-sm text-muted-foreground mt-1">
-                    {t('count', { count: totalReviews })}
+                    {t('count', { count: totalDocs })}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Rating Distribution */}
             <div className="space-y-2">
               {[5, 4, 3, 2, 1].map((rating) => {
                 const count = distribution[rating as keyof typeof distribution]
-                const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0
-
+                const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
                 return (
                   <button
                     key={rating}
-                    onClick={() => setFilterRating(filterRating === rating ? 'all' : rating)}
+                    onClick={() => {
+                      setFilterRating(filterRating === rating ? 'all' : rating)
+                      setPage(1)
+                    }}
                     className={`flex items-center gap-3 w-full group hover:bg-muted rounded-sm p-2 transition-colors ${
                       filterRating === rating ? 'bg-muted' : ''
                     }`}
@@ -214,34 +223,25 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
         </div>
 
         {/* Write Review Button */}
-        {user && (
+        {user ? (
           <div className="mb-8">
-            {hasPurchased ? (
-              hasReviewed ? (
-                <div className="bg-primary/10 border border-primary/20 rounded-sm p-4 flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary" />
-                  <span className="text-primary">{t('alreadyReviewed')}</span>
-                </div>
-              ) : (
-                <Button
-                  onClick={() => setShowReviewForm(!showReviewForm)}
-                  className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 uppercase tracking-wide"
-                  size="lg"
-                >
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  <span>{t('write')}</span>
-                </Button>
-              )
-            ) : (
-              <div className="bg-warning/10 border border-warning/20 rounded-sm p-4 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-warning" />
-                <span className="text-warning">{t('mustPurchase')}</span>
+            {hasReviewed ? (
+              <div className="bg-primary/10 border border-primary/20 rounded-sm p-4 flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-primary" />
+                <span className="text-primary">{t('alreadyReviewed')}</span>
               </div>
+            ) : (
+              <Button
+                onClick={() => setShowReviewForm(!showReviewForm)}
+                className="w-full md:w-auto bg-primary text-primary-foreground hover:bg-primary/90 uppercase tracking-wide"
+                size="lg"
+              >
+                <MessageCircle className="w-5 h-5 mr-2" />
+                <span>{t('write')}</span>
+              </Button>
             )}
           </div>
-        )}
-
-        {!user && (
+        ) : (
           <div className="mb-8 bg-muted/50 border border-border rounded-sm p-4 text-center">
             <p className="text-muted-foreground">
               <Link href="/login" className="text-foreground underline hover:text-muted-foreground">
@@ -262,12 +262,9 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
               className="mb-8 overflow-hidden"
             >
               <ReviewForm
-                onSubmit={(review) => {
-                  setReviews([review, ...reviews])
-                  setShowReviewForm(false)
-                }}
-                onCancel={() => setShowReviewForm(false)}
                 productId={productId}
+                onSubmitted={handleReviewSubmitted}
+                onCancel={() => setShowReviewForm(false)}
               />
             </motion.div>
           )}
@@ -277,7 +274,13 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-border">
           <div className="flex items-center gap-2">
             <span className="text-sm uppercase tracking-wide text-foreground">{t('sortBy')}</span>
-            <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+            <Select
+              value={sortBy}
+              onValueChange={(value) => {
+                setSortBy(value as SortOption)
+                setPage(1)
+              }}
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
@@ -292,7 +295,10 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
           {filterRating !== 'all' && (
             <Button
               variant="link"
-              onClick={() => setFilterRating('all')}
+              onClick={() => {
+                setFilterRating('all')
+                setPage(1)
+              }}
               className="text-muted-foreground hover:text-foreground underline"
             >
               {t('clearCo')}
@@ -301,40 +307,94 @@ export function ProductReviews({ productId, productName }: ProductReviewsProps) 
         </div>
 
         {/* Reviews List */}
-        <div className="space-y-6">
-          {filteredAndSortedReviews().map((review) => (
-            <ReviewCard key={review.id} review={review} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground" />
+          </div>
+        ) : (
+          <>
+            <div className="space-y-6">
+              {reviews.map((review) => (
+                <ReviewCard key={review.id} review={review} />
+              ))}
+            </div>
 
-        {filteredAndSortedReviews().length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">{t('empty')}</div>
+            {reviews.length === 0 && (
+              <div className="text-center py-12 text-muted-foreground">{t('empty')}</div>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground">
+                  {page} / {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   )
 }
 
-// Review Card Component
-function ReviewCard({ review }: { review: Review }) {
-  const t = useTranslations('reviews')
-  const [helpful, setHelpful] = useState(review.helpful)
-  const [hasVoted, setHasVoted] = useState(false)
+// ─── Review Card ─────────────────────────────────────────────────────────────
 
-  const handleHelpful = () => {
-    if (!hasVoted) {
-      setHelpful(helpful + 1)
-      setHasVoted(true)
+function ReviewCard({ review }: { review: ReviewWithUser }) {
+  const t = useTranslations('reviews')
+  const [helpfulCount, setHelpfulCount] = useState(review.helpfulCount ?? 0)
+  const [hasVoted, setHasVoted] = useState(false)
+  const [voting, setVoting] = useState(false)
+
+  const userName =
+    typeof review.user === 'object' && review.user !== null
+      ? ((review.user as User).name ?? 'Khách hàng')
+      : 'Khách hàng'
+
+  const handleHelpful = async () => {
+    if (hasVoted || voting) return
+    setVoting(true)
+    try {
+      const res = await fetch('/api/reviews/helpful', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reviewId: review.id }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setHelpfulCount(data.helpfulCount ?? helpfulCount + 1)
+        setHasVoted(true)
+      } else if (res.status === 409) {
+        setHasVoted(true) // already voted (cookie existed server-side)
+      }
+    } finally {
+      setVoting(false)
     }
   }
 
-  const getFitLabel = (fit?: string) => {
+  const getFitLabel = (fit?: string | null) => {
     switch (fit) {
-      case 'tight':
+      case 'runs_small':
         return { label: t('fit.tight'), color: 'text-warning bg-warning/10' }
-      case 'perfect':
+      case 'true_to_size':
         return { label: t('fit.perfect'), color: 'text-success bg-success/10' }
-      case 'loose':
+      case 'runs_large':
         return { label: t('fit.loose'), color: 'text-primary bg-primary/10' }
       default:
         return null
@@ -353,63 +413,85 @@ function ReviewCard({ review }: { review: Review }) {
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 bg-primary text-primary-foreground rounded-sm flex items-center justify-center uppercase">
-            {review.userName.charAt(0)}
+            {userName.charAt(0)}
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="uppercase tracking-wide text-foreground">{review.userName}</span>
+              <span className="uppercase tracking-wide text-foreground">{userName}</span>
               {review.verified && (
-                <Badge
-                  variant="secondary"
-                  className="bg-success/10 text-success"
-                >
+                <Badge variant="secondary" className="bg-success/10 text-success">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   {t('verified')}
                 </Badge>
               )}
             </div>
             <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <span>{new Date(review.date).toLocaleDateString('vi-VN')}</span>
-              {review.size && <span>Size: {review.size}</span>}
+              <span>{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
+              {review.sizeOrdered && <span>Size: {review.sizeOrdered}</span>}
             </div>
           </div>
         </div>
       </div>
 
       {/* Rating */}
-      <div className="flex items-center gap-1 mb-3">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={`w-5 h-5 ${
-              star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-border'
-            }`}
-          />
-        ))}
-      </div>
+      <StarRating rating={review.rating} />
 
       {/* Title */}
       {review.title && (
-        <h4 className="uppercase tracking-wide mb-2 text-foreground">{review.title}</h4>
+        <h4 className="uppercase tracking-wide mb-2 mt-3 text-foreground">{review.title}</h4>
       )}
 
       {/* Comment */}
-      <p className="text-foreground/90 mb-4">{review.comment}</p>
+      <p className="text-foreground/90 mb-4 mt-2">{review.comment}</p>
 
-      {/* Body Info */}
+      {/* Body info badges */}
       {(review.height || review.weight || fitInfo) && (
         <div className="flex flex-wrap gap-2 mb-4">
           {review.height && (
             <Badge variant="outline" className="text-xs">
-              {t('labels.height')}: {review.height}
+              {t('labels.height')}: {review.height}cm
             </Badge>
           )}
           {review.weight && (
             <Badge variant="outline" className="text-xs">
-              {t('labels.weight')}: {review.weight}
+              {t('labels.weight')}: {review.weight}kg
             </Badge>
           )}
           {fitInfo && <Badge className={`text-xs ${fitInfo.color}`}>{fitInfo.label}</Badge>}
+        </div>
+      )}
+
+      {/* Review images */}
+      {review.images && review.images.length > 0 && (
+        <div className="flex gap-2 mb-4 flex-wrap">
+          {(review.images as Array<number | Media>).map((img, i) => {
+            const url = typeof img === 'object' ? (img as Media).url : null
+            if (!url) return null
+            return (
+              <img
+                key={i}
+                src={url}
+                alt={`Review image ${i + 1}`}
+                className="w-20 h-20 object-cover rounded-sm border border-border"
+              />
+            )
+          })}
+        </div>
+      )}
+
+      {/* Admin reply */}
+      {review.adminReply && (
+        <div className="bg-muted/50 border border-border rounded-sm p-4 mb-4">
+          <div className="flex items-center gap-2 mb-2 text-sm font-medium text-foreground">
+            <Store className="w-4 h-4" />
+            <span className="uppercase tracking-wide">{t('storeResponse')}</span>
+            {review.adminReplyAt && (
+              <span className="text-muted-foreground font-normal">
+                — {new Date(review.adminReplyAt).toLocaleDateString('vi-VN')}
+              </span>
+            )}
+          </div>
+          <p className="text-foreground/90 text-sm">{review.adminReply}</p>
         </div>
       )}
 
@@ -419,12 +501,12 @@ function ReviewCard({ review }: { review: Review }) {
           variant="ghost"
           size="sm"
           onClick={handleHelpful}
-          disabled={hasVoted}
+          disabled={hasVoted || voting}
           className={`${hasVoted ? 'text-success' : 'text-muted-foreground'}`}
         >
           <ThumbsUp className={`w-4 h-4 mr-2 ${hasVoted ? 'fill-success' : ''}`} />
           <span>
-            {t('helpful')} ({helpful})
+            {t('helpful')} ({helpfulCount})
           </span>
         </Button>
       </div>
@@ -432,15 +514,16 @@ function ReviewCard({ review }: { review: Review }) {
   )
 }
 
-// Review Form Component
+// ─── Review Form ─────────────────────────────────────────────────────────────
+
 function ReviewForm({
-  onSubmit,
-  onCancel,
   productId,
+  onSubmitted,
+  onCancel,
 }: {
-  onSubmit: (review: Review) => void
-  onCancel: () => void
   productId: number
+  onSubmitted: () => void
+  onCancel: () => void
 }) {
   const { user } = useUser()
   const t = useTranslations('reviews')
@@ -448,43 +531,142 @@ function ReviewForm({
   const [hoverRating, setHoverRating] = useState(0)
   const [title, setTitle] = useState('')
   const [comment, setComment] = useState('')
-  const [size, setSize] = useState('')
-  const [fit, setFit] = useState<'tight' | 'perfect' | 'loose' | ''>('')
+  const [sizeOrdered, setSizeOrdered] = useState('')
+  const [fit, setFit] = useState<'runs_small' | 'true_to_size' | 'runs_large' | ''>('')
   const [height, setHeight] = useState('')
   const [weight, setWeight] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ── Image upload state ──────────────────────────────────────────────────────
+  interface UploadedImage {
+    id: number
+    url: string
+    localPreview: string
+  }
+  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([])
+  const [uploadingCount, setUploadingCount] = useState(0)
+  const MAX_IMAGES = 5
+
+  const handleImageFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    const remaining = MAX_IMAGES - uploadedImages.length
+    const toUpload = Array.from(files).slice(0, remaining)
+
+    setUploadingCount((c) => c + toUpload.length)
+
+    await Promise.all(
+      toUpload.map(async (file) => {
+        const localPreview = URL.createObjectURL(file)
+        const form = new FormData()
+        form.append('file', file)
+        form.append('alt', file.name)
+
+        try {
+          const res = await fetch('/api/media', {
+            method: 'POST',
+            credentials: 'include',
+            body: form,
+          })
+          if (!res.ok) throw new Error('upload failed')
+          const data = await res.json()
+          const mediaId: number = data?.doc?.id ?? data?.id
+          const mediaUrl: string = data?.doc?.url ?? data?.url ?? localPreview
+          if (!mediaId) throw new Error('no media id returned')
+          setUploadedImages((prev) => [...prev, { id: mediaId, url: mediaUrl, localPreview }])
+        } catch {
+          setError(t('images.uploadError'))
+        } finally {
+          setUploadingCount((c) => c - 1)
+        }
+      }),
+    )
+  }
+
+  const removeImage = (id: number) => {
+    setUploadedImages((prev) => {
+      const removed = prev.find((img) => img.id === id)
+      if (removed) URL.revokeObjectURL(removed.localPreview)
+      return prev.filter((img) => img.id !== id)
+    })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!rating || !comment) {
-      alert(t('form.alert'))
+    if (!rating || !comment.trim()) {
+      setError(t('form.alert'))
+      return
+    }
+    if (!user?.id) {
+      setError('Must be logged in')
       return
     }
 
-    const review: Review = {
-      id: crypto.randomUUID(),
-      userId: user?.id || '',
-      userName: user?.fullName || 'Khách hàng',
-      rating,
-      title,
-      comment,
-      date: new Date().toISOString(),
-      verified: true,
-      helpful: 0,
-      size,
-      fit: fit || undefined,
-      height,
-      weight,
-    }
+    setSubmitting(true)
+    setError(null)
 
-    onSubmit(review)
+    const body: Record<string, unknown> = {
+      product: productId,
+      user: user.id,
+      rating,
+      comment,
+    }
+    if (title.trim()) body.title = title.trim()
+    if (sizeOrdered.trim()) body.sizeOrdered = sizeOrdered.trim()
+    if (fit) body.fit = fit
+    if (height && !isNaN(Number(height))) body.height = Number(height)
+    if (weight && !isNaN(Number(weight))) body.weight = Number(weight)
+    if (uploadedImages.length > 0) body.images = uploadedImages.map((img) => img.id)
+
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.errors?.[0]?.message ?? data?.message ?? 'Submit failed')
+      }
+
+      const result = await res.json()
+      const isApproved = result?.doc?.moderationStatus === 'approved'
+      setSuccessMsg(isApproved ? t('form.successApproved') : t('form.successPending'))
+
+      setTimeout(() => {
+        onSubmitted()
+      }, 1500)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  if (successMsg) {
+    return (
+      <div className="bg-success/10 border border-success/20 rounded-sm p-6 text-center">
+        <CheckCircle className="w-8 h-8 text-success mx-auto mb-2" />
+        <p className="text-success">{successMsg}</p>
+      </div>
+    )
   }
 
   return (
     <form onSubmit={handleSubmit} className="bg-muted/30 border-2 border-border rounded-sm p-6">
       <h3 className="text-xl uppercase tracking-wide mb-6 text-foreground">{t('form.title')}</h3>
 
-      {/* Rating */}
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-sm p-3 mb-4 flex items-center gap-2 text-destructive text-sm">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          {error}
+        </div>
+      )}
+
+      {/* Star rating */}
       <div className="mb-6">
         <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
           {t('labels.rating')} <span className="text-destructive">*</span>
@@ -538,23 +720,22 @@ function ReviewForm({
         />
       </div>
 
-      {/* Size & Fit Info */}
+      {/* Size / Fit / Body info */}
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div>
           <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
             {t('labels.size')}
           </label>
-          <Select value={size} onValueChange={setSize}>
+          <Select value={sizeOrdered} onValueChange={setSizeOrdered}>
             <SelectTrigger>
               <SelectValue placeholder={t('placeholders.size')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="XS">XS</SelectItem>
-              <SelectItem value="S">S</SelectItem>
-              <SelectItem value="M">M</SelectItem>
-              <SelectItem value="L">L</SelectItem>
-              <SelectItem value="XL">XL</SelectItem>
-              <SelectItem value="XXL">XXL</SelectItem>
+              {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -563,14 +744,14 @@ function ReviewForm({
           <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
             {t('labels.fit')}
           </label>
-          <Select value={fit} onValueChange={(value: any) => setFit(value)}>
+          <Select value={fit} onValueChange={(v) => setFit(v as typeof fit)}>
             <SelectTrigger>
               <SelectValue placeholder={t('placeholders.fit')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="tight">{t('fit.tight')}</SelectItem>
-              <SelectItem value="perfect">{t('fit.perfect')}</SelectItem>
-              <SelectItem value="loose">{t('fit.loose')}</SelectItem>
+              <SelectItem value="runs_small">{t('fit.tight')}</SelectItem>
+              <SelectItem value="true_to_size">{t('fit.perfect')}</SelectItem>
+              <SelectItem value="runs_large">{t('fit.loose')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -580,7 +761,7 @@ function ReviewForm({
             {t('labels.height')}
           </label>
           <Input
-            type="text"
+            type="number"
             value={height}
             onChange={(e) => setHeight(e.target.value)}
             placeholder={t('placeholders.height')}
@@ -592,7 +773,7 @@ function ReviewForm({
             {t('labels.weight')}
           </label>
           <Input
-            type="text"
+            type="number"
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             placeholder={t('placeholders.weight')}
@@ -600,18 +781,84 @@ function ReviewForm({
         </div>
       </div>
 
-      {/* Buttons */}
+      {/* Image upload */}
+      <div className="mb-6">
+        <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
+          {t('images.label')}
+        </label>
+        <p className="text-xs text-muted-foreground mb-3">{t('images.hint')}</p>
+
+        {/* Thumbnails + upload trigger */}
+        <div className="flex flex-wrap gap-3 items-center">
+          {uploadedImages.map((img) => (
+            <div key={img.id} className="relative w-20 h-20 flex-shrink-0">
+              <img
+                src={img.url || img.localPreview}
+                alt="Review image preview"
+                className="w-full h-full object-cover rounded-sm border border-border"
+              />
+              <button
+                type="button"
+                aria-label={t('images.remove')}
+                onClick={() => removeImage(img.id)}
+                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center shadow"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
+
+          {/* Uploading spinners */}
+          {uploadingCount > 0 &&
+            Array.from({ length: uploadingCount }).map((_, i) => (
+              <div
+                key={`spinner-${i}`}
+                className="w-20 h-20 flex-shrink-0 rounded-sm border border-border bg-muted flex items-center justify-center"
+              >
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-foreground" />
+              </div>
+            ))}
+
+          {/* Add button — hidden when at limit */}
+          {uploadedImages.length < MAX_IMAGES && uploadingCount === 0 && (
+            <label
+              className={`w-20 h-20 flex-shrink-0 rounded-sm border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-foreground/50 transition-colors text-muted-foreground hover:text-foreground ${
+                submitting ? 'pointer-events-none opacity-50' : ''
+              }`}
+            >
+              <ImagePlus className="w-6 h-6 mb-1" />
+              <span className="text-xs text-center leading-tight">{t('images.addMore')}</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                className="sr-only"
+                disabled={submitting}
+                onChange={(e) => handleImageFiles(e.target.files)}
+                onClick={(e) => {
+                  // Reset value so the same file can be re-selected after removal
+                  ;(e.target as HTMLInputElement).value = ''
+                }}
+              />
+            </label>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
       <div className="flex gap-3">
         <Button
           type="submit"
+          disabled={submitting}
           className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 uppercase tracking-wide"
         >
-          {t('form.submit')}
+          {submitting ? t('form.submitting') : t('form.submit')}
         </Button>
         <Button
           type="button"
           variant="outline"
           onClick={onCancel}
+          disabled={submitting}
           className="flex-1 uppercase tracking-wide"
         >
           {t('form.cancel')}

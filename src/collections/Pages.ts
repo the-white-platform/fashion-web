@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated } from '../access/authenticated'
+import { isAdmin, isAdminOrEditor } from '../access/roles'
 import { authenticatedOrPublished } from '../access/authenticatedOrPublished'
 import { Archive } from '../blocks/ArchiveBlock/config'
 import { CallToAction } from '../blocks/CallToAction/config'
@@ -21,10 +21,10 @@ import {
 export const Pages: CollectionConfig = {
   slug: 'pages',
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: isAdminOrEditor,
+    delete: isAdmin,
     read: authenticatedOrPublished,
-    update: authenticated,
+    update: isAdminOrEditor,
   },
   admin: {
     defaultColumns: ['title', 'slug', 'updatedAt'],

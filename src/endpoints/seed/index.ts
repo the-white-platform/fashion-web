@@ -74,10 +74,12 @@ export const seed = async ({
   if (userExists === 0) {
     await payload.create({
       collection: 'users',
+      draft: false,
       data: {
         name: adminName,
         email: adminEmail,
         password: resolvedAdminPassword,
+        role: 'admin',
       },
     })
     payload.logger.info(`  ✓ Created admin user: ${adminEmail}`)

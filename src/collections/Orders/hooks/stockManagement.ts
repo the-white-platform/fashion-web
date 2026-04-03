@@ -209,7 +209,11 @@ export const incrementCouponUsageAfterOrder: CollectionAfterChangeHook = async (
     }
 
     // Guard: skip increment if already at or over the usage limit
-    if (coupon.usageLimit && coupon.usageLimit > 0 && (coupon.usageCount || 0) >= coupon.usageLimit) {
+    if (
+      coupon.usageLimit &&
+      coupon.usageLimit > 0 &&
+      (coupon.usageCount || 0) >= coupon.usageLimit
+    ) {
       payload.logger.warn(
         `Coupon "${couponCode}" already at usage limit (${coupon.usageCount}/${coupon.usageLimit}), skipping increment`,
       )
@@ -222,7 +226,9 @@ export const incrementCouponUsageAfterOrder: CollectionAfterChangeHook = async (
       data: { usageCount: (coupon.usageCount || 0) + 1 },
     })
 
-    payload.logger.info(`Coupon "${couponCode}" usage incremented to ${(coupon.usageCount || 0) + 1}`)
+    payload.logger.info(
+      `Coupon "${couponCode}" usage incremented to ${(coupon.usageCount || 0) + 1}`,
+    )
   } catch (error) {
     payload.logger.error(`Failed to increment coupon usage for "${couponCode}": ${error}`)
   }
@@ -369,7 +375,6 @@ export const decrementStockAfterOrder: CollectionAfterChangeHook = async ({
         }
       })
 
-      // Update the product with new stock
       await payload.update({
         collection: 'products',
         id: productId,
@@ -377,6 +382,36 @@ export const decrementStockAfterOrder: CollectionAfterChangeHook = async ({
           colorVariants: updatedVariants,
         },
       })
+
+      // Record stock movements for each affected size
+      const matchedVariant = product.colorVariants?.find(
+        (v) => v.color === item.variant || v.id === item.variant,
+      )
+      const sizeItem = matchedVariant?.sizeInventory?.find((s) => s.size === item.size)
+      if (sizeItem !== undefined) {
+        const previousStock = sizeItem.stock
+        const newStock = Math.max(0, previousStock - item.quantity)
+        try {
+          await payload.create({
+            collection: 'stock-movements',
+            data: {
+              product: productId,
+              variant: item.variant ?? '',
+              size: item.size,
+              type: 'sale',
+              quantity: -item.quantity,
+              previousStock,
+              newStock,
+              order: doc.id,
+              performedBy: req.user?.id ?? null,
+            },
+          })
+        } catch (movementError) {
+          payload.logger.error(
+            `Failed to create stock movement for product ${productId}: ${movementError}`,
+          )
+        }
+      }
 
       // Defense-in-depth: re-read to detect negative stock from concurrent orders
       const updatedProduct = await payload.findByID({
@@ -456,6 +491,13 @@ export const restoreStockOnCancel: CollectionAfterChangeHook = async ({
         }
       })
 
+      const matchedVariantForCancel = product.colorVariants?.find(
+        (v) => v.color === item.variant || v.id === item.variant,
+      )
+      const sizeItemForCancel = matchedVariantForCancel?.sizeInventory?.find(
+        (s) => s.size === item.size,
+      )
+
       await payload.update({
         collection: 'products',
         id: productId,
@@ -463,6 +505,31 @@ export const restoreStockOnCancel: CollectionAfterChangeHook = async ({
           colorVariants: updatedVariants,
         },
       })
+
+      if (sizeItemForCancel !== undefined) {
+        const previousStock = sizeItemForCancel.stock
+        const newStock = previousStock + item.quantity
+        try {
+          await payload.create({
+            collection: 'stock-movements',
+            data: {
+              product: productId,
+              variant: item.variant ?? '',
+              size: item.size,
+              type: 'cancellation',
+              quantity: item.quantity,
+              previousStock,
+              newStock,
+              order: doc.id,
+              performedBy: req.user?.id ?? null,
+            },
+          })
+        } catch (movementError) {
+          payload.logger.error(
+            `Failed to create cancellation movement for product ${productId}: ${movementError}`,
+          )
+        }
+      }
 
       payload.logger.info(
         `✓ Stock restored: Product ${productId}, ${item.variant} ${item.size} (+${item.quantity})`,

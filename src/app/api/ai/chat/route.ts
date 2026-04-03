@@ -1,5 +1,7 @@
 import { cookies } from 'next/headers'
 import { geminiFlash } from '@/lib/gemini'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 // ---------------------------------------------------------------------------
 // In-memory sliding-window rate limiter (per user token prefix)
@@ -44,6 +46,8 @@ interface ProductContext {
 interface RequestBody {
   messages: ChatMessage[]
   productContext?: ProductContext
+  conversationId?: string
+  guestId?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -102,13 +106,76 @@ export async function POST(request: Request) {
     })
   }
 
-  const { messages, productContext } = body
+  const { messages, productContext, conversationId, guestId } = body
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: 'messages array is required' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     })
+  }
+
+  // --- Get authenticated user (if any) ---
+  let userId: number | null = null
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const { user } = await payload.auth({ headers: request.headers })
+    if (user) userId = user.id
+  } catch {
+    // ignore — user may not be logged in
+  }
+
+  // --- Resolve or create conversation ---
+  let convId: number | null = null
+  try {
+    const payload = await getPayload({ config: configPromise })
+
+    if (conversationId) {
+      convId = Number(conversationId)
+      // Check if admin_takeover — if so, skip AI
+      const conv = await payload.findByID({ collection: 'chat-conversations', id: convId })
+      if (conv.status === 'admin_takeover') {
+        return new Response(
+          JSON.stringify({
+            error: 'Cuộc trò chuyện đang được xử lý bởi nhân viên hỗ trợ.',
+            adminTakeover: true,
+          }),
+          { status: 423, headers: { 'Content-Type': 'application/json' } },
+        )
+      }
+    } else {
+      // First message — create a new conversation
+      const newConv = await payload.create({
+        collection: 'chat-conversations',
+        data: {
+          status: 'active',
+          channel: 'web',
+          startedAt: new Date().toISOString(),
+          lastMessageAt: new Date().toISOString(),
+          messageCount: 0,
+          ...(userId ? { user: userId } : {}),
+          ...(guestId ? { guestId } : {}),
+        },
+      })
+      convId = newConv.id
+    }
+
+    // Persist user message
+    const lastMsg = messages[messages.length - 1]
+    if (lastMsg?.role === 'user' && convId) {
+      await payload.create({
+        collection: 'chat-messages',
+        data: {
+          conversation: convId,
+          role: 'user',
+          content: lastMsg.content,
+          channel: 'web',
+        },
+      })
+    }
+  } catch (err) {
+    // Non-fatal: log but continue with AI response
+    console.error('[chat/route] Failed to persist conversation/message:', err)
   }
 
   // --- Build system instruction ---
@@ -147,25 +214,58 @@ export async function POST(request: Request) {
 
     const result = await chat.sendMessageStream(lastMessage.content)
 
+    // Accumulate the full assistant response for persistence
+    let fullAssistantContent = ''
+
     const stream = new ReadableStream({
       async start(controller) {
         try {
           for await (const chunk of result.stream) {
             const text = chunk.text()
             if (text) {
+              fullAssistantContent += text
               controller.enqueue(new TextEncoder().encode(text))
             }
           }
           controller.close()
+
+          // Persist assistant message and update conversation after stream completes
+          if (convId && fullAssistantContent) {
+            try {
+              const payload = await getPayload({ config: configPromise })
+              await payload.create({
+                collection: 'chat-messages',
+                data: {
+                  conversation: convId,
+                  role: 'assistant',
+                  content: fullAssistantContent,
+                  channel: 'web',
+                },
+              })
+              // Update conversation metadata
+              const conv = await payload.findByID({ collection: 'chat-conversations', id: convId })
+              await payload.update({
+                collection: 'chat-conversations',
+                id: convId,
+                data: {
+                  lastMessageAt: new Date().toISOString(),
+                  messageCount: (conv.messageCount ?? 0) + 2, // user + assistant
+                },
+              })
+            } catch (err) {
+              console.error('[chat/route] Failed to persist assistant message:', err)
+            }
+          }
         } catch (err) {
           controller.error(err)
         }
       },
     })
 
-    return new Response(stream, {
-      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-    })
+    const headers: Record<string, string> = { 'Content-Type': 'text/plain; charset=utf-8' }
+    if (convId) headers['X-Conversation-Id'] = String(convId)
+
+    return new Response(stream, { headers })
   } catch (err) {
     console.error('Gemini chat error:', err)
     return new Response(

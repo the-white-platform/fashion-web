@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
+import { Award } from 'lucide-react'
 
 interface ReviewStepProps {
   cartItems: any[]
@@ -19,6 +20,10 @@ interface ReviewStepProps {
   appliedCoupon: any
   onBack: () => void
   onComplete: () => void
+  pointsAvailable?: number
+  pointsToRedeem?: number
+  onPointsChange?: (pts: number) => void
+  pointsDiscount?: number
 }
 
 export function ReviewStep({
@@ -34,6 +39,10 @@ export function ReviewStep({
   appliedCoupon,
   onBack,
   onComplete,
+  pointsAvailable = 0,
+  pointsToRedeem = 0,
+  onPointsChange,
+  pointsDiscount = 0,
 }: ReviewStepProps) {
   const t = useTranslations('checkout')
   return (
@@ -113,6 +122,46 @@ export function ReviewStep({
           </div>
         )}
       </div>
+
+      {/* Loyalty Points Redemption */}
+      {pointsAvailable > 0 && onPointsChange && (
+        <div className="bg-card border border-border rounded-sm p-6">
+          <h3 className="text-xl uppercase tracking-wide mb-4 flex items-center gap-2">
+            <Award className="w-5 h-5 text-primary" />
+            Điểm Thưởng
+          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm text-muted-foreground">
+              Điểm khả dụng: <strong>{pointsAvailable.toLocaleString('vi-VN')}</strong>
+            </span>
+            <span className="text-xs text-muted-foreground">100 điểm = 10,000₫</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              min={0}
+              max={pointsAvailable}
+              step={100}
+              value={pointsToRedeem}
+              onChange={(e) => onPointsChange(Number(e.target.value))}
+              className="flex-1 accent-primary"
+            />
+            <div className="text-right w-32">
+              <p className="font-semibold">{pointsToRedeem.toLocaleString('vi-VN')} điểm</p>
+              <p className="text-sm text-success">-{pointsDiscount.toLocaleString('vi-VN')}₫</p>
+            </div>
+          </div>
+          {pointsToRedeem > 0 && (
+            <button
+              type="button"
+              onClick={() => onPointsChange(0)}
+              className="text-xs text-muted-foreground hover:text-foreground mt-2 uppercase tracking-wide"
+            >
+              Bỏ dùng điểm
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Order Notes */}
       <div className="bg-card border border-border rounded-sm p-6">

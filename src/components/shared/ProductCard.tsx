@@ -3,10 +3,11 @@
 import Image from 'next/image'
 import { Link } from '@/i18n/Link'
 import { motion } from 'motion/react'
-import { Heart } from 'lucide-react'
+import { Heart, ArrowRightLeft, Star } from 'lucide-react'
 import { cn } from '@/utilities/cn'
 import { useTranslations } from 'next-intl'
 import type { ProductForFrontend } from '@/utilities/getProducts'
+import { useCompare } from '@/contexts/CompareContext'
 
 interface ProductCardProps {
   product: ProductForFrontend
@@ -14,6 +15,7 @@ interface ProductCardProps {
   showWishlist?: boolean
   isWishlisted?: boolean
   onWishlistToggle?: (product: ProductForFrontend) => void
+  showCompare?: boolean
   sizes?: string
   priority?: boolean
   className?: string
@@ -26,12 +28,16 @@ export function ProductCard({
   showWishlist = false,
   isWishlisted = false,
   onWishlistToggle,
+  showCompare = false,
   sizes = '(max-width: 1024px) 50vw, 33vw',
   priority = false,
   className,
   index = 0,
 }: ProductCardProps) {
   const t = useTranslations()
+  const { addToCompare, removeFromCompare, isInCompare, items: compareItems } = useCompare()
+  const productInCompare = isInCompare(product.id)
+  const compareIsFull = compareItems.length >= 4 && !productInCompare
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -72,7 +78,33 @@ export function ProductCard({
                 onWishlistToggle?.(product)
               }}
             >
-              <Heart className={cn('w-4 h-4', isWishlisted && 'fill-destructive text-destructive')} />
+              <Heart
+                className={cn('w-4 h-4', isWishlisted && 'fill-destructive text-destructive')}
+              />
+            </button>
+          )}
+
+          {showCompare && (
+            <button
+              disabled={compareIsFull}
+              className={cn(
+                'absolute top-3 bg-background text-foreground p-2 rounded-full lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:scale-110 shadow-md z-10',
+                showWishlist ? 'right-12' : 'right-3',
+                productInCompare && 'bg-primary text-primary-foreground opacity-100',
+                compareIsFull && 'opacity-40 cursor-not-allowed',
+              )}
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (productInCompare) {
+                  removeFromCompare(product.id)
+                } else {
+                  addToCompare(product)
+                }
+              }}
+              title={productInCompare ? t('compare.remove') : t('compare.add')}
+            >
+              <ArrowRightLeft className="w-4 h-4" />
             </button>
           )}
 
@@ -106,6 +138,27 @@ export function ProductCard({
                   style={{ backgroundColor: color.hex }}
                 />
               ))}
+            </div>
+          )}
+          {/* Rating stars */}
+          {(product.averageRating ?? 0) > 0 && (
+            <div className="flex items-center gap-1 mb-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={cn(
+                    'w-3 h-3',
+                    star <= Math.round(product.averageRating ?? 0)
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'text-border',
+                  )}
+                />
+              ))}
+              {(product.reviewCount ?? 0) > 0 && (
+                <span className="text-[10px] text-muted-foreground ml-1">
+                  ({product.reviewCount})
+                </span>
+              )}
             </div>
           )}
           <div className="font-bold text-foreground">{product.price}</div>

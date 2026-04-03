@@ -3,20 +3,67 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from '@/i18n/useRouter'
 import { Link } from '@/i18n/Link'
-import { User, MapPin, CreditCard, Ruler, Sparkles, Package, LogOut } from 'lucide-react'
+import {
+  User,
+  MapPin,
+  CreditCard,
+  Ruler,
+  Sparkles,
+  Package,
+  LogOut,
+  Pencil,
+  Trash2,
+  Star,
+  Check,
+  Award,
+  ChevronRight,
+} from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { useTranslations } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { toast } from 'sonner'
 
 type Tab = 'profile' | 'size' | 'vto' | 'shipping' | 'payment' | 'orders'
 
+interface LoyaltySummary {
+  points: number
+  tier: string
+}
+
+const TIER_LABELS: Record<string, string> = {
+  bronze: 'Đồng',
+  silver: 'Bạc',
+  gold: 'Vàng',
+  platinum: 'Bạch Kim',
+}
+
+const TIER_COLORS: Record<string, string> = {
+  bronze: 'text-amber-700 bg-amber-100',
+  silver: 'text-slate-500 bg-slate-100',
+  gold: 'text-yellow-600 bg-yellow-50',
+  platinum: 'text-purple-600 bg-purple-50',
+}
+
 export default function ProfilePage() {
   const router = useRouter()
-  const { user, logout } = useUser()
+  const {
+    user,
+    logout,
+    updateProfile,
+    updateShippingAddress,
+    deleteShippingAddress,
+    updatePaymentMethod,
+    deletePaymentMethod,
+  } = useUser()
   const t = useTranslations()
+  const [isEditing, setIsEditing] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editPhone, setEditPhone] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('profile')
   const [orders, setOrders] = useState<any[]>([])
+  const [loyalty, setLoyalty] = useState<LoyaltySummary | null>(null)
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -28,12 +75,25 @@ export default function ProfilePage() {
   // Fetch latest 5 orders for the orders tab
   useEffect(() => {
     if (!user) return
-    fetch(
-      `/api/orders?where[customerInfo.user][equals]=${user.id}&sort=-createdAt&limit=5`,
-      { credentials: 'include' },
-    )
+    fetch(`/api/orders?where[customerInfo.user][equals]=${user.id}&sort=-createdAt&limit=5`, {
+      credentials: 'include',
+    })
       .then((res) => res.json())
       .then((data) => setOrders(data.docs || []))
+      .catch(() => {})
+  }, [user])
+
+  // Fetch loyalty summary
+  useEffect(() => {
+    if (!user) return
+    fetch(`/api/loyalty-accounts?where[user][equals]=${user.id}&limit=1`, {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const acc = data.docs?.[0]
+        if (acc) setLoyalty({ points: acc.points ?? 0, tier: acc.tier ?? 'bronze' })
+      })
       .catch(() => {})
   }, [user])
 
@@ -75,13 +135,28 @@ export default function ProfilePage() {
                 <p className="text-muted-foreground">{user.email}</p>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-6 py-3 border-2 border-foreground text-foreground rounded-sm hover:bg-muted transition-colors uppercase tracking-wide w-full md:w-auto justify-center"
-            >
-              <LogOut className="w-5 h-5" />
-              <span>{t('profile.logout')}</span>
-            </button>
+            <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
+              {loyalty && (
+                <Link
+                  href="/loyalty"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-medium uppercase tracking-wide transition-opacity hover:opacity-80 ${TIER_COLORS[loyalty.tier] ?? TIER_COLORS.bronze}`}
+                >
+                  <Award className="w-4 h-4" />
+                  <span>
+                    {TIER_LABELS[loyalty.tier] ?? 'Đồng'} · {loyalty.points.toLocaleString('vi-VN')}{' '}
+                    điểm
+                  </span>
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              )}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-6 py-3 border-2 border-foreground text-foreground rounded-sm hover:bg-muted transition-colors uppercase tracking-wide w-full md:w-auto justify-center"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>{t('profile.logout')}</span>
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -143,27 +218,123 @@ export default function ProfilePage() {
         >
           {activeTab === 'profile' && (
             <div className="bg-card rounded-sm border border-border p-6 md:p-8">
-              <h2 className="text-2xl uppercase tracking-wide mb-6">{t('profile.info')}</h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
-                    {t('checkout.fullName')}
-                  </label>
-                  <p className="text-foreground">{user?.fullName}</p>
-                </div>
-                <div>
-                  <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
-                    Email
-                  </label>
-                  <p className="text-foreground">{user?.email}</p>
-                </div>
-                <div>
-                  <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
-                    {t('checkout.phone')}
-                  </label>
-                  <p className="text-foreground">{user?.phone || 'Chưa cập nhật'}</p>
-                </div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl uppercase tracking-wide">{t('profile.info')}</h2>
+                {!isEditing && (
+                  <button
+                    onClick={() => {
+                      setEditName(user?.fullName ?? '')
+                      setEditPhone(user?.phone ?? '')
+                      setIsEditing(true)
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 border border-border rounded-sm hover:bg-muted transition-colors text-sm uppercase tracking-wide"
+                  >
+                    <Pencil className="w-4 h-4" />
+                    {t('common.edit') || 'Edit'}
+                  </button>
+                )}
               </div>
+              {isEditing ? (
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault()
+                    setIsSaving(true)
+                    try {
+                      await updateProfile({ name: editName, phone: editPhone })
+                      toast.success(t('profile.updateSuccess') || 'Profile updated')
+                      setIsEditing(false)
+                    } catch {
+                      toast.error(t('profile.updateError') || 'Failed to update profile')
+                    } finally {
+                      setIsSaving(false)
+                    }
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
+                      {t('checkout.fullName')}
+                    </label>
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      required
+                      className="w-full px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors bg-background"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={user?.email ?? ''}
+                      disabled
+                      className="w-full px-4 py-3 border-2 border-border rounded-sm bg-muted text-muted-foreground cursor-not-allowed"
+                    />
+                    {user?.provider !== 'local' && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('profile.emailReadOnly') ||
+                          'Email cannot be changed for social login accounts'}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
+                      {t('checkout.phone')}
+                    </label>
+                    <input
+                      type="tel"
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      className="w-full px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors bg-background"
+                      placeholder="0912345678"
+                    />
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      type="submit"
+                      disabled={isSaving}
+                      className="bg-foreground text-background px-6 py-3 rounded-sm hover:opacity-90 transition-colors uppercase tracking-wide disabled:opacity-50"
+                    >
+                      {isSaving
+                        ? t('common.processing') || 'Saving...'
+                        : t('common.save') || 'Save'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      className="px-6 py-3 border border-border rounded-sm hover:bg-muted transition-colors uppercase tracking-wide"
+                    >
+                      {t('common.cancel') || 'Cancel'}
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
+                      {t('checkout.fullName')}
+                    </label>
+                    <p className="text-foreground">{user?.fullName}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
+                      Email
+                    </label>
+                    <p className="text-foreground">{user?.email}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
+                      {t('checkout.phone')}
+                    </label>
+                    <p className="text-foreground">
+                      {user?.phone || t('profile.notUpdated') || 'Not updated'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           {activeTab === 'size' && (
@@ -193,29 +364,54 @@ export default function ProfilePage() {
               {user?.shippingAddresses && user.shippingAddresses.length > 0 ? (
                 <div className="space-y-4">
                   {user.shippingAddresses.map((address: any) => (
-                    <div
-                      key={address.id}
-                      className="border border-border rounded-sm p-4 flex items-start justify-between"
-                    >
-                      <div>
-                        <p className="font-medium text-foreground">{address.name}</p>
-                        <p className="text-muted-foreground text-sm">{address.address}</p>
-                        <p className="text-muted-foreground text-sm">
-                          {address.ward}, {address.district}, {address.city}
-                        </p>
-                        <p className="text-muted-foreground text-sm">{address.phone}</p>
+                    <div key={address.id} className="border border-border rounded-sm p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium text-foreground">{address.name}</p>
+                          <p className="text-muted-foreground text-sm">{address.address}</p>
+                          <p className="text-muted-foreground text-sm">
+                            {address.ward?.name || address.ward},{' '}
+                            {address.district?.name || address.district},{' '}
+                            {address.province?.name || address.province}
+                          </p>
+                          <p className="text-muted-foreground text-sm">{address.phone}</p>
+                        </div>
+                        {address.isDefault && (
+                          <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded-sm uppercase flex-shrink-0">
+                            {t('profile.default') || 'Default'}
+                          </span>
+                        )}
                       </div>
-                      {address.isDefault && (
-                        <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded-sm uppercase">
-                          Mặc định
-                        </span>
-                      )}
+                      <div className="flex gap-3 mt-3 pt-3 border-t border-border">
+                        {!address.isDefault && (
+                          <button
+                            onClick={() => {
+                              updateShippingAddress(address.id, { isDefault: true })
+                              toast.success(t('profile.defaultSet') || 'Default address set')
+                            }}
+                            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground uppercase tracking-wide"
+                          >
+                            <Star className="w-3 h-3" />
+                            {t('profile.setDefault') || 'Set Default'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            deleteShippingAddress(address.id)
+                            toast.success(t('profile.addressDeleted') || 'Address deleted')
+                          }}
+                          className="flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 uppercase tracking-wide"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          {t('common.delete') || 'Delete'}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <p className="text-muted-foreground">
-                  Chưa có địa chỉ nào. Thêm địa chỉ khi thanh toán.
+                  {t('profile.noAddresses') || 'No addresses yet. Add an address during checkout.'}
                 </p>
               )}
             </div>
@@ -226,25 +422,55 @@ export default function ProfilePage() {
               {user?.paymentMethods && user.paymentMethods.length > 0 ? (
                 <div className="space-y-4">
                   {user.paymentMethods.map((method: any) => (
-                    <div
-                      key={method.id}
-                      className="border border-border rounded-sm p-4 flex items-start justify-between"
-                    >
-                      <div>
-                        <p className="font-medium text-foreground">{method.name}</p>
-                        <p className="text-muted-foreground text-sm">{method.details}</p>
+                    <div key={method.id} className="border border-border rounded-sm p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-medium text-foreground capitalize">
+                            {method.type?.replace('_', ' ') || method.name}
+                          </p>
+                          {method.cardNumber && (
+                            <p className="text-muted-foreground text-sm">
+                              •••• {method.cardNumber.slice(-4)}
+                            </p>
+                          )}
+                        </div>
+                        {method.isDefault && (
+                          <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded-sm uppercase flex-shrink-0">
+                            {t('profile.default') || 'Default'}
+                          </span>
+                        )}
                       </div>
-                      {method.isDefault && (
-                        <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded-sm uppercase">
-                          Mặc định
-                        </span>
-                      )}
+                      <div className="flex gap-3 mt-3 pt-3 border-t border-border">
+                        {!method.isDefault && (
+                          <button
+                            onClick={() => {
+                              updatePaymentMethod(method.id, { isDefault: true })
+                              toast.success(t('profile.defaultSet') || 'Default payment set')
+                            }}
+                            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground uppercase tracking-wide"
+                          >
+                            <Star className="w-3 h-3" />
+                            {t('profile.setDefault') || 'Set Default'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            deletePaymentMethod(method.id)
+                            toast.success(t('profile.paymentDeleted') || 'Payment method deleted')
+                          }}
+                          className="flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 uppercase tracking-wide"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          {t('common.delete') || 'Delete'}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
                 <p className="text-muted-foreground">
-                  Chưa có phương thức thanh toán nào. Thêm phương thức khi thanh toán.
+                  {t('profile.noPaymentMethods') ||
+                    'No payment methods yet. Add a method during checkout.'}
                 </p>
               )}
             </div>

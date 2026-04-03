@@ -40,4 +40,6 @@ export interface OrderTotals {
   shipping: number
   discount: number
   total: number
+  pointsDiscount?: number
+  pointsRedeemed?: number
 }

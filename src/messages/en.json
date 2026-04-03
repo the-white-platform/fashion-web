@@ -478,8 +478,20 @@
       "title": "Write Your Review",
       "submit": "Submit Review",
       "cancel": "Cancel",
-      "alert": "Please enter rating and comment"
-    }
+      "alert": "Please enter rating and comment",
+      "submitting": "Sending...",
+      "successApproved": "Your review has been published. Thank you!",
+      "successPending": "Your review has been submitted and is awaiting moderation."
+    },
+    "images": {
+      "label": "Photos (optional)",
+      "hint": "Up to 5 images — JPG, PNG or WebP",
+      "uploading": "Uploading...",
+      "uploadError": "Upload failed. Please try again.",
+      "remove": "Remove image",
+      "addMore": "Add photos"
+    },
+    "storeResponse": "Store Response"
   },
   "search": {
     "placeholder": "Search products...",
@@ -1227,5 +1239,63 @@
     "loginLink": "Log in now",
     "errorRateLimit": "You're sending too many messages. Please wait a moment.",
     "errorGeneric": "Something went wrong. Please try again later."
+  },
+  "recentlyViewed": {
+    "title": "Recently Viewed"
+  },
+  "compare": {
+    "add": "Add to compare",
+    "remove": "Remove from compare",
+    "comparing": "Comparing",
+    "clearAll": "Clear All",
+    "compareCount": "Compare ({count})",
+    "minRequired": "Select at least 2 products to compare",
+    "pageTitle": "Product Comparison",
+    "emptyTitle": "No products to compare",
+    "emptyDesc": "Select at least 2 products to compare them side by side",
+    "browseProducts": "Browse Products",
+    "addMore": "Add more products",
+    "backToProducts": "Back to products",
+    "product": "Product",
+    "price": "Price",
+    "category": "Category",
+    "colors": "Colors",
+    "sizes": "Sizes",
+    "stock": "Availability",
+    "inStock": "In Stock",
+    "outOfStock": "Out of Stock",
+    "description": "Description",
+    "features": "Features",
+    "actions": "Actions",
+    "addToCart": "Add to Cart",
+    "addToWishlist": "Add to Wishlist",
+    "wishlisted": "Wishlisted"
+  },
+  "loyalty": {
+    "title": "Loyalty & Rewards",
+    "points": "Points",
+    "tier": "Tier",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "platinum": "Platinum",
+    "availablePoints": "Available Points",
+    "lifetimePoints": "Lifetime Points",
+    "redeemPoints": "Use Loyalty Points",
+    "pointsDiscount": "Points Discount",
+    "noPointsAvailable": "No points available",
+    "history": "Points History",
+    "earnRules": "How to Earn",
+    "benefits": "Tier Benefits",
+    "referral": "Refer a Friend",
+    "referralDesc": "Share your code. Earn 200 points when a friend places their first order.",
+    "copyLink": "Copy Link",
+    "copiedLink": "Link copied!"
+  },
+  "recommendations": {
+    "forYou": "For You",
+    "similar": "Similar Products",
+    "cartBased": "You May Also Like",
+    "popular": "Popular Products"
   }
 }

@@ -1,25 +1,29 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone } from '../access/anyone'
-import { authenticated } from '../access/authenticated'
+import { isAdmin, isAdminOrEditor } from '../access/roles'
 import {
   FixedToolbarFeature,
   InlineToolbarFeature,
   lexicalEditor,
 } from '@payloadcms/richtext-lexical'
 import { slugify } from '@/utilities/slugify'
+import { computeStockStatus } from './Products/hooks/computeStockStatus'
 
 export const Products: CollectionConfig = {
   slug: 'products',
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: isAdminOrEditor,
+    delete: isAdmin,
     read: anyone,
-    update: authenticated,
+    update: isAdminOrEditor,
+  },
+  hooks: {
+    beforeChange: [computeStockStatus],
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'category', 'price', 'tag', 'inStock'],
+    defaultColumns: ['name', 'category', 'price', 'stockStatus', 'tag', 'inStock'],
   },
   labels: {
     singular: { vi: 'Sản Phẩm', en: 'Product' },
@@ -268,6 +272,21 @@ export const Products: CollectionConfig = {
       },
     },
     {
+      name: 'stockStatus',
+      type: 'select',
+      label: { vi: 'Trạng Thái Tồn Kho', en: 'Stock Status' },
+      defaultValue: 'in_stock',
+      options: [
+        { label: { vi: 'Còn Hàng', en: 'In Stock' }, value: 'in_stock' },
+        { label: { vi: 'Sắp Hết Hàng', en: 'Low Stock' }, value: 'low_stock' },
+        { label: { vi: 'Hết Hàng', en: 'Out of Stock' }, value: 'out_of_stock' },
+      ],
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
       name: 'featured',
       type: 'checkbox',
       defaultValue: false,
@@ -301,6 +320,36 @@ export const Products: CollectionConfig = {
           label: { vi: 'Đặc điểm', en: 'Feature' },
         },
       ],
+    },
+
+    // Review aggregates — updated automatically by Reviews afterChange hook
+    {
+      name: 'averageRating',
+      type: 'number',
+      defaultValue: 0,
+      label: { vi: 'Điểm Đánh Giá TB', en: 'Average Rating' },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: {
+          vi: 'Tự động cập nhật từ đánh giá',
+          en: 'Auto-updated from approved reviews',
+        },
+      },
+    },
+    {
+      name: 'reviewCount',
+      type: 'number',
+      defaultValue: 0,
+      label: { vi: 'Số Đánh Giá', en: 'Review Count' },
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        description: {
+          vi: 'Số lượng đánh giá đã duyệt',
+          en: 'Count of approved reviews',
+        },
+      },
     },
   ],
 }

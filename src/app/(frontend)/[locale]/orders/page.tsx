@@ -5,9 +5,18 @@ import { useRouter } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import Image from 'next/image'
 import { motion } from 'motion/react'
-import { Package, Truck, CheckCircle, Clock, XCircle, ChevronRight } from 'lucide-react'
+import {
+  Package,
+  Truck,
+  CheckCircle,
+  Clock,
+  XCircle,
+  ChevronRight,
+  ShoppingBag,
+} from 'lucide-react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { useUser } from '@/contexts/UserContext'
+import { useCart } from '@/contexts/CartContext'
 import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
@@ -18,6 +27,8 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { useTranslations } from 'next-intl'
+import { reorderItems } from '@/utilities/reorder'
+import { toast } from 'sonner'
 
 function useGetStatusInfo() {
   const t = useTranslations()
@@ -78,18 +89,40 @@ function useGetStatusInfo() {
 export default function OrdersPage() {
   const router = useRouter()
   const { user } = useUser()
+  const { addToCart, setIsCartOpen } = useCart()
   const t = useTranslations()
   const getStatusInfo = useGetStatusInfo()
   const [orders, setOrders] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(!!user)
+  const [reordering, setReordering] = useState<string | null>(null)
+
+  const handleBuyAgain = async (order: any) => {
+    setReordering(order.id)
+    try {
+      const { added, skipped } = await reorderItems(order.items ?? [], addToCart)
+      if (added > 0) {
+        setIsCartOpen(true)
+        toast.success(
+          skipped > 0
+            ? `Đã thêm ${added} sản phẩm (${skipped} hết hàng)`
+            : `Đã thêm ${added} sản phẩm vào giỏ hàng`,
+        )
+      } else {
+        toast.error('Tất cả sản phẩm đã hết hàng')
+      }
+    } catch {
+      toast.error('Không thể thêm sản phẩm vào giỏ hàng')
+    } finally {
+      setReordering(null)
+    }
+  }
 
   useEffect(() => {
     if (!user) return
     let cancelled = false
-    fetch(
-      `/api/orders?where[customerInfo.user][equals]=${user.id}&sort=-createdAt&limit=50`,
-      { credentials: 'include' },
-    )
+    fetch(`/api/orders?where[customerInfo.user][equals]=${user.id}&sort=-createdAt&limit=50`, {
+      credentials: 'include',
+    })
       .then((res) => res.json())
       .then((data) => {
         if (!cancelled) {
@@ -226,13 +259,25 @@ export default function OrdersPage() {
                           {(order.totals?.total || 0).toLocaleString('vi-VN')}₫
                         </p>
                       </div>
-                      <button
-                        onClick={() => router.push(`/orders/${order.orderNumber}`)}
-                        className="flex items-center gap-2 px-4 py-2 border-2 border-border rounded-sm hover:border-foreground transition-colors bg-background text-foreground"
-                      >
-                        {t('orders.viewDetails')}
-                        <ChevronRight className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-3">
+                        {order.status === 'delivered' && (
+                          <button
+                            onClick={() => handleBuyAgain(order)}
+                            disabled={reordering === order.id}
+                            className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-sm hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <ShoppingBag className="w-4 h-4" />
+                            {reordering === order.id ? 'Đang xử lý...' : t('orders.buyAgain')}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => router.push(`/orders/${order.orderNumber}`)}
+                          className="flex items-center gap-2 px-4 py-2 border-2 border-border rounded-sm hover:border-foreground transition-colors bg-background text-foreground"
+                        >
+                          {t('orders.viewDetails')}
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </motion.div>

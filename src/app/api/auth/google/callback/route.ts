@@ -72,13 +72,14 @@ export async function GET(request: Request) {
     // Create new user
     const newUser = await payload.create({
       collection: 'users',
+      draft: false,
       data: {
         email: userinfo.email as string,
         name: (userinfo.name || userinfo.given_name) as string,
         sub: userinfo.sub,
         provider: 'google',
+        role: 'customer',
         imageUrl: userinfo.picture as string,
-        // For OAuth users, we can set a random password as it won't be used
         password: randomBytes(32).toString('hex'),
       },
     })

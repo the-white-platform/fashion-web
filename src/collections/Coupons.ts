@@ -1,5 +1,5 @@
 import type { CollectionConfig } from 'payload'
-import { authenticated } from '@/access/authenticated'
+import { isAdmin, isAdminOrEditor } from '@/access/roles'
 
 export const Coupons: CollectionConfig = {
   slug: 'coupons',
@@ -9,10 +9,10 @@ export const Coupons: CollectionConfig = {
     defaultColumns: ['code', 'type', 'value', 'active', 'usageCount', 'validUntil'],
   },
   access: {
-    read: () => true,
-    create: authenticated,
-    update: authenticated,
-    delete: authenticated,
+    read: () => true, // Public read needed for checkout coupon validation
+    create: isAdminOrEditor,
+    update: isAdminOrEditor,
+    delete: isAdmin,
   },
   fields: [
     {
@@ -39,7 +39,9 @@ export const Coupons: CollectionConfig = {
       name: 'value',
       type: 'number',
       required: true,
-      admin: { description: 'Percentage (0-100) for percentage type, VND amount for fixed, 0 for shipping' },
+      admin: {
+        description: 'Percentage (0-100) for percentage type, VND amount for fixed, 0 for shipping',
+      },
     },
     {
       name: 'description',

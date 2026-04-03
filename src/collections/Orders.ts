@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { hasRole, isAdmin, adminOrEditorFieldAccess } from '../access/roles'
 import {
   validateAndRecalculateOrder,
   validateStockBeforeOrder,
@@ -6,29 +7,28 @@ import {
   restoreStockOnCancel,
   incrementCouponUsageAfterOrder,
 } from './Orders/hooks/stockManagement'
+import { logOrderActivity } from './Orders/hooks/activityLog'
+import { handleReturn } from './Orders/hooks/returnManagement'
+import { sendOrderEmails } from './Orders/hooks/sendOrderEmails'
+import { notifyOnOrder } from './Orders/hooks/notifyOnOrder'
+import { notifyOnStockChange } from './Orders/hooks/notifyOnStockChange'
+import { loyaltyEarn } from './Orders/hooks/loyaltyEarn'
 
 export const Orders: CollectionConfig = {
   slug: 'orders',
   access: {
     read: ({ req: { user } }) => {
       if (!user) return false
-      // Return a query constraint — user can only read their own orders
-      // Payload admin panel bypasses access control, so admins can still see all
-      return {
-        'customerInfo.user': {
-          equals: user.id,
-        },
-      }
+      if (hasRole(user, ['admin', 'editor', 'staff'])) return true
+      return { 'customerInfo.user': { equals: user.id } }
     },
-    create: () => true, // Public can create orders (checkout)
+    create: () => true,
     update: ({ req: { user } }) => {
       if (!user) return false
+      if (hasRole(user, ['admin', 'editor', 'staff'])) return true
       return { 'customerInfo.user': { equals: user.id } }
     },
-    delete: ({ req: { user } }) => {
-      if (!user) return false
-      return { 'customerInfo.user': { equals: user.id } }
-    },
+    delete: isAdmin,
   },
   labels: {
     singular: { vi: 'Đơn Hàng', en: 'Order' },
@@ -284,6 +284,9 @@ export const Orders: CollectionConfig = {
       name: 'payment',
       type: 'group',
       label: { vi: 'Thanh toán', en: 'Payment' },
+      access: {
+        update: adminOrEditorFieldAccess,
+      },
       fields: [
         {
           type: 'row',
@@ -352,6 +355,9 @@ export const Orders: CollectionConfig = {
       name: 'totals',
       type: 'group',
       label: { vi: 'Tổng tiền', en: 'Order Totals' },
+      access: {
+        update: adminOrEditorFieldAccess,
+      },
       fields: [
         {
           type: 'row',
@@ -392,6 +398,35 @@ export const Orders: CollectionConfig = {
           type: 'text',
           label: { vi: 'Mã giảm giá', en: 'Coupon Code' },
         },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'pointsRedeemed',
+              type: 'number',
+              defaultValue: 0,
+              label: { vi: 'Điểm đổi', en: 'Points Redeemed' },
+              admin: {
+                description: {
+                  vi: 'Số điểm thưởng đã sử dụng để thanh toán',
+                  en: 'Loyalty points applied to this order',
+                },
+              },
+            },
+            {
+              name: 'pointsDiscount',
+              type: 'number',
+              defaultValue: 0,
+              label: { vi: 'Giảm giá từ điểm (VND)', en: 'Points Discount (VND)' },
+              admin: {
+                description: {
+                  vi: '100 điểm = 10,000 VND',
+                  en: '100 points = 10,000 VND',
+                },
+              },
+            },
+          ],
+        },
       ],
     },
 
@@ -401,6 +436,9 @@ export const Orders: CollectionConfig = {
       type: 'textarea',
       maxLength: 1000,
       label: { vi: 'Ghi chú nội bộ', en: 'Admin Notes' },
+      access: {
+        update: adminOrEditorFieldAccess,
+      },
       admin: {
         description: {
           vi: 'Ghi chú chỉ hiển thị cho admin',
@@ -414,6 +452,9 @@ export const Orders: CollectionConfig = {
       name: 'fulfillment',
       type: 'group',
       label: { vi: 'Vận chuyển', en: 'Fulfillment' },
+      access: {
+        update: adminOrEditorFieldAccess,
+      },
       fields: [
         {
           type: 'row',
@@ -452,6 +493,168 @@ export const Orders: CollectionConfig = {
         },
       ],
     },
+
+    // Return Request (Task 3)
+    {
+      name: 'returnRequest',
+      type: 'group',
+      label: { vi: 'Yêu cầu hoàn trả', en: 'Return Request' },
+      admin: {
+        condition: (data) => data?.status === 'delivered' || data?.status === 'refunded',
+      },
+      fields: [
+        {
+          name: 'returnStatus',
+          type: 'select',
+          defaultValue: 'none',
+          label: { vi: 'Trạng thái hoàn trả', en: 'Return Status' },
+          options: [
+            { label: { vi: 'Không có', en: 'None' }, value: 'none' },
+            { label: { vi: 'Đã yêu cầu', en: 'Requested' }, value: 'requested' },
+            { label: { vi: 'Đã duyệt', en: 'Approved' }, value: 'approved' },
+            { label: { vi: 'Đã từ chối', en: 'Rejected' }, value: 'rejected' },
+            { label: { vi: 'Đã nhận hàng', en: 'Received' }, value: 'received' },
+            { label: { vi: 'Đã hoàn tiền', en: 'Refunded' }, value: 'refunded' },
+          ],
+        },
+        {
+          name: 'returnReason',
+          type: 'textarea',
+          maxLength: 1000,
+          label: { vi: 'Lý do hoàn trả', en: 'Return Reason' },
+        },
+        {
+          name: 'returnItems',
+          type: 'array',
+          label: { vi: 'Sản phẩm hoàn trả', en: 'Return Items' },
+          fields: [
+            {
+              name: 'product',
+              type: 'relationship',
+              relationTo: 'products',
+              required: true,
+              label: { vi: 'Sản phẩm', en: 'Product' },
+            },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'variant',
+                  type: 'text',
+                  label: { vi: 'Màu sắc', en: 'Color Variant' },
+                },
+                {
+                  name: 'size',
+                  type: 'text',
+                  label: { vi: 'Kích cỡ', en: 'Size' },
+                },
+              ],
+            },
+            {
+              name: 'quantity',
+              type: 'number',
+              required: true,
+              min: 1,
+              defaultValue: 1,
+              label: { vi: 'Số lượng', en: 'Quantity' },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'refundAmount',
+              type: 'number',
+              label: { vi: 'Số tiền hoàn', en: 'Refund Amount' },
+            },
+            {
+              name: 'returnRequestedAt',
+              type: 'date',
+              label: { vi: 'Ngày yêu cầu hoàn trả', en: 'Return Requested At' },
+              admin: {
+                date: {
+                  pickerAppearance: 'dayAndTime',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    },
+
+    // Activity Log (Task 1)
+    {
+      name: 'activityLog',
+      type: 'array',
+      label: { vi: 'Nhật ký hoạt động', en: 'Activity Log' },
+      admin: {
+        readOnly: true,
+        description: {
+          vi: 'Lịch sử thay đổi đơn hàng (tự động)',
+          en: 'Auto-populated order change history',
+        },
+      },
+      fields: [
+        {
+          name: 'action',
+          type: 'select',
+          required: true,
+          label: { vi: 'Hành động', en: 'Action' },
+          options: [
+            { label: { vi: 'Tạo đơn', en: 'Created' }, value: 'created' },
+            { label: { vi: 'Đổi trạng thái', en: 'Status Change' }, value: 'status_change' },
+            {
+              label: { vi: 'Cập nhật thanh toán', en: 'Payment Update' },
+              value: 'payment_update',
+            },
+            { label: { vi: 'Ghi chú', en: 'Note' }, value: 'note' },
+            {
+              label: { vi: 'Yêu cầu hoàn trả', en: 'Return Requested' },
+              value: 'return_requested',
+            },
+            { label: { vi: 'Hoàn tiền', en: 'Refund' }, value: 'refund' },
+          ],
+        },
+        {
+          name: 'timestamp',
+          type: 'date',
+          required: true,
+          label: { vi: 'Thời gian', en: 'Timestamp' },
+          admin: {
+            date: {
+              pickerAppearance: 'dayAndTime',
+            },
+          },
+        },
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'fromValue',
+              type: 'text',
+              label: { vi: 'Giá trị cũ', en: 'From Value' },
+            },
+            {
+              name: 'toValue',
+              type: 'text',
+              label: { vi: 'Giá trị mới', en: 'To Value' },
+            },
+          ],
+        },
+        {
+          name: 'performedBy',
+          type: 'relationship',
+          relationTo: 'users',
+          label: { vi: 'Thực hiện bởi', en: 'Performed By' },
+        },
+        {
+          name: 'note',
+          type: 'text',
+          label: { vi: 'Ghi chú', en: 'Note' },
+        },
+      ],
+    },
   ],
   hooks: {
     beforeChange: [
@@ -468,6 +671,10 @@ export const Orders: CollectionConfig = {
         }
         return data
       },
+      // Handle return status changes (stock restore, refund propagation)
+      handleReturn,
+      // Log status/payment/note changes to activityLog
+      logOrderActivity,
     ],
     afterChange: [
       // Decrement stock after order is created/confirmed
@@ -476,6 +683,14 @@ export const Orders: CollectionConfig = {
       restoreStockOnCancel,
       // Increment coupon usageCount when an order is created with a coupon
       incrementCouponUsageAfterOrder,
+      // Send transactional emails to the customer
+      sendOrderEmails,
+      // Send in-app + push notifications to staff/admins
+      notifyOnOrder,
+      // Send low-stock / out-of-stock notifications
+      notifyOnStockChange,
+      // Award loyalty points when order is delivered
+      loyaltyEarn,
     ],
   },
   timestamps: true,
