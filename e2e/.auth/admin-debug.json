@@ -1,0 +1,37 @@
+{
+  "cookies": [
+    {
+      "name": "payload-token",
+      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiY29sbGVjdGlvbiI6InVzZXJzIiwiZW1haWwiOiJhZG1pbkB0aGV3aGl0ZS52biIsInNpZCI6IjNjNDA2OTVkLTVjY2EtNDkwNC1iMmFhLTgxNzZiMDllMTNlYiIsImlhdCI6MTc3NTI0ODQ0MiwiZXhwIjoxNzc1MjU1NjQyfQ.rdXnXQP7p-GVmHXGV-WXWWaUzrZHQsiyKjya1TgIGmc",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1775255643.363416,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "thewhite_recently_viewed",
+          "value": "[]"
+        },
+        {
+          "name": "thewhite_compare",
+          "value": "[]"
+        },
+        {
+          "name": "thewhite_wishlist",
+          "value": "[]"
+        },
+        {
+          "name": "thewhite_cart",
+          "value": "[]"
+        }
+      ]
+    }
+  ]
+}
