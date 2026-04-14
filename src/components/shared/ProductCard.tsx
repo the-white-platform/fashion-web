@@ -126,7 +126,11 @@ export function ProductCard({
           <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-[0.2em] font-medium">
             {product.category}
           </div>
-          <h3 className="mb-1 text-lg uppercase font-semibold group-hover:text-muted-foreground transition-colors line-clamp-1 leading-none">
+          {/* `leading-none` + Vietnamese = diacritic clipping (Ầ Ơ Ể Ớ Ấ Ắ
+              have marks above the cap line that get chopped when line-height
+              equals the font em). `leading-tight` (1.25) restores vertical
+              room without breaking the single-line clamp layout. */}
+          <h3 className="mb-1 text-lg uppercase font-semibold group-hover:text-muted-foreground transition-colors line-clamp-1 leading-tight">
             {product.name}
           </h3>
           {product.colors && product.colors.length > 0 && (

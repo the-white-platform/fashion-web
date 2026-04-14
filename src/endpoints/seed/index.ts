@@ -1,6 +1,15 @@
 import type { CollectionSlug, Payload, PayloadRequest } from 'payload'
+import { readFile } from 'fs/promises'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { productSeedData, categorySeedData } from './products'
+import { sizeChartSeedData } from './size-charts'
 import { seedVietnamAddresses } from './vietnamAddresses'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const LOOKBOOK_DIR = path.join(__dirname, 'lookbook')
+const SIZE_CHARTS_DIR = path.join(__dirname, 'size-charts')
 
 const collections: CollectionSlug[] = [
   'categories',
@@ -9,10 +18,26 @@ const collections: CollectionSlug[] = [
   'posts',
   'products',
   'orders',
+  'size-charts',
   'forms',
   'form-submissions',
   'search',
 ]
+
+function mimeTypeFor(filePath: string): string {
+  const ext = path.extname(filePath).toLowerCase()
+  switch (ext) {
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg'
+    case '.png':
+      return 'image/png'
+    case '.webp':
+      return 'image/webp'
+    default:
+      return 'application/octet-stream'
+  }
+}
 
 /**
  * Comprehensive seed script for the entire application
@@ -111,25 +136,88 @@ export const seed = async ({
     payload.logger.info(`  ✓ Created category: ${cat.title} / ${cat.titleEn}`)
   }
 
+  // 2.5 Create size charts (one per product line)
+  payload.logger.info(`— Creating ${sizeChartSeedData.length} size charts...`)
+  for (const chart of sizeChartSeedData) {
+    const categoryId = categoryMap[chart.categoryTitle]
+    if (!categoryId) {
+      payload.logger.warn(`  ⚠ Category not found for size chart: ${chart.categoryTitle}`)
+      continue
+    }
+    const absPath = path.resolve(SIZE_CHARTS_DIR, chart.fileName)
+    try {
+      const buffer = await readFile(absPath)
+      const mimetype = mimeTypeFor(absPath)
+      const chartDoc = await payload.create({
+        collection: 'size-charts',
+        data: {
+          title: chart.titleVi,
+          alt: chart.altVi,
+          category: categoryId,
+        },
+        file: {
+          name: chart.fileName,
+          data: buffer,
+          mimetype,
+          size: buffer.length,
+        },
+        locale: 'vi',
+      })
+      await payload.update({
+        collection: 'size-charts',
+        id: chartDoc.id,
+        data: { title: chart.titleEn, alt: chart.altEn },
+        locale: 'en',
+      })
+      payload.logger.info(`  ✓ ${chart.titleVi}`)
+    } catch (err) {
+      payload.logger.error(
+        `  ✗ Failed size chart ${chart.fileName}: ${err instanceof Error ? err.message : String(err)}`,
+      )
+    }
+  }
+
   // 3. Create products with color variants (PARALLEL PROCESSING)
   payload.logger.info(`— Creating ${productSeedData.length} products (parallel batches)...`)
 
-  // Helper: Upload a single image
+  // Helper: Upload a single image. Accepts either an http(s) URL or a local
+  // path relative to `src/endpoints/seed/lookbook/` (downloaded via
+  // scripts/fetch-drive-assets.sh).
   async function uploadImage(
-    imageUrl: string,
+    imageSource: string,
     productName: string,
     productNameEn: string,
     color: string,
     colorEn: string,
   ): Promise<number | null> {
     try {
-      const response = await fetch(imageUrl)
-      const arrayBuffer = await response.arrayBuffer()
-      const buffer = Buffer.from(arrayBuffer)
+      const isUrl = /^https?:\/\//i.test(imageSource)
+      let buffer: Buffer
+      let mimetype: string
+      let fileName: string
 
-      const urlPath = imageUrl.split('?')[0]
-      const imageId = urlPath.split('/').pop() || `image-${Date.now()}`
-      const fileName = `${imageId}-${color.toLowerCase()}-${Date.now()}.jpg`
+      if (isUrl) {
+        const response = await fetch(imageSource)
+        const arrayBuffer = await response.arrayBuffer()
+        buffer = Buffer.from(arrayBuffer)
+        const urlPath = imageSource.split('?')[0]
+        const imageId = urlPath.split('/').pop() || `image-${Date.now()}`
+        fileName = `${imageId}-${color.toLowerCase()}-${Date.now()}.jpg`
+        mimetype = 'image/jpeg'
+      } else {
+        // Paths starting with `hi-res/` resolve against HIRES_DIR; everything
+        // else against LOOKBOOK_DIR.
+        const baseDir = imageSource.startsWith('hi-res/') ? __dirname : LOOKBOOK_DIR
+        const absPath = path.resolve(baseDir, imageSource)
+        buffer = await readFile(absPath)
+        mimetype = mimeTypeFor(absPath)
+        const base = path.basename(absPath).replace(/[^\w.-]/g, '_')
+        // Include a random suffix so parallel uploads of the same source file
+        // (e.g. one image shared across two product variants) don't collide
+        // on Payload's unique filename constraint.
+        const rand = Math.random().toString(36).slice(2, 8)
+        fileName = `${color.toLowerCase()}-${Date.now()}-${rand}-${base}`
+      }
 
       const imageDoc = await payload.create({
         collection: 'media',
@@ -137,7 +225,7 @@ export const seed = async ({
         file: {
           name: fileName,
           data: buffer,
-          mimetype: 'image/jpeg',
+          mimetype,
           size: buffer.length,
         },
         locale: 'vi',
@@ -152,7 +240,10 @@ export const seed = async ({
       })
 
       return imageDoc.id
-    } catch {
+    } catch (err) {
+      payload.logger.warn(
+        `uploadImage failed for "${imageSource}": ${err instanceof Error ? err.message : String(err)}`,
+      )
       return null
     }
   }
@@ -266,269 +357,287 @@ export const seed = async ({
 
   payload.logger.info(`  ✓ All products created`)
 
-  // 4. Configure Header Navigation
-  payload.logger.info(`— Configuring header navigation...`)
+  // Globals (Header / Homepage / Footer / PaymentMethods) use `updateGlobal`
+  // which triggers `revalidateTag` in afterChange hooks. `revalidateTag`
+  // throws outside a Next.js request context (i.e. our CLI bootstrap).
+  // The DB write still succeeds; only the revalidation no-ops. Wrap the
+  // whole section to swallow that specific error and keep the seed going.
+  try {
+    // 4. Configure Header Navigation
+    payload.logger.info(`— Configuring header navigation...`)
 
-  await payload.updateGlobal({
-    slug: 'header',
-    data: {
-      navItems: [
-        {
-          link: {
-            type: 'custom',
-            label: 'Men',
-            url: '/products?category=nam',
-            newTab: false,
+    await payload.updateGlobal({
+      slug: 'header',
+      data: {
+        navItems: [
+          {
+            link: {
+              type: 'custom',
+              label: 'Men',
+              url: '/products?category=nam',
+              newTab: false,
+            },
           },
-        },
-        {
-          link: {
-            type: 'custom',
-            label: 'Women',
-            url: '/products?category=nu',
-            newTab: false,
+          {
+            link: {
+              type: 'custom',
+              label: 'New Arrivals',
+              url: '/products?category=moi-nhat',
+              newTab: false,
+            },
           },
-        },
-        {
-          link: {
-            type: 'custom',
-            label: 'Kids',
-            url: '/products?category=tre-em',
-            newTab: false,
+          {
+            link: {
+              type: 'custom',
+              label: 'Hot',
+              url: '/products?tag=hot',
+              newTab: false,
+            },
           },
-        },
-        {
-          link: {
-            type: 'custom',
-            label: 'New Arrivals',
-            url: '/products?category=moi-nhat',
-            newTab: false,
-          },
-        },
-      ],
-    },
-  })
-
-  payload.logger.info(`  ✓ Header navigation configured`)
-
-  // 5. Configure Homepage Carousel and Activity Categories
-  payload.logger.info(`— Configuring homepage settings...`)
-
-  // Get activity category IDs
-  const activityNames = ['Gym', 'Chạy Bộ', 'Yoga', 'Bóng Đá']
-  const activityCategoryIds: number[] = []
-  for (const name of activityNames) {
-    if (categoryMap[name]) {
-      activityCategoryIds.push(categoryMap[name])
-    }
-  }
-
-  // Build quick filters configuration (base with Vietnamese labels)
-  const quickFiltersBase: Array<{
-    label: string
-    filterType: 'all' | 'category' | 'tag'
-    tagFilter?: 'sale' | 'new' | 'bestseller'
-    category?: number
-  }> = [
-    { label: 'TẤT CẢ', filterType: 'all' },
-    { label: 'MỚI', filterType: 'tag', tagFilter: 'new' },
-    { label: 'BÁN CHẠY', filterType: 'tag', tagFilter: 'bestseller' },
-    { label: 'GIẢM GIÁ', filterType: 'tag', tagFilter: 'sale' },
-  ]
-
-  // Add category-based filters if categories exist
-  if (categoryMap['Gym']) {
-    quickFiltersBase.push({ label: 'GYM', filterType: 'category', category: categoryMap['Gym'] })
-  }
-  if (categoryMap['Yoga']) {
-    quickFiltersBase.push({
-      label: 'YOGA',
-      filterType: 'category',
-      category: categoryMap['Yoga'],
+        ],
+      },
     })
-  }
 
-  // English filter labels (same order as base)
-  const englishLabels = ['ALL', 'NEW', 'BESTSELLER', 'SALE', 'GYM', 'YOGA']
+    payload.logger.info(`  ✓ Header navigation configured`)
 
-  // Step 1: Create homepage content with Vietnamese (default locale) - this creates the structure and IDs
-  await payload.updateGlobal({
-    slug: 'homepage',
-    locale: 'vi',
-    data: {
-      carouselSlides: [
-        {
-          title: 'BỘ SƯU TẬP MÙA ĐÔNG 2024',
-          subtitle: 'Sức mạnh trong từng bước đi',
-          ctaText: 'Khám Phá Ngay',
-          ctaLink: '/products',
-        },
-        {
-          title: 'PHONG CÁCH HIỆN ĐẠI',
-          subtitle: 'Tối ưu cho mọi hoạt động',
-          ctaText: 'Khám Phá Ngay',
-          ctaLink: '/products',
-        },
-        {
-          title: 'CHẤT LIỆU CAO CẤP',
-          subtitle: 'Thoải mái cả ngày dài',
-          ctaText: 'Khám Phá Ngay',
-          ctaLink: '/products',
-        },
-      ],
-      activityCategories: activityCategoryIds,
-      quickFilters: quickFiltersBase,
-    },
-  })
+    // 5. Configure Homepage Carousel and Activity Categories
+    payload.logger.info(`— Configuring homepage settings...`)
 
-  // Step 2: Read back the homepage to get the generated IDs
-  const savedHomepage = await payload.findGlobal({
-    slug: 'homepage',
-    locale: 'vi',
-    depth: 0,
-  })
-
-  // Step 3: Build English quick filters with same IDs and English labels
-  const quickFiltersEn = (savedHomepage.quickFilters || []).map((filter: any, index: number) => ({
-    id: filter.id, // Preserve the same row ID
-    label: englishLabels[index] || filter.label, // Use English label
-    filterType: filter.filterType,
-    tagFilter: filter.tagFilter,
-    category: filter.category,
-  }))
-
-  // Step 4: Build English carousel slides with same IDs
-  const carouselSlidesEn = (savedHomepage.carouselSlides || []).map((slide: any, index: number) => {
-    const englishSlides = [
-      { title: 'WINTER COLLECTION 2024', subtitle: 'Power in every step', ctaText: 'Explore Now' },
-      { title: 'MODERN STYLE', subtitle: 'Optimized for every activity', ctaText: 'Explore Now' },
-      { title: 'PREMIUM MATERIALS', subtitle: 'Comfort all day long', ctaText: 'Explore Now' },
-    ]
-    return {
-      id: slide.id, // Preserve the same row ID
-      title: englishSlides[index]?.title || slide.title,
-      subtitle: englishSlides[index]?.subtitle || slide.subtitle,
-      ctaText: englishSlides[index]?.ctaText || slide.ctaText,
-      ctaLink: slide.ctaLink,
-      backgroundImage: slide.backgroundImage,
+    // Get activity category IDs
+    const activityNames = ['Gym', 'Chạy Bộ', 'Yoga', 'Bóng Đá']
+    const activityCategoryIds: number[] = []
+    for (const name of activityNames) {
+      if (categoryMap[name]) {
+        activityCategoryIds.push(categoryMap[name])
+      }
     }
-  })
 
-  // Step 5: Update English locale with same IDs
-  await payload.updateGlobal({
-    slug: 'homepage',
-    locale: 'en',
-    data: {
-      carouselSlides: carouselSlidesEn,
-      activityCategories: activityCategoryIds,
-      quickFilters: quickFiltersEn,
-    },
-  })
+    // Build quick filters configuration (base with Vietnamese labels)
+    const quickFiltersBase: Array<{
+      label: string
+      filterType: 'all' | 'category' | 'tag'
+      tagFilter?: 'sale' | 'new' | 'bestseller'
+      category?: number
+    }> = [
+      { label: 'TẤT CẢ', filterType: 'all' },
+      { label: 'MỚI', filterType: 'tag', tagFilter: 'new' },
+      { label: 'BÁN CHẠY', filterType: 'tag', tagFilter: 'bestseller' },
+      { label: 'GIẢM GIÁ', filterType: 'tag', tagFilter: 'sale' },
+    ]
 
-  payload.logger.info(`  ✓ Homepage carousel configured (vi + en)`)
-  payload.logger.info(`  ✓ Activity categories configured: ${activityNames.join(', ')}`)
-  payload.logger.info(
-    `  ✓ Quick filters configured: vi: ${quickFiltersBase.map((f) => f.label).join(', ')} | en: ${englishLabels.slice(0, quickFiltersBase.length).join(', ')}`,
-  )
+    // Add category-based filters if categories exist
+    if (categoryMap['Gym']) {
+      quickFiltersBase.push({ label: 'GYM', filterType: 'category', category: categoryMap['Gym'] })
+    }
+    if (categoryMap['Yoga']) {
+      quickFiltersBase.push({
+        label: 'YOGA',
+        filterType: 'category',
+        category: categoryMap['Yoga'],
+      })
+    }
 
-  // 6. Configure Payment Methods
-  payload.logger.info(`— Configuring payment methods (QR & COD)...`)
+    // English filter labels (same order as base)
+    const englishLabels = ['ALL', 'NEW', 'BESTSELLER', 'SALE', 'GYM', 'YOGA']
 
-  await payload.updateGlobal({
-    slug: 'payment-methods',
-    locale: 'vi',
-    data: {
-      cod: {
-        enabled: true,
-        name: 'Thanh toán khi nhận hàng',
-        description: 'Thanh toán bằng tiền mặt khi nhận hàng. Vui lòng chuẩn bị đúng số tiền.',
-        sortOrder: 1,
+    // Step 1: Create homepage content with Vietnamese (default locale) - this creates the structure and IDs
+    await payload.updateGlobal({
+      slug: 'homepage',
+      locale: 'vi',
+      data: {
+        carouselSlides: [
+          {
+            title: 'BỘ SƯU TẬP MÙA ĐÔNG 2024',
+            subtitle: 'Sức mạnh trong từng bước đi',
+            ctaText: 'Khám Phá Ngay',
+            ctaLink: '/products',
+          },
+          {
+            title: 'PHONG CÁCH HIỆN ĐẠI',
+            subtitle: 'Tối ưu cho mọi hoạt động',
+            ctaText: 'Khám Phá Ngay',
+            ctaLink: '/products',
+          },
+          {
+            title: 'CHẤT LIỆU CAO CẤP',
+            subtitle: 'Thoải mái cả ngày dài',
+            ctaText: 'Khám Phá Ngay',
+            ctaLink: '/products',
+          },
+        ],
+        activityCategories: activityCategoryIds,
+        quickFilters: quickFiltersBase,
       },
-      bankTransfer: {
-        enabled: true,
-        name: 'Chuyển khoản ngân hàng / QR',
-        description: 'Chuyển khoản nhanh qua mã VietQR hoặc số tài khoản.',
-        bankName: 'Vietcombank',
-        accountNumber: 'kanetran29',
-        accountName: 'KANE TRAN',
-        sortOrder: 2,
+    })
+
+    // Step 2: Read back the homepage to get the generated IDs
+    const savedHomepage = await payload.findGlobal({
+      slug: 'homepage',
+      locale: 'vi',
+      depth: 0,
+    })
+
+    // Step 3: Build English quick filters with same IDs and English labels
+    const quickFiltersEn = (savedHomepage.quickFilters || []).map((filter: any, index: number) => ({
+      id: filter.id, // Preserve the same row ID
+      label: englishLabels[index] || filter.label, // Use English label
+      filterType: filter.filterType,
+      tagFilter: filter.tagFilter,
+      category: filter.category,
+    }))
+
+    // Step 4: Build English carousel slides with same IDs
+    const carouselSlidesEn = (savedHomepage.carouselSlides || []).map(
+      (slide: any, index: number) => {
+        const englishSlides = [
+          {
+            title: 'WINTER COLLECTION 2024',
+            subtitle: 'Power in every step',
+            ctaText: 'Explore Now',
+          },
+          {
+            title: 'MODERN STYLE',
+            subtitle: 'Optimized for every activity',
+            ctaText: 'Explore Now',
+          },
+          { title: 'PREMIUM MATERIALS', subtitle: 'Comfort all day long', ctaText: 'Explore Now' },
+        ]
+        return {
+          id: slide.id, // Preserve the same row ID
+          title: englishSlides[index]?.title || slide.title,
+          subtitle: englishSlides[index]?.subtitle || slide.subtitle,
+          ctaText: englishSlides[index]?.ctaText || slide.ctaText,
+          ctaLink: slide.ctaLink,
+          backgroundImage: slide.backgroundImage,
+        }
       },
-      qrCode: { enabled: false },
-      vnpay: { enabled: false },
-      stripe: { enabled: false },
-      momo: { enabled: false },
-    },
-  })
+    )
 
-  await payload.updateGlobal({
-    slug: 'payment-methods',
-    locale: 'en',
-    data: {
-      cod: {
-        name: 'Cash on Delivery',
-        description: 'Cash on delivery. Please prepare the exact amount.',
+    // Step 5: Update English locale with same IDs
+    await payload.updateGlobal({
+      slug: 'homepage',
+      locale: 'en',
+      data: {
+        carouselSlides: carouselSlidesEn,
+        activityCategories: activityCategoryIds,
+        quickFilters: quickFiltersEn,
       },
-      bankTransfer: {
-        name: 'Bank Transfer / QR',
-        description: 'Fast transfer via VietQR or account number.',
-      },
-    },
-  })
+    })
 
-  payload.logger.info(`  ✓ Payment methods configured`)
+    payload.logger.info(`  ✓ Homepage carousel configured (vi + en)`)
+    payload.logger.info(`  ✓ Activity categories configured: ${activityNames.join(', ')}`)
+    payload.logger.info(
+      `  ✓ Quick filters configured: vi: ${quickFiltersBase.map((f) => f.label).join(', ')} | en: ${englishLabels.slice(0, quickFiltersBase.length).join(', ')}`,
+    )
 
-  // 7. Configure Footer
-  payload.logger.info(`— Configuring footer navigation...`)
+    // 6. Configure Payment Methods
+    payload.logger.info(`— Configuring payment methods (QR & COD)...`)
 
-  const footerLinksVi = [
-    { label: 'Về Chúng Tôi', url: '/about' },
-    { label: 'Chính Sách Vận Chuyển', url: '/delivery' },
-    { label: 'Chính Sách Đổi Trả', url: '/returns' },
-    { label: 'Điều Khoản Dịch Vụ', url: '/terms' },
-    { label: 'Chính Sách Bảo Mật', url: '/privacy' },
-    { label: 'Liên Hệ', url: '/contact' },
-  ]
-
-  const footerLinksEn = [
-    { label: 'About Us', url: '/about' },
-    { label: 'Delivery Policy', url: '/delivery' },
-    { label: 'Returns Policy', url: '/returns' },
-    { label: 'Terms of Service', url: '/terms' },
-    { label: 'Privacy Policy', url: '/privacy' },
-    { label: 'Contact Us', url: '/contact' },
-  ]
-
-  await payload.updateGlobal({
-    slug: 'footer',
-    locale: 'vi',
-    data: {
-      navItems: footerLinksVi.map((link) => ({
-        link: {
-          type: 'custom' as const,
-          label: link.label,
-          url: link.url,
-          newTab: false,
+    await payload.updateGlobal({
+      slug: 'payment-methods',
+      locale: 'vi',
+      data: {
+        cod: {
+          enabled: true,
+          name: 'Thanh toán khi nhận hàng',
+          description: 'Thanh toán bằng tiền mặt khi nhận hàng. Vui lòng chuẩn bị đúng số tiền.',
+          sortOrder: 1,
         },
-      })),
-    },
-  })
-
-  await payload.updateGlobal({
-    slug: 'footer',
-    locale: 'en',
-    data: {
-      navItems: footerLinksEn.map((link) => ({
-        link: {
-          type: 'custom' as const,
-          label: link.label,
-          url: link.url,
-          newTab: false,
+        bankTransfer: {
+          enabled: true,
+          name: 'Chuyển khoản ngân hàng / QR',
+          description: 'Chuyển khoản nhanh qua mã VietQR hoặc số tài khoản.',
+          bankName: 'Vietcombank',
+          accountNumber: 'kanetran29',
+          accountName: 'KANE TRAN',
+          sortOrder: 2,
         },
-      })),
-    },
-  })
+        qrCode: { enabled: false },
+        vnpay: { enabled: false },
+        stripe: { enabled: false },
+        momo: { enabled: false },
+      },
+    })
 
-  payload.logger.info(`  ✓ Footer configured`)
+    await payload.updateGlobal({
+      slug: 'payment-methods',
+      locale: 'en',
+      data: {
+        cod: {
+          name: 'Cash on Delivery',
+          description: 'Cash on delivery. Please prepare the exact amount.',
+        },
+        bankTransfer: {
+          name: 'Bank Transfer / QR',
+          description: 'Fast transfer via VietQR or account number.',
+        },
+      },
+    })
+
+    payload.logger.info(`  ✓ Payment methods configured`)
+
+    // 7. Configure Footer
+    payload.logger.info(`— Configuring footer navigation...`)
+
+    const footerLinksVi = [
+      { label: 'Về Chúng Tôi', url: '/about' },
+      { label: 'Chính Sách Vận Chuyển', url: '/delivery' },
+      { label: 'Chính Sách Đổi Trả', url: '/returns' },
+      { label: 'Điều Khoản Dịch Vụ', url: '/terms' },
+      { label: 'Chính Sách Bảo Mật', url: '/privacy' },
+      { label: 'Liên Hệ', url: '/contact' },
+    ]
+
+    const footerLinksEn = [
+      { label: 'About Us', url: '/about' },
+      { label: 'Delivery Policy', url: '/delivery' },
+      { label: 'Returns Policy', url: '/returns' },
+      { label: 'Terms of Service', url: '/terms' },
+      { label: 'Privacy Policy', url: '/privacy' },
+      { label: 'Contact Us', url: '/contact' },
+    ]
+
+    await payload.updateGlobal({
+      slug: 'footer',
+      locale: 'vi',
+      data: {
+        navItems: footerLinksVi.map((link) => ({
+          link: {
+            type: 'custom' as const,
+            label: link.label,
+            url: link.url,
+            newTab: false,
+          },
+        })),
+      },
+    })
+
+    await payload.updateGlobal({
+      slug: 'footer',
+      locale: 'en',
+      data: {
+        navItems: footerLinksEn.map((link) => ({
+          link: {
+            type: 'custom' as const,
+            label: link.label,
+            url: link.url,
+            newTab: false,
+          },
+        })),
+      },
+    })
+
+    payload.logger.info(`  ✓ Footer configured`)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('static generation store missing')) {
+      payload.logger.warn(
+        `⚠ Globals saved but cache revalidation was skipped (CLI bootstrap, no Next.js request context). Pages will pick up the new content on next render.`,
+      )
+    } else {
+      throw err
+    }
+  }
 
   payload.logger.info('✅ Database seeding completed!')
 }

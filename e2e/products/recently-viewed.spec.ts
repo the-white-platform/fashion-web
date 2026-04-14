@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test'
 import type { ProductForFrontend } from '../../src/utilities/getProducts'
 
-const PRODUCT_URL = '/vi/products/97'
+const PRODUCT_URL = '/vi/products/quan-vai-gan'
+// quan-vai-gan — ID from current seed DB
+const PRODUCT_ID = 6
 
 // Seed recently viewed items in localStorage before React mounts
 async function seedRecentlyViewedViaInitScript(
@@ -58,13 +60,13 @@ test.describe('Recently viewed', () => {
 
     expect(Array.isArray(recentItems)).toBe(true)
     expect(recentItems.length).toBeGreaterThan(0)
-    // The tracked product should have id = 97
-    expect(recentItems[0].id).toBe(97)
+    // The tracked product should have id matching the seeded product
+    expect(recentItems[0].id).toBe(PRODUCT_ID)
   })
 
   test('recently viewed section appears on homepage when items are stored', async ({ page }) => {
     // Seed a recently viewed item before loading homepage
-    await seedRecentlyViewedViaInitScript(page, [makeProduct(97)])
+    await seedRecentlyViewedViaInitScript(page, [makeProduct(PRODUCT_ID)])
 
     await page.goto('/vi')
     await page.waitForLoadState('domcontentloaded')
@@ -76,7 +78,7 @@ test.describe('Recently viewed', () => {
   })
 
   test('recently viewed section shows product cards when items present', async ({ page }) => {
-    await seedRecentlyViewedViaInitScript(page, [makeProduct(97), makeProduct(96)])
+    await seedRecentlyViewedViaInitScript(page, [makeProduct(PRODUCT_ID), makeProduct(2)])
 
     await page.goto('/vi')
     await page.waitForLoadState('domcontentloaded')
@@ -108,24 +110,24 @@ test.describe('Recently viewed', () => {
     page,
   }) => {
     // Seed 2 items including the current product
-    await seedRecentlyViewedViaInitScript(page, [makeProduct(97), makeProduct(96)])
+    await seedRecentlyViewedViaInitScript(page, [makeProduct(PRODUCT_ID), makeProduct(2)])
 
-    await page.goto(PRODUCT_URL) // product 97
+    await page.goto(PRODUCT_URL) // product PRODUCT_ID
     await page.waitForLoadState('domcontentloaded')
 
-    // RecentlyViewed on product page excludes product.id=97
+    // RecentlyViewed on product page excludes the current product
     const heading = page.getByRole('heading', { name: 'Đã Xem Gần Đây' })
     const isVisible = await heading.isVisible({ timeout: 8_000 }).catch(() => false)
 
     if (isVisible) {
-      // All links in the recently viewed section should NOT link to product 97
+      // All links in the recently viewed section should NOT link to the current product slug
       const section = page.locator('section').filter({ has: page.getByText('Đã Xem Gần Đây') })
       const links = section.locator('a[href*="/vi/products/"]')
       const count = await links.count()
 
       for (let i = 0; i < count; i++) {
         const href = await links.nth(i).getAttribute('href')
-        expect(href).not.toContain('/products/97')
+        expect(href).not.toContain('/products/quan-vai-gan')
       }
     }
   })
@@ -135,7 +137,7 @@ test.describe('Recently viewed', () => {
     const items = Array.from({ length: 20 }, (_, i) => makeProduct(100 + i))
     await seedRecentlyViewedViaInitScript(page, items)
 
-    await page.goto(PRODUCT_URL) // visit product 97 (new item)
+    await page.goto(PRODUCT_URL) // visit the seeded product (new item prepended)
     await page.waitForLoadState('domcontentloaded')
     await page.waitForTimeout(500)
 
@@ -144,9 +146,9 @@ test.describe('Recently viewed', () => {
       return raw ? JSON.parse(raw) : []
     })
 
-    // Should still be max 20 items after adding product 97
+    // Should still be max 20 items after adding the seeded product
     expect(recentItems.length).toBeLessThanOrEqual(20)
-    // Product 97 should be first (most recent)
-    expect(recentItems[0].id).toBe(97)
+    // The seeded product should be first (most recent)
+    expect(recentItems[0].id).toBe(PRODUCT_ID)
   })
 })

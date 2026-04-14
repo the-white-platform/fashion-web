@@ -408,6 +408,8 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
           name: product.name,
           image: currentImages[selectedImageIndex] || product.image,
           priceDisplay: product.price,
+          color: selectedVariant?.color,
+          features: product.features,
         }}
         isOpen={isTryOnOpen}
         onClose={() => setIsTryOnOpen(false)}

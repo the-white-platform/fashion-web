@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { useTranslations, useLocale } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { BoldText } from '@/components/shared/BoldText'
 
 export default function PrivacyPolicyPage() {
   const t = useTranslations('privacyPolicy')
@@ -111,9 +112,10 @@ export default function PrivacyPolicyPage() {
                   </h2>
                 </div>
                 <div className="pl-16">
-                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
-                    {section.content}
-                  </p>
+                  <BoldText
+                    text={section.content}
+                    className="text-muted-foreground whitespace-pre-line leading-relaxed block"
+                  />
                 </div>
               </motion.div>
             )
@@ -130,9 +132,10 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-2xl uppercase tracking-wide mb-4 text-foreground font-semibold">
             {t('sections.international.title')}
           </h2>
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {t('sections.international.content')}
-          </p>
+          <BoldText
+            text={t('sections.international.content')}
+            className="text-muted-foreground leading-relaxed whitespace-pre-line block"
+          />
         </motion.div>
 
         <motion.div
@@ -156,9 +159,10 @@ export default function PrivacyPolicyPage() {
           <h2 className="text-2xl uppercase tracking-wide mb-4 text-foreground font-semibold">
             {t('sections.changes.title')}
           </h2>
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {t('sections.changes.content')}
-          </p>
+          <BoldText
+            text={t('sections.changes.content')}
+            className="text-muted-foreground leading-relaxed whitespace-pre-line block"
+          />
         </motion.div>
 
         {/* Contact DPO */}

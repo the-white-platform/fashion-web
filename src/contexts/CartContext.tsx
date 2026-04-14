@@ -71,45 +71,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevUserRef = useRef<string | null>(null)
 
-  // Persist to localStorage
-  useEffect(() => {
-    localStorage.setItem('thewhite_cart', JSON.stringify(items))
-  }, [items])
-
-  // Merge on login
-  useEffect(() => {
-    const userId = user?.id ?? null
-    const wasLoggedIn = prevUserRef.current
-    prevUserRef.current = userId
-
-    if (userId && !wasLoggedIn) {
-      // User just logged in — merge with server cart
-      fetch(`/api/users/${userId}?depth=0`, { credentials: 'include' })
-        .then((res) => res.json())
-        .then((data) => {
-          const serverCart: CartItem[] = (data.cart ?? []).map((c: any) => ({
-            id: typeof c.product === 'object' ? c.product.id : c.product,
-            name: '',
-            price: 0,
-            image: '',
-            size: c.size ?? '',
-            quantity: c.quantity ?? 1,
-            color: c.variant ?? undefined,
-          }))
-          const localCart = getLocalCart()
-          const merged = mergeCartItems(localCart, serverCart)
-          setItems(merged)
-          // Push merged back to server
-          syncCartToServer(userId, merged)
-        })
-        .catch(() => {})
-    } else if (!userId && wasLoggedIn) {
-      // User just logged out — clear local cart
-      setItems([])
-      localStorage.removeItem('thewhite_cart')
-    }
-  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const syncCartToServer = useCallback((userId: string, cartItems: CartItem[]) => {
     const payload = cartItems.map((item) => ({
       product: item.id,
@@ -124,6 +85,84 @@ export function CartProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify({ cart: payload }),
     }).catch(() => {})
   }, [])
+
+  // Persist to localStorage
+  useEffect(() => {
+    localStorage.setItem('thewhite_cart', JSON.stringify(items))
+  }, [items])
+
+  // Merge on login
+  useEffect(() => {
+    const userId = user?.id ?? null
+    const wasLoggedIn = prevUserRef.current
+    prevUserRef.current = userId
+
+    if (userId && !wasLoggedIn) {
+      // User just logged in — fetch server cart, hydrate product data, then merge
+      fetch(`/api/users/${userId}?depth=0`, { credentials: 'include' })
+        .then((res) => res.json())
+        .then(async (data) => {
+          const rawItems: Array<{
+            productId: number
+            size: string
+            quantity: number
+            color?: string
+          }> = (data.cart ?? []).map((c: any) => ({
+            productId: typeof c.product === 'object' ? c.product.id : c.product,
+            size: c.size ?? '',
+            quantity: c.quantity ?? 1,
+            color: c.variant ?? undefined,
+          }))
+
+          if (rawItems.length === 0) return
+
+          // Batch-fetch product data so we never show zero prices
+          const uniqueIds = [...new Set(rawItems.map((c) => c.productId))].join(',')
+          const productRes = await fetch(
+            `/api/products?where[id][in]=${uniqueIds}&depth=1&limit=${rawItems.length}`,
+            { credentials: 'include' },
+          )
+          if (!productRes.ok) return
+
+          const productData = await productRes.json()
+          const productMap = new Map<number, any>(
+            (productData.docs ?? []).map((p: any) => [p.id, p]),
+          )
+
+          const serverCart: CartItem[] = []
+          for (const raw of rawItems) {
+            const product = productMap.get(raw.productId)
+            if (!product) {
+              console.warn(
+                `[CartContext] Product id=${raw.productId} no longer exists — dropping from merged cart`,
+              )
+              continue
+            }
+            const firstImage = product.colorVariants?.[0]?.images?.[0]?.url ?? ''
+            serverCart.push({
+              id: raw.productId,
+              name: product.name ?? '',
+              price: product.price ?? 0,
+              image: firstImage,
+              size: raw.size,
+              quantity: raw.quantity,
+              color: raw.color,
+            })
+          }
+
+          const localCart = getLocalCart()
+          const merged = mergeCartItems(localCart, serverCart)
+          setItems(merged)
+          // Push merged back to server
+          syncCartToServer(userId, merged)
+        })
+        .catch(() => {})
+    } else if (!userId && wasLoggedIn) {
+      // User just logged out — clear local cart
+      setItems([])
+      localStorage.removeItem('thewhite_cart')
+    }
+  }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const debouncedSync = useCallback(
     (cartItems: CartItem[]) => {

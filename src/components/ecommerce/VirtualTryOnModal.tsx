@@ -1,10 +1,12 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Upload, User, Sparkles, X, Plus, Wand2 } from 'lucide-react'
+import { Upload, User, Sparkles, X, Plus, Wand2, LogIn } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import { useRouter, usePathname } from 'next/navigation'
+import { useUser } from '@/contexts/UserContext'
 
 interface VirtualTryOnModalProps {
   isOpen: boolean
@@ -14,15 +16,33 @@ interface VirtualTryOnModalProps {
     name: string
     image: string
     priceDisplay?: string
+    color?: string
+    features?: string[]
   }
 }
 
 export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModalProps) {
   const t = useTranslations()
+  const locale = useLocale()
+  const router = useRouter()
+  const pathname = usePathname()
+  const { isAuthenticated } = useUser()
+
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  // Hover-zoom state for the HD result image. Null = no hover; otherwise x/y
+  // are the cursor position inside the image expressed as percentages.
+  const [zoomOrigin, setZoomOrigin] = useState<{ x: number; y: number } | null>(null)
+  const handleZoomMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setZoomOrigin({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    })
+  }
 
   // Mode toggle
   const [mode, setMode] = useState<'hd' | 'ai'>('hd')
@@ -80,6 +100,11 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
     setAdditionalProducts((prev) => prev.filter((_, i) => i !== index))
   }
 
+  const handleSignIn = () => {
+    router.push(`/${locale}/login?redirect=${encodeURIComponent(pathname)}`)
+    onClose()
+  }
+
   const handleGenerate = async () => {
     if (!uploadedImage) return
     setIsGenerating(true)
@@ -93,6 +118,8 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
           body: JSON.stringify({
             personImage: uploadedImage,
             productImage: product.image,
+            productName: product.name,
+            productColor: product.color,
           }),
         })
         const data = await res.json()
@@ -116,6 +143,10 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
           body: JSON.stringify({
             personImage: uploadedImage,
             productImages,
+            locale,
+            productName: product.name,
+            productColor: product.color,
+            productFeatures: product.features,
           }),
         })
         const data = await res.json()
@@ -156,92 +187,86 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
             className="fixed inset-0 bg-background/80 backdrop-blur-md"
           />
 
-          {/* Modal Content */}
+          {/* Modal Content — single-screen layout: compact header + 3-column grid + thin footer */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative bg-background shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-y-auto my-8 rounded-none border-4 border-foreground"
+            className="relative bg-background shadow-2xl max-w-[1400px] w-full h-full max-h-[100dvh] lg:h-[95vh] lg:max-h-[95vh] rounded-none border-0 lg:border-4 border-foreground flex flex-col overflow-hidden"
           >
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-10 w-12 h-12 bg-primary text-primary-foreground rounded-none flex items-center justify-center hover:bg-primary/90 transition-all hover:rotate-90"
+              className="absolute top-3 right-3 z-20 w-10 h-10 bg-primary text-primary-foreground rounded-none flex items-center justify-center hover:bg-primary/90 transition-all hover:rotate-90"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
 
-            {/* Header */}
-            <div className="text-center pt-16 pb-8 px-6 border-b-2 border-border">
-              <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-none mb-6 shadow-xl">
-                <Sparkles className="w-5 h-5 text-yellow-500 animate-pulse" />
-                <span className="text-xs font-bold tracking-[0.3em] uppercase">
-                  TheWhite AI Lab
-                </span>
+            {/* Compact Header — brand + title + mode toggle on one row */}
+            <div className="flex items-center justify-between px-6 py-3 border-b-2 border-border bg-background flex-shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 rounded-none flex-shrink-0">
+                  <Sparkles className="w-3.5 h-3.5 text-yellow-500 animate-pulse" />
+                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase">AI LAB</span>
+                </div>
+                <h2 className="text-xl lg:text-2xl uppercase font-bold italic tracking-tighter text-foreground truncate">
+                  {t('vto.title')}
+                </h2>
               </div>
-              <h2 className="text-5xl lg:text-6xl uppercase mb-4 font-bold italic tracking-tighter text-foreground">
-                {t('vto.title')}
-              </h2>
-              <p className="text-muted-foreground font-medium tracking-wide mb-8">
-                {t('vto.subtitle')}
-              </p>
 
-              {/* Mode Toggle */}
-              <div className="inline-flex border-4 border-foreground rounded-none overflow-hidden shadow-xl">
+              {/* Mode Toggle — compact */}
+              <div className="inline-flex border-2 border-foreground rounded-none overflow-hidden flex-shrink-0 mr-12">
                 <button
                   onClick={() => handleModeSwitch('hd')}
-                  className={`flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-all ${
                     mode === 'hd'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-background text-foreground hover:bg-muted'
                   }`}
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-3 h-3" />
                   {t('vto.modeHd')}
                 </button>
                 <button
                   onClick={() => handleModeSwitch('ai')}
-                  className={`flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-[0.2em] transition-all border-l-4 border-foreground ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-all border-l-2 border-foreground ${
                     mode === 'ai'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-background text-foreground hover:bg-muted'
                   }`}
                 >
-                  <Wand2 className="w-4 h-4" />
+                  <Wand2 className="w-3 h-3" />
                   {t('vto.modeAi')}
                 </button>
               </div>
-
-              {/* Mode description */}
-              <p className="text-xs text-muted-foreground mt-3 font-medium tracking-wide">
-                {mode === 'hd' ? t('vto.modeHdDesc') : t('vto.modeAiDesc')}
-              </p>
             </div>
 
-            {/* Main Content */}
-            <div className="p-8 lg:p-12 space-y-12">
-              {/* Top Section - Product Preview and Photo Upload */}
-              <div className="grid lg:grid-cols-2 gap-8">
+            {/* Main Content — mobile: 3 stacked cards w/ natural height + scroll;
+                desktop: 2-column (inputs stacked left, result right). */}
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(260px,1fr)_2fr] gap-4 p-4 overflow-y-auto lg:overflow-hidden min-h-0">
+              {/* Left column — product (top) + upload (bottom) stacked on desktop;
+                  flows naturally on mobile. */}
+              <div className="contents lg:grid lg:grid-rows-2 lg:gap-4 lg:min-h-0 lg:min-w-0">
                 {/* Step 1: Product Preview */}
-                <div className="bg-muted border-2 border-border rounded-none p-8 relative overflow-hidden group">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-10 h-10 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold shadow-lg">
-                      <span className="text-sm">01</span>
+                <div className="bg-muted border-2 border-border rounded-none p-4 flex flex-col min-h-[260px] lg:min-h-0 overflow-hidden">
+                  <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+                    <div className="w-7 h-7 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold text-xs">
+                      01
                     </div>
-                    <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
+                    <h3 className="text-sm font-bold uppercase tracking-widest italic text-foreground truncate">
                       {mode === 'ai' ? t('vto.selectedProducts') : t('vto.selectedProduct')}
                     </h3>
                   </div>
 
-                  {/* Current product */}
-                  <div className="border-4 border-foreground rounded-none p-4 bg-card shadow-2xl relative aspect-[3/4] max-w-sm mx-auto overflow-hidden">
+                  {/* Current product — fills available column space */}
+                  <div className="border-2 border-foreground rounded-none bg-card relative flex-1 min-h-0 overflow-hidden">
                     <Image src={product.image} alt={product.name} fill className="object-cover" />
-                    <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm text-white p-4">
-                      <p className="text-xs font-bold uppercase tracking-widest line-clamp-1">
+                    <div className="absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm text-white px-3 py-2">
+                      <p className="text-[11px] font-bold uppercase tracking-widest line-clamp-1">
                         {product.name}
                       </p>
                       {product.priceDisplay && (
-                        <p className="text-sm font-bold mt-1 text-yellow-500">
+                        <p className="text-xs font-bold mt-0.5 text-yellow-500">
                           {product.priceDisplay}
                         </p>
                       )}
@@ -250,15 +275,15 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
 
                   {/* AI mode: additional product images strip */}
                   {mode === 'ai' && (
-                    <div className="mt-6">
-                      <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                    <div className="mt-3 flex-shrink-0">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
                         {t('vto.additionalItems')}
                       </p>
-                      <div className="flex flex-wrap gap-3">
+                      <div className="flex flex-wrap gap-2">
                         {additionalProducts.map((imgSrc, idx) => (
                           <div
                             key={idx}
-                            className="relative w-20 h-24 border-2 border-foreground rounded-none overflow-hidden flex-shrink-0 group/item"
+                            className="relative w-14 h-16 border border-foreground rounded-none overflow-hidden flex-shrink-0 group/item"
                           >
                             <Image
                               src={imgSrc}
@@ -268,22 +293,17 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                             />
                             <button
                               onClick={() => handleRemoveAdditionalProduct(idx)}
-                              className="absolute top-0.5 right-0.5 w-5 h-5 bg-red-500 text-white rounded-none flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity"
+                              className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-white rounded-none flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity"
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-2.5 h-2.5" />
                             </button>
                           </div>
                         ))}
-
-                        {/* Add button */}
                         <button
                           onClick={() => additionalInputRef.current?.click()}
-                          className="w-20 h-24 border-2 border-dashed border-border rounded-none flex flex-col items-center justify-center gap-1 hover:border-foreground hover:bg-muted transition-all flex-shrink-0"
+                          className="w-14 h-16 border border-dashed border-border rounded-none flex flex-col items-center justify-center hover:border-foreground hover:bg-muted transition-all flex-shrink-0"
                         >
-                          <Plus className="w-5 h-5 text-muted-foreground" />
-                          <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
-                            {t('vto.addItem')}
-                          </span>
+                          <Plus className="w-4 h-4 text-muted-foreground" />
                         </button>
                         <input
                           ref={additionalInputRef}
@@ -298,45 +318,45 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                   )}
                 </div>
 
-                {/* Step 2: Upload Photo */}
-                <div className="bg-muted border-2 border-border rounded-none p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-10 h-10 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold shadow-lg">
-                      <span className="text-sm">02</span>
+                {/* Step 2: Upload Photo (same column as product, second row on desktop) */}
+                <div className="bg-muted border-2 border-border rounded-none p-4 flex flex-col min-h-[320px] lg:min-h-0 overflow-hidden">
+                  <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+                    <div className="w-7 h-7 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold text-xs">
+                      02
                     </div>
-                    <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
+                    <h3 className="text-sm font-bold uppercase tracking-widest italic text-foreground truncate">
                       {t('vto.uploadYourPhoto')}
                     </h3>
                   </div>
 
-                  <label className="border-4 border-dashed border-border bg-background rounded-none p-12 flex flex-col items-center justify-center cursor-pointer hover:border-foreground hover:bg-muted transition-all min-h-[450px] group relative overflow-hidden shadow-inner">
+                  <label className="border-2 border-dashed border-border bg-background rounded-none flex flex-col items-center justify-center cursor-pointer hover:border-foreground hover:bg-muted transition-all flex-1 min-h-0 relative overflow-hidden">
                     {uploadedImage ? (
                       <>
-                        <div className="relative w-full h-full max-h-[350px] aspect-[3/4]">
+                        <div className="relative w-full h-full">
                           <Image
                             src={uploadedImage}
                             alt="Uploaded"
                             fill
-                            className="object-contain rounded-none shadow-2xl"
+                            className="object-contain"
                           />
                         </div>
-                        <div className="mt-6 flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 uppercase text-[10px] font-bold tracking-widest">
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-primary text-primary-foreground px-3 py-1.5 uppercase text-[10px] font-bold tracking-widest">
                           <Upload className="w-3 h-3" />
                           {t('vto.changePhoto')}
                         </div>
                       </>
                     ) : (
-                      <>
-                        <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                          <User className="w-12 h-12 text-muted-foreground" />
+                      <div className="flex flex-col items-center justify-center gap-3 p-6 text-center">
+                        <div className="w-14 h-14 bg-muted rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <User className="w-7 h-7 text-muted-foreground" />
                         </div>
-                        <p className="text-lg font-bold uppercase tracking-widest mb-2 text-foreground">
+                        <p className="text-sm font-bold uppercase tracking-widest text-foreground">
                           {t('vto.uploadPhoto')}
                         </p>
-                        <p className="text-xs text-muted-foreground text-center max-w-[250px] font-medium leading-relaxed">
+                        <p className="text-[11px] text-muted-foreground max-w-[220px] leading-snug">
                           {t('vto.instructions1')}
                         </p>
-                      </>
+                      </div>
                     )}
                     <input
                       type="file"
@@ -347,156 +367,187 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                   </label>
                 </div>
               </div>
+              {/* /left column (product + upload stack) */}
 
-              {/* Result Section */}
-              <div className="bg-muted border-2 border-border rounded-none p-8 relative overflow-hidden">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-10 h-10 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold shadow-lg animate-pulse">
+              {/* Step 3: Result — full right column, takes 2x width on desktop;
+                  full-width third card on mobile. */}
+              <div className="bg-muted border-2 border-border rounded-none p-4 flex flex-col min-h-[420px] lg:min-h-0 overflow-hidden relative">
+                <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+                  <div className="w-7 h-7 bg-primary text-primary-foreground rounded-none flex items-center justify-center font-bold">
                     {mode === 'ai' ? (
-                      <Wand2 className="w-5 h-5 text-yellow-500" />
+                      <Wand2 className="w-3.5 h-3.5 text-yellow-500" />
                     ) : (
-                      <Sparkles className="w-5 h-5 text-yellow-500" />
+                      <Sparkles className="w-3.5 h-3.5 text-yellow-500" />
                     )}
                   </div>
-                  <h3 className="text-xl font-bold uppercase tracking-widest italic text-foreground">
+                  <h3 className="text-sm font-bold uppercase tracking-widest italic text-foreground truncate">
                     {mode === 'ai' ? t('vto.aiResultTitle') : t('vto.resultTitle')}
                   </h3>
                 </div>
 
-                <div className="bg-card border-4 border-foreground rounded-none p-12 flex flex-col items-center justify-center min-h-[350px] relative shadow-2xl overflow-hidden">
+                <div className="bg-card border-2 border-foreground rounded-none flex-1 min-h-0 relative overflow-auto">
                   {error ? (
-                    <div className="text-center space-y-4">
-                      <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto">
-                        <X className="w-8 h-8 text-red-500" />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 space-y-3">
+                      <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
+                        <X className="w-6 h-6 text-red-500" />
                       </div>
-                      <p className="text-sm font-bold text-red-500 uppercase tracking-wider">
+                      <p className="text-xs font-bold text-red-500 uppercase tracking-wider">
                         {error}
                       </p>
                       <button
                         onClick={() => setError(null)}
-                        className="text-xs text-muted-foreground underline hover:text-foreground transition-colors uppercase tracking-widest font-bold"
+                        className="text-[10px] text-muted-foreground underline hover:text-foreground transition-colors uppercase tracking-widest font-bold"
                       >
                         {t('vto.tryRetry')}
                       </button>
                     </div>
                   ) : mode === 'hd' && result ? (
-                    <div className="w-full space-y-6 text-center">
-                      <div className="relative w-full h-[350px] aspect-[3/4]">
+                    <div className="absolute inset-0 flex flex-col">
+                      {/* Hover-zoom wrapper. On hover we apply a 2x scale with
+                          transform-origin tracked to cursor position so the user
+                          can inspect fabric / fit detail. Touch devices keep the
+                          default 1x view. */}
+                      <div
+                        className="relative flex-1 min-h-0 overflow-hidden cursor-zoom-in"
+                        onMouseMove={handleZoomMove}
+                        onMouseLeave={() => setZoomOrigin(null)}
+                      >
                         <Image
                           src={result}
                           alt="Virtual Try-On Result"
                           fill
-                          className="object-contain rounded-none shadow-xl"
+                          className="object-contain transition-transform duration-150 ease-out will-change-transform"
+                          style={
+                            zoomOrigin
+                              ? {
+                                  transform: 'scale(2)',
+                                  transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`,
+                                }
+                              : undefined
+                          }
                         />
                       </div>
-                      <p className="text-sm font-bold uppercase tracking-wider text-foreground italic">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-foreground italic text-center py-2 flex-shrink-0">
                         {t('vto.resultCaption')}
                       </p>
                     </div>
                   ) : mode === 'ai' && aiDescription ? (
-                    <div className="w-full space-y-6">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Wand2 className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-                        <p className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground">
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <Wand2 className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                           {t('vto.aiAdvisorLabel')}
                         </p>
                       </div>
-                      <div className="bg-muted border-2 border-border rounded-none p-6 relative">
-                        {/* Decorative quote mark */}
-                        <span className="absolute top-3 left-4 text-4xl text-primary/20 font-serif leading-none select-none">
+                      <div className="bg-muted border-2 border-border rounded-none p-4 relative">
+                        <span className="absolute top-1 left-2 text-3xl text-primary/20 font-serif leading-none select-none">
                           &ldquo;
                         </span>
-                        <p className="text-sm leading-relaxed text-foreground font-medium pl-4 whitespace-pre-wrap">
+                        <p className="text-xs leading-relaxed text-foreground font-medium pl-3 whitespace-pre-wrap">
                           {aiDescription}
                         </p>
-                        <span className="absolute bottom-3 right-4 text-4xl text-primary/20 font-serif leading-none select-none">
+                        <span className="absolute bottom-1 right-2 text-3xl text-primary/20 font-serif leading-none select-none">
                           &rdquo;
                         </span>
                       </div>
-                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground text-center italic">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground text-center italic">
                         {t('vto.aiResultCaption')}
                       </p>
                     </div>
                   ) : (
-                    <div className="text-center space-y-6">
-                      <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto border-2 border-dashed border-border shadow-inner">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4 space-y-3">
+                      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center border-2 border-dashed border-border">
                         {mode === 'ai' ? (
-                          <Wand2 className="w-12 h-12 text-muted-foreground" />
+                          <Wand2 className="w-8 h-8 text-muted-foreground" />
                         ) : (
-                          <Sparkles className="w-12 h-12 text-muted-foreground" />
+                          <Sparkles className="w-8 h-8 text-muted-foreground" />
                         )}
                       </div>
-                      <div className="space-y-2">
-                        <h4 className="text-lg font-bold uppercase tracking-widest italic text-foreground">
-                          {t('vto.waitingTitle')}
-                        </h4>
-                        <p className="text-xs text-muted-foreground max-w-[280px] mx-auto font-medium leading-relaxed">
-                          {uploadedImage ? t('vto.instructions2') : t('vto.instructions3')}
+                      <h4 className="text-sm font-bold uppercase tracking-widest italic text-foreground">
+                        {t('vto.waitingTitle')}
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground max-w-[240px] leading-snug">
+                        {uploadedImage ? t('vto.instructions2') : t('vto.instructions3')}
+                      </p>
+                    </div>
+                  )}
+
+                  {isGenerating && (
+                    <div className="absolute inset-0 bg-background/85 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4 p-4">
+                      <div className="relative">
+                        <div className="w-16 h-16 border-4 border-muted border-t-primary rounded-full animate-spin" />
+                        {mode === 'ai' ? (
+                          <Wand2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-yellow-500 animate-pulse" />
+                        ) : (
+                          <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 text-yellow-500 animate-pulse" />
+                        )}
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold uppercase tracking-[0.3em] text-xs animate-pulse text-foreground">
+                          {mode === 'ai' ? t('vto.aiProcessing') : t('vto.processing')}
+                        </p>
+                        <p className="text-[9px] text-muted-foreground mt-1 uppercase font-medium">
+                          {t('vto.doNotClose')}
                         </p>
                       </div>
-                      {isGenerating && (
-                        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center space-y-6">
-                          <div className="relative">
-                            <div className="w-24 h-24 border-8 border-muted border-t-primary rounded-full animate-spin" />
-                            {mode === 'ai' ? (
-                              <Wand2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-yellow-500 animate-pulse" />
-                            ) : (
-                              <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-yellow-500 animate-pulse" />
-                            )}
-                          </div>
-                          <div className="text-center">
-                            <p className="font-bold uppercase tracking-[0.4em] text-sm animate-pulse text-foreground">
-                              {mode === 'ai' ? t('vto.aiProcessing') : t('vto.processing')}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground mt-2 uppercase font-medium">
-                              {t('vto.doNotClose')}
-                            </p>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+            {/* Footer — action buttons + disclaimer */}
+            <div className="border-t-2 border-border bg-background flex-shrink-0">
+              <div className="flex items-center justify-center gap-3 px-4 py-3">
                 {hasAnyResult ? (
                   <>
                     <button
                       onClick={handleReset}
-                      className="border-4 border-foreground px-12 py-5 rounded-none hover:bg-primary hover:text-primary-foreground transition-all uppercase tracking-[0.2em] font-bold text-sm shadow-xl text-foreground"
+                      className="border-2 border-foreground px-6 py-2.5 rounded-none hover:bg-primary hover:text-primary-foreground transition-all uppercase tracking-[0.15em] font-bold text-xs text-foreground"
                     >
                       {t('vto.tryAgain')}
                     </button>
                     <button
                       onClick={onClose}
-                      className="bg-primary text-primary-foreground px-12 py-5 rounded-none hover:bg-primary/90 transition-all uppercase tracking-[0.2em] font-bold text-sm shadow-xl"
+                      className="bg-primary text-primary-foreground px-6 py-2.5 rounded-none hover:bg-primary/90 transition-all uppercase tracking-[0.15em] font-bold text-xs"
                     >
                       {t('vto.doneClose')}
                     </button>
                   </>
+                ) : !isAuthenticated ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                      {t('vto.signInNote')}
+                    </p>
+                    <button
+                      onClick={handleSignIn}
+                      className="flex items-center gap-2 px-8 py-3 rounded-none uppercase tracking-[0.25em] font-black text-xs bg-primary text-primary-foreground hover:scale-105 active:scale-95 transition-all"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      {t('vto.signInRequired')}
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={handleGenerate}
                     disabled={!isFormComplete || isGenerating}
-                    className={`px-16 py-6 rounded-none uppercase tracking-[0.4em] font-black transition-all text-sm shadow-2xl relative group overflow-hidden ${
+                    className={`px-8 py-3 rounded-none uppercase tracking-[0.25em] font-black transition-all text-xs group relative overflow-hidden ${
                       isFormComplete && !isGenerating
                         ? 'bg-primary text-primary-foreground hover:scale-105 active:scale-95'
                         : 'bg-muted text-muted-foreground cursor-not-allowed border-2 border-border'
                     }`}
                   >
                     {isGenerating ? (
-                      <span className="flex items-center justify-center gap-4">
-                        <div className="w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin" />
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         {mode === 'ai' ? t('vto.aiProcessing') : t('vto.processing')}
                       </span>
                     ) : (
-                      <span className="flex items-center justify-center gap-3">
+                      <span className="flex items-center justify-center gap-2">
                         {mode === 'ai' ? (
-                          <Wand2 className="w-5 h-5 text-yellow-500 group-hover:rotate-12 transition-transform" />
+                          <Wand2 className="w-4 h-4 text-yellow-500 group-hover:rotate-12 transition-transform" />
                         ) : (
-                          <Sparkles className="w-5 h-5 text-yellow-500 group-hover:rotate-12 transition-transform" />
+                          <Sparkles className="w-4 h-4 text-yellow-500 group-hover:rotate-12 transition-transform" />
                         )}
                         {mode === 'ai' ? t('vto.generateAi') : t('vto.generate')}
                       </span>
@@ -504,11 +555,9 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                   </button>
                 )}
               </div>
-            </div>
-
-            {/* Disclaimer */}
-            <div className="p-8 bg-muted text-muted-foreground text-[10px] uppercase font-bold tracking-[0.2em] text-center border-t-2 border-border">
-              {t('vto.disclaimer')}
+              <div className="px-4 pb-2 text-muted-foreground text-[9px] uppercase font-bold tracking-[0.2em] text-center">
+                {t('vto.disclaimer')}
+              </div>
             </div>
           </motion.div>
         </div>

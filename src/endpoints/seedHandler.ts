@@ -13,16 +13,17 @@ export const seedHandler: PayloadHandler = async (req): Promise<Response> => {
     )
   }
 
-  if (!user) {
-    const { totalDocs } = await payload.find({
-      collection: 'users',
-      limit: 0,
-      depth: 0,
-    })
+  // Require explicit opt-in via environment variable
+  if (process.env.ALLOW_SEED_ENDPOINT !== 'true') {
+    return Response.json(
+      { error: 'Seed endpoint disabled. Set ALLOW_SEED_ENDPOINT=true to enable.' },
+      { status: 403 },
+    )
+  }
 
-    if (totalDocs > 0) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  // Require an authenticated admin user — no unauthenticated bypass
+  if (!user || user.role !== 'admin') {
+    return Response.json({ error: 'Forbidden: admin role required' }, { status: 403 })
   }
 
   try {

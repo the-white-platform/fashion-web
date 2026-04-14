@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { motion } from 'motion/react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 
@@ -16,7 +17,7 @@ interface PaymentStepProps {
   showNewPayment: boolean
   onToggleNewPayment: () => void
   total: number
-  orderId: string
+  orderId: string | null | undefined
   onBack: () => void
   onNext: () => void
 }
@@ -33,6 +34,15 @@ export function PaymentStep({
   onNext,
 }: PaymentStepProps) {
   const t = useTranslations('checkout')
+
+  const isValidOrderId = (id: string | null | undefined): id is string =>
+    Boolean(id) && !id!.startsWith('temp_') && !id!.startsWith('draft_')
+
+  const vietQrUrl = useMemo(() => {
+    if (!isValidOrderId(orderId)) return null
+    return `https://img.vietqr.io/image/VCB-kanetran29-compact2.png?amount=${total}&addInfo=${orderId}&accountName=KANE%20TRAN`
+  }, [orderId, total])
+
   const [newPayment, setNewPayment] = useState({
     type: 'bank' as 'bank' | 'cod',
     cardNumber: '',
@@ -133,13 +143,17 @@ export function PaymentStep({
             <div className="bg-primary/5 border border-primary/20 rounded-sm p-6 text-primary">
               <div className="flex flex-col md:flex-row items-center gap-6">
                 <div className="bg-white p-4 rounded-lg shadow-sm shrink-0">
-                  <Image
-                    src={`https://img.vietqr.io/image/VCB-kanetran29-compact2.png?amount=${total}&addInfo=${orderId}&accountName=KANE%20TRAN`}
-                    alt="VietQR"
-                    width={280}
-                    height={280}
-                    className="object-contain"
-                  />
+                  {vietQrUrl ? (
+                    <Image
+                      src={vietQrUrl}
+                      alt="VietQR"
+                      width={280}
+                      height={280}
+                      className="object-contain"
+                    />
+                  ) : (
+                    <Skeleton className="aspect-square w-full max-w-sm" />
+                  )}
                 </div>
                 <div className="flex-1 text-center md:text-left">
                   <p className="text-sm mb-3 font-bold uppercase tracking-wider text-primary">
@@ -160,7 +174,11 @@ export function PaymentStep({
                     </p>
                     <p className="p-2 bg-primary/10 rounded-sm mt-2 font-mono text-xs border border-primary/20">
                       <span className="text-muted-foreground">{t('content')}:</span>{' '}
-                      <strong>{orderId}</strong>
+                      {isValidOrderId(orderId) ? (
+                        <strong>{orderId}</strong>
+                      ) : (
+                        <Skeleton className="inline-block h-4 w-32 align-middle" />
+                      )}
                     </p>
                   </div>
                 </div>

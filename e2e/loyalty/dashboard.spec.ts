@@ -17,7 +17,7 @@ async function saveAdminStorageState(browser: import('@playwright/test').Browser
   const page = await context.newPage()
 
   // Use browser fetch (credentials: 'include') so the cookie lands in the browser context
-  await page.goto('http://localhost:3000/vi')
+  await page.goto('/vi')
   await page.waitForLoadState('domcontentloaded')
 
   const loginResult = await page.evaluate(async () => {

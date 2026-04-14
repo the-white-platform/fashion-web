@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers'
+import { createHash } from 'crypto'
 import { geminiFlash } from '@/lib/gemini'
 import type { Part } from '@google/generative-ai'
 
 // ---------------------------------------------------------------------------
-// In-memory sliding-window rate limiter (per user token prefix)
+// In-memory sliding-window rate limiter (per user id)
 // ---------------------------------------------------------------------------
 const RATE_LIMIT_MAX = 30
 const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
@@ -12,8 +13,19 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000 // 1 minute
 const rateLimitMap = new Map<string, number[]>()
 let rateLimitRequestCount = 0
 
-function getRateLimitKey(token: string): string {
-  return `gemini_vto_${token.slice(0, 16)}`
+function getUserIdFromToken(token: string): string | null {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'))
+    return payload?.id != null ? String(payload.id) : null
+  } catch {
+    return null
+  }
+}
+
+function getRateLimitKey(token: string, scope: string): string {
+  const userId = getUserIdFromToken(token)
+  if (userId) return `${scope}_user_${userId}`
+  return `${scope}_tok_${createHash('sha256').update(token).digest('hex').slice(0, 16)}`
 }
 
 /** Remove stale entries to prevent unbounded memory growth. */
@@ -41,12 +53,30 @@ function parseDataUrl(value: string): { mimeType: string; data: string } | null 
   return null
 }
 
-/** Validate that a URL is safe to fetch (no SSRF). */
-function assertUrlSafe(url: string): void {
+/** Validate that a URL is safe to fetch (no SSRF).
+ *  `selfOrigin` (when provided) exempts URLs pointing at our own app origin —
+ *  those are intentional relative-media fetches resolved via the request URL.
+ */
+function assertUrlSafe(url: string, selfOrigin?: string): void {
   const parsed = new URL(url)
 
   if (!['http:', 'https:'].includes(parsed.protocol)) {
     throw new Error('Only HTTP(S) URLs are allowed')
+  }
+
+  // Same-origin fetch: trust the app serving the request (Payload media).
+  // In dev the request may arrive via `thewhite.local:3200` while the browser
+  // references `localhost:3200`, so also treat any URL whose port matches the
+  // request port AND hostname is a local alias (localhost/127.*/the-request-host)
+  // as self-origin.
+  if (selfOrigin) {
+    const selfUrl = new URL(selfOrigin)
+    const hostLower = parsed.hostname.toLowerCase()
+    const sameHost = hostLower === selfUrl.hostname.toLowerCase()
+    const isLocalhostAlias =
+      hostLower === 'localhost' || hostLower === '127.0.0.1' || hostLower === '::1'
+    const samePort = (parsed.port || '') === (selfUrl.port || '')
+    if (samePort && (sameHost || isLocalhostAlias)) return
   }
 
   const hostname = parsed.hostname.toLowerCase()
@@ -62,8 +92,11 @@ function assertUrlSafe(url: string): void {
 }
 
 /** Fetch a URL and return its content as base64 with mime type. */
-async function urlToInlineData(url: string): Promise<{ mimeType: string; data: string }> {
-  assertUrlSafe(url)
+async function urlToInlineData(
+  url: string,
+  selfOrigin?: string,
+): Promise<{ mimeType: string; data: string }> {
+  assertUrlSafe(url, selfOrigin)
   const res = await fetch(url)
   if (!res.ok) {
     throw new Error(`Failed to fetch image URL: ${res.status}`)
@@ -86,25 +119,65 @@ async function resolveToInlineData(
   value: string,
   requestUrl: string,
 ): Promise<{ mimeType: string; data: string }> {
-  // Data URL (e.g. data:image/png;base64,...)
   const parsed = parseDataUrl(value)
   if (parsed) {
     return parsed
   }
 
-  // Absolute URL
+  const selfOrigin = new URL(requestUrl).origin
   if (value.startsWith('http://') || value.startsWith('https://')) {
-    return urlToInlineData(value)
+    return urlToInlineData(value, selfOrigin)
   }
 
-  // Relative URL (e.g. /uploads/product.jpg)
   if (value.startsWith('/')) {
-    const origin = new URL(requestUrl).origin
-    return urlToInlineData(`${origin}${value}`)
+    return urlToInlineData(`${selfOrigin}${value}`, selfOrigin)
   }
 
-  // Treat as raw base64
   return { mimeType: 'image/jpeg', data: value }
+}
+
+// ---------------------------------------------------------------------------
+// Prompt builder
+// ---------------------------------------------------------------------------
+
+function buildPrompt(opts: {
+  locale: 'vi' | 'en'
+  productName?: string
+  productColor?: string
+  productFeatures?: string[]
+}): string {
+  const { locale, productName, productColor, productFeatures } = opts
+
+  const nameDesc = [productName, productColor].filter(Boolean).join(' màu ')
+  const featuresText =
+    productFeatures && productFeatures.length > 0 ? productFeatures.join(', ') : null
+
+  if (locale === 'vi') {
+    let prompt =
+      `Bạn là chuyên gia tư vấn thời trang của TheWhite — thương hiệu thời trang Việt Nam hiện đại và tối giản. ` +
+      `Hãy phân tích ảnh người dùng và sản phẩm được cung cấp, sau đó đưa ra lời khuyên phong cách ngắn gọn, ấm áp bằng tiếng Việt trong 4-6 câu.`
+    if (nameDesc) {
+      prompt += ` Sản phẩm: ${nameDesc}.`
+    }
+    if (featuresText) {
+      prompt += ` Điểm nổi bật: ${featuresText}.`
+    }
+    prompt += ` Cuối cùng, gợi ý 1-2 cách phối đồ phù hợp với sản phẩm này.`
+    return prompt
+  }
+
+  // English
+  let prompt =
+    `You are a fashion advisor for TheWhite — a modern, minimalist Vietnamese fashion brand. ` +
+    `Analyse the user's photo and the provided product image, then give short, warm styling advice in English in 4-6 sentences.`
+  if (nameDesc) {
+    prompt += ` Product: ${nameDesc}.`
+  }
+  if (featuresText) {
+    prompt += ` Key features: ${featuresText}.`
+  }
+  prompt += ` End with 1-2 outfit-pairing suggestions that suit this item.`
+  return prompt
 }
 
 // ---------------------------------------------------------------------------
@@ -120,7 +193,7 @@ export async function POST(request: Request) {
 
   // --- Rate-limit check ---
   const now = Date.now()
-  const clientKey = getRateLimitKey(token)
+  const clientKey = getRateLimitKey(token, 'gemini_vto')
 
   rateLimitRequestCount++
   if (rateLimitRequestCount % 100 === 0 || rateLimitMap.size > 1000) {
@@ -144,14 +217,28 @@ export async function POST(request: Request) {
   rateLimitMap.set(clientKey, timestamps)
 
   // --- Parse body ---
-  let body: { personImage?: string; productImages?: string[] }
+  let body: {
+    personImage?: string
+    productImages?: string[]
+    locale?: 'vi' | 'en'
+    productName?: string
+    productColor?: string
+    productFeatures?: string[]
+  }
   try {
     body = await request.json()
   } catch {
     return Response.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { personImage, productImages } = body
+  const {
+    personImage,
+    productImages,
+    locale = 'vi',
+    productName,
+    productColor,
+    productFeatures,
+  } = body
 
   if (!personImage) {
     return Response.json({ error: 'personImage is required' }, { status: 400 })
@@ -175,12 +262,14 @@ export async function POST(request: Request) {
       parts.push({ inlineData: productData })
     }
 
-    // Text prompt
+    // Localized text prompt
     parts.push({
-      text:
-        'You are a virtual try-on AI. Analyze the person in the first image and the clothing item(s) in the subsequent images. ' +
-        'Describe in detail how the person would look wearing these items, including fit, style, and color coordination. ' +
-        'Be specific and visual in your description.',
+      text: buildPrompt({
+        locale: locale === 'en' ? 'en' : 'vi',
+        productName,
+        productColor,
+        productFeatures,
+      }),
     })
 
     const result = await geminiFlash.generateContent(parts)

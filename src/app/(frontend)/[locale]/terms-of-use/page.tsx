@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { useTranslations, useLocale } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { BoldText } from '@/components/shared/BoldText'
 
 export default function TermsOfUsePage() {
   const t = useTranslations('termsOfUse')
@@ -111,9 +112,10 @@ export default function TermsOfUsePage() {
                   </h2>
                 </div>
                 <div className="pl-16">
-                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
-                    {section.content}
-                  </p>
+                  <BoldText
+                    text={section.content}
+                    className="text-muted-foreground whitespace-pre-line leading-relaxed block"
+                  />
                 </div>
               </motion.div>
             )
@@ -130,9 +132,10 @@ export default function TermsOfUsePage() {
           <h2 className="text-2xl uppercase tracking-wide mb-4 text-foreground font-semibold">
             {t('sections.prohibited.title')}
           </h2>
-          <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {t('sections.prohibited.content')}
-          </div>
+          <BoldText
+            text={t('sections.prohibited.content')}
+            className="text-muted-foreground leading-relaxed whitespace-pre-line block"
+          />
         </motion.div>
 
         <motion.div
@@ -144,9 +147,10 @@ export default function TermsOfUsePage() {
           <h2 className="text-2xl uppercase tracking-wide mb-4 text-foreground font-semibold">
             {t('sections.links.title')}
           </h2>
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {t('sections.links.content')}
-          </p>
+          <BoldText
+            text={t('sections.links.content')}
+            className="text-muted-foreground leading-relaxed whitespace-pre-line block"
+          />
         </motion.div>
 
         <motion.div
@@ -158,9 +162,10 @@ export default function TermsOfUsePage() {
           <h2 className="text-2xl uppercase tracking-wide mb-4 text-foreground font-semibold">
             {t('sections.dispute.title')}
           </h2>
-          <div className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {t('sections.dispute.content')}
-          </div>
+          <BoldText
+            text={t('sections.dispute.content')}
+            className="text-muted-foreground leading-relaxed whitespace-pre-line block"
+          />
         </motion.div>
 
         <motion.div
@@ -172,9 +177,10 @@ export default function TermsOfUsePage() {
           <h2 className="text-2xl uppercase tracking-wide mb-4 text-foreground font-semibold">
             {t('sections.severability.title')}
           </h2>
-          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
-            {t('sections.severability.content')}
-          </p>
+          <BoldText
+            text={t('sections.severability.content')}
+            className="text-muted-foreground leading-relaxed whitespace-pre-line block"
+          />
         </motion.div>
 
         {/* Contact */}

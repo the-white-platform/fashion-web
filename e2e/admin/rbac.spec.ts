@@ -7,7 +7,9 @@
  */
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:3000'
+const BASE =
+  process.env.PLAYWRIGHT_BASE_URL ||
+  `http://localhost:${process.env.PLAYWRIGHT_PORT || process.env.PORT || '3000'}`
 
 // ---------------------------------------------------------------------------
 // Low-level fetch helpers — no Playwright cookie management
@@ -153,6 +155,11 @@ async function createOrder(
 // ---------------------------------------------------------------------------
 
 test.describe('Admin RBAC', () => {
+  // Run serially: parallel requests to the dev server can cause auth race
+  // conditions where the DB user-lookup returns null under concurrent load,
+  // making req.user undefined and tripping "not allowed" in access checks.
+  test.describe.configure({ mode: 'serial' })
+
   // Each test involves multiple API round-trips (login, create, patch).
   // Under load the dev server can be slow — allow generous time.
   test.setTimeout(180_000)

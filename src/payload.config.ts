@@ -1,4 +1,4 @@
-// storage-adapter-import-placeholder
+import { gcsStorage } from '@payloadcms/storage-gcs'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { resendAdapter } from '@payloadcms/email-resend'
 
@@ -25,6 +25,7 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Products } from './collections/Products'
 import { Reviews } from './collections/Reviews'
+import { SizeCharts } from './collections/SizeCharts'
 import { StockMovements } from './collections/StockMovements'
 import { Users } from './collections/Users'
 import { Provinces, Districts, Wards } from './collections/VietnamAddresses'
@@ -153,6 +154,7 @@ export default buildConfig({
     Reviews,
     Orders,
     Coupons,
+    SizeCharts,
     StockMovements,
     Provinces,
     Districts,
@@ -201,7 +203,27 @@ export default buildConfig({
   globals: [Header, Footer, Homepage, PaymentMethods],
   plugins: [
     ...plugins,
-    // storage-adapter-placeholder
+    // GCS object storage for Payload uploads. Enabled when PAYLOAD_MEDIA_BUCKET
+    // is set (prod Cloud Run); in local dev the env var is empty so the
+    // adapter falls through and Payload keeps using each collection's staticDir
+    // (src/collections/Media.ts → public/media, SizeCharts → public/size-charts).
+    ...(process.env.PAYLOAD_MEDIA_BUCKET
+      ? [
+          gcsStorage({
+            bucket: process.env.PAYLOAD_MEDIA_BUCKET,
+            collections: {
+              media: true,
+              'size-charts': true,
+            },
+            // On Cloud Run the service account is auto-detected via ADC.
+            // Locally, GOOGLE_APPLICATION_CREDENTIALS points at a JSON key if
+            // you want to test GCS uploads from your laptop.
+            options: {
+              projectId: process.env.GCP_PROJECT_ID,
+            },
+          }),
+        ]
+      : []),
   ],
   email: resendAdapter({
     apiKey: process.env.RESEND_API_KEY ?? '',

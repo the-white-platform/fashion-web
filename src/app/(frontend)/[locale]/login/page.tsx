@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'motion/react'
@@ -9,8 +9,23 @@ import { useUser } from '@/contexts/UserContext'
 import { Logo } from '@/components/shared/Logo/Logo'
 import { useTranslations } from 'next-intl'
 
+const OAUTH_ERROR_CODES = [
+  'google_unverified',
+  'facebook_unverified',
+  'account_linked_to_google',
+  'account_linked_to_facebook',
+  'account_uses_password',
+] as const
+
+type OAuthErrorCode = (typeof OAUTH_ERROR_CODES)[number]
+
+function isOAuthErrorCode(code: string): code is OAuthErrorCode {
+  return (OAUTH_ERROR_CODES as readonly string[]).includes(code)
+}
+
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { login } = useUser()
   const t = useTranslations()
   const [email, setEmail] = useState('')
@@ -18,6 +33,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    const code = searchParams.get('error')
+    if (code && isOAuthErrorCode(code)) {
+      setError(t(`auth.oauthError.${code}`))
+    }
+  }, [searchParams, t])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -186,7 +208,9 @@ export default function LoginPage() {
             <p className="text-center text-sm text-muted-foreground uppercase tracking-wide">
               {t('auth.orLoginWith')}
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            {/* Facebook login temporarily hidden pending app review — render
+                Google on its own, full width. */}
+            <div className="grid grid-cols-1 gap-3">
               <button
                 type="button"
                 onClick={() => (window.location.href = '/api/auth/google')}
@@ -212,17 +236,6 @@ export default function LoginPage() {
                   />
                 </svg>
                 <span className="text-sm">Google</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => (window.location.href = '/api/auth/facebook')}
-                className="flex items-center justify-center gap-2 py-3 border border-border rounded-sm hover:bg-muted transition-colors"
-                disabled={isLoading}
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#1877F2">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                <span className="text-sm">Facebook</span>
               </button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
-// Use a known product ID to avoid loading the products listing page during parallel tests
-const PRODUCT_URL = '/vi/products/97'
+// Use a known seeded product slug (v1 catalog)
+const PRODUCT_URL = '/vi/products/quan-vai-gan'
 
 test.describe('Product detail page', () => {
   test.beforeEach(async ({ page }) => {

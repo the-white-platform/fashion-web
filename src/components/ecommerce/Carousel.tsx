@@ -27,12 +27,11 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 20 })
   const [selectedIndex, setSelectedIndex] = useState(0)
 
-  // Default slides (fallback if no CMS slides provided)
+  // Default slides — TheWhite editorial photoshoot (public/demo/carousel-N.jpg)
   const defaultSlides = [
     {
       id: 1,
-      image:
-        'https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=3270&auto=format&fit=crop',
+      image: '/demo/carousel-1.jpg',
       titleKey: 'slides.winter2024.title',
       subtitleKey: 'slides.winter2024.subtitle',
       ctaKey: 'slides.winter2024.cta',
@@ -40,8 +39,7 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
     },
     {
       id: 2,
-      image:
-        'https://images.unsplash.com/photo-1572565408388-cdd3afe23e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920',
+      image: '/demo/carousel-2.jpg',
       titleKey: 'slides.performancePro.title',
       subtitleKey: 'slides.performancePro.subtitle',
       ctaKey: 'slides.performancePro.cta',
@@ -49,8 +47,7 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
     },
     {
       id: 3,
-      image:
-        'https://images.unsplash.com/photo-1625515922308-56dcaa45351c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1920',
+      image: '/demo/carousel-3.jpg',
       titleKey: 'slides.styleComfort.title',
       subtitleKey: 'slides.styleComfort.subtitle',
       ctaKey: 'slides.styleComfort.cta',
@@ -99,8 +96,7 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
             // Check if this is a CMS slide or default slide
             const isCmsSlide = useCmsSlides
             const slideImage = isCmsSlide
-              ? (slide as any).backgroundImage?.url ||
-                'https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=3270&auto=format&fit=crop'
+              ? (slide as any).backgroundImage?.url || '/demo/carousel-1.jpg'
               : (slide as any).image
             const slideTitle =
               (isCmsSlide ? (slide as any).title : t((slide as any).titleKey)) || ''

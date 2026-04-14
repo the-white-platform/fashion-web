@@ -25,12 +25,11 @@ export const HeaderNav: React.FC<{
   const t = useTranslations()
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
-  // Default navigation items as fallback
+  // Default navigation items as fallback — brand only sells men's line for v1
   const defaultNavItems = [
-    { label: t('nav.men'), url: '/products?category=men' },
-    { label: t('nav.women'), url: '/products?category=women' },
-    { label: t('nav.kids'), url: '/products?category=kids' },
-    { label: t('nav.new'), url: '/products?sort=newest' },
+    { label: t('nav.men'), url: '/products?category=nam' },
+    { label: t('nav.new'), url: '/products?category=moi-nhat' },
+    { label: t('nav.hot'), url: '/products?tag=hot' },
   ]
 
   const displayNavItems = navItems.length > 0 ? navItems : defaultNavItems

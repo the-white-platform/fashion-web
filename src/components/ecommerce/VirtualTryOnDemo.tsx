@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { Sparkles, Upload, User, Ruler, ChevronRight } from 'lucide-react'
+import { Sparkles, Upload, User } from 'lucide-react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useRouter } from '@/i18n/routing'
@@ -46,40 +46,29 @@ export function VirtualTryOnDemo() {
                   <h3 className="text-lg uppercase tracking-wide">{t('steps.1.title')}</h3>
                 </div>
 
-                {/* Mock Product Grid */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="aspect-square bg-muted rounded-sm relative overflow-hidden">
-                    <Image
-                      src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200"
-                      alt="Product"
-                      fill
-                      className="object-cover"
-                      sizes="200px"
-                    />
-                  </div>
-                  <div className="aspect-square bg-muted rounded-sm relative overflow-hidden border-2 border-primary">
-                    <Image
-                      src="https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=200"
-                      alt="Product"
-                      fill
-                      className="object-cover"
-                      sizes="200px"
-                    />
-                    <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-primary-foreground"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
+                {/* Mock single product card — only one at a time */}
+                <div className="aspect-square bg-muted rounded-sm relative overflow-hidden border-2 border-primary mb-3">
+                  <Image
+                    src="/demo/step1-product.jpg"
+                    alt="TheWhite tank top"
+                    fill
+                    className="object-cover"
+                    sizes="400px"
+                  />
+                  <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-primary-foreground"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
                   </div>
                 </div>
 
@@ -102,23 +91,23 @@ export function VirtualTryOnDemo() {
                   <h3 className="text-lg uppercase tracking-wide">{t('steps.2.title')}</h3>
                 </div>
 
-                {/* Mock Upload */}
-                <div className="border-2 border-dashed border-muted-foreground/30 rounded-sm p-4 mb-3 flex flex-col items-center">
-                  <User className="w-10 h-10 text-muted-foreground/50 mb-2" />
-                  <p className="text-xs text-muted-foreground text-center">
-                    {t('steps.2.uploadText')}
-                  </p>
-                </div>
-
-                {/* Mock Inputs */}
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="border-2 border-border rounded-sm p-2 flex items-center gap-2">
-                    <Ruler className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">170 cm</span>
-                  </div>
-                  <div className="border-2 border-border rounded-sm p-2 flex items-center gap-2">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground">65 kg</span>
+                {/* Mock Upload — preview the kind of photo we need (full-body TheWhite shot) */}
+                <div className="relative aspect-square rounded-sm overflow-hidden mb-3 border-2 border-dashed border-muted-foreground/30">
+                  <Image
+                    src="/demo/step2-upload.jpg"
+                    alt="Sample full-body upload"
+                    fill
+                    className="object-cover"
+                    sizes="400px"
+                  />
+                  <div className="absolute inset-0 bg-background/60 flex flex-col items-center justify-center text-center p-4">
+                    <User className="w-10 h-10 text-foreground mb-2" />
+                    <p className="text-xs text-foreground text-center font-semibold">
+                      {t('steps.2.uploadText')}
+                    </p>
+                    <p className="text-[10px] text-foreground/80 text-center mt-2 max-w-[220px]">
+                      {t('steps.2.onePhotoHint')}
+                    </p>
                   </div>
                 </div>
 
@@ -141,10 +130,18 @@ export function VirtualTryOnDemo() {
                   <h3 className="text-lg uppercase tracking-wide">{t('steps.3.title')}</h3>
                 </div>
 
-                {/* Mock Result */}
-                <div className="bg-muted/50 rounded-sm aspect-square mb-3 flex items-center justify-center relative overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Sparkles className="w-16 h-16 text-muted-foreground/50 animate-pulse" />
+                {/* Mock Result — real generated-style TheWhite editorial shot */}
+                <div className="relative aspect-square rounded-sm overflow-hidden mb-3 border-2 border-primary">
+                  <Image
+                    src="/demo/step3-result.jpg"
+                    alt="AI virtual try-on result"
+                    fill
+                    className="object-cover"
+                    sizes="400px"
+                  />
+                  <div className="absolute top-2 right-2 bg-primary text-primary-foreground px-2 py-1 rounded-sm flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">AI</span>
                   </div>
                 </div>
 

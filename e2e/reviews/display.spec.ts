@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
-// Use a known product page that has the reviews section
-const PRODUCT_URL = '/vi/products/97'
+// Use a stable seeded product (ID 1 always exists after seed)
+const PRODUCT_URL = '/vi/products/1'
 
 test.describe('Reviews display', () => {
   test.beforeEach(async ({ page }) => {

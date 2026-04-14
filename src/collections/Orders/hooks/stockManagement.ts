@@ -144,9 +144,41 @@ export const validateAndRecalculateOrder: CollectionBeforeChangeHook = async ({
   const shippingFee = isFreeShipping ? 0 : 30000
   data.totals.shippingFee = shippingFee
 
-  // Step 5: Set server-calculated discount and total
+  // Step 5: Validate and apply loyalty points discount
+  // 1 point = 1000 VND (default rate — tune via follow-up if needed)
+  const POINTS_TO_VND = 1000
+  req.payload.logger.warn(
+    'stockManagement: using default POINTS_TO_VND=1000 — verify redemption rate is correct',
+  )
+
+  let clampedPointsDiscount = 0
+  const userId = data.customerInfo?.user
+    ? typeof data.customerInfo.user === 'object'
+      ? data.customerInfo.user.id
+      : data.customerInfo.user
+    : null
+
+  if (userId) {
+    const loyaltyResult = await req.payload.find({
+      collection: 'loyalty-accounts',
+      where: { user: { equals: userId } },
+      limit: 1,
+    })
+    const account = loyaltyResult.docs[0]
+    if (account) {
+      const maxAllowed = (account.points ?? 0) * POINTS_TO_VND
+      const requested = data.totals?.pointsDiscount ?? 0
+      clampedPointsDiscount = Math.min(requested, maxAllowed)
+    }
+    // else: no loyalty account → pointsDiscount stays 0
+  }
+  // Anonymous order → pointsDiscount stays 0
+
+  data.totals.pointsDiscount = clampedPointsDiscount
+
+  // Step 5b: Set server-calculated discount and total
   data.totals.discount = discount
-  data.totals.total = Math.max(0, subtotal + shippingFee - discount)
+  data.totals.total = Math.max(0, subtotal + shippingFee - discount - clampedPointsDiscount)
 
   // Step 6: Force status to pending
   data.status = 'pending'

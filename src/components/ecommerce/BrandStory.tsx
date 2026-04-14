@@ -22,7 +22,7 @@ export function BrandStory() {
           >
             <div className="absolute inset-0 bg-muted rounded-sm overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1599058917212-d750089bc07e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080"
+                src="/demo/brand-story.jpg"
                 alt="TheWhite Brand Story"
                 fill
                 className="object-cover hover:scale-110 transition-transform duration-700"

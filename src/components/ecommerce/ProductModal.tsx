@@ -217,7 +217,9 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 </div>
                 <div className="h-4 w-px bg-border" />
                 <span className="text-sm font-bold text-foreground">4.9</span>
-                <span className="text-xs text-muted-foreground">{t('reviews.count', { count: 127 })}</span>
+                <span className="text-xs text-muted-foreground">
+                  {t('reviews.count', { count: 127 })}
+                </span>
               </motion.div>
 
               {/* Wishlist Button on Image */}
@@ -460,6 +462,8 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
           name: product.name,
           image: product.image,
           priceDisplay: product.price,
+          color: product.colorVariants?.[selectedVariantIndex]?.color,
+          features: product.features,
         }}
         isOpen={isTryOnOpen}
         onClose={() => setIsTryOnOpen(false)}

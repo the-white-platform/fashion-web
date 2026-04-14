@@ -1,0 +1,122 @@
+{
+  "rootFolderId": "1HZKoph6-ZcdduACwGNYmSj7WZGY45MQk",
+  "lookbookFolderId": "1pulsAlB66H9ZEjk6jzEJUL0Hoi0Z3xkp",
+  "sizeChartsFolderId": "1mhb-6inHnSizq-FG1aAbtPZi913dnPNQ",
+  "products": [
+    {
+      "slug": "set-ao-training-1",
+      "driveFolderId": "1BZdsLRml8Y2i35JpQMXsQ6bwpPMEUTAA",
+      "viName": "Set Áo Training 1",
+      "enName": "Training Top Set 1"
+    },
+    {
+      "slug": "set-ao-training-2",
+      "driveFolderId": "17ylxdHQtzgQAT2qabslx7yL0-4nB6Xqu",
+      "viName": "Set Áo Training 2",
+      "enName": "Training Top Set 2"
+    },
+    {
+      "slug": "set-quan-training-1",
+      "driveFolderId": "1d8GqtHWpkVmQbNE5gm6Dxt_N3ETthfcS",
+      "viName": "Set Quần Training 1",
+      "enName": "Training Pants Set 1"
+    },
+    {
+      "slug": "set-quan-training-pro",
+      "driveFolderId": "1xUrFg4iEPoSUTPVykgG9DP2w4Mo-u5jC",
+      "viName": "Set Quần Training Pro",
+      "enName": "Training Pants Set Pro"
+    },
+    {
+      "slug": "quan-short-2-lop",
+      "driveFolderId": "1gXZhQ9UDu-3afON7U9lqb7Otl7kBxgde",
+      "viName": "Quần Short 2 Lớp",
+      "enName": "Double-Layer Shorts"
+    },
+    {
+      "slug": "quan-short-tui-cheo",
+      "driveFolderId": "1-A-EKXk5b2Ph3qLsQ9A1ezAbpQJ69Mxu",
+      "viName": "Quần Short Túi Chéo",
+      "enName": "Diagonal-Pocket Shorts"
+    },
+    {
+      "slug": "quan-short-tui-sau",
+      "driveFolderId": "1KzhQnwkoks57diEkF8h-4Zmt92WyhT3t",
+      "viName": "Quần Short Túi Sau",
+      "enName": "Back-Pocket Shorts"
+    },
+    {
+      "slug": "quan-vai-gan",
+      "driveFolderId": "10BcYoPfBJXcJsBxpkkryAqv5IZqnK07F",
+      "viName": "Quần Vải Gân",
+      "enName": "Ribbed-Fabric Pants"
+    },
+    {
+      "slug": "ao-tank-ho-suon",
+      "driveFolderId": "1n2anfLzNDz60nTsywg5M8fC1WltS_yOz",
+      "viName": "Áo Tank Hở Sườn",
+      "enName": "Open-Side Tank"
+    },
+    {
+      "slug": "ao-tank-sat-nach",
+      "driveFolderId": "1CTjyE9ODPu8eF4KMWF1HBB_X8qJQ62y_",
+      "viName": "Áo Tank Sát Nách",
+      "enName": "Fitted Tank"
+    },
+    {
+      "slug": "ao-thun-tay-dai",
+      "driveFolderId": "1XMuF5C2eKudal3ytXBZpsoz_Jrc4Qjm3",
+      "viName": "Áo Thun Tay Dài",
+      "enName": "Long-Sleeve T-Shirt"
+    },
+    {
+      "slug": "ao-thun-tay-ngan",
+      "driveFolderId": "1UdR-n7A75nkzseydKJ31OnZ5FibsslWY",
+      "viName": "Áo Thun Tay Ngắn",
+      "enName": "Short-Sleeve T-Shirt"
+    }
+  ],
+  "hiResFolderId": "1-Wyvxoh4uOwzXoiiiYDml3eBRoStN6MI",
+  "sizeCharts": [
+    {
+      "categorySlug": "quan-short-tui-sau",
+      "driveFileId": "1TuTF6agVm3w4Hq62Ajm733ccfHke53xT",
+      "ext": "jpg"
+    },
+    {
+      "categorySlug": "quan-short-tui-cheo",
+      "driveFileId": "1eD9SWibD1R9BzAu_GR3TTDEXr8dkDcrC",
+      "ext": "jpg"
+    },
+    {
+      "categorySlug": "quan-vai-gan",
+      "driveFileId": "1Pie4P8H2-nliNDW4BE58fFKGobebWP3E",
+      "ext": "jpg"
+    },
+    {
+      "categorySlug": "ao-tank-sat-nach",
+      "driveFileId": "1ugoExBP41loPvsGTggazoQ2P9tvn9bKB",
+      "ext": "jpg"
+    },
+    {
+      "categorySlug": "ao-thun-tay-dai",
+      "driveFileId": "1qEwdH_TZ260Jk1fup25oQhmqTf7spAoG",
+      "ext": "jpg"
+    },
+    {
+      "categorySlug": "ao-thun-tay-ngan",
+      "driveFileId": "1kumA8cNbztf4ewJT-_dVZV97oU4xY8sn",
+      "ext": "jpg"
+    },
+    {
+      "categorySlug": "quan-2-lop",
+      "driveFileId": "1177OWaaE3ZFs1q_45pPtgGAEpPRZYIh3",
+      "ext": "jpg"
+    },
+    {
+      "categorySlug": "ao-tank-ho-suon",
+      "driveFileId": "1ZFrjdIsASvCTNyLA3gxMWJio5gzJaEaX",
+      "ext": "jpg"
+    }
+  ]
+}

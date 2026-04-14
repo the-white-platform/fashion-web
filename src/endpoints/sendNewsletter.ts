@@ -2,6 +2,52 @@ import type { PayloadHandler } from 'payload'
 import type { NewsletterCampaign } from '@/payload-types'
 import { hasRole } from '@/access/roles'
 
+/** Minimal Lexical → HTML serializer for plain email delivery. */
+function lexicalToHtml(content: NewsletterCampaign['content']): string {
+  if (!content?.root?.children?.length) return ''
+
+  const serializeNode = (node: Record<string, unknown>): string => {
+    if (node.type === 'text') {
+      let text = String(node.text ?? '')
+      const format = (node.format as number) ?? 0
+      if (format & 1) text = `<strong>${text}</strong>` // IS_BOLD
+      if (format & 2) text = `<em>${text}</em>` // IS_ITALIC
+      if (format & 8) text = `<span style="text-decoration:underline">${text}</span>` // IS_UNDERLINE
+      if (format & 4) text = `<span style="text-decoration:line-through">${text}</span>` // IS_STRIKETHROUGH
+      if (format & 16) text = `<code>${text}</code>` // IS_CODE
+      return text
+    }
+
+    const children = Array.isArray(node.children)
+      ? (node.children as Record<string, unknown>[]).map(serializeNode).join('')
+      : ''
+
+    switch (node.type) {
+      case 'paragraph':
+        return `<p>${children}</p>`
+      case 'heading':
+        return `<${node.tag}>${children}</${node.tag}>`
+      case 'list':
+        return `<${node.tag}>${children}</${node.tag}>`
+      case 'listitem':
+        return `<li>${children}</li>`
+      case 'quote':
+        return `<blockquote>${children}</blockquote>`
+      case 'linebreak':
+        return '<br>'
+      case 'link': {
+        const fields = node.fields as Record<string, unknown> | undefined
+        const href = fields?.url ?? '#'
+        return `<a href="${href}">${children}</a>`
+      }
+      default:
+        return children
+    }
+  }
+
+  return (content.root.children as Record<string, unknown>[]).map(serializeNode).join('')
+}
+
 const BATCH_SIZE = 50
 
 export const sendNewsletterHandler: PayloadHandler = async (req) => {
@@ -34,6 +80,11 @@ export const sendNewsletterHandler: PayloadHandler = async (req) => {
     })
   } catch {
     return Response.json({ error: 'Campaign not found' }, { status: 404 })
+  }
+
+  const htmlContent = lexicalToHtml(campaign.content)
+  if (!htmlContent) {
+    return Response.json({ error: 'Campaign content is empty — cannot send.' }, { status: 400 })
   }
 
   if (campaign.status !== 'draft') {
@@ -79,7 +130,7 @@ export const sendNewsletterHandler: PayloadHandler = async (req) => {
             subject,
             html: buildEmailHtml({
               subject,
-              content: '<!-- campaign content -->',
+              content: htmlContent,
               unsubscribeUrl,
               subscriberName: (subscriber.name as string) ?? '',
             }),

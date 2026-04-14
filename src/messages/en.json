@@ -22,7 +22,8 @@
     "register": "Register",
     "logout": "Logout",
     "profile": "Profile",
-    "backToHome": "Back to Home"
+    "backToHome": "Back to Home",
+    "hot": "Hot"
   },
   "hero": {
     "title": "WINTER COLLECTION 2024",
@@ -287,9 +288,10 @@
         "description": "Choose the product you want to try from the product detail page"
       },
       "2": {
-        "title": "Upload Photo & Info",
-        "uploadText": "Upload your full body photo",
-        "description": "Enter height, weight and gender for more accurate results"
+        "title": "Upload Photo",
+        "uploadText": "Upload your full-body photo",
+        "description": "Pick a clear full-body photo, standing straight on a plain background for best results",
+        "onePhotoHint": "Just 1 photo — no additional info required"
       },
       "3": {
         "title": "View Result",
@@ -343,7 +345,24 @@
     "mustAcceptTerms": "Please accept the Terms of Use",
     "registerFailed": "Registration failed. Please check your information and try again.",
     "agreeTermsLogin": "By logging in, you agree to our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>",
-    "agreeTermsRegister": "I agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of TheWhite"
+    "agreeTermsRegister": "I agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of TheWhite",
+    "oauthError": {
+      "google_unverified": "Your Google account email has not been verified. Please verify it with Google and try again.",
+      "facebook_unverified": "Your Facebook account email has not been verified. Please verify it with Facebook and try again.",
+      "account_linked_to_google": "This email is already linked to a Google account. Please sign in with Google.",
+      "account_linked_to_facebook": "This email is already linked to a Facebook account. Please sign in with Facebook.",
+      "account_uses_password": "This email is registered with a password. Please log in with your email and password."
+    },
+    "backToLogin": "Back to sign in",
+    "forgotPasswordDesc": "Enter your email and we'll send you a reset link.",
+    "sendResetLink": "Send reset link",
+    "invalidLink": "Invalid link",
+    "invalidResetLink": "This password reset link is invalid or has expired.",
+    "requestNewLink": "Request a new link",
+    "verifyingEmail": "Verifying your email…",
+    "verificationFailed": "Email verification failed",
+    "invalidVerificationLink": "This verification link is invalid or has expired.",
+    "goToProfile": "Go to profile"
   },
   "common": {
     "all": "All",
@@ -611,7 +630,9 @@
     "aiAdvisorLabel": "Gemini Outfit Analysis",
     "aiResultCaption": "Styled by TheWhite AI — results are descriptive, not a photo",
     "aiProcessing": "AI Analysing Outfit (~10-20s)...",
-    "generateAi": "Analyse My Outfit"
+    "generateAi": "Analyse My Outfit",
+    "signInRequired": "Sign in to try",
+    "signInNote": "Please sign in to use AI try-on"
   },
   "filter": {
     "title": "Filter",
@@ -851,7 +872,8 @@
       "shipping": "Shipping",
       "return": "Returns & Exchanges",
       "product": "Products",
-      "account": "Account"
+      "account": "Account",
+      "payment": "Payment"
     },
     "questions": {
       "q1": {

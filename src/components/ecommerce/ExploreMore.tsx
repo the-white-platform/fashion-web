@@ -49,9 +49,9 @@ export function ExploreMore({ categories }: ExploreMoreProps = {}) {
     categories?.map((cat, index) => {
       const descriptionKeys = ['collection1.desc', 'collection2.desc', 'collection3.desc']
       const images = [
-        'https://images.unsplash.com/photo-1572565408388-cdd3afe23e82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-        'https://images.unsplash.com/photo-1625515922308-56dcaa45351c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-        'https://images.unsplash.com/photo-1758875568971-7388ba15012b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
+        '/demo/collection-tops.jpg',
+        '/demo/collection-pants.jpg',
+        '/demo/collection-shoes.jpg',
       ]
 
       return {

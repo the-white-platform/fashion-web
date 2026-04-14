@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const PRODUCT_URL = '/vi/products/97'
+const PRODUCT_URL = '/vi/products/1'
 
 // Serialize all authenticated tests to avoid session conflicts between parallel workers
 test.describe.configure({ mode: 'serial' })

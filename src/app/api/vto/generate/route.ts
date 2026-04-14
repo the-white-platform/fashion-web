@@ -1,23 +1,59 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { GoogleAuth } from 'google-auth-library'
+import { createHash } from 'crypto'
+import sharp from 'sharp'
 
-const auth = new GoogleAuth({
-  scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-})
+// Using the direct v1beta REST endpoint instead of the SDK. The
+// `@google/generative-ai@0.24.1` SDK silently drops the `responseModalities`
+// config field, which these image models require to return an image part —
+// otherwise they respond with an empty content array.
+//
+// Model choice: `nano-banana-pro-preview` — Google's image editing / VTO
+// preview. Stricter `gemini-2.5-flash-image` kept rejecting person-based VTO
+// with finishReason=IMAGE_SAFETY. nano-banana-pro handles the same prompts
+// cleanly and stays under the Gemini Developer API (no Vertex region pin to
+// us-central1 — the brand's main traffic is in Vietnam, so latency to a US
+// region would hurt).
+const GEMINI_IMAGE_MODEL = 'nano-banana-pro-preview'
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_IMAGE_MODEL}:generateContent`
+
+// Always normalise incoming images to ≤800px JPEG (quality 75). Large originals
+// (the brand's N*.png hi-res shots are 20-60MB) cause Gemini to either time out
+// or return empty responses. The 800px cap keeps per-image bytes under ~250KB.
+async function compressForGemini(buffer: Buffer): Promise<{ buffer: Buffer; mimetype: string }> {
+  const compressed = await sharp(buffer)
+    .rotate()
+    .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 75 })
+    .toBuffer()
+  return { buffer: compressed, mimetype: 'image/jpeg' }
+}
 
 /** Strip the `data:image/...;base64,` prefix if present. */
 function stripDataUrlPrefix(value: string): string {
   return value.replace(/^data:image\/[^;]+;base64,/, '')
 }
 
-/** Validate that a URL is safe to fetch (no SSRF). */
-function assertUrlSafe(url: string): void {
+/** Validate that a URL is safe to fetch (no SSRF).
+ *  `selfOrigin` (when provided) exempts same-origin URLs — those are
+ *  intentional fetches of our own Payload media.
+ */
+function assertUrlSafe(url: string, selfOrigin?: string): void {
   const parsed = new URL(url)
 
   // Only allow http/https
   if (!['http:', 'https:'].includes(parsed.protocol)) {
     throw new Error('Only HTTP(S) URLs are allowed')
+  }
+
+  if (selfOrigin) {
+    const selfUrl = new URL(selfOrigin)
+    const hostLower = parsed.hostname.toLowerCase()
+    const sameHost = hostLower === selfUrl.hostname.toLowerCase()
+    const isLocalhostAlias =
+      hostLower === 'localhost' || hostLower === '127.0.0.1' || hostLower === '::1'
+    const samePort = (parsed.port || '') === (selfUrl.port || '')
+    if (samePort && (sameHost || isLocalhostAlias)) return
   }
 
   // Block private/internal IP ranges
@@ -33,35 +69,46 @@ function assertUrlSafe(url: string): void {
   }
 }
 
-/** Fetch a URL and return its content as base64. */
-async function urlToBase64(url: string): Promise<string> {
-  assertUrlSafe(url)
+/** Fetch a URL and return its content as a compressed buffer. */
+async function urlToCompressed(
+  url: string,
+  selfOrigin?: string,
+): Promise<{ buffer: Buffer; mimetype: string }> {
+  assertUrlSafe(url, selfOrigin)
   const res = await fetch(url)
   if (!res.ok) {
     throw new Error(`Failed to fetch image URL: ${res.status}`)
   }
-  const buffer = await res.arrayBuffer()
-  return Buffer.from(buffer).toString('base64')
+  const buffer = Buffer.from(await res.arrayBuffer())
+  return compressForGemini(buffer)
 }
 
 /**
- * Resolve an image value to base64.
+ * Resolve an image value to a base64 string + mime type, compressing large files.
  * Handles absolute URLs (http/https), relative URLs (starting with /),
  * and base64 / data-URL strings.
  */
-async function resolveToBase64(value: string, requestUrl: string): Promise<string> {
+async function resolveToInlineImage(
+  value: string,
+  requestUrl: string,
+): Promise<{ data: string; mimetype: string }> {
+  const selfOrigin = new URL(requestUrl).origin
   if (value.startsWith('http://') || value.startsWith('https://')) {
-    return urlToBase64(value)
+    const { buffer, mimetype } = await urlToCompressed(value, selfOrigin)
+    return { data: buffer.toString('base64'), mimetype }
   }
   if (value.startsWith('/')) {
-    const origin = new URL(requestUrl).origin
-    return urlToBase64(`${origin}${value}`)
+    const { buffer, mimetype } = await urlToCompressed(`${selfOrigin}${value}`, selfOrigin)
+    return { data: buffer.toString('base64'), mimetype }
   }
-  return stripDataUrlPrefix(value)
+  // Raw base64 or data URL — decode → compress → re-encode
+  const raw = stripDataUrlPrefix(value)
+  const { buffer, mimetype } = await compressForGemini(Buffer.from(raw, 'base64'))
+  return { data: buffer.toString('base64'), mimetype }
 }
 
 // ---------------------------------------------------------------------------
-// In-memory sliding-window rate limiter (per IP)
+// In-memory sliding-window rate limiter (per user id)
 // ---------------------------------------------------------------------------
 const RATE_LIMIT_MAX = 5
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
@@ -70,9 +117,19 @@ const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
 const rateLimitMap = new Map<string, number[]>()
 let rateLimitRequestCount = 0
 
-function getRateLimitKey(token: string): string {
-  // Use first 16 chars of token as key (enough to distinguish users)
-  return `vto_${token.slice(0, 16)}`
+function getUserIdFromToken(token: string): string | null {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'))
+    return payload?.id != null ? String(payload.id) : null
+  } catch {
+    return null
+  }
+}
+
+function getRateLimitKey(token: string, scope: string): string {
+  const userId = getUserIdFromToken(token)
+  if (userId) return `${scope}_user_${userId}`
+  return `${scope}_tok_${createHash('sha256').update(token).digest('hex').slice(0, 16)}`
 }
 
 /** Remove stale entries to prevent unbounded memory growth. */
@@ -95,16 +152,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
 
-  // --- Rate-limit check (keyed by auth token) ---
+  // --- Rate-limit check (keyed by user id from JWT) ---
   const now = Date.now()
-  const clientIp = getRateLimitKey(token)
+  const clientKey = getRateLimitKey(token, 'vto')
 
   rateLimitRequestCount++
   if (rateLimitRequestCount % 100 === 0 || rateLimitMap.size > 1000) {
     cleanupRateLimitMap(now)
   }
 
-  const timestamps = (rateLimitMap.get(clientIp) ?? []).filter(
+  const timestamps = (rateLimitMap.get(clientKey) ?? []).filter(
     (t) => now - t < RATE_LIMIT_WINDOW_MS,
   )
 
@@ -118,27 +175,22 @@ export async function POST(request: Request) {
   }
 
   timestamps.push(now)
-  rateLimitMap.set(clientIp, timestamps)
+  rateLimitMap.set(clientKey, timestamps)
 
-  // --- Original handler logic ---
-  const projectId = process.env.GCP_PROJECT_ID
-  const region = process.env.GCP_REGION
-
-  if (!projectId || !region) {
-    return NextResponse.json(
-      { error: 'GCP environment variables are not configured' },
-      { status: 503 },
-    )
+  // --- Parse body ---
+  let body: {
+    personImage?: string
+    productImage?: string
+    productName?: string
+    productColor?: string
   }
-
-  let body: { personImage?: string; productImage?: string }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { personImage, productImage } = body
+  const { personImage, productImage, productName, productColor } = body
 
   if (!personImage || !productImage) {
     return NextResponse.json(
@@ -148,69 +200,88 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Resolve images — handles absolute URLs, relative URLs, and base64/data URLs
-    const productBase64 = await resolveToBase64(productImage, request.url)
-    const personBase64 = await resolveToBase64(personImage, request.url)
+    // Resolve images — handles absolute URLs, relative URLs, and base64/data URLs.
+    // Large originals (>1MB) are auto-downscaled to 1024px JPEG to stay under
+    // Gemini's payload limit.
+    const personImg = await resolveToInlineImage(personImage, request.url)
+    const productImg = await resolveToInlineImage(productImage, request.url)
 
-    // Get access token via ADC
-    const client = await auth.getClient()
-    const tokenResponse = await client.getAccessToken()
-    const accessToken = tokenResponse?.token
-    if (!accessToken) {
-      throw new Error('Failed to obtain access token')
+    const productDesc = [productName, productColor].filter(Boolean).join(' — ')
+    const prompt =
+      `Put the clothing item from the second image onto the person in the first image. ` +
+      `Preserve the person's face, pose, body proportions, and background. ` +
+      `Match fit and drape realistically.` +
+      (productDesc ? ` Product: ${productDesc}.` : '') +
+      ` Output only the generated image.`
+
+    const apiKey = process.env.GEMINI_API_KEY
+    if (!apiKey) {
+      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 503 })
     }
-
-    const endpoint = `https://${region}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${region}/publishers/google/models/virtual-try-on-001:predict`
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 120_000)
 
-    const vertexResponse = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        instances: [
-          {
-            personImage: {
-              image: { bytesBase64Encoded: personBase64 },
+    let body: {
+      candidates?: Array<{
+        content?: {
+          parts?: Array<{ text?: string; inlineData?: { mimeType?: string; data?: string } }>
+        }
+        finishReason?: string
+        safetyRatings?: unknown
+      }>
+      promptFeedback?: unknown
+    }
+    try {
+      const apiRes = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                { inlineData: { mimeType: personImg.mimetype, data: personImg.data } },
+                { inlineData: { mimeType: productImg.mimetype, data: productImg.data } },
+                { text: prompt },
+              ],
             },
-            productImages: [
-              {
-                image: { bytesBase64Encoded: productBase64 },
-              },
-            ],
-          },
-        ],
-        parameters: { sampleCount: 1 },
-      }),
-      signal: controller.signal,
+          ],
+          generationConfig: { responseModalities: ['IMAGE'] },
+        }),
+        signal: controller.signal,
+      })
+      if (!apiRes.ok) {
+        const text = await apiRes.text()
+        console.error('Gemini image API error:', apiRes.status, text.slice(0, 500))
+        return NextResponse.json({ error: `Gemini API error: ${apiRes.status}` }, { status: 502 })
+      }
+      body = await apiRes.json()
+    } finally {
+      clearTimeout(timeout)
+    }
+
+    const parts = body.candidates?.[0]?.content?.parts ?? []
+    const imgPart = parts.find((p) => p.inlineData?.mimeType?.startsWith('image/'))
+
+    if (!imgPart?.inlineData?.data) {
+      const debug = {
+        parts: parts.map((p) =>
+          p.inlineData
+            ? `[inline ${p.inlineData.mimeType} ${p.inlineData.data?.length || 0}b]`
+            : `[text] ${(p.text || '').slice(0, 120)}`,
+        ),
+        finishReason: body.candidates?.[0]?.finishReason,
+        promptFeedback: body.promptFeedback,
+      }
+      console.error('VTO: no image part returned.', JSON.stringify(debug))
+      return NextResponse.json({ error: 'no image returned', debug }, { status: 502 })
+    }
+
+    return NextResponse.json({
+      image: `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`,
     })
-
-    clearTimeout(timeout)
-
-    if (!vertexResponse.ok) {
-      const errorText = await vertexResponse.text()
-      console.error('Vertex AI VTO error:', vertexResponse.status, errorText)
-      return NextResponse.json(
-        { error: `Vertex AI error: ${vertexResponse.status}` },
-        { status: 502 },
-      )
-    }
-
-    const result = await vertexResponse.json()
-    const generatedImage = result?.predictions?.[0]?.bytesBase64Encoded
-
-    if (!generatedImage) {
-      return NextResponse.json({ error: 'No image returned from Vertex AI' }, { status: 502 })
-    }
-
-    return NextResponse.json({ image: `data:image/png;base64,${generatedImage}` })
   } catch (err) {
-    console.error('VTO generate error:', err)
-
     const message = err instanceof Error ? err.message : ''
     if (message.includes('aborted')) {
       return NextResponse.json({ error: 'Request timed out' }, { status: 504 })

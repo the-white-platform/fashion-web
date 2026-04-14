@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 
-const BASE = 'http://localhost:3000'
+const BASE =
+  process.env.PLAYWRIGHT_BASE_URL ||
+  `http://localhost:${process.env.PLAYWRIGHT_PORT || process.env.PORT || '3000'}`
 
 /**
  * Unauthenticated requests to protected API endpoints must be rejected

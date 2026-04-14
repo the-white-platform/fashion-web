@@ -25,6 +25,7 @@
     "release:minor": "standard-version --release-as minor",
     "release:patch": "standard-version --release-as patch",
     "release:major": "standard-version --release-as major",
+    "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx --tsconfig tsconfig.json scripts/seed.ts",
     "setup": "bash scripts/setup.sh",
     "db:reset": "bash scripts/db-reset.sh"
   },
@@ -42,6 +43,7 @@
     "@payloadcms/plugin-search": "^3.77.0",
     "@payloadcms/plugin-seo": "^3.77.0",
     "@payloadcms/richtext-lexical": "^3.77.0",
+    "@payloadcms/storage-gcs": "3.77.0",
     "@payloadcms/ui": "^3.77.0",
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-alert-dialog": "^1.1.6",

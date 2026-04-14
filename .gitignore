@@ -12,3 +12,11 @@ public/media/
 .env*.local
 docs/
 gcp-sa-key.json
+graphify-out
+playwright-report
+test-results
+.playwright-mcp
+/tmp
+src/endpoints/seed/hi-res/
+src/endpoints/seed/lookbook/
+public/size-charts/

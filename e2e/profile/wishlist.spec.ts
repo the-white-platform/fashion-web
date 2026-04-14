@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test'
 
-const PRODUCT_URL = '/vi/products/97'
+const PRODUCT_URL = '/vi/products/quan-vai-gan'
+// quan-vai-gan — ID from current seed DB
+const PRODUCT_ID = 6
 
 // Seed wishlist via localStorage before React mounts
 async function seedWishlistViaInitScript(
@@ -48,7 +50,7 @@ test.describe('Wishlist', () => {
   test('wishlist page shows items seeded in localStorage', async ({ page }) => {
     await seedWishlistViaInitScript(page, [
       {
-        id: 97,
+        id: PRODUCT_ID,
         name: 'Sản Phẩm Test',
         price: 500000,
         priceDisplay: '500,000₫',
@@ -70,7 +72,7 @@ test.describe('Wishlist', () => {
   test('remove from wishlist button exists on wishlist items', async ({ page }) => {
     await seedWishlistViaInitScript(page, [
       {
-        id: 97,
+        id: PRODUCT_ID,
         name: 'Sản Phẩm Test',
         price: 500000,
         priceDisplay: '500,000₫',
@@ -96,7 +98,7 @@ test.describe('Wishlist', () => {
   test('remove from wishlist removes the item', async ({ page }) => {
     await seedWishlistViaInitScript(page, [
       {
-        id: 97,
+        id: PRODUCT_ID,
         name: 'Sản Phẩm Test',
         price: 500000,
         priceDisplay: '500,000₫',
@@ -124,7 +126,7 @@ test.describe('Wishlist', () => {
   test('wishlist persists after page reload', async ({ page }) => {
     await seedWishlistViaInitScript(page, [
       {
-        id: 97,
+        id: PRODUCT_ID,
         name: 'Sản Phẩm Test',
         price: 500000,
         priceDisplay: '500,000₫',
@@ -153,7 +155,7 @@ test.describe('Wishlist', () => {
   test('wishlist page shows add to cart button for in-stock items', async ({ page }) => {
     await seedWishlistViaInitScript(page, [
       {
-        id: 97,
+        id: PRODUCT_ID,
         name: 'Sản Phẩm Test',
         price: 500000,
         priceDisplay: '500,000₫',

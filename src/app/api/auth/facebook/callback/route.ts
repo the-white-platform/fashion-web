@@ -44,14 +44,24 @@ export async function GET(request: Request) {
 
   const accessToken = tokenData.access_token
 
-  // Get user info
+  // Get user info — request `verified` alongside standard fields.
+  // Facebook's `verified` field reflects account-level email confirmation status.
+  // The `email` field is only returned when the user has a confirmed email on Facebook,
+  // but `verified` gives us an explicit signal to reject unconfirmed accounts.
   const userResponse = await fetch(
-    `https://graph.facebook.com/me?fields=id,name,email,picture&access_token=${accessToken}`,
+    `https://graph.facebook.com/me?fields=id,name,email,picture,verified&access_token=${accessToken}`,
   )
   const fbUser = await userResponse.json()
 
   if (!fbUser.email) {
     return NextResponse.json({ error: 'No email returned from Facebook' }, { status: 400 })
+  }
+
+  // Bug #3 fix (Facebook): reject accounts whose email is not verified.
+  // `verified` on the /me endpoint indicates Facebook has confirmed the account's email.
+  if (fbUser.verified === false) {
+    console.warn(`[auth/facebook] Login rejected: email not verified for ${fbUser.email}`)
+    return NextResponse.redirect(`${serverUrl}/login?error=facebook_unverified`)
   }
 
   const payload = await getPayload({ config: configPromise })
@@ -70,13 +80,27 @@ export async function GET(request: Request) {
   let userId: string | number
 
   if (user.docs.length > 0) {
-    userId = user.docs[0].id
+    const existingUser = user.docs[0]
+    userId = existingUser.id
+    const existingProvider = existingUser.provider as string | undefined
+
+    // Bug #8 fix: guard against silently overwriting a different provider's account
+    if (existingProvider && existingProvider !== 'facebook') {
+      // Account is linked to another social provider (e.g. google)
+      return NextResponse.redirect(`${serverUrl}/login?error=account_linked_to_${existingProvider}`)
+    }
+
+    if (!existingProvider) {
+      // Account was created with email/password — user must link social from profile
+      return NextResponse.redirect(`${serverUrl}/login?error=account_uses_password`)
+    }
+
+    // Same provider: safe to update sub (may have changed) and avatar
     await payload.update({
       collection: 'users',
       id: userId,
       data: {
         sub: fbUser.id,
-        provider: 'facebook',
         imageUrl: fbUser.picture?.data?.url,
       },
     })

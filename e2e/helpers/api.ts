@@ -1,6 +1,8 @@
 import { APIRequestContext } from '@playwright/test'
 
-const BASE = 'http://localhost:3000'
+const BASE =
+  process.env.PLAYWRIGHT_BASE_URL ||
+  `http://localhost:${process.env.PLAYWRIGHT_PORT || process.env.PORT || '3000'}`
 
 export async function loginViaAPI(request: APIRequestContext, email: string, password: string) {
   const res = await request.post(`${BASE}/api/users/login`, {

@@ -31,9 +31,19 @@ export async function GET(request: Request) {
 
   const response = NextResponse.redirect(redirectTo.href)
 
-  // Store PKCE and state in cookies
-  response.cookies.set('google_code_verifier', code_verifier, { httpOnly: true, secure: true })
-  response.cookies.set('google_state', state, { httpOnly: true, secure: true })
+  // Store PKCE and state in cookies. `secure: true` fails silently over HTTP
+  // (dev runs on http://thewhite.local:3200), so gate it on NODE_ENV.
+  // `sameSite: 'lax'` lets the cookie survive the Google-side redirect back.
+  const isProd = process.env.NODE_ENV === 'production'
+  const cookieOpts = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: 'lax' as const,
+    path: '/api/auth/google',
+    maxAge: 600, // 10 minutes — enough for the OAuth round-trip
+  }
+  response.cookies.set('google_code_verifier', code_verifier, cookieOpts)
+  response.cookies.set('google_state', state, cookieOpts)
 
   return response
 }

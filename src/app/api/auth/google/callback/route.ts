@@ -41,6 +41,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'No email returned from Google' }, { status: 400 })
   }
 
+  // Bug #3 fix: reject unverified Google email addresses before any user lookup
+  if (userinfo.email_verified !== true) {
+    console.warn(`[auth/google] Login rejected: email not verified for ${userinfo.email}`)
+    return NextResponse.redirect(`${serverUrl}/login?error=google_unverified`)
+  }
+
   const payload = await getPayload({ config: configPromise })
 
   // Find or create user
@@ -57,14 +63,27 @@ export async function GET(request: Request) {
   let userId: string | number
 
   if (user.docs.length > 0) {
-    userId = user.docs[0].id
-    // Update existing user if needed (e.g. sync avatar)
+    const existingUser = user.docs[0]
+    userId = existingUser.id
+    const existingProvider = existingUser.provider as string | undefined
+
+    // Bug #8 fix: guard against silently overwriting a different provider's account
+    if (existingProvider && existingProvider !== 'google') {
+      // Account is linked to another social provider (e.g. facebook)
+      return NextResponse.redirect(`${serverUrl}/login?error=account_linked_to_${existingProvider}`)
+    }
+
+    if (!existingProvider) {
+      // Account was created with email/password — user must link social from profile
+      return NextResponse.redirect(`${serverUrl}/login?error=account_uses_password`)
+    }
+
+    // Same provider: safe to update sub (may have changed) and avatar
     await payload.update({
       collection: 'users',
       id: userId,
       data: {
         sub: userinfo.sub,
-        provider: 'google',
         imageUrl: userinfo.picture as string,
       },
     })
@@ -107,7 +126,7 @@ export async function GET(request: Request) {
   response.cookies.set('payload-token', tokenValue, {
     path: '/',
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7, // 1 week
   })

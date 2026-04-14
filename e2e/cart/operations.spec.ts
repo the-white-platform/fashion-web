@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test'
 
 // Use a known product URL to avoid loading the listing page during parallel tests
-const PRODUCT_URL = '/vi/products/97'
+// DB has products with IDs 1–12 (v1 products seeded)
+const PRODUCT_URL = '/vi/products/1'
 
 // Seed cart using addInitScript (runs BEFORE React hydration, so useState lazy init reads it)
 async function seedCartViaInitScript(page: import('@playwright/test').Page, quantity = 1) {
   await page.addInitScript((qty) => {
     const item = {
-      id: 97,
+      id: 1,
       name: 'Test Cart Item',
       price: 500000,
       image: '/assets/placeholder.jpg',
@@ -35,8 +36,8 @@ async function addItemToCart(page: import('@playwright/test').Page) {
   const isInStock = await addBtn.isVisible({ timeout: 5_000 }).catch(() => false)
 
   if (!isInStock) {
-    // Try product 96
-    await page.goto('/vi/products/96')
+    // Try product 2 as fallback
+    await page.goto('/vi/products/2')
     await page.waitForLoadState('domcontentloaded')
     const sizeBtns96 = page.locator('button', { hasText: /^(XS|S|M|L|XL|2X)$/ })
     if ((await sizeBtns96.count()) > 0) await sizeBtns96.first().click()

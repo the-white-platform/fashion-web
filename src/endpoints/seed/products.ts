@@ -1,7 +1,27 @@
-// Product seed data for development environment with color variants
-// Uses placeholder images from Unsplash for dev only
-
-import { slugify } from '@/utilities/slugify'
+/**
+ * V1 product catalogue for The White — 8 SKUs with authoritative pricing
+ * from the brand's finance sheet (Projected Revenue / DOANH THU GIẢ ĐỊNH).
+ *
+ * Image paths are relative to `src/endpoints/seed/lookbook/` (downloaded via
+ * `scripts/fetch-drive-assets.sh`). The seed's `uploadImage()` helper detects
+ * non-URL strings and reads them from disk.
+ *
+ * Prices source (VND, retail):
+ *   QUẦN VẢI GÂN           455,000   (200 units)
+ *   QUẦN 2 LỚP             415,000   (200)
+ *   ÁO TAY DÀI             299,000   (100)
+ *   QUẦN 1 LỚP             259,000   (100)
+ *   ÁO THUN TAY NGẮN       259,000   (100)
+ *   QUẦN 1 LỚP TÍNH NĂNG   239,000   (100)
+ *   ÁO TANKTOP SÁT NÁCH    200,000   (100)
+ *   ÁO TANKTOP HỞ SƯỜN     200,000   (100)
+ *
+ * Combos (bundle pricing, to be modeled later as Coupons or Bundle products):
+ *   Combo 2 Áo Tank:                  359,000
+ *   Combo 2 quần short:               469,000
+ *   Combo áo thun tay ngắn + dài:     519,000
+ *   Combo quần vải gân + 2 lớp:       829,000
+ */
 
 export interface SizeInventoryItem {
   size: string
@@ -14,7 +34,7 @@ export interface ColorVariantSeedData {
   colorEn: string
   colorHex: string
   sizeInventory: SizeInventoryItem[]
-  imageUrls: string[]
+  imageUrls: string[] // local path under lookbook/ OR http(s) URL — seed auto-detects
 }
 
 export interface ProductSeedData {
@@ -34,335 +54,301 @@ export interface ProductSeedData {
   featuresEn: string[]
 }
 
-// Type for image sets
-type ImageSet = {
-  black: string[]
-  white?: string[]
-  gray?: string[]
-  blue?: string[]
+// 13 categories — same taxonomy used by the storefront listing/filters
+export const categorySeedData: Array<{ title: string; titleEn: string }> = [
+  { title: 'Nam', titleEn: 'Men' },
+  { title: 'Nữ', titleEn: 'Women' },
+  { title: 'Trẻ Em', titleEn: 'Kids' },
+  { title: 'Mới Nhất', titleEn: 'New Arrivals' },
+  { title: 'Áo Thể Thao', titleEn: 'Sports Tops' },
+  { title: 'Quần Short', titleEn: 'Shorts' },
+  { title: 'Quần Dài', titleEn: 'Long Pants' },
+  { title: 'Bộ Tập Luyện', titleEn: 'Training Sets' },
+  { title: 'Giày Thể Thao', titleEn: 'Sports Shoes' },
+  { title: 'Chạy Bộ', titleEn: 'Running' },
+  { title: 'Gym', titleEn: 'Gym' },
+  { title: 'Yoga', titleEn: 'Yoga' },
+  { title: 'Bóng Đá', titleEn: 'Football' },
+]
+
+// Per-size inventory helper — splits total qty across S/M/L/XL.
+// 100 total → 25 per size; 200 total → 50 per size. Low-stock threshold 10.
+const inventoryFor = (totalPerSize: number): SizeInventoryItem[] =>
+  ['S', 'M', 'L', 'XL'].map((size) => ({ size, stock: totalPerSize, lowStockThreshold: 10 }))
+
+const defaultColor = {
+  color: 'Đen',
+  colorEn: 'Black',
+  colorHex: '#000000',
 }
 
-// Dev placeholder images from Unsplash
-const placeholderImages: Record<string, ImageSet> = {
-  sportswear: {
-    black: [
-      'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=800&q=80',
-      'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&q=80',
-    ],
-    white: [
-      'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&q=80',
-      'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&q=80',
-    ],
-    gray: [
-      'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&q=80',
-      'https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?w=800&q=80',
-    ],
-    blue: [
-      'https://images.unsplash.com/photo-1564557287817-3785e38ec1f5?w=800&q=80',
-      'https://images.unsplash.com/photo-1618354691551-44de113f0164?w=800&q=80',
-    ],
-  },
-  running: {
-    black: [
-      'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80',
-      'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=800&q=80',
-    ],
-    white: [
-      'https://images.unsplash.com/photo-1539185441755-769473a23570?w=800&q=80',
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
-    ],
-  },
-  gym: {
-    black: [
-      'https://images.unsplash.com/photo-1622445275463-afa2ab738c34?w=800&q=80',
-      'https://images.unsplash.com/photo-1571945153237-4929e783af4a?w=800&q=80',
-    ],
-    gray: [
-      'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&q=80',
-      'https://images.unsplash.com/photo-1578587018452-892bacefd3f2?w=800&q=80',
-    ],
-  },
-}
+// Brand-wide promotional bonus — every v1 product ships with a branded
+// "not-for-sale" gift. Spliced onto every product's `features` arrays below.
+const GIFT_FEATURE_VI = '🎁 Kèm quà tặng không bán'
+const GIFT_FEATURE_EN = '🎁 Includes complimentary not-for-sale gift'
 
-// Helper function to generate product variations
-function generateProducts(): ProductSeedData[] {
-  const products: ProductSeedData[] = []
+export const productSeedData: ProductSeedData[] = [
+  {
+    name: 'Quần Vải Gân',
+    nameEn: 'Ribbed-Fabric Pants',
+    slug: 'quan-vai-gan',
+    categoryTitle: 'Quần Dài',
+    additionalCategories: ['Nam', 'Yoga', 'Gym', 'Mới Nhất'],
+    price: 455_000,
+    tag: 'HOT',
+    featured: true,
+    colorVariants: [
+      {
+        ...defaultColor,
+        sizeInventory: inventoryFor(50),
+        imageUrls: [
+          'hi-res/N13.png',
+          'hi-res/N14.png',
+          'hi-res/N24.png',
+          'hi-res/N27.png',
+          'quan-vai-gan/ÁO_TANK_HỞ_SƯỜN_+_QUẦN_VẢI_GÂN.jpg',
+          'quan-vai-gan/DSCF0991.JPG',
 
-  const baseProducts = [
-    {
-      name: 'Áo Training Performance',
-      category: 'Áo Thể Thao',
-      additional: ['Nam', 'Gym'],
-      price: 890000,
-    },
-    { name: 'Áo Polo Slim Fit', category: 'Áo Thể Thao', additional: ['Nam'], price: 790000 },
-    {
-      name: 'Áo Hoodie Oversize',
-      category: 'Áo Thể Thao',
-      additional: ['Nam', 'Nữ'],
-      price: 990000,
-    },
-    { name: 'Áo Tank Top Gym', category: 'Áo Thể Thao', additional: ['Nam', 'Gym'], price: 490000 },
-    {
-      name: 'Áo Thun Basic Heavy',
-      category: 'Áo Thể Thao',
-      additional: ['Nam', 'Nữ'],
-      price: 690000,
-    },
-    {
-      name: 'Áo Khoác Thể Thao',
-      category: 'Áo Thể Thao',
-      additional: ['Nam', 'Chạy Bộ'],
-      price: 1290000,
-    },
-    {
-      name: 'Áo Windbreaker',
-      category: 'Áo Thể Thao',
-      additional: ['Nam', 'Nữ', 'Chạy Bộ'],
-      price: 1190000,
-    },
-    {
-      name: 'Áo Thun Long Sleeve',
-      category: 'Áo Thể Thao',
-      additional: ['Nam', 'Chạy Bộ'],
-      price: 750000,
-    },
-    {
-      name: 'Quần Short Training',
-      category: 'Gym',
-      additional: ['Nam', 'Quần Short'],
-      price: 590000,
-    },
-    {
-      name: 'Quần Short 2 in 1',
-      category: 'Gym',
-      additional: ['Nam', 'Chạy Bộ', 'Quần Short'],
-      price: 690000,
-    },
-    {
-      name: 'Quần Short Basketball',
-      category: 'Bóng Đá',
-      additional: ['Nam', 'Quần Short'],
-      price: 650000,
-    },
-    {
-      name: 'Quần Jogger Training',
-      category: 'Quần Dài',
-      additional: ['Nam', 'Gym'],
-      price: 890000,
-    },
-    {
-      name: 'Quần Track Pants',
-      category: 'Quần Dài',
-      additional: ['Nam', 'Chạy Bộ'],
-      price: 850000,
-    },
-    {
-      name: 'Legging Compression',
-      category: 'Quần Dài',
-      additional: ['Nữ', 'Gym', 'Yoga'],
-      price: 790000,
-    },
-    {
-      name: 'Giày Chạy Bộ Elite',
-      category: 'Chạy Bộ',
-      additional: ['Nam', 'Nữ', 'Giày Thể Thao'],
-      price: 1890000,
-      shoe: true,
-    },
-    {
-      name: 'Giày Training CrossFit',
-      category: 'Chạy Bộ',
-      additional: ['Nam', 'Gym', 'Giày Thể Thao'],
-      price: 1690000,
-      shoe: true,
-    },
-    {
-      name: 'Set Đồ Tập Gym Premium',
-      category: 'Gym',
-      additional: ['Nam', 'Bộ Tập Luyện'],
-      price: 1490000,
-    },
-    { name: 'Set Yoga Flow', category: 'Yoga', additional: ['Nữ', 'Bộ Tập Luyện'], price: 1290000 },
-    {
-      name: 'Set Tennis Classic',
-      category: 'Bộ Tập Luyện',
-      additional: ['Nam', 'Quần Short', 'Áo Thể Thao'],
-      price: 1390000,
-    },
-    {
-      name: 'Sports Bra High Support',
-      category: 'Bộ Tập Luyện',
-      additional: ['Nữ', 'Gym', 'Yoga'],
-      price: 590000,
-    },
-  ]
-
-  const tags = ['MỚI', 'BÁN CHẠY', 'HOT', 'GIẢM 20%', 'GIẢM 30%']
-  const variations = ['Pro', 'Elite', 'Premium', 'Basic', 'Advanced']
-
-  let productCount = 0
-
-  // Generate variations of each base product
-  for (const base of baseProducts) {
-    for (let i = 0; i < 5 && productCount < 100; i++) {
-      const variation = i === 0 ? '' : ` ${variations[i]}`
-      const name = `${base.name}${variation}`
-      const slug = slugify(name)
-
-      const priceVariation = 1 + i * 0.1
-      const price = Math.round((base.price * priceVariation) / 10000) * 10000
-      const originalPrice = i % 3 === 0 ? Math.round((price * 1.25) / 10000) * 10000 : undefined
-
-      const colorVariants: ColorVariantSeedData[] = []
-      const imageSet = base.category.includes('Giày')
-        ? placeholderImages.running
-        : base.category.includes('Gym')
-          ? placeholderImages.gym
-          : placeholderImages.sportswear
-
-      // Helper to generate sizeInventory with random stock
-      const generateSizeInventory = (sizes: string[]) =>
-        sizes.map((size) => ({
-          size,
-          stock: Math.floor(Math.random() * 16) + 5, // Random 5-20
-          lowStockThreshold: 5,
-        }))
-
-      // Add black variant (always available)
-      colorVariants.push({
-        color: 'Đen',
-        colorEn: 'Black',
-        colorHex: '#1d2122',
-        sizeInventory: generateSizeInventory(
-          base.shoe ? ['39', '40', '41', '42', '43', '44'] : ['S', 'M', 'L', 'XL'],
-        ),
-        imageUrls: imageSet.black,
-      })
-
-      // Add white variant for some products
-      if (i % 2 === 0 && imageSet.white) {
-        colorVariants.push({
-          color: 'Trắng',
-          colorEn: 'White',
-          colorHex: '#ffffff',
-          sizeInventory: generateSizeInventory(
-            base.shoe ? ['39', '40', '41', '42', '43'] : ['M', 'L', 'XL', '2X'],
-          ),
-          imageUrls: imageSet.white,
-        })
-      }
-
-      // Add gray variant for some products
-      if (i % 3 === 0 && imageSet.gray) {
-        colorVariants.push({
-          color: 'Xám',
-          colorEn: 'Gray',
-          colorHex: '#a9a9a9',
-          sizeInventory: generateSizeInventory(
-            base.shoe ? ['40', '41', '42', '43'] : ['S', 'M', 'L'],
-          ),
-          imageUrls: imageSet.gray,
-        })
-      }
-
-      // Add blue variant for some products
-      if (i % 4 === 0 && imageSet.blue) {
-        colorVariants.push({
-          color: 'Xanh Navy',
-          colorEn: 'Navy Blue',
-          colorHex: '#2c3e50',
-          sizeInventory: generateSizeInventory(
-            base.shoe ? ['39', '40', '41', '42'] : ['M', 'L', 'XL'],
-          ),
-          imageUrls: imageSet.blue,
-        })
-      }
-
-      // Generate English name from base product
-      const nameEn = name
-        .replace('Áo Training', 'Training Shirt')
-        .replace('Áo Polo', 'Polo Shirt')
-        .replace('Áo Hoodie', 'Hoodie')
-        .replace('Áo Tank Top', 'Tank Top')
-        .replace('Áo Thun Basic', 'Basic T-Shirt')
-        .replace('Áo Khoác', 'Sports Jacket')
-        .replace('Áo Windbreaker', 'Windbreaker')
-        .replace('Áo Thun Long Sleeve', 'Long Sleeve Shirt')
-        .replace('Quần Short Training', 'Training Shorts')
-        .replace('Quần Short 2 in 1', '2-in-1 Shorts')
-        .replace('Quần Short Basketball', 'Basketball Shorts')
-        .replace('Quần Jogger', 'Jogger Pants')
-        .replace('Quần Track', 'Track Pants')
-        .replace('Legging Compression', 'Compression Leggings')
-        .replace('Giày Chạy Bộ', 'Running Shoes')
-        .replace('Giày Training', 'Training Shoes')
-        .replace('Set Đồ Tập', 'Training Set')
-        .replace('Set Yoga', 'Yoga Set')
-        .replace('Set Tennis', 'Tennis Set')
-        .replace('Sports Bra', 'Sports Bra')
-        .replace('Performance', 'Performance')
-        .replace('Oversize', 'Oversize')
-        .replace('Heavy', 'Heavy')
-        .replace('Thể Thao', 'Sports')
-        .replace('Slim Fit', 'Slim Fit')
-        .replace('CrossFit', 'CrossFit')
-        .replace('Gym Premium', 'Gym Premium')
-        .replace('Flow', 'Flow')
-        .replace('Classic', 'Classic')
-        .replace('High Support', 'High Support')
-        .replace('Elite', 'Elite')
-
-      products.push({
-        name,
-        nameEn,
-        slug,
-        categoryTitle: base.category,
-        additionalCategories: base.additional,
-        price,
-        originalPrice,
-        tag: tags[productCount % tags.length],
-        featured: productCount < 20, // First 20 are featured
-        colorVariants,
-        description: `${name} với công nghệ tiên tiến, thiết kế hiện đại và chất liệu cao cấp. Phù hợp cho các hoạt động thể thao cường độ cao và sử dụng hàng ngày.`,
-        descriptionEn: `${nameEn} with advanced technology, modern design and premium materials. Suitable for high-intensity sports activities and daily use.`,
-        features: [
-          'Chất liệu cao cấp',
-          'Công nghệ thấm hút mồ hôi',
-          'Thiết kế hiện đại',
-          'Độ bền cao',
+          'hi-res/qua-tang-khong-ban.png',
         ],
-        featuresEn: [
-          'Premium materials',
-          'Sweat-wicking technology',
-          'Modern design',
-          'High durability',
+      },
+    ],
+    description:
+      'Quần dài vải gân co giãn cao cấp — ôm chân vừa phải, bền đẹp, thích hợp yoga, gym và mặc hàng ngày.',
+    descriptionEn:
+      'Premium ribbed stretch pants with a flattering fit — yoga, gym, and everyday ready.',
+    features: [
+      GIFT_FEATURE_VI,
+      'Vải gân co giãn cao cấp',
+      'Ôm dáng vừa phải',
+      'Đa dụng yoga • gym • hàng ngày',
+    ],
+    featuresEn: [
+      GIFT_FEATURE_EN,
+      'Premium ribbed stretch fabric',
+      'Flattering fit',
+      'Multi-use yoga • gym • daily',
+    ],
+  },
+  {
+    name: 'Quần Short 2 Lớp',
+    nameEn: 'Double-Layer Shorts',
+    slug: 'quan-short-2-lop',
+    categoryTitle: 'Quần Short',
+    additionalCategories: ['Nam', 'Chạy Bộ', 'Gym'],
+    price: 415_000,
+    tag: 'BÁN CHẠY',
+    featured: true,
+    colorVariants: [
+      {
+        ...defaultColor,
+        sizeInventory: inventoryFor(50),
+        imageUrls: [
+          'hi-res/N9.png',
+          'hi-res/N10.png',
+          'hi-res/N23.png',
+          'hi-res/N27.png',
+          'quan-short-2-lop/_ÁO_THUN_TAY_NGẮN_+_QUẦN_SHORT_2_LỚP.jpg',
+          'quan-short-2-lop/DSCF4022_3.JPG',
+
+          'hi-res/qua-tang-khong-ban.png',
         ],
-      })
+      },
+    ],
+    description:
+      'Quần short 2 lớp — lớp compression bên trong nâng cơ, lớp ngoài thoáng khí. Dành cho chạy bộ và gym.',
+    descriptionEn:
+      'Double-layer shorts — inner compression liner plus airy outer shell. Running and gym ready.',
+    features: [GIFT_FEATURE_VI, 'Thiết kế 2 lớp', 'Lớp trong compression', 'Phù hợp chạy bộ & gym'],
+    featuresEn: [
+      GIFT_FEATURE_EN,
+      'Double-layer design',
+      'Compression inner liner',
+      'Ideal for running & gym',
+    ],
+  },
+  {
+    name: 'Áo Tay Dài',
+    nameEn: 'Long-Sleeve T-Shirt',
+    slug: 'ao-thun-tay-dai',
+    categoryTitle: 'Áo Thể Thao',
+    additionalCategories: ['Nam', 'Chạy Bộ'],
+    price: 299_000,
+    featured: true,
+    colorVariants: [
+      {
+        ...defaultColor,
+        sizeInventory: inventoryFor(25),
+        imageUrls: [
+          'hi-res/N15.png',
+          'hi-res/N16.png',
+          'hi-res/N19.png',
+          'hi-res/N28.png',
+          'ao-thun-tay-dai/_ÁO_TAY_DÀI_+_QUẦN_TÚI_SAU.jpg',
+          'ao-thun-tay-dai/_ÁO_THUN_TAY_DÀI.jpg',
 
-      productCount++
-    }
-  }
+          'hi-res/qua-tang-khong-ban.png',
+        ],
+      },
+    ],
+    description:
+      'Áo tay dài mỏng nhẹ — lớp nền lý tưởng cho các buổi chạy sáng sớm hoặc ngày lạnh.',
+    descriptionEn:
+      'Lightweight long-sleeve tee — perfect base layer for chilly mornings or cool-weather runs.',
+    features: [GIFT_FEATURE_VI, 'Tay dài ôm gọn', 'Nhẹ và bám', 'Lớp nền tiện dụng'],
+    featuresEn: [GIFT_FEATURE_EN, 'Snug long sleeves', 'Light and clingy', 'Versatile base layer'],
+  },
+  {
+    name: 'Quần 1 Lớp',
+    nameEn: 'Single-Layer Shorts',
+    slug: 'quan-short-tui-cheo',
+    categoryTitle: 'Quần Short',
+    additionalCategories: ['Nam'],
+    price: 259_000,
+    featured: false,
+    colorVariants: [
+      {
+        ...defaultColor,
+        sizeInventory: inventoryFor(25),
+        imageUrls: [
+          'hi-res/N7.png',
+          'hi-res/N8.png',
+          'hi-res/N21.png',
+          'hi-res/N22.png',
+          'hi-res/N26.png',
+          'quan-short-tui-cheo/QUẦN_TÚI_CHÉO_+_ÁO_TANK_SÁT_NÁCH.jpg',
 
-  return products.slice(0, 100)
-}
+          'hi-res/qua-tang-khong-ban.png',
+        ],
+      },
+    ],
+    description:
+      'Quần short 1 lớp phom suông với túi chéo thời trang — dùng được cả khi đi tập và mặc thường ngày.',
+    descriptionEn:
+      'Single-layer shorts with stylish diagonal pockets — works for both workouts and casual wear.',
+    features: [GIFT_FEATURE_VI, 'Túi chéo thời trang', 'Form suông', 'Đa dụng'],
+    featuresEn: [GIFT_FEATURE_EN, 'Stylish diagonal pockets', 'Relaxed fit', 'Versatile'],
+  },
+  {
+    name: 'Áo Thun Tay Ngắn',
+    nameEn: 'Short-Sleeve T-Shirt',
+    slug: 'ao-thun-tay-ngan',
+    categoryTitle: 'Áo Thể Thao',
+    additionalCategories: ['Nam', 'Mới Nhất'],
+    price: 259_000,
+    tag: 'MỚI',
+    featured: true,
+    colorVariants: [
+      {
+        ...defaultColor,
+        sizeInventory: inventoryFor(25),
+        imageUrls: [
+          'hi-res/N1.png',
+          'hi-res/N2.png',
+          'hi-res/N18.png',
+          'hi-res/N28.png',
+          'ao-thun-tay-ngan/ÁO_THUN_TAY_NGẮN_+_QUẦN_2_LỚP.jpg',
+          'ao-thun-tay-ngan/DSCF0833.JPG',
 
-// Generate 100 products
-export const productSeedData: ProductSeedData[] = generateProducts()
+          'hi-res/qua-tang-khong-ban.png',
+        ],
+      },
+    ],
+    description: 'Áo thun tay ngắn basic — dáng suông, chất vải mịn, mặc cả khi tập lẫn đi chơi.',
+    descriptionEn: 'Basic short-sleeve tee — relaxed cut with soft fabric, training or casual.',
+    features: [GIFT_FEATURE_VI, 'Dáng suông cơ bản', 'Chất vải mịn', 'Đa dụng'],
+    featuresEn: [GIFT_FEATURE_EN, 'Classic relaxed cut', 'Soft fabric', 'Versatile'],
+  },
+  {
+    name: 'Quần 1 Lớp Tính Năng',
+    nameEn: 'Performance Single-Layer Shorts',
+    slug: 'quan-short-tui-sau',
+    categoryTitle: 'Quần Short',
+    additionalCategories: ['Nam', 'Chạy Bộ'],
+    price: 239_000,
+    featured: false,
+    colorVariants: [
+      {
+        ...defaultColor,
+        sizeInventory: inventoryFor(25),
+        imageUrls: [
+          'hi-res/N11.png',
+          'hi-res/N12.png',
+          'hi-res/N26.png',
+          'quan-short-tui-sau/_ÁO_TAY_DÀI_+_QUẦN_TÚI_SAU.jpg',
+          'quan-short-tui-sau/59.jpg',
+          'quan-short-tui-sau/Thiết_kế_chưa_có_tên_(1).jpg',
 
-// Categories to be seeded
-export const categorySeedData = [
-  { title: 'Nam', titleEn: 'Men', slug: 'nam' },
-  { title: 'Nữ', titleEn: 'Women', slug: 'nu' },
-  { title: 'Trẻ Em', titleEn: 'Kids', slug: 'tre-em' },
-  { title: 'Mới Nhất', titleEn: 'New Arrivals', slug: 'moi-nhat' },
-  { title: 'Áo Thể Thao', titleEn: 'Sports Shirts', slug: 'ao-the-thao' },
-  { title: 'Quần Short', titleEn: 'Shorts', slug: 'quan-short' },
-  { title: 'Quần Dài', titleEn: 'Pants', slug: 'quan-dai' },
-  { title: 'Bộ Tập Luyện', titleEn: 'Training Sets', slug: 'bo-tap-luyen' },
-  { title: 'Giày Thể Thao', titleEn: 'Sports Shoes', slug: 'giay-the-thao' },
-  { title: 'Chạy Bộ', titleEn: 'Running', slug: 'chay-bo' },
-  { title: 'Gym', titleEn: 'Gym', slug: 'gym' },
-  { title: 'Yoga', titleEn: 'Yoga', slug: 'yoga' },
-  { title: 'Bóng Đá', titleEn: 'Football', slug: 'bong-da' },
+          'hi-res/qua-tang-khong-ban.png',
+        ],
+      },
+    ],
+    description:
+      'Quần short chạy bộ 1 lớp tính năng — túi sau có khóa kéo giữ chìa khóa và tai nghe an toàn.',
+    descriptionEn:
+      'Performance single-layer running shorts — zippered back pocket secures keys and earbuds.',
+    features: [GIFT_FEATURE_VI, 'Túi sau có khóa kéo', 'Phom nhẹ thoáng', 'Dành cho runner'],
+    featuresEn: [GIFT_FEATURE_EN, 'Zippered back pocket', 'Lightweight fit', 'Runner-ready'],
+  },
+  {
+    name: 'Áo Tanktop Sát Nách',
+    nameEn: 'Fitted Tank Top',
+    slug: 'ao-tank-sat-nach',
+    categoryTitle: 'Áo Thể Thao',
+    additionalCategories: ['Nam', 'Gym'],
+    price: 200_000,
+    featured: true,
+    colorVariants: [
+      {
+        ...defaultColor,
+        sizeInventory: inventoryFor(25),
+        imageUrls: [
+          'hi-res/N3.png',
+          'hi-res/N4.png',
+          'hi-res/N17.png',
+          'hi-res/N20.png',
+          'hi-res/N25.png',
+          'ao-tank-sat-nach/72.JPG',
+          'ao-tank-sat-nach/IMG_2847.JPG',
+          'ao-tank-sat-nach/QUẦN_TÚI_CHÉO_+_ÁO_TANK_SÁT_NÁCH.jpg',
+
+          'hi-res/qua-tang-khong-ban.png',
+        ],
+      },
+    ],
+    description: 'Áo tanktop sát nách ôm vừa — khoe cơ vai và cánh tay khi tập gym.',
+    descriptionEn:
+      'Fitted tank with a slim-cut armhole — highlights shoulders and arms during training.',
+    features: [GIFT_FEATURE_VI, 'Phom ôm vừa', 'Cổ tròn cơ bản', 'Dành cho gym'],
+    featuresEn: [GIFT_FEATURE_EN, 'Slim fit', 'Classic crew neck', 'Gym-ready'],
+  },
+  {
+    name: 'Áo Tanktop Hở Sườn',
+    nameEn: 'Open-Side Tank Top',
+    slug: 'ao-tank-ho-suon',
+    categoryTitle: 'Áo Thể Thao',
+    additionalCategories: ['Nam', 'Gym'],
+    price: 200_000,
+    tag: 'HOT',
+    featured: true,
+    colorVariants: [
+      {
+        ...defaultColor,
+        sizeInventory: inventoryFor(25),
+        imageUrls: [
+          'hi-res/N5.png',
+          'hi-res/N6.png',
+          'ao-tank-ho-suon/_ẢNH_CHI_TIẾT.jpg',
+          'ao-tank-ho-suon/_ẢNH_NGƯỜI_MẪU.jpg',
+          'ao-tank-ho-suon/ẢNH_NGƯỜI_MẪU.jpg',
+
+          'hi-res/qua-tang-khong-ban.png',
+        ],
+      },
+    ],
+    description: 'Áo tanktop hở sườn — thoáng tối đa cho các buổi tập cường độ cao.',
+    descriptionEn: 'Open-side tank top — maximum airflow for high-intensity sessions.',
+    features: [GIFT_FEATURE_VI, 'Hở sườn thoáng khí', 'Nhẹ và mau khô', 'Dành cho gym'],
+    featuresEn: [GIFT_FEATURE_EN, 'Open-side airflow', 'Lightweight quick-dry', 'Gym-focused'],
+  },
 ]

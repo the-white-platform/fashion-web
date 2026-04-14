@@ -63,7 +63,7 @@ export function Categories({ categories }: CategoriesProps = {}) {
             viewport={{ once: true }}
             className="max-w-2xl"
           >
-            <h2 className="text-4xl lg:text-6xl uppercase font-heading font-bold tracking-tight leading-none">
+            <h2 className="text-4xl lg:text-6xl uppercase font-heading font-bold tracking-tight leading-[1.1]">
               {t('title')}
             </h2>
           </motion.div>

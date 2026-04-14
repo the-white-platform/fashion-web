@@ -1,5 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
 
+// Allow the port to be overridden at runtime (e.g. when 3000 is occupied by
+// another dev server on the same machine). Defaults to 3000.
+const PORT = process.env.PLAYWRIGHT_PORT || process.env.PORT || '3000'
+const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${PORT}`
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -9,7 +14,7 @@ export default defineConfig({
   reporter: process.env.CI ? 'github' : 'list',
   timeout: 60_000,
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: BASE_URL,
     trace: 'on-first-retry',
     locale: 'vi-VN',
   },
@@ -20,9 +25,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm dev',
-    url: 'http://localhost:3000',
+    command: `cross-env PORT=${PORT} pnpm dev`,
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    timeout: 180_000,
   },
 })
