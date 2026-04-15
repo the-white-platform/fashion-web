@@ -139,12 +139,12 @@ export const seed = async ({
 
   // 1.5 Create admin user
   payload.logger.info('— Creating admin user...')
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@thewhite.vn'
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@thewhite.cool'
   const adminPassword = process.env.ADMIN_PASSWORD
   if (!adminPassword && process.env.NODE_ENV === 'production') {
     throw new Error('ADMIN_PASSWORD environment variable is required in production')
   }
-  const resolvedAdminPassword = adminPassword || 'TheWhite@2024'
+  const resolvedAdminPassword = adminPassword || 'TheWhite@2026'
   const adminName = process.env.ADMIN_NAME || 'Admin'
 
   const { totalDocs: userExists } = await payload.find({
