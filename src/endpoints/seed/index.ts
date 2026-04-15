@@ -115,25 +115,33 @@ export const seed = async ({
   // 0. Seed Vietnam Addresses
   await seedVietnamAddresses(payload)
 
-  // 1. Clear existing data (in correct order to avoid foreign key constraints)
-  payload.logger.info('— Clearing existing data...')
+  // 1. Clear existing data (in correct order to avoid foreign key constraints).
+  // Set SEED_SKIP_WIPE=true to skip — useful when the DB was wiped out-of-band
+  // (e.g. via TRUNCATE), since Payload's delete() cascades into
+  // deleteUserPreferences which trips a drizzle/Supabase pooler bug
+  // ("current transaction is aborted") that aborts the whole seed.
+  if (process.env.SEED_SKIP_WIPE === 'true') {
+    payload.logger.info('— Skipping payload.delete wipe (SEED_SKIP_WIPE=true).')
+  } else {
+    payload.logger.info('— Clearing existing data...')
 
-  // Delete collections with foreign key dependencies first
-  const collectionsWithDependencies = ['posts', 'products', 'form-submissions']
-  for (const collection of collectionsWithDependencies) {
-    await payload.delete({
-      collection: collection as CollectionSlug,
-      where: { id: { exists: true } },
-    })
-  }
-
-  // Then delete the rest
-  for (const collection of collections) {
-    if (!collectionsWithDependencies.includes(collection)) {
+    // Delete collections with foreign key dependencies first
+    const collectionsWithDependencies = ['posts', 'products', 'form-submissions']
+    for (const collection of collectionsWithDependencies) {
       await payload.delete({
-        collection: collection,
+        collection: collection as CollectionSlug,
         where: { id: { exists: true } },
       })
+    }
+
+    // Then delete the rest
+    for (const collection of collections) {
+      if (!collectionsWithDependencies.includes(collection)) {
+        await payload.delete({
+          collection: collection,
+          where: { id: { exists: true } },
+        })
+      }
     }
   }
 
@@ -343,6 +351,8 @@ export const seed = async ({
       const ext = isUrl ? 'jpg' : path.extname(imageSource).slice(1).toLowerCase() || 'jpg'
       const fileName = `${productSlug}-${colorSlug}-${seq}-${descriptor}.${ext}`
 
+      const tCreate = Date.now()
+      payload.logger.info(`        · uploading ${fileName} (${(buffer.length / 1024) | 0} KiB)`)
       const imageDoc = await payload.create({
         collection: 'media',
         data: { alt: `${productName} - ${color}` },
@@ -354,6 +364,9 @@ export const seed = async ({
         },
         locale: 'vi',
       })
+      payload.logger.info(
+        `        · uploaded ${fileName} → media#${imageDoc.id} (${Date.now() - tCreate}ms)`,
+      )
 
       // Add English alt text
       await payload.update({
@@ -396,11 +409,20 @@ export const seed = async ({
       }
       const uniqueCategoryIds = Array.from(new Set(categoryIds))
 
+      payload.logger.info(
+        `  [${index + 1}] ▶ ${productData.name} (slug: ${productData.slug}, ${productData.colorVariants.length} variants, ${productData.colorVariants.reduce((n, v) => n + v.imageUrls.length, 0)} images)`,
+      )
+      const tProduct = Date.now()
+
       // Process all color variants with parallel image uploads
       const colorVariants: any[] = []
       const colorVariantsEn: any[] = []
 
-      for (const variant of productData.colorVariants) {
+      for (let vi = 0; vi < productData.colorVariants.length; vi++) {
+        const variant = productData.colorVariants[vi]
+        payload.logger.info(
+          `  [${index + 1}]   variant ${vi + 1}/${productData.colorVariants.length} "${variant.color}" — ${variant.imageUrls.length} images`,
+        )
         // Upload images for this variant sequentially. Parallel uploads here
         // stacked on the outer product-level parallelism (batch of 10) caused
         // Payload/sharp to choke on the image-resize pipeline with "invalid
@@ -408,6 +430,9 @@ export const seed = async ({
         // concurrency bounded to BATCH_SIZE.
         const imageResults: Array<number | null> = []
         for (let idx = 0; idx < variant.imageUrls.length; idx++) {
+          payload.logger.info(
+            `  [${index + 1}]     image ${idx + 1}/${variant.imageUrls.length} ← ${variant.imageUrls[idx]}`,
+          )
           const id = await uploadImage(
             variant.imageUrls[idx],
             productData.name,
@@ -420,6 +445,9 @@ export const seed = async ({
           imageResults.push(id)
         }
         const variantImageIds = imageResults.filter((id): id is number => id !== null)
+        payload.logger.info(
+          `  [${index + 1}]   variant "${variant.color}" done — ${variantImageIds.length}/${variant.imageUrls.length} images uploaded`,
+        )
 
         if (variantImageIds.length > 0) {
           colorVariants.push({
@@ -450,6 +478,7 @@ export const seed = async ({
       const enDescription = docOverride?.descriptionEn?.trim() || productData.descriptionEn
 
       // Create product with Vietnamese content
+      payload.logger.info(`  [${index + 1}]   creating product (vi)...`)
       const product = await payload.create({
         collection: 'products',
         data: {
@@ -466,6 +495,7 @@ export const seed = async ({
         },
         locale: 'vi',
       })
+      payload.logger.info(`  [${index + 1}]   created product (vi) → id ${product.id}`)
 
       // Add English translation. Pass each variant's `id` from the vi
       // creation so Payload updates the en locale in place instead of
@@ -476,6 +506,7 @@ export const seed = async ({
         ...cv,
         id: createdVariants[i]?.id,
       }))
+      payload.logger.info(`  [${index + 1}]   updating en translation...`)
       await payload.update({
         collection: 'products',
         id: product.id,
@@ -487,6 +518,9 @@ export const seed = async ({
         },
         locale: 'en',
       })
+      payload.logger.info(
+        `  [${index + 1}] ✓ ${productData.name} fully done (${Date.now() - tProduct}ms)`,
+      )
 
       payload.logger.info(
         `  [${index + 1}] ✓ ${productData.name} (${colorVariants.length} variants)`,
@@ -496,8 +530,13 @@ export const seed = async ({
     }
   }
 
-  // Process products in parallel batches of 10
-  const BATCH_SIZE = 10
+  // Process products serially. Supabase's session-mode pool maxes out
+  // around 10 connections, but each image upload (Payload media create +
+  // 6 sharp variants + GCS writes) holds one connection for many seconds.
+  // 8 products × 8 images in parallel exhausted the pool and stalled all
+  // but the first product. Serial keeps total time ~bounded × the slowest
+  // product (~140s × 8 ≈ 20min on prod) but reliably completes.
+  const BATCH_SIZE = 1
   for (let batchStart = 0; batchStart < productSeedData.length; batchStart += BATCH_SIZE) {
     const batchEnd = Math.min(batchStart + BATCH_SIZE, productSeedData.length)
     const batch = productSeedData.slice(batchStart, batchEnd)
