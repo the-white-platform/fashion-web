@@ -182,7 +182,18 @@
     "logout": "Đăng Xuất",
     "edit": "Chỉnh Sửa",
     "save": "Lưu",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "notUpdated": "Chưa cập nhật",
+    "default": "Mặc định",
+    "setDefault": "Đặt làm mặc định",
+    "defaultSet": "Đã đặt làm mặc định",
+    "noAddresses": "Chưa có địa chỉ nào",
+    "noPaymentMethods": "Chưa có phương thức thanh toán",
+    "addressDeleted": "Đã xóa địa chỉ",
+    "paymentDeleted": "Đã xóa phương thức thanh toán",
+    "emailReadOnly": "Email không thể thay đổi",
+    "updateSuccess": "Cập nhật thành công",
+    "updateError": "Cập nhật thất bại. Vui lòng thử lại."
   },
   "orders": {
     "title": "Đơn Hàng Của Tôi",

@@ -182,7 +182,18 @@
     "logout": "Logout",
     "edit": "Edit",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "notUpdated": "Not updated",
+    "default": "Default",
+    "setDefault": "Set as default",
+    "defaultSet": "Set as default",
+    "noAddresses": "No addresses yet",
+    "noPaymentMethods": "No payment methods yet",
+    "addressDeleted": "Address deleted",
+    "paymentDeleted": "Payment method deleted",
+    "emailReadOnly": "Email cannot be changed",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile. Please try again."
   },
   "orders": {
     "title": "My Orders",
