@@ -38,15 +38,33 @@ export const AdminBar: React.FC<{
   const collection = collectionLabels?.[segments?.[1]] ? segments?.[1] : 'pages'
   const router = useRouter()
 
-  const onAuthChange = React.useCallback((user) => {
-    setShow(user?.id)
+  // Only CMS staff should see the admin bar on the storefront. Regular
+  // shoppers have `role: 'customer'` (or no role) and must never see it —
+  // it leaked onto the checkout for them and both added clutter and
+  // exposed a stray "Logout" button mid-flow.
+  const onAuthChange = React.useCallback((user: { id?: string; role?: string } | null) => {
+    const role = user?.role
+    const isStaff = role === 'admin' || role === 'editor'
+    setShow(Boolean(user?.id) && isStaff)
   }, [])
+
+  // Also hide the admin bar on checkout-related routes even for staff —
+  // it visually breaks the checkout layout and the "Logout" link is a
+  // footgun mid-purchase.
+  const firstSegment = segments?.[0]
+  const isCheckoutRoute =
+    firstSegment === 'checkout' ||
+    firstSegment === 'login' ||
+    firstSegment === 'register' ||
+    firstSegment === 'forgot-password' ||
+    firstSegment === 'reset-password'
+  const shouldRender = show && !isCheckoutRoute
 
   return (
     <div
       className={cn(baseClass, 'py-2 bg-black text-white', {
-        block: show,
-        hidden: !show,
+        block: shouldRender,
+        hidden: !shouldRender,
       })}
     >
       <div className="container">
