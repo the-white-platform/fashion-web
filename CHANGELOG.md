@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.17.0](https://github.com/the-white-platform/fashion-web/compare/v0.16.2...v0.17.0) (2026-04-15)
+
+
+### Features
+
+* implement all 25 feature specs (admin + user) ([787bd84](https://github.com/the-white-platform/fashion-web/commit/787bd840efd3ed71997eeda582302569bc36e856))
+* v1 production readiness — real catalog, Gemini VTO, landing imagery, bug fixes ([cf10a5e](https://github.com/the-white-platform/fashion-web/commit/cf10a5e18b493b074869be3e8f21528ea76768da))
+
+
+### Documentation
+
+* add user guide, admin guide, QA guide, and architecture docs ([85d41b5](https://github.com/the-white-platform/fashion-web/commit/85d41b554325d8a0fae75cf20c00855f8f75910f))
+
 ### [0.16.2](https://github.com/the-white-platform/fashion-web/compare/v0.16.1...v0.16.2) (2026-03-29)
 
 
