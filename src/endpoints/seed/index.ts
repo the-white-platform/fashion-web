@@ -363,19 +363,24 @@ export const seed = async ({
       const colorVariantsEn: any[] = []
 
       for (const variant of productData.colorVariants) {
-        // Upload all images for this variant in parallel
-        const imagePromises = variant.imageUrls.map((url, idx) =>
-          uploadImage(
-            url,
+        // Upload images for this variant sequentially. Parallel uploads here
+        // stacked on the outer product-level parallelism (batch of 10) caused
+        // Payload/sharp to choke on the image-resize pipeline with "invalid
+        // filename" errors. Keeping products parallel but images serial keeps
+        // concurrency bounded to BATCH_SIZE.
+        const imageResults: Array<number | null> = []
+        for (let idx = 0; idx < variant.imageUrls.length; idx++) {
+          const id = await uploadImage(
+            variant.imageUrls[idx],
             productData.name,
             productData.nameEn,
             variant.color,
             variant.colorEn,
             productData.slug,
             idx,
-          ),
-        )
-        const imageResults = await Promise.all(imagePromises)
+          )
+          imageResults.push(id)
+        }
         const variantImageIds = imageResults.filter((id): id is number => id !== null)
 
         if (variantImageIds.length > 0) {
