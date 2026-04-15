@@ -65,11 +65,21 @@ function mergeCartItems(local: CartItem[], server: CartItem[]): CartItem[] {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(getLocalCart)
+  // Initial state must match SSR (no localStorage access). Hydrate from
+  // localStorage in an effect below so cart-dependent UI (e.g. the nav
+  // item-count badge) doesn't flip between server and client renders.
+  const [items, setItems] = useState<CartItem[]>([])
+  const [hydrated, setHydrated] = useState(false)
   const [isCartOpen, setIsCartOpen] = useState(false)
   const { user } = useUser()
   const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevUserRef = useRef<string | null>(null)
+
+  // Hydrate cart from localStorage once on mount
+  useEffect(() => {
+    setItems(getLocalCart())
+    setHydrated(true)
+  }, [])
 
   const syncCartToServer = useCallback((userId: string, cartItems: CartItem[]) => {
     const payload = cartItems.map((item) => ({
@@ -86,10 +96,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }).catch(() => {})
   }, [])
 
-  // Persist to localStorage
+  // Persist to localStorage — but not before hydration finishes, or we'd
+  // overwrite the saved cart with the empty initial state on first mount.
   useEffect(() => {
+    if (!hydrated) return
     localStorage.setItem('thewhite_cart', JSON.stringify(items))
-  }, [items])
+  }, [items, hydrated])
 
   // Merge on login
   useEffect(() => {

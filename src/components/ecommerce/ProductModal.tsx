@@ -176,51 +176,69 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 )}
               </motion.div>
 
-              {/* Premium Badge */}
-              <motion.div
-                initial={{ x: -50, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="absolute top-5 left-5"
-              >
-                <div className="bg-primary text-primary-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
-                  <span className="flex items-center gap-1.5">
-                    <Zap className="w-3 h-3" />
-                    Mới Nhất
-                  </span>
-                </div>
-              </motion.div>
+              {/* Tag Badge — only when product has a tag */}
+              {product.tag && (
+                <motion.div
+                  initial={{ x: -50, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="absolute top-5 left-5"
+                >
+                  <div className="bg-primary text-primary-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
+                    <span className="flex items-center gap-1.5">
+                      <Zap className="w-3 h-3" />
+                      {product.tag}
+                    </span>
+                  </div>
+                </motion.div>
+              )}
 
-              {/* Discount Badge */}
-              <motion.div
-                initial={{ y: -20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.4 }}
-                className="absolute top-5 right-16"
-              >
-                <div className="bg-destructive text-destructive-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
-                  -25%
-                </div>
-              </motion.div>
+              {/* Discount Badge — only when discounted vs originalPrice */}
+              {product.originalPriceNumber != null &&
+                product.originalPriceNumber > product.priceNumber && (
+                  <motion.div
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="absolute top-5 right-16"
+                  >
+                    <div className="bg-destructive text-destructive-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
+                      -{Math.round((1 - product.priceNumber / product.originalPriceNumber) * 100)}%
+                    </div>
+                  </motion.div>
+                )}
 
-              {/* Rating Float */}
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.5 }}
-                className="absolute bottom-5 left-5 bg-background/95 backdrop-blur-md px-5 py-3 shadow-xl flex items-center gap-3 rounded-sm border border-border"
-              >
-                <div className="flex gap-0.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <div className="h-4 w-px bg-border" />
-                <span className="text-sm font-bold text-foreground">4.9</span>
-                <span className="text-xs text-muted-foreground">
-                  {t('reviews.count', { count: 127 })}
-                </span>
-              </motion.div>
+              {/* Rating Float — only when product has reviews */}
+              {product.averageRating != null &&
+                product.reviewCount != null &&
+                product.reviewCount > 0 && (
+                  <motion.div
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="absolute bottom-5 left-5 bg-background/95 backdrop-blur-md px-5 py-3 shadow-xl flex items-center gap-3 rounded-sm border border-border"
+                  >
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star
+                          key={star}
+                          className={`w-4 h-4 ${
+                            star <= Math.round(product.averageRating!)
+                              ? 'fill-yellow-400 text-yellow-400'
+                              : 'text-muted-foreground'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="h-4 w-px bg-border" />
+                    <span className="text-sm font-bold text-foreground">
+                      {product.averageRating.toFixed(1)}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {t('reviews.count', { count: product.reviewCount })}
+                    </span>
+                  </motion.div>
+                )}
 
               {/* Wishlist Button on Image */}
               <motion.button
@@ -257,9 +275,13 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                 </DialogTitle>
                 <div className="flex items-baseline gap-3 mb-2">
                   <span className="text-2xl font-black text-foreground">{product.price}</span>
-                  <span className="text-sm text-muted-foreground line-through font-medium">
-                    1.190.000₫
-                  </span>
+                  {product.originalPrice &&
+                    product.originalPriceNumber != null &&
+                    product.originalPriceNumber > product.priceNumber && (
+                      <span className="text-sm text-muted-foreground line-through font-medium">
+                        {product.originalPrice}
+                      </span>
+                    )}
                 </div>
                 <p className="text-muted-foreground text-xs leading-relaxed">
                   {product.description || t('products.noDescription')}

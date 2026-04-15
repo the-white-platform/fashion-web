@@ -91,16 +91,22 @@ export function useCheckout(): UseCheckoutReturn {
       const pointsDiscount = redeemPoints * POINTS_VALUE
       const total = Math.max(0, subtotal + shippingFee - discount - pointsDiscount)
 
+      // Map UI payment-type keys to the Orders collection enum values.
+      // PaymentStep's new-payment form uses `type: 'bank'` and leaks it through
+      // `selectedPayment: any`, so we coerce to string and remap to the schema.
+      const uiPaymentType = (selectedPayment?.type as string | undefined) ?? 'cod'
+      const paymentMethod = uiPaymentType === 'bank' ? 'bank_transfer' : uiPaymentType
+
       const orderData = {
         customerInfo: {
-          name: user?.fullName ?? selectedAddress?.name ?? '',
-          email: user?.email ?? '',
-          phone: user?.phone ?? selectedAddress?.phone ?? '',
+          customerName: user?.fullName ?? selectedAddress?.name ?? '',
+          customerEmail: user?.email ?? '',
+          customerPhone: user?.phone ?? selectedAddress?.phone ?? '',
           ...(user?.id ? { user: user.id } : {}),
         },
         shippingAddress: {
           address: selectedAddress?.address ?? '',
-          province: selectedAddress?.province?.id ?? null,
+          city: selectedAddress?.province?.id ?? null,
           district: selectedAddress?.district?.id ?? null,
           ward: selectedAddress?.ward?.id ?? null,
         },
@@ -115,7 +121,7 @@ export function useCheckout(): UseCheckoutReturn {
           productImage: item.image,
         })),
         payment: {
-          method: selectedPayment?.type ?? 'cod',
+          method: paymentMethod,
           paymentStatus: 'pending',
         },
         totals: {
