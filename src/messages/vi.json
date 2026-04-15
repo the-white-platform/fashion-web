@@ -393,7 +393,8 @@
       "title": "404",
       "description": "Trang này không tồn tại.",
       "home": "Về Trang Chủ"
-    }
+    },
+    "edit": "Chỉnh Sửa"
   },
   "carousel": {
     "slides": {
@@ -826,13 +827,13 @@
     "info": {
       "title": "Thông Tin Liên Hệ",
       "addressLabel": "Địa Chỉ",
-      "addressValue": "123 Phố Thời Trang, Quận 1, TP. Hồ Chí Minh",
+      "addressValue": "",
       "phoneLabel": "Điện Thoại",
-      "phoneValue": "1900 xxxx",
+      "phoneValue": "+84 877 749 777",
       "emailLabel": "Email",
-      "emailValue": "hello@thewhite.vn",
+      "emailValue": "contact@thewhite.cool",
       "hoursLabel": "Giờ Làm Việc",
-      "hoursValue": "T2–T7: 9:00 – 18:00"
+      "hoursValue": "T2–CN: 9:00 – 21:00"
     },
     "social": {
       "title": "Theo Dõi Chúng Tôi"

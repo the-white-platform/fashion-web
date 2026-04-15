@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { motion } from 'motion/react'
-import { Mail, Phone, MapPin, Clock, Send, Facebook, Instagram, MessageCircle } from 'lucide-react'
+import { Mail, Phone, Clock, Send, Facebook, Instagram, MessageCircle } from 'lucide-react'
 import { PageContainer } from '@/components/layout/PageContainer'
 import {
   Breadcrumb,
@@ -222,7 +222,12 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="uppercase tracking-wide mb-1">{t('info.phoneLabel')}</h3>
-                    <p className="text-foreground">{t('info.phoneValue')}</p>
+                    <a
+                      href="tel:+84877749777"
+                      className="text-foreground hover:underline"
+                    >
+                      {t('info.phoneValue')}
+                    </a>
                   </div>
                 </div>
 
@@ -232,17 +237,12 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="uppercase tracking-wide mb-1">{t('info.emailLabel')}</h3>
-                    <p className="text-foreground">{t('info.emailValue')}</p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="w-12 h-12 bg-foreground text-background rounded-sm flex items-center justify-center shrink-0">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="uppercase tracking-wide mb-1">{t('info.addressLabel')}</h3>
-                    <p className="text-foreground">{t('info.addressValue')}</p>
+                    <a
+                      href="mailto:contact@thewhite.cool"
+                      className="text-foreground hover:underline"
+                    >
+                      {t('info.emailValue')}
+                    </a>
                   </div>
                 </div>
 
@@ -263,35 +263,41 @@ export default function ContactPage() {
               <h2 className="text-2xl uppercase tracking-wide mb-6">{t('social.title')}</h2>
               <div className="space-y-4">
                 <a
-                  href="#"
+                  href="https://www.facebook.com/thewhite.cool"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-4 p-4 bg-background/10 rounded-sm hover:bg-background/20 transition-colors"
                 >
                   <Facebook className="w-6 h-6" />
                   <div>
                     <p className="uppercase tracking-wide">Facebook</p>
-                    <p className="text-sm opacity-60">@TheWhiteVietnam</p>
+                    <p className="text-sm opacity-60">@thewhite.cool</p>
                   </div>
                 </a>
 
                 <a
-                  href="#"
+                  href="https://www.instagram.com/thewhite.cool"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-4 p-4 bg-background/10 rounded-sm hover:bg-background/20 transition-colors"
                 >
                   <Instagram className="w-6 h-6" />
                   <div>
                     <p className="uppercase tracking-wide">Instagram</p>
-                    <p className="text-sm opacity-60">@thewhite.vn</p>
+                    <p className="text-sm opacity-60">@thewhite.cool</p>
                   </div>
                 </a>
 
                 <a
-                  href="#"
+                  href="https://zalo.me/84877749777"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-4 p-4 bg-background/10 rounded-sm hover:bg-background/20 transition-colors"
                 >
                   <MessageCircle className="w-6 h-6" />
                   <div>
                     <p className="uppercase tracking-wide">Zalo Official</p>
-                    <p className="text-sm opacity-60">Chat trực tiếp</p>
+                    <p className="text-sm opacity-60">+84 877 749 777</p>
                   </div>
                 </a>
               </div>

@@ -393,7 +393,8 @@
       "title": "404",
       "description": "This page could not be found.",
       "home": "Go Home"
-    }
+    },
+    "edit": "Edit"
   },
   "carousel": {
     "slides": {
@@ -835,13 +836,13 @@
     "info": {
       "title": "Contact Information",
       "addressLabel": "Address",
-      "addressValue": "123 Fashion Street, District 1, Ho Chi Minh City",
+      "addressValue": "",
       "phoneLabel": "Phone",
-      "phoneValue": "1900 xxxx",
+      "phoneValue": "+84 877 749 777",
       "emailLabel": "Email",
-      "emailValue": "hello@thewhite.vn",
+      "emailValue": "contact@thewhite.cool",
       "hoursLabel": "Business Hours",
-      "hoursValue": "Mon–Sat: 9:00 – 18:00"
+      "hoursValue": "Mon–Sun: 9:00 – 21:00"
     },
     "social": {
       "title": "Follow Us"
