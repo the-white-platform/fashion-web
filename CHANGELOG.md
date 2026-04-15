@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.18.0](https://github.com/the-white-platform/fashion-web/compare/v0.17.2...v0.18.0) (2026-04-15)
+
+
+### Features
+
+* **seed:** clean media names, doc-sourced content, 8 SKU taxonomy ([01be51d](https://github.com/the-white-platform/fashion-web/commit/01be51ddca5e8d02a1e53fe77ad60819fdf1d1c3))
+
+
+### Bug Fixes
+
+* **auth:** add Payload v3 session to OAuth JWTs ([d4f735a](https://github.com/the-white-platform/fashion-web/commit/d4f735a0cd42acc96e011add4532a1aadac8e086))
+* **ui:** align checkout payload, cart hydration, and product modal ([d452d91](https://github.com/the-white-platform/fashion-web/commit/d452d91f4227bc7045ad5d3bfcfbda3913d400da))
+
 ### [0.17.2](https://github.com/the-white-platform/fashion-web/compare/v0.17.1...v0.17.2) (2026-04-15)
 
 
