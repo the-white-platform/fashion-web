@@ -279,11 +279,23 @@ export const seed = async ({
       let buffer: Buffer
       let mimetype: string
 
-      // Clean, admin-friendly filename: `{slug}-{color}-NN.{ext}` so Media
-      // list is sortable and recognisable in the Payload admin. Sequence is
-      // 1-based and zero-padded so N < 100 stays lexicographically sorted.
+      // Admin-friendly filename derived from the source path so each image
+      // carries its purpose. `{slug}-{color}-{sourceName}.{ext}`. The seq
+      // prefix keeps ordering stable inside a variant since the source
+      // basenames (e.g. N13, N14) sort alphabetically rather than by shoot
+      // order.
+      //   hi-res/N13.png            → quan-vai-gan-den-01-n13.png
+      //   quan-vai-gan/DSCF0991.JPG → quan-vai-gan-den-06-dscf0991.jpg
+      //   hi-res/qua-tang-khong-ban.png → quan-vai-gan-den-07-gift.png
+      //   size-charts/quan-vai-gan.jpg  → quan-vai-gan-den-08-size-chart.jpg
       const colorSlug = toLatinSlug(color) || 'default'
       const seq = String(imageIndex + 1).padStart(2, '0')
+      const sourceBasename = path.basename(imageSource, path.extname(imageSource))
+      const descriptor = imageSource.startsWith('size-charts/')
+        ? 'size-chart'
+        : sourceBasename === 'qua-tang-khong-ban'
+          ? 'gift'
+          : toLatinSlug(sourceBasename) || 'image'
 
       if (isUrl) {
         const response = await fetch(imageSource)
@@ -329,7 +341,7 @@ export const seed = async ({
       }
 
       const ext = isUrl ? 'jpg' : path.extname(imageSource).slice(1).toLowerCase() || 'jpg'
-      const fileName = `${productSlug}-${colorSlug}-${seq}.${ext}`
+      const fileName = `${productSlug}-${colorSlug}-${seq}-${descriptor}.${ext}`
 
       const imageDoc = await payload.create({
         collection: 'media',
