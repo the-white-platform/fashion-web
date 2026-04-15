@@ -131,30 +131,31 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       }
     }
 
-    // Fetch top 3 categories for ExploreMore section
-    // Prioritize: Áo Thể Thao, Quần Dài, Giày Thể Thao
-    const categoryNames = ['Áo Thể Thao', 'Quần Dài', 'Giày Thể Thao']
-    const categoriesResult = await payload.find({
+    // Top 3 non-empty categories by product count for the ExploreMore section.
+    // Was previously hardcoded to ['Áo Thể Thao', 'Quần Dài', 'Giày Thể Thao'],
+    // which surfaced an empty Giày Thể Thao tile.
+    const allCategoriesResult = await payload.find({
       collection: 'categories',
       locale: locale as 'vi' | 'en',
-      where: {
-        title: { in: categoryNames },
-      },
-      limit: 3,
+      limit: 100,
+      depth: 0,
     })
 
-    if (categoriesResult?.docs) {
-      featuredCategories = categoriesResult.docs
-        .map((cat: Category) => {
-          if (!cat) return null
-          return {
-            id: cat.id,
-            title: cat.title,
-            slug: slugify(cat.title),
-          }
+    const counts = await Promise.all(
+      (allCategoriesResult?.docs ?? []).map(async (cat: Category) => {
+        const { totalDocs } = await payload.count({
+          collection: 'products',
+          where: { category: { equals: cat.id } },
         })
-        .filter(Boolean)
-    }
+        return { cat, count: totalDocs }
+      }),
+    )
+
+    featuredCategories = counts
+      .filter(({ count }) => count > 0)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 3)
+      .map(({ cat }) => ({ id: cat.id, title: cat.title, slug: slugify(cat.title) }))
   } catch (error: any) {
     console.warn('Failed to fetch data:', error?.message || error || 'Unknown error')
   }

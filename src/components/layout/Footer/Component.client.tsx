@@ -1,6 +1,6 @@
 'use client'
 
-import { Facebook, Instagram, Youtube, Phone, Mail } from 'lucide-react'
+import { Facebook, Instagram, Phone, Mail } from 'lucide-react'
 import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/shared/Logo/Logo'
@@ -22,25 +22,22 @@ export function FooterClient() {
             </p>
             <div className="flex gap-3">
               <a
-                href="#"
+                href="https://www.facebook.com/thewhite.cool"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-background text-foreground flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all rounded-md border border-border"
                 aria-label="Facebook"
               >
                 <Facebook className="w-5 h-5" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/thewhite.cool"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-10 h-10 bg-background text-foreground flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all rounded-md border border-border"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 bg-background text-foreground flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all rounded-md border border-border"
-                aria-label="YouTube"
-              >
-                <Youtube className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -151,31 +148,30 @@ export function FooterClient() {
             <ul className="space-y-3 text-muted-foreground font-normal">
               <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
                 <Phone className="w-4 h-4" />
-                <a href="tel:+84123456789">0123 456 789</a>
+                <a href="tel:+84877749777">+84 877 749 777</a>
               </li>
               <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
                 <Mail className="w-4 h-4" />
-                <a href="mailto:support@thewhite.vn">support@thewhite.vn</a>
+                <a href="mailto:contact@thewhite.cool">contact@thewhite.cool</a>
               </li>
               <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
                 <Instagram className="w-4 h-4" />
                 <a
-                  href="https://instagram.com/thewhite.vn"
+                  href="https://www.instagram.com/thewhite.cool"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  @thewhite.vn
+                  @thewhite.cool
                 </a>
               </li>
               <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
                 <Phone className="w-4 h-4" />
-                <a href="https://zalo.me/0123456789" target="_blank" rel="noopener noreferrer">
-                  Zalo: 0123456789
+                <a href="https://zalo.me/84877749777" target="_blank" rel="noopener noreferrer">
+                  Zalo: +84 877 749 777
                 </a>
               </li>
               <li className="pt-2">
                 <p className="text-foreground text-sm font-semibold">{t('footer.contact.hours')}</p>
-                <p className="text-muted-foreground mt-1 text-sm">{t('footer.contact.showroom')}</p>
               </li>
             </ul>
           </div>

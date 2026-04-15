@@ -32,9 +32,9 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
     {
       id: 1,
       image: '/demo/carousel-1.jpg',
-      titleKey: 'slides.winter2024.title',
-      subtitleKey: 'slides.winter2024.subtitle',
-      ctaKey: 'slides.winter2024.cta',
+      titleKey: 'slides.winter2026.title',
+      subtitleKey: 'slides.winter2026.subtitle',
+      ctaKey: 'slides.winter2026.cta',
       link: '/products',
     },
     {
@@ -43,14 +43,6 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
       titleKey: 'slides.performancePro.title',
       subtitleKey: 'slides.performancePro.subtitle',
       ctaKey: 'slides.performancePro.cta',
-      link: '/products',
-    },
-    {
-      id: 3,
-      image: '/demo/carousel-3.jpg',
-      titleKey: 'slides.styleComfort.title',
-      subtitleKey: 'slides.styleComfort.subtitle',
-      ctaKey: 'slides.styleComfort.cta',
       link: '/products',
     },
   ]

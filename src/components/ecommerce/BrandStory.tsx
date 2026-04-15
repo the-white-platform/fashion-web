@@ -40,7 +40,7 @@ export function BrandStory() {
             >
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <div className="text-2xl mb-1 font-bold">2024</div>
+                  <div className="text-2xl mb-1 font-bold">2026</div>
                   <div className="text-sm text-muted-foreground">{t('stats.founded')}</div>
                 </div>
                 <div className="border-l border-r border-border">

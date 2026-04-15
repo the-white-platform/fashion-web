@@ -26,7 +26,7 @@
     "hot": "Hot"
   },
   "hero": {
-    "title": "BỘ SƯU TẬP MÙA ĐÔNG 2024",
+    "title": "BỘ SƯU TẬP MÙA ĐÔNG 2026",
     "subtitle": "PHONG CÁCH THỂ THAO HIỆN ĐẠI",
     "description": "Khám phá bộ sưu tập mới nhất với thiết kế tối giản, chất liệu cao cấp và công nghệ tiên tiến",
     "cta": "Khám Phá Ngay",
@@ -247,7 +247,7 @@
     "connect": "Kết Nối",
     "payment": "Phương Thức Thanh Toán",
     "shipping": "Đối Tác Vận Chuyển",
-    "copyright": "© 2024 TheWhite. Bảo lưu mọi quyền.",
+    "copyright": "© 2026 TheWhite. Bảo lưu mọi quyền.",
     "privacy": "Chính Sách Bảo Mật",
     "terms": "Điều Khoản Sử Dụng",
     "products": {
@@ -274,8 +274,7 @@
     },
     "rights": "Bảo lưu mọi quyền.",
     "contact": {
-      "hours": "Giờ làm việc: 8:00 - 22:00",
-      "showroom": "Showroom: Quận 1, TP.HCM"
+      "hours": "Hỗ trợ 24/7"
     }
   },
   "virtualTryOnDemo": {
@@ -398,19 +397,14 @@
   },
   "carousel": {
     "slides": {
-      "winter2024": {
-        "title": "BST MÙA ĐÔNG 2024",
+      "winter2026": {
+        "title": "BST MÙA ĐÔNG 2026",
         "subtitle": "Sức mạnh trong từng bước chân",
         "cta": "Khám phá ngay"
       },
       "performancePro": {
         "title": "PHONG CÁCH HIỆN ĐẠI",
         "subtitle": "Tối ưu cho mọi hoạt động",
-        "cta": "Khám phá ngay"
-      },
-      "styleComfort": {
-        "title": "CHẤT LIỆU CAO CẤP",
-        "subtitle": "Thoải mái suốt cả ngày",
         "cta": "Khám phá ngay"
       }
     },
@@ -676,7 +670,7 @@
     "breadcrumb": "Chính Sách Bảo Mật",
     "title": "Chính Sách Bảo Mật",
     "subtitle": "Tuân thủ GDPR & Luật Bảo Vệ Dữ Liệu Việt Nam",
-    "lastUpdated": "Cập nhật lần cuối: 17/12/2024",
+    "lastUpdated": "Cập nhật lần cuối: 15/04/2026",
     "sections": {
       "intro": {
         "title": "1. Giới Thiệu",
@@ -725,7 +719,7 @@
     "breadcrumb": "Điều Khoản Sử Dụng",
     "title": "Điều Khoản Sử Dụng",
     "subtitle": "Quy định sử dụng dịch vụ TheWhite",
-    "effectiveDate": "Có hiệu lực từ: 17/12/2024",
+    "effectiveDate": "Có hiệu lực từ: 15/04/2026",
     "sections": {
       "acceptance": {
         "title": "1. Chấp Nhận Điều Khoản",

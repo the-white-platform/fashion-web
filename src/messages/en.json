@@ -26,7 +26,7 @@
     "hot": "Hot"
   },
   "hero": {
-    "title": "WINTER COLLECTION 2024",
+    "title": "WINTER COLLECTION 2026",
     "subtitle": "MODERN ATHLETIC STYLE",
     "description": "Discover our latest collection with minimalist design, premium materials and advanced technology",
     "cta": "Explore Now",
@@ -247,7 +247,7 @@
     "connect": "Connect",
     "payment": "Payment Methods",
     "shipping": "Shipping Partners",
-    "copyright": "© 2024 TheWhite. All rights reserved.",
+    "copyright": "© 2026 TheWhite. All rights reserved.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Use",
     "products": {
@@ -274,8 +274,7 @@
     },
     "rights": "All rights reserved.",
     "contact": {
-      "hours": "Working Hours: 8:00 - 22:00",
-      "showroom": "Showroom: District 1, HCMC"
+      "hours": "24/7 Support"
     }
   },
   "virtualTryOnDemo": {
@@ -398,19 +397,14 @@
   },
   "carousel": {
     "slides": {
-      "winter2024": {
-        "title": "WINTER COLLECTION 2024",
+      "winter2026": {
+        "title": "WINTER COLLECTION 2026",
         "subtitle": "Power in every step",
         "cta": "Explore Now"
       },
       "performancePro": {
         "title": "MODERN STYLE",
         "subtitle": "Optimized for every activity",
-        "cta": "Explore Now"
-      },
-      "styleComfort": {
-        "title": "PREMIUM MATERIALS",
-        "subtitle": "Comfort all day long",
         "cta": "Explore Now"
       }
     },
@@ -676,7 +670,7 @@
     "breadcrumb": "Privacy Policy",
     "title": "Privacy Policy",
     "subtitle": "GDPR Compliant & Vietnam Data Protection Law",
-    "lastUpdated": "Last updated: 17/12/2024",
+    "lastUpdated": "Last updated: 15/04/2026",
     "sections": {
       "intro": {
         "title": "1. Introduction",
@@ -725,7 +719,7 @@
     "breadcrumb": "Terms of Use",
     "title": "Terms of Use",
     "subtitle": "Regulations for using TheWhite services",
-    "effectiveDate": "Effective from: 17/12/2024",
+    "effectiveDate": "Effective from: 15/04/2026",
     "sections": {
       "acceptance": {
         "title": "1. Acceptance of Terms",
