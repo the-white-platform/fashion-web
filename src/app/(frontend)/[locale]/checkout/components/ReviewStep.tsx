@@ -94,10 +94,14 @@ export function ReviewStep({
             <p className="font-semibold mb-1">{selectedAddress.name}</p>
             <p className="text-sm text-muted-foreground">{selectedAddress.phone}</p>
             <p className="text-sm text-muted-foreground">
-              {selectedAddress.address}
-              {selectedAddress.ward && `, ${selectedAddress.ward}`}
-              {selectedAddress.district && `, ${selectedAddress.district}`}
-              {selectedAddress.city && `, ${selectedAddress.city}`}
+              {[
+                selectedAddress.address,
+                selectedAddress.ward?.name,
+                selectedAddress.district?.name,
+                selectedAddress.province?.name,
+              ]
+                .filter(Boolean)
+                .join(', ')}
             </p>
           </div>
         )}

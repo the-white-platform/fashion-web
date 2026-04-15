@@ -19,7 +19,7 @@ export function useCoupon(): UseCouponReturn {
 
   const applyCoupon = async (subtotal: number) => {
     if (!couponCode.trim()) {
-      setCouponError('coupon.errorEmpty')
+      setCouponError('errorEmpty')
       return
     }
 
@@ -31,7 +31,7 @@ export function useCoupon(): UseCouponReturn {
       )
 
       if (!res.ok) {
-        setCouponError('coupon.errorNetwork')
+        setCouponError('errorNetwork')
         return
       }
 
@@ -39,7 +39,7 @@ export function useCoupon(): UseCouponReturn {
       const coupon = data?.docs?.[0]
 
       if (!coupon) {
-        setCouponError('coupon.errorInvalid')
+        setCouponError('errorInvalid')
         setAppliedCoupon(null)
         return
       }
@@ -47,30 +47,33 @@ export function useCoupon(): UseCouponReturn {
       // Validate date range
       const now = new Date()
       if (coupon.validFrom && new Date(coupon.validFrom) > now) {
-        setCouponError('coupon.errorNotYetValid')
+        setCouponError('errorNotYetValid')
         setAppliedCoupon(null)
         return
       }
       if (coupon.validUntil && new Date(coupon.validUntil) < now) {
-        setCouponError('coupon.errorExpired')
+        setCouponError('errorExpired')
         setAppliedCoupon(null)
         return
       }
 
-      // Validate usage limit
+      // Validate usage limit. usageLimit === 0 means unlimited (per the
+      // Coupons collection's admin hint), so skip the check when it's
+      // zero or null.
       if (
         coupon.usageLimit != null &&
+        coupon.usageLimit > 0 &&
         coupon.usageCount != null &&
         coupon.usageCount >= coupon.usageLimit
       ) {
-        setCouponError('coupon.errorUsageLimit')
+        setCouponError('errorUsageLimit')
         setAppliedCoupon(null)
         return
       }
 
       // Validate minimum order amount
       if (coupon.minOrderAmount != null && subtotal < coupon.minOrderAmount) {
-        setCouponError('coupon.errorMinOrder')
+        setCouponError('errorMinOrder')
         setAppliedCoupon(null)
         return
       }
@@ -99,7 +102,7 @@ export function useCoupon(): UseCouponReturn {
       setCouponError('')
     } catch (err) {
       console.error('Error applying coupon:', err)
-      setCouponError('coupon.errorNetwork')
+      setCouponError('errorNetwork')
       setAppliedCoupon(null)
     }
   }
