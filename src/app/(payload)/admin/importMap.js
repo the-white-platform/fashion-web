@@ -26,6 +26,7 @@ import { default as default_c9372ec41e76e69a1c7b738fe83dba41 } from '@/admin/Not
 import { default as default_92fb8a94f89337664d7cb7eba28b409c } from '@/admin/ChatDashboardLink'
 import { default as default_62498e5670a6a05a1ccb8f71ecbf1b4f } from '@/admin/BeforeDashboard'
 import { default as default_1e475d4d9f6f0b236e7d4025a88a35a4 } from '@/admin/BeforeLogin'
+import { GcsClientUploadHandler as GcsClientUploadHandler_06e62ca02c7c441053a9b643e5545934 } from '@payloadcms/storage-gcs/client'
 import { default as default_f701f49052515c0db2071812a1dd17d6 } from '@/admin/AccountingView'
 import { default as default_d802c4dff5c9350833d77694f8c24f6b } from '@/admin/InventoryAlerts'
 import { default as default_355a2cd2b3baf95da9c194ff842fb703 } from '@/admin/BulkOrderStatus'
@@ -61,6 +62,7 @@ export const importMap = {
   "@/admin/ChatDashboardLink#default": default_92fb8a94f89337664d7cb7eba28b409c,
   "@/admin/BeforeDashboard#default": default_62498e5670a6a05a1ccb8f71ecbf1b4f,
   "@/admin/BeforeLogin#default": default_1e475d4d9f6f0b236e7d4025a88a35a4,
+  "@payloadcms/storage-gcs/client#GcsClientUploadHandler": GcsClientUploadHandler_06e62ca02c7c441053a9b643e5545934,
   "@/admin/AccountingView#default": default_f701f49052515c0db2071812a1dd17d6,
   "@/admin/InventoryAlerts#default": default_d802c4dff5c9350833d77694f8c24f6b,
   "@/admin/BulkOrderStatus#default": default_355a2cd2b3baf95da9c194ff842fb703,
