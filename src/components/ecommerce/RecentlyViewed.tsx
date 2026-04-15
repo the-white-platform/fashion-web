@@ -22,8 +22,7 @@ export function RecentlyViewed({ excludeId, maxItems = 10 }: RecentlyViewedProps
       <h2 className="text-2xl mb-8 uppercase">{t('title')}</h2>
       <div className="relative">
         <div
-          className="flex gap-6 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent"
-          style={{ scrollbarWidth: 'thin' }}
+          className="flex gap-6 overflow-x-auto overflow-y-hidden pb-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
         >
           {displayItems.map((product, index) => (
             <div key={product.id} className="shrink-0 w-[220px] sm:w-[260px]">
