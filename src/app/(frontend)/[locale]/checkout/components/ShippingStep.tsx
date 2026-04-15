@@ -112,7 +112,7 @@ export function ShippingStep({
   }
 
   const [saveAddress, setSaveAddress] = useState(false)
-  const { user, addShippingAddress } = useUser()
+  const { addShippingAddress } = useUser()
 
   // Auto-fill name/phone from the logged-in user on first mount of the
   // new-address form, and only when those fields are still empty. Edits
