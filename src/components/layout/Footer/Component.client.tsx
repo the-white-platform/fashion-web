@@ -22,7 +22,7 @@ export function FooterClient() {
             </p>
             <div className="flex gap-3">
               <a
-                href="https://www.facebook.com/thewhite.cool"
+                href="https://www.facebook.com/thewhiteactive/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-background text-foreground flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all rounded-md border border-border"

@@ -263,7 +263,7 @@ export default function ContactPage() {
               <h2 className="text-2xl uppercase tracking-wide mb-6">{t('social.title')}</h2>
               <div className="space-y-4">
                 <a
-                  href="https://www.facebook.com/thewhite.cool"
+                  href="https://www.facebook.com/thewhiteactive/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-4 p-4 bg-background/10 rounded-sm hover:bg-background/20 transition-colors"
@@ -271,7 +271,7 @@ export default function ContactPage() {
                   <Facebook className="w-6 h-6" />
                   <div>
                     <p className="uppercase tracking-wide">Facebook</p>
-                    <p className="text-sm opacity-60">@thewhite.cool</p>
+                    <p className="text-sm opacity-60">@thewhiteactive</p>
                   </div>
                 </a>
 
