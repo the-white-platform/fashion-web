@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.22.14](https://github.com/the-white-platform/fashion-web/compare/v0.22.13...v0.22.14) (2026-04-15)
+
+
+### Bug Fixes
+
+* **checkout/vto:** auto-fill name/phone from user, surface VTO error ([7f731c8](https://github.com/the-white-platform/fashion-web/commit/7f731c88c2075681baadc82c01dc20c30baf214d))
+
 ### [0.22.13](https://github.com/the-white-platform/fashion-web/compare/v0.22.12...v0.22.13) (2026-04-15)
 
 ### [0.22.12](https://github.com/the-white-platform/fashion-web/compare/v0.22.11...v0.22.12) (2026-04-15)
