@@ -5,11 +5,17 @@ import { fileURLToPath } from 'url'
 import { productSeedData, categorySeedData } from './products'
 import { sizeChartSeedData } from './size-charts'
 import { seedVietnamAddresses } from './vietnamAddresses'
+import productDocsRaw from './product-docs.json'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const LOOKBOOK_DIR = path.join(__dirname, 'lookbook')
 const SIZE_CHARTS_DIR = path.join(__dirname, 'size-charts')
+
+// Vietnamese names + descriptions sourced from the Drive doc inside each
+// product folder. Falls back to whatever's hardcoded in products.ts if a slug
+// is missing here. Refresh by re-running the doc-fetch step.
+const productDocs = productDocsRaw as Record<string, { name: string; description: string }>
 
 const collections: CollectionSlug[] = [
   'categories',
@@ -37,6 +43,56 @@ function mimeTypeFor(filePath: string): string {
     default:
       return 'application/octet-stream'
   }
+}
+
+// Wrap a plain string as a minimal Lexical rich-text document. Paragraphs are
+// split on blank lines so multi-line descriptions render correctly.
+function toRichText(text: string) {
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+  return {
+    root: {
+      type: 'root',
+      format: '',
+      indent: 0,
+      version: 1,
+      direction: 'ltr' as const,
+      children: paragraphs.map((para) => ({
+        type: 'paragraph',
+        format: '',
+        indent: 0,
+        version: 1,
+        direction: 'ltr' as const,
+        textFormat: 0,
+        children: [
+          {
+            type: 'text',
+            detail: 0,
+            format: 0,
+            mode: 'normal',
+            style: '',
+            text: para,
+            version: 1,
+          },
+        ],
+      })),
+    },
+  }
+}
+
+// Latin slug for Payload admin filenames — strips Vietnamese diacritics and
+// punctuation so uploaded media is readable and sorts cleanly.
+function toLatinSlug(input: string): string {
+  return input
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 /**
@@ -189,35 +245,39 @@ export const seed = async ({
     productNameEn: string,
     color: string,
     colorEn: string,
+    productSlug: string,
+    imageIndex: number,
   ): Promise<number | null> {
     try {
       const isUrl = /^https?:\/\//i.test(imageSource)
       let buffer: Buffer
       let mimetype: string
-      let fileName: string
+
+      // Clean, admin-friendly filename: `{slug}-{color}-NN.{ext}` so Media
+      // list is sortable and recognisable in the Payload admin. Sequence is
+      // 1-based and zero-padded so N < 100 stays lexicographically sorted.
+      const colorSlug = toLatinSlug(color) || 'default'
+      const seq = String(imageIndex + 1).padStart(2, '0')
 
       if (isUrl) {
         const response = await fetch(imageSource)
         const arrayBuffer = await response.arrayBuffer()
         buffer = Buffer.from(arrayBuffer)
-        const urlPath = imageSource.split('?')[0]
-        const imageId = urlPath.split('/').pop() || `image-${Date.now()}`
-        fileName = `${imageId}-${color.toLowerCase()}-${Date.now()}.jpg`
         mimetype = 'image/jpeg'
       } else {
-        // Paths starting with `hi-res/` resolve against HIRES_DIR; everything
-        // else against LOOKBOOK_DIR.
-        const baseDir = imageSource.startsWith('hi-res/') ? __dirname : LOOKBOOK_DIR
+        // Paths starting with `hi-res/` or `size-charts/` resolve against the
+        // seed directory; everything else against LOOKBOOK_DIR.
+        const baseDir =
+          imageSource.startsWith('hi-res/') || imageSource.startsWith('size-charts/')
+            ? __dirname
+            : LOOKBOOK_DIR
         const absPath = path.resolve(baseDir, imageSource)
         buffer = await readFile(absPath)
         mimetype = mimeTypeFor(absPath)
-        const base = path.basename(absPath).replace(/[^\w.-]/g, '_')
-        // Include a random suffix so parallel uploads of the same source file
-        // (e.g. one image shared across two product variants) don't collide
-        // on Payload's unique filename constraint.
-        const rand = Math.random().toString(36).slice(2, 8)
-        fileName = `${color.toLowerCase()}-${Date.now()}-${rand}-${base}`
       }
+
+      const ext = isUrl ? 'jpg' : path.extname(imageSource).slice(1).toLowerCase() || 'jpg'
+      const fileName = `${productSlug}-${colorSlug}-${seq}.${ext}`
 
       const imageDoc = await payload.create({
         collection: 'media',
@@ -278,8 +338,16 @@ export const seed = async ({
 
       for (const variant of productData.colorVariants) {
         // Upload all images for this variant in parallel
-        const imagePromises = variant.imageUrls.map((url) =>
-          uploadImage(url, productData.name, productData.nameEn, variant.color, variant.colorEn),
+        const imagePromises = variant.imageUrls.map((url, idx) =>
+          uploadImage(
+            url,
+            productData.name,
+            productData.nameEn,
+            variant.color,
+            variant.colorEn,
+            productData.slug,
+            idx,
+          ),
         )
         const imageResults = await Promise.all(imagePromises)
         const variantImageIds = imageResults.filter((id): id is number => id !== null)
@@ -305,11 +373,17 @@ export const seed = async ({
         return
       }
 
+      // Override Vietnamese name + description with doc-sourced content when
+      // available. Falls back to the hardcoded values in products.ts.
+      const docOverride = productDocs[productData.slug]
+      const viName = docOverride?.name?.trim() || productData.name
+      const viDescription = docOverride?.description?.trim() || productData.description
+
       // Create product with Vietnamese content
       const product = await payload.create({
         collection: 'products',
         data: {
-          name: productData.name,
+          name: viName,
           slug: productData.slug,
           category: uniqueCategoryIds,
           price: productData.price,
@@ -317,6 +391,7 @@ export const seed = async ({
           colorVariants: colorVariants,
           tag: productData.tag as any,
           featured: productData.featured,
+          description: toRichText(viDescription) as any,
           features: productData.features.map((f) => ({ feature: f })),
         },
         locale: 'vi',
@@ -329,6 +404,7 @@ export const seed = async ({
         data: {
           name: productData.nameEn,
           colorVariants: colorVariantsEn,
+          description: toRichText(productData.descriptionEn) as any,
           features: productData.featuresEn.map((f) => ({ feature: f })),
         },
         locale: 'en',
@@ -447,7 +523,7 @@ export const seed = async ({
       data: {
         carouselSlides: [
           {
-            title: 'BỘ SƯU TẬP MÙA ĐÔNG 2024',
+            title: 'BỘ SƯU TẬP MÙA ĐÔNG 2026',
             subtitle: 'Sức mạnh trong từng bước đi',
             ctaText: 'Khám Phá Ngay',
             ctaLink: '/products',
@@ -455,12 +531,6 @@ export const seed = async ({
           {
             title: 'PHONG CÁCH HIỆN ĐẠI',
             subtitle: 'Tối ưu cho mọi hoạt động',
-            ctaText: 'Khám Phá Ngay',
-            ctaLink: '/products',
-          },
-          {
-            title: 'CHẤT LIỆU CAO CẤP',
-            subtitle: 'Thoải mái cả ngày dài',
             ctaText: 'Khám Phá Ngay',
             ctaLink: '/products',
           },
@@ -491,7 +561,7 @@ export const seed = async ({
       (slide: any, index: number) => {
         const englishSlides = [
           {
-            title: 'WINTER COLLECTION 2024',
+            title: 'WINTER COLLECTION 2026',
             subtitle: 'Power in every step',
             ctaText: 'Explore Now',
           },
@@ -500,7 +570,6 @@ export const seed = async ({
             subtitle: 'Optimized for every activity',
             ctaText: 'Explore Now',
           },
-          { title: 'PREMIUM MATERIALS', subtitle: 'Comfort all day long', ctaText: 'Explore Now' },
         ]
         return {
           id: slide.id, // Preserve the same row ID

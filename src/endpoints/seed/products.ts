@@ -54,21 +54,18 @@ export interface ProductSeedData {
   featuresEn: string[]
 }
 
-// 13 categories — same taxonomy used by the storefront listing/filters
+// Taxonomy used by the storefront listing/filters. Trimmed to categories that
+// actually map to v1 SKUs — drop Nữ / Trẻ Em / Bộ Tập Luyện / Giày Thể Thao /
+// Bóng Đá until those product lines exist.
 export const categorySeedData: Array<{ title: string; titleEn: string }> = [
   { title: 'Nam', titleEn: 'Men' },
-  { title: 'Nữ', titleEn: 'Women' },
-  { title: 'Trẻ Em', titleEn: 'Kids' },
   { title: 'Mới Nhất', titleEn: 'New Arrivals' },
   { title: 'Áo Thể Thao', titleEn: 'Sports Tops' },
   { title: 'Quần Short', titleEn: 'Shorts' },
   { title: 'Quần Dài', titleEn: 'Long Pants' },
-  { title: 'Bộ Tập Luyện', titleEn: 'Training Sets' },
-  { title: 'Giày Thể Thao', titleEn: 'Sports Shoes' },
   { title: 'Chạy Bộ', titleEn: 'Running' },
   { title: 'Gym', titleEn: 'Gym' },
   { title: 'Yoga', titleEn: 'Yoga' },
-  { title: 'Bóng Đá', titleEn: 'Football' },
 ]
 
 // Per-size inventory helper — splits total qty across S/M/L/XL.
@@ -110,6 +107,7 @@ export const productSeedData: ProductSeedData[] = [
           'quan-vai-gan/DSCF0991.JPG',
 
           'hi-res/qua-tang-khong-ban.png',
+          'size-charts/quan-vai-gan.jpg',
         ],
       },
     ],
@@ -152,6 +150,7 @@ export const productSeedData: ProductSeedData[] = [
           'quan-short-2-lop/DSCF4022_3.JPG',
 
           'hi-res/qua-tang-khong-ban.png',
+          'size-charts/quan-2-lop.jpg',
         ],
       },
     ],
@@ -188,6 +187,7 @@ export const productSeedData: ProductSeedData[] = [
           'ao-thun-tay-dai/_ÁO_THUN_TAY_DÀI.jpg',
 
           'hi-res/qua-tang-khong-ban.png',
+          'size-charts/ao-thun-tay-dai.jpg',
         ],
       },
     ],
@@ -219,6 +219,7 @@ export const productSeedData: ProductSeedData[] = [
           'quan-short-tui-cheo/QUẦN_TÚI_CHÉO_+_ÁO_TANK_SÁT_NÁCH.jpg',
 
           'hi-res/qua-tang-khong-ban.png',
+          'size-charts/quan-short-tui-cheo.jpg',
         ],
       },
     ],
@@ -251,6 +252,7 @@ export const productSeedData: ProductSeedData[] = [
           'ao-thun-tay-ngan/DSCF0833.JPG',
 
           'hi-res/qua-tang-khong-ban.png',
+          'size-charts/ao-thun-tay-ngan.jpg',
         ],
       },
     ],
@@ -280,6 +282,7 @@ export const productSeedData: ProductSeedData[] = [
           'quan-short-tui-sau/Thiết_kế_chưa_có_tên_(1).jpg',
 
           'hi-res/qua-tang-khong-ban.png',
+          'size-charts/quan-short-tui-sau.jpg',
         ],
       },
     ],
@@ -313,6 +316,7 @@ export const productSeedData: ProductSeedData[] = [
           'ao-tank-sat-nach/QUẦN_TÚI_CHÉO_+_ÁO_TANK_SÁT_NÁCH.jpg',
 
           'hi-res/qua-tang-khong-ban.png',
+          'size-charts/ao-tank-sat-nach.jpg',
         ],
       },
     ],
@@ -343,6 +347,7 @@ export const productSeedData: ProductSeedData[] = [
           'ao-tank-ho-suon/ẢNH_NGƯỜI_MẪU.jpg',
 
           'hi-res/qua-tang-khong-ban.png',
+          'size-charts/ao-tank-ho-suon.jpg',
         ],
       },
     ],
