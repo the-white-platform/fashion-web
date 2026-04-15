@@ -1,4 +1,5 @@
 import { type PayloadHandler, commitTransaction, initTransaction } from 'payload'
+import { pushDevSchema } from '@payloadcms/drizzle'
 
 import { seed as seedScript } from '@/endpoints/seed'
 
@@ -40,6 +41,17 @@ export const seedHandler: PayloadHandler = async (req): Promise<Response> => {
   }
 
   try {
+    // Bootstrap path: the prod DB may be empty (no tables yet) because the
+    // Drizzle adapter only pushes schema when NODE_ENV !== 'production'. Force
+    // a schema push against the connected DB so the subsequent clear/create
+    // calls have tables to operate on. Safe to re-run — Drizzle short-circuits
+    // when the schema already matches.
+    if (isBootstrap) {
+      payload.logger.info('[seed] bootstrap: pushing Drizzle schema before seeding')
+      // The postgres adapter is a DrizzleAdapter at runtime.
+      await pushDevSchema(payload.db as unknown as Parameters<typeof pushDevSchema>[0])
+    }
+
     // Create a transaction so that all seeding happens in one transaction
     await initTransaction(req)
 

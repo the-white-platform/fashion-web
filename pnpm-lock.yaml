@@ -20,6 +20,9 @@ importers:
       '@payloadcms/db-postgres':
         specifier: ^3.77.0
         version: 3.77.0(payload@3.77.0(graphql@16.12.0)(typescript@5.9.3))
+      '@payloadcms/drizzle':
+        specifier: ^3.77.0
+        version: 3.77.0(@types/pg@8.10.2)(payload@3.77.0(graphql@16.12.0)(typescript@5.9.3))(pg@8.20.0)
       '@payloadcms/email-resend':
         specifier: ^3.77.0
         version: 3.77.0(payload@3.77.0(graphql@16.12.0)(typescript@5.9.3))
@@ -12967,6 +12970,46 @@ snapshots:
       - sql.js
       - sqlite3
 
+  '@payloadcms/drizzle@3.77.0(@types/pg@8.10.2)(payload@3.77.0(graphql@16.12.0)(typescript@5.9.3))(pg@8.20.0)':
+    dependencies:
+      console-table-printer: 2.12.1
+      dequal: 2.0.3
+      drizzle-orm: 0.44.7(@types/pg@8.10.2)(pg@8.20.0)
+      payload: 3.77.0(graphql@16.12.0)(typescript@5.9.3)
+      prompts: 2.4.2
+      to-snake-case: 1.0.0
+      uuid: 9.0.0
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@cloudflare/workers-types'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@neondatabase/serverless'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@tidbcloud/serverless'
+      - '@types/better-sqlite3'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@xata.io/client'
+      - better-sqlite3
+      - bun-types
+      - expo-sqlite
+      - gel
+      - knex
+      - kysely
+      - mysql2
+      - pg
+      - postgres
+      - prisma
+      - sql.js
+      - sqlite3
+
   '@payloadcms/email-nodemailer@3.77.0(payload@3.77.0(graphql@16.12.0)(typescript@5.9.3))':
     dependencies:
       nodemailer: 7.0.12
@@ -15353,6 +15396,11 @@ snapshots:
     optionalDependencies:
       '@types/pg': 8.10.2
       pg: 8.16.3
+
+  drizzle-orm@0.44.7(@types/pg@8.10.2)(pg@8.20.0):
+    optionalDependencies:
+      '@types/pg': 8.10.2
+      pg: 8.20.0
 
   dunder-proto@1.0.1:
     dependencies:
