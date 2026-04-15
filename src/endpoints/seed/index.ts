@@ -15,7 +15,10 @@ const SIZE_CHARTS_DIR = path.join(__dirname, 'size-charts')
 // Vietnamese names + descriptions sourced from the Drive doc inside each
 // product folder. Falls back to whatever's hardcoded in products.ts if a slug
 // is missing here. Refresh by re-running the doc-fetch step.
-const productDocs = productDocsRaw as Record<string, { name: string; description: string }>
+const productDocs = productDocsRaw as Record<
+  string,
+  { name: string; description: string; descriptionEn?: string }
+>
 
 const collections: CollectionSlug[] = [
   'categories',
@@ -24,6 +27,7 @@ const collections: CollectionSlug[] = [
   'posts',
   'products',
   'orders',
+  'coupons',
   'size-charts',
   'forms',
   'form-submissions',
@@ -167,6 +171,28 @@ export const seed = async ({
   } else {
     payload.logger.info('  ✓ Admin user already exists')
   }
+
+  // 1.6 Create launch coupon — 10% off through end of May 1, 2026 (VN time)
+  payload.logger.info('— Creating launch coupon...')
+  const launchCoupon = await payload.create({
+    collection: 'coupons',
+    data: {
+      code: 'THEWHITEVIETNAM',
+      type: 'percentage',
+      value: 10,
+      description: 'Mã giảm giá ra mắt: Giảm 10% đến hết 01/05/2026',
+      validUntil: '2026-05-01T23:59:59+07:00',
+      active: true,
+    },
+    locale: 'vi',
+  })
+  await payload.update({
+    collection: 'coupons',
+    id: launchCoupon.id,
+    data: { description: 'Launch coupon: 10% off through May 1, 2026' },
+    locale: 'en',
+  })
+  payload.logger.info('  ✓ Created coupon: THEWHITEVIETNAM (10% off, valid until May 1, 2026)')
 
   // 2. Create categories (Vietnamese + English)
   payload.logger.info(`— Creating ${categorySeedData.length} categories...`)
@@ -378,6 +404,7 @@ export const seed = async ({
       const docOverride = productDocs[productData.slug]
       const viName = docOverride?.name?.trim() || productData.name
       const viDescription = docOverride?.description?.trim() || productData.description
+      const enDescription = docOverride?.descriptionEn?.trim() || productData.descriptionEn
 
       // Create product with Vietnamese content
       const product = await payload.create({
@@ -404,7 +431,7 @@ export const seed = async ({
         data: {
           name: productData.nameEn,
           colorVariants: colorVariantsEn,
-          description: toRichText(productData.descriptionEn) as any,
+          description: toRichText(enDescription) as any,
           features: productData.featuresEn.map((f) => ({ feature: f })),
         },
         locale: 'en',

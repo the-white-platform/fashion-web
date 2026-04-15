@@ -6,15 +6,15 @@
  * `scripts/fetch-drive-assets.sh`). The seed's `uploadImage()` helper detects
  * non-URL strings and reads them from disk.
  *
- * Prices source (VND, retail):
- *   QUẦN VẢI GÂN           455,000   (200 units)
- *   QUẦN 2 LỚP             415,000   (200)
- *   ÁO TAY DÀI             299,000   (100)
- *   QUẦN 1 LỚP             259,000   (100)
- *   ÁO THUN TAY NGẮN       259,000   (100)
- *   QUẦN 1 LỚP TÍNH NĂNG   239,000   (100)
- *   ÁO TANKTOP SÁT NÁCH    200,000   (100)
- *   ÁO TANKTOP HỞ SƯỜN     200,000   (100)
+ * Prices source (VND, retail) — pants stock M/L only, tops stock XL only:
+ *   QUẦN VẢI GÂN           455,000   (M/L × 100 = 200 units)
+ *   QUẦN 2 LỚP             415,000   (M/L × 100 = 200)
+ *   ÁO TAY DÀI             299,000   (XL × 50 = 50)
+ *   QUẦN 1 LỚP             259,000   (M/L × 50 = 100)
+ *   ÁO THUN TAY NGẮN       259,000   (XL × 50 = 50)
+ *   QUẦN 1 LỚP TÍNH NĂNG   239,000   (M/L × 50 = 100)
+ *   ÁO TANKTOP SÁT NÁCH    200,000   (XL × 50 = 50)
+ *   ÁO TANKTOP HỞ SƯỜN     200,000   (XL × 50 = 50)
  *
  * Combos (bundle pricing, to be modeled later as Coupons or Bundle products):
  *   Combo 2 Áo Tank:                  359,000
@@ -68,10 +68,13 @@ export const categorySeedData: Array<{ title: string; titleEn: string }> = [
   { title: 'Yoga', titleEn: 'Yoga' },
 ]
 
-// Per-size inventory helper — splits total qty across S/M/L/XL.
-// 100 total → 25 per size; 200 total → 50 per size. Low-stock threshold 10.
-const inventoryFor = (totalPerSize: number): SizeInventoryItem[] =>
-  ['S', 'M', 'L', 'XL'].map((size) => ({ size, stock: totalPerSize, lowStockThreshold: 10 }))
+// Per-size inventory helpers — pants carry M/L only, tops carry XL only.
+const pantsInventory = (qty: number): SizeInventoryItem[] =>
+  ['M', 'L'].map((size) => ({ size, stock: qty, lowStockThreshold: 10 }))
+
+const topsInventory = (qty: number): SizeInventoryItem[] => [
+  { size: 'XL', stock: qty, lowStockThreshold: 10 },
+]
 
 const defaultColor = {
   color: 'Đen',
@@ -97,7 +100,7 @@ export const productSeedData: ProductSeedData[] = [
     colorVariants: [
       {
         ...defaultColor,
-        sizeInventory: inventoryFor(50),
+        sizeInventory: pantsInventory(100),
         imageUrls: [
           'hi-res/N13.png',
           'hi-res/N14.png',
@@ -140,7 +143,7 @@ export const productSeedData: ProductSeedData[] = [
     colorVariants: [
       {
         ...defaultColor,
-        sizeInventory: inventoryFor(50),
+        sizeInventory: pantsInventory(100),
         imageUrls: [
           'hi-res/N9.png',
           'hi-res/N10.png',
@@ -177,7 +180,7 @@ export const productSeedData: ProductSeedData[] = [
     colorVariants: [
       {
         ...defaultColor,
-        sizeInventory: inventoryFor(25),
+        sizeInventory: topsInventory(50),
         imageUrls: [
           'hi-res/N15.png',
           'hi-res/N16.png',
@@ -209,7 +212,7 @@ export const productSeedData: ProductSeedData[] = [
     colorVariants: [
       {
         ...defaultColor,
-        sizeInventory: inventoryFor(25),
+        sizeInventory: pantsInventory(50),
         imageUrls: [
           'hi-res/N7.png',
           'hi-res/N8.png',
@@ -242,7 +245,7 @@ export const productSeedData: ProductSeedData[] = [
     colorVariants: [
       {
         ...defaultColor,
-        sizeInventory: inventoryFor(25),
+        sizeInventory: topsInventory(50),
         imageUrls: [
           'hi-res/N1.png',
           'hi-res/N2.png',
@@ -272,7 +275,7 @@ export const productSeedData: ProductSeedData[] = [
     colorVariants: [
       {
         ...defaultColor,
-        sizeInventory: inventoryFor(25),
+        sizeInventory: pantsInventory(50),
         imageUrls: [
           'hi-res/N11.png',
           'hi-res/N12.png',
@@ -304,7 +307,7 @@ export const productSeedData: ProductSeedData[] = [
     colorVariants: [
       {
         ...defaultColor,
-        sizeInventory: inventoryFor(25),
+        sizeInventory: topsInventory(50),
         imageUrls: [
           'hi-res/N3.png',
           'hi-res/N4.png',
@@ -338,7 +341,7 @@ export const productSeedData: ProductSeedData[] = [
     colorVariants: [
       {
         ...defaultColor,
-        sizeInventory: inventoryFor(25),
+        sizeInventory: topsInventory(50),
         imageUrls: [
           'hi-res/N5.png',
           'hi-res/N6.png',
