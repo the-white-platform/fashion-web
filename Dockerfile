@@ -45,13 +45,20 @@ ENV NODE_OPTIONS=--max-old-space-size=4096
 ARG PAYLOAD_SECRET
 ARG DATABASE_URI
 ARG NEXT_PUBLIC_SERVER_URL
+# PAYLOAD_MEDIA_BUCKET must be set during `generate:importmap` so the
+# conditional gcsStorage() plugin in payload.config.ts loads and emits
+# the GcsClientUploadHandler entry. The real bucket is injected at
+# runtime via Cloud Run env vars; a placeholder here is enough.
+ARG PAYLOAD_MEDIA_BUCKET="build-placeholder-bucket"
+ENV PAYLOAD_MEDIA_BUCKET=${PAYLOAD_MEDIA_BUCKET}
 
-# Skip type generation in Docker (not needed, saves time)
-# Generate Payload types and build Next.js with cache mounts
-# Using || true to ensure build continues even if type generation fails
-# Cache mounts for faster rebuilds when source code changes
+# Regenerate importMap + types, then build Next.js with cache mounts.
+# generate:importmap is critical — a stale importMap causes Payload admin
+# to render blank in prod when a conditional plugin (gcsStorage) resolves
+# at runtime but its component wasn't registered at build time.
 RUN --mount=type=cache,target=/app/.next/cache,id=nextjs-cache \
     pnpm run generate:types || true && \
+    pnpm run generate:importmap && \
     pnpm run build
 
 # Production image, copy all the files and run next
