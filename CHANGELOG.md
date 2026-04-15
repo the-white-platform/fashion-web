@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.22.10](https://github.com/the-white-platform/fashion-web/compare/v0.22.9...v0.22.10) (2026-04-15)
+
+
+### Bug Fixes
+
+* **checkout:** address render, coupon i18n key + unlimited-uses logic ([54f8156](https://github.com/the-white-platform/fashion-web/commit/54f8156bd4b43ac5879b8f95ceba64e94b229c2a))
+
 ### [0.22.9](https://github.com/the-white-platform/fashion-web/compare/v0.22.8...v0.22.9) (2026-04-15)
 
 
