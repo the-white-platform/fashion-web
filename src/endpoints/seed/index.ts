@@ -298,8 +298,34 @@ export const seed = async ({
             ? __dirname
             : LOOKBOOK_DIR
         const absPath = path.resolve(baseDir, imageSource)
-        buffer = await readFile(absPath)
-        mimetype = mimeTypeFor(absPath)
+        try {
+          buffer = await readFile(absPath)
+          mimetype = mimeTypeFor(absPath)
+        } catch (err: unknown) {
+          // Fall back to SEED_ASSETS_URL when the local file isn't on disk.
+          // `hi-res/` and product-folder images are gitignored (too large),
+          // so in prod builds they only exist at the remote URL. Size charts
+          // ship with the repo so they always hit the disk path above.
+          const isEnoent =
+            err instanceof Error &&
+            'code' in err &&
+            (err as NodeJS.ErrnoException).code === 'ENOENT'
+          const remoteBase = process.env.SEED_ASSETS_URL
+          if (!isEnoent || !remoteBase) throw err
+          // Mirror the baseDir mapping: hi-res/ + size-charts/ live at the
+          // seed root; everything else lives under lookbook/.
+          const remotePath =
+            imageSource.startsWith('hi-res/') || imageSource.startsWith('size-charts/')
+              ? imageSource
+              : `lookbook/${imageSource}`
+          const remoteUrl = `${remoteBase.replace(/\/$/, '')}/${remotePath}`
+          const response = await fetch(remoteUrl)
+          if (!response.ok) {
+            throw new Error(`SEED_ASSETS_URL fetch failed: ${response.status} ${remoteUrl}`)
+          }
+          buffer = Buffer.from(await response.arrayBuffer())
+          mimetype = mimeTypeFor(absPath)
+        }
       }
 
       const ext = isUrl ? 'jpg' : path.extname(imageSource).slice(1).toLowerCase() || 'jpg'
@@ -429,13 +455,21 @@ export const seed = async ({
         locale: 'vi',
       })
 
-      // Add English translation
+      // Add English translation. Pass each variant's `id` from the vi
+      // creation so Payload updates the en locale in place instead of
+      // replacing the whole `colorVariants` array (which would wipe the vi
+      // color name and leave the VI card blank).
+      const createdVariants = ((product as any).colorVariants || []) as Array<{ id: string }>
+      const colorVariantsEnWithIds = colorVariantsEn.map((cv, i) => ({
+        ...cv,
+        id: createdVariants[i]?.id,
+      }))
       await payload.update({
         collection: 'products',
         id: product.id,
         data: {
           name: productData.nameEn,
-          colorVariants: colorVariantsEn,
+          colorVariants: colorVariantsEnWithIds,
           description: toRichText(enDescription) as any,
           features: productData.featuresEn.map((f) => ({ feature: f })),
         },
