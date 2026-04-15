@@ -29,7 +29,22 @@ export async function GET(request: Request) {
     googleClientSecret,
   )
 
-  const tokens = await client.authorizationCodeGrant(config, new URL(request.url), {
+  // Cloud Run terminates TLS at the ingress; `request.url` can come through as
+  // http://… internally, which would make openid-client send a redirect_uri at
+  // token exchange that doesn't match the https:// URI used in the auth step
+  // (and isn't a registered redirect URI). Pin to the canonical server URL.
+  const incomingUrl = new URL(request.url)
+  const currentUrl = new URL(`${serverUrl}/api/auth/google/callback`)
+  currentUrl.search = incomingUrl.search
+  console.log(
+    '[auth/google/callback] request.url=%s canonical=%s xfproto=%s xfhost=%s',
+    request.url,
+    currentUrl.href,
+    request.headers.get('x-forwarded-proto'),
+    request.headers.get('x-forwarded-host'),
+  )
+
+  const tokens = await client.authorizationCodeGrant(config, currentUrl, {
     pkceCodeVerifier: code_verifier,
     expectedState: storedState,
   })
