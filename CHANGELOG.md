@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.22.18](https://github.com/the-white-platform/fashion-web/compare/v0.22.17...v0.22.18) (2026-04-15)
+
+
+### Bug Fixes
+
+* **checkout:** drop duplicate user destructure from useUser in ShippingStep ([7aee1a7](https://github.com/the-white-platform/fashion-web/commit/7aee1a7a7bc6f4f8fed2b9fc198e3132575d307c))
+
 ### [0.22.17](https://github.com/the-white-platform/fashion-web/compare/v0.22.16...v0.22.17) (2026-04-15)
 
 ### [0.22.16](https://github.com/the-white-platform/fashion-web/compare/v0.22.15...v0.22.16) (2026-04-15)
