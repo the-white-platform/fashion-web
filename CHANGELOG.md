@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.22.11](https://github.com/the-white-platform/fashion-web/compare/v0.22.10...v0.22.11) (2026-04-15)
+
+
+### Bug Fixes
+
+* **orders:** stop hanging the POST on email send when no provider configured ([6773a00](https://github.com/the-white-platform/fashion-web/commit/6773a00508e5e22a75bf1a3514af5df261254c09))
+
 ### [0.22.10](https://github.com/the-white-platform/fashion-web/compare/v0.22.9...v0.22.10) (2026-04-15)
 
 
