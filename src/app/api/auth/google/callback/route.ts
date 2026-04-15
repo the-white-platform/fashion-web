@@ -33,24 +33,21 @@ export async function GET(request: Request) {
   // http://… internally, which would make openid-client send a redirect_uri at
   // token exchange that doesn't match the https:// URI used in the auth step
   // (and isn't a registered redirect URI). Pin to the canonical server URL.
-  const incomingUrl = new URL(request.url)
   const currentUrl = new URL(`${serverUrl}/api/auth/google/callback`)
-  currentUrl.search = incomingUrl.search
-  console.log(
-    '[auth/google/callback] request.url=%s canonical=%s xfproto=%s xfhost=%s',
-    request.url,
-    currentUrl.href,
-    request.headers.get('x-forwarded-proto'),
-    request.headers.get('x-forwarded-host'),
-  )
+  currentUrl.search = new URL(request.url).search
 
   const tokens = await client.authorizationCodeGrant(config, currentUrl, {
     pkceCodeVerifier: code_verifier,
     expectedState: storedState,
   })
 
-  // Get user info from ID Token or UserInfo endpoint
-  const userinfo = await client.fetchUserInfo(config, tokens.access_token, tokens.id_token || '')
+  // `fetchUserInfo`'s 3rd arg is the expected subject string, not the ID token.
+  // Pull `sub` from the parsed ID token claims so the sub-comparison passes.
+  const idTokenSub = tokens.claims()?.sub
+  if (!idTokenSub) {
+    return NextResponse.json({ error: 'ID token missing sub claim' }, { status: 400 })
+  }
+  const userinfo = await client.fetchUserInfo(config, tokens.access_token, idTokenSub)
 
   if (!userinfo.email) {
     return NextResponse.json({ error: 'No email returned from Google' }, { status: 400 })
