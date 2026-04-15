@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.22.12](https://github.com/the-white-platform/fashion-web/compare/v0.22.11...v0.22.12) (2026-04-15)
+
+
+### Bug Fixes
+
+* **i18n:** real contact info + missing common.edit key ([276022d](https://github.com/the-white-platform/fashion-web/commit/276022df88d70f126634127e988fca226189c551))
+
 ### [0.22.11](https://github.com/the-white-platform/fashion-web/compare/v0.22.10...v0.22.11) (2026-04-15)
 
 
