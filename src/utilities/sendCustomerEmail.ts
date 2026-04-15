@@ -62,14 +62,25 @@ const resolveTemplate = (params: SendCustomerEmailParams): { subject: string; ht
 export const sendCustomerEmail = async (params: SendCustomerEmailParams): Promise<void> => {
   const { payload, to } = params
 
+  // No email provider yet — skip silently. Without this guard the
+  // Resend adapter (configured with an empty api key) hangs the request
+  // for ~300s on `payload.sendEmail`, which in turn hangs order creation
+  // because `sendOrderEmails` is an afterChange hook awaited by Payload.
+  if (!process.env.RESEND_API_KEY) {
+    payload.logger.info(`[email] Skipping "${params.template}" to ${to} (no RESEND_API_KEY)`)
+    return
+  }
+
   try {
     const { subject, html } = resolveTemplate(params)
 
-    await payload.sendEmail({
-      to,
-      subject,
-      html,
-    })
+    // Cap the send at 10s so a dead upstream can't hang the checkout.
+    await Promise.race([
+      payload.sendEmail({ to, subject, html }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('sendEmail timeout after 10s')), 10_000),
+      ),
+    ])
 
     payload.logger.info(`[email] Sent "${params.template}" to ${to}`)
   } catch (err) {

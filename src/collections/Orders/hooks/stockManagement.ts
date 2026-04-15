@@ -100,9 +100,10 @@ export const validateAndRecalculateOrder: CollectionBeforeChangeHook = async ({
         payload.logger.warn(`Coupon "${couponCode}" has expired`)
       }
 
-      // Check usageLimit
+      // Check usageLimit (0 means unlimited — see Coupons collection hint)
       if (
         coupon.usageLimit != null &&
+        coupon.usageLimit > 0 &&
         coupon.usageCount != null &&
         coupon.usageCount >= coupon.usageLimit
       ) {
