@@ -112,7 +112,23 @@ export function ShippingStep({
   }
 
   const [saveAddress, setSaveAddress] = useState(false)
-  const { addShippingAddress } = useUser()
+  const { user, addShippingAddress } = useUser()
+
+  // Auto-fill name/phone from the logged-in user on first mount of the
+  // new-address form, and only when those fields are still empty. Edits
+  // the user makes after that are never overwritten — the effect keys
+  // on `showNewAddress` (ran once when the form opens), and we check
+  // emptiness before writing.
+  useEffect(() => {
+    if (!showNewAddress) return
+    setNewAddress((prev) => {
+      if (prev.name || prev.phone) return prev
+      const autoName = user?.fullName ?? ''
+      const autoPhone = user?.phone ?? ''
+      if (!autoName && !autoPhone) return prev
+      return { ...prev, name: prev.name || autoName, phone: prev.phone || autoPhone }
+    })
+  }, [showNewAddress, user?.fullName, user?.phone])
 
   const handleNext = () => {
     if (!selectedAddress && !showNewAddress) {

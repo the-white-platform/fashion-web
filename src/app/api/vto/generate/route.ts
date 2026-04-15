@@ -282,13 +282,23 @@ export async function POST(request: Request) {
       image: `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`,
     })
   } catch (err) {
-    const message = err instanceof Error ? err.message : ''
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(
+      '[VTO] /api/vto/generate failed:',
+      message,
+      err instanceof Error ? err.stack : '',
+    )
     if (message.includes('aborted')) {
       return NextResponse.json({ error: 'Request timed out' }, { status: 504 })
     }
 
     return NextResponse.json(
-      { error: 'Virtual try-on failed. Please try again later.' },
+      {
+        error: 'Virtual try-on failed. Please try again later.',
+        // Expose the real reason so the client can surface it and we can
+        // see it in logs without another deploy loop.
+        detail: message,
+      },
       { status: 500 },
     )
   }
