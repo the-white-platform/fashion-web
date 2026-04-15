@@ -128,10 +128,24 @@ export function transformProduct(product: Product): ProductForFrontend {
   const inStock =
     colorVariants.length > 0 ? colorVariants.some((v) => v.inStock) : (product.inStock ?? true)
 
-  // Get description as plain text (if richText)
+  // Get description as plain text (if richText). The Lexical root's
+  // children are block nodes (paragraph, heading, list-item, …) — the
+  // actual text lives on leaf `text` nodes one or more levels deeper.
+  // Recurse so we don't end up with an empty string.
+  const extractLexicalText = (node: any): string => {
+    if (!node) return ''
+    if (typeof node.text === 'string') return node.text
+    if (Array.isArray(node.children)) {
+      return node.children.map(extractLexicalText).join('')
+    }
+    return ''
+  }
   let description = ''
   if (product.description?.root?.children) {
-    description = product.description.root.children.map((child: any) => child.text || '').join(' ')
+    description = product.description.root.children
+      .map((child: any) => extractLexicalText(child))
+      .join('\n')
+      .trim()
   }
 
   return {
