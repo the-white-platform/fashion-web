@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Upload, User, Sparkles, X, Plus, Wand2, LogIn } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import Image from 'next/image'
@@ -174,10 +175,21 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
   const isFormComplete = !!uploadedImage
   const hasAnyResult = mode === 'hd' ? !!result : !!aiDescription
 
-  return (
+  // Portal to document.body so the VTO modal escapes any ancestor
+  // stacking context (notably the ProductModal/QuickView Radix Dialog,
+  // whose portaled content sits at z-50 — without this, mounting VTO
+  // inside the ProductModal subtree left the QuickView visually
+  // overlapping the VTO).
+  const [portalReady, setPortalReady] = useState(false)
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
+  if (!portalReady || typeof document === 'undefined') return null
+
+  const overlay = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -564,4 +576,6 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
       )}
     </AnimatePresence>
   )
+
+  return createPortal(overlay, document.body)
 }

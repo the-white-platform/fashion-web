@@ -42,8 +42,8 @@ export const AdminBar: React.FC<{
   // shoppers have `role: 'customer'` (or no role) and must never see it —
   // it leaked onto the checkout for them and both added clutter and
   // exposed a stray "Logout" button mid-flow.
-  const onAuthChange = React.useCallback((user: { id?: string; role?: string } | null) => {
-    const role = user?.role
+  const onAuthChange = React.useCallback((user) => {
+    const role = (user as { role?: string } | null | undefined)?.role
     const isStaff = role === 'admin' || role === 'editor'
     setShow(Boolean(user?.id) && isStaff)
   }, [])
