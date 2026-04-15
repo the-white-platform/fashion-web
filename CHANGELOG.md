@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.21.0](https://github.com/the-white-platform/fashion-web/compare/v0.20.1...v0.21.0) (2026-04-15)
+
+
+### Features
+
+* **seed:** ship initial Payload migration for prod bootstrap ([885ac9e](https://github.com/the-white-platform/fashion-web/commit/885ac9e5776d3e5b3c2707fbac09f4da219409ad))
+
 ### [0.20.1](https://github.com/the-white-platform/fashion-web/compare/v0.20.0...v0.20.1) (2026-04-15)
 
 
