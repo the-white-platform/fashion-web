@@ -1,4 +1,4 @@
-import { randomBytes } from 'crypto'
+import { randomBytes, randomUUID } from 'crypto'
 import { getPayload } from 'payload'
 import configPromise from '@/payload.config'
 import { NextResponse } from 'next/server'
@@ -117,6 +117,36 @@ export async function GET(request: Request) {
     userId = newUser.id
   }
 
+  // Mirror Payload v3's session-aware login: append a session row keyed by a
+  // UUID to user.sessions[] and sign that `sid` into the JWT. Without this,
+  // Payload's session check (`addSessionToUser`/auth strategy) treats the
+  // token as anonymous and `/api/users/me` returns `{ user: null }`.
+  const sid = randomUUID()
+  const usersAuthConfig = payload.collections['users']?.config.auth
+  const tokenExpirationSec =
+    typeof usersAuthConfig === 'object' && usersAuthConfig.tokenExpiration
+      ? usersAuthConfig.tokenExpiration
+      : 7200
+  const now = new Date()
+  const sessionExpiresAt = new Date(now.getTime() + tokenExpirationSec * 1000)
+
+  const userDoc = await payload.findByID({
+    collection: 'users',
+    id: userId,
+    depth: 0,
+  })
+  const liveSessions = (userDoc.sessions || []).filter((s) => new Date(s.expiresAt) > now)
+  await payload.update({
+    collection: 'users',
+    id: userId,
+    data: {
+      sessions: [
+        ...liveSessions,
+        { id: sid, createdAt: now.toISOString(), expiresAt: sessionExpiresAt.toISOString() },
+      ],
+    },
+  })
+
   const response = NextResponse.redirect(`${serverUrl}/`)
 
   // Clean up cookies
@@ -128,10 +158,11 @@ export async function GET(request: Request) {
       id: userId,
       collection: 'users',
       email: userinfo.email,
+      sid,
     },
     payload.secret,
     {
-      expiresIn: '7d',
+      expiresIn: tokenExpirationSec,
     },
   )
 
@@ -140,7 +171,7 @@ export async function GET(request: Request) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 1 week
+    maxAge: tokenExpirationSec,
   })
 
   return response
