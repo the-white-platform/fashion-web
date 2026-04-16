@@ -839,6 +839,14 @@ export const seed = async ({
           'Email: contact@thewhite.cool\n' +
           'Facebook: facebook.com/thewhiteactive\n' +
           'Instagram: @thewhite.cool',
+        siteFeatures:
+          '- AI Thử Đồ Ảo (Virtual Try-On): upload ảnh cá nhân, hệ thống tạo ảnh mô phỏng mặc sản phẩm. Giới hạn 5 lượt/ngày mỗi tài khoản.\n' +
+          '- AI Chọn Size Thông Minh: nhập chiều cao/cân nặng/số đo, gợi ý size phù hợp cho từng loại sản phẩm.\n' +
+          '- Danh sách yêu thích (Wishlist): lưu sản phẩm để mua sau, đồng bộ giữa các thiết bị khi đăng nhập.\n' +
+          '- So sánh sản phẩm (Compare): so sánh tối đa 4 sản phẩm cùng lúc trên một màn hình.\n' +
+          '- Tích điểm Loyalty: 1 điểm / 10.000₫, 100 điểm = 10.000₫ giảm giá. +50-100 điểm cho đánh giá sản phẩm.\n' +
+          '- Giới thiệu bạn bè (Referral): chia sẻ mã giới thiệu, nhận 200 điểm khi bạn đặt đơn đầu tiên.\n' +
+          '- Thanh toán: Chuyển khoản (QR VietQR tự động) hoặc COD (thanh toán khi nhận hàng).',
       },
     })
 
@@ -869,6 +877,14 @@ export const seed = async ({
           'Email: contact@thewhite.cool\n' +
           'Facebook: facebook.com/thewhiteactive\n' +
           'Instagram: @thewhite.cool',
+        siteFeatures:
+          '- AI Virtual Try-On: upload a personal photo, get an AI-generated preview wearing the product. 5 tries/day per account.\n' +
+          '- AI Smart Size Picker: enter height/weight/measurements, get a size recommendation per product line.\n' +
+          '- Wishlist: save products for later, synced across devices when logged in.\n' +
+          '- Compare: up to 4 products side by side.\n' +
+          '- Loyalty points: earn 1 pt / 10,000₫ spent, redeem 100 pts = 10,000₫. +50-100 pts for product reviews.\n' +
+          '- Referrals: share your code, get 200 pts when your friend places their first order.\n' +
+          '- Payment: Bank transfer (auto VietQR) or COD (cash on delivery).',
       },
     })
 

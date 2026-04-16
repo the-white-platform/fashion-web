@@ -66,6 +66,17 @@ export const ChatContext: GlobalConfig = {
       },
     },
     {
+      name: 'siteFeatures',
+      type: 'textarea',
+      localized: true,
+      label: { vi: 'Tính năng trên website', en: 'Site features' },
+      admin: {
+        rows: 6,
+        description:
+          'What the website itself offers (Virtual Try-On, wishlist, compare, loyalty points, smart-size picker, etc.). The assistant will suggest these when relevant.',
+      },
+    },
+    {
       name: 'tonePrompt',
       type: 'textarea',
       localized: true,

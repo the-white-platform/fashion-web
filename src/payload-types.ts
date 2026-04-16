@@ -2940,6 +2940,10 @@ export interface ChatContext {
    */
   contactInfo?: string | null;
   /**
+   * What the website itself offers (Virtual Try-On, wishlist, compare, loyalty points, smart-size picker, etc.). The assistant will suggest these when relevant.
+   */
+  siteFeatures?: string | null;
+  /**
    * Optional override for the default "friendly, concise, warm" tone. Leave empty to use the default.
    */
   tonePrompt?: string | null;
@@ -3108,6 +3112,7 @@ export interface ChatContextSelect<T extends boolean = true> {
   shippingPolicy?: T;
   returnPolicy?: T;
   contactInfo?: T;
+  siteFeatures?: T;
   tonePrompt?: T;
   updatedAt?: T;
   createdAt?: T;
