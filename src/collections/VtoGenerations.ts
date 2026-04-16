@@ -69,6 +69,22 @@ export const VtoGenerations: CollectionConfig = {
         rows: 2,
       },
     },
+    {
+      // Which upstream actually served this generation. The route tries
+      // Vertex first (covered by GCP credit) and falls back to the
+      // Gemini Developer API on safety rejection / error. Useful for
+      // analytics ("what % of generations are landing on the paid path").
+      name: 'provider',
+      type: 'select',
+      options: [
+        { label: 'Vertex AI', value: 'vertex' },
+        { label: 'Gemini Dev API', value: 'gemini' },
+      ],
+      label: { vi: 'Nhà cung cấp', en: 'Provider' },
+      admin: {
+        position: 'sidebar',
+      },
+    },
   ],
   timestamps: true,
 }

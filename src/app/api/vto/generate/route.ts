@@ -162,6 +162,92 @@ function inputHashFor(parts: {
   return h.digest('hex')
 }
 
+// ---------------------------------------------------------------------------
+// Provider chain — try Vertex first (covered by GCP credit), fall back to
+// the Gemini Developer API. Both speak the same request shape, so the
+// callable only differs in URL + auth header.
+// ---------------------------------------------------------------------------
+type Provider = 'vertex' | 'gemini'
+const DEFAULT_ORDER: Provider[] = ['vertex', 'gemini']
+
+function providerOrder(): Provider[] {
+  const env = (process.env.VTO_PROVIDER_ORDER || '').toLowerCase().trim()
+  if (!env) return DEFAULT_ORDER
+  const parsed = env
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s): s is Provider => s === 'vertex' || s === 'gemini')
+  return parsed.length ? parsed : DEFAULT_ORDER
+}
+
+interface ImageReply {
+  mimeType: string
+  data: string
+}
+
+type GeminiPart = { inlineData: { mimeType: string; data: string } } | { text: string }
+
+async function callVertex(parts: GeminiPart[], signal: AbortSignal): Promise<ImageReply | null> {
+  // Lazy-import so a missing google-auth-library install (or local dev
+  // without ADC) doesn't blow up route module evaluation.
+  try {
+    const { vertexGeminiImage } = await import('@/lib/vertex')
+    const r = await vertexGeminiImage({ parts, signal })
+    if (!r.inlineData) {
+      console.warn('[VTO] vertex: no image part, finishReason=', r.finishReason)
+      return null
+    }
+    return r.inlineData
+  } catch (err) {
+    console.warn('[VTO] vertex failed:', err instanceof Error ? err.message : err)
+    return null
+  }
+}
+
+async function callGeminiDev(parts: GeminiPart[], signal: AbortSignal): Promise<ImageReply | null> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) {
+    console.warn('[VTO] gemini dev: GEMINI_API_KEY not configured')
+    return null
+  }
+  try {
+    const apiRes = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts }],
+        generationConfig: { responseModalities: ['IMAGE'] },
+      }),
+      signal,
+    })
+    if (!apiRes.ok) {
+      const text = await apiRes.text()
+      console.warn('[VTO] gemini dev API error:', apiRes.status, text.slice(0, 200))
+      return null
+    }
+    const body = (await apiRes.json()) as {
+      candidates?: Array<{
+        content?: { parts?: Array<{ inlineData?: { mimeType?: string; data?: string } }> }
+        finishReason?: string
+      }>
+    }
+    const part = body.candidates?.[0]?.content?.parts?.find((p) =>
+      p.inlineData?.mimeType?.startsWith('image/'),
+    )
+    if (!part?.inlineData?.data || !part.inlineData.mimeType) {
+      console.warn(
+        '[VTO] gemini dev: no image part, finishReason=',
+        body.candidates?.[0]?.finishReason,
+      )
+      return null
+    }
+    return { mimeType: part.inlineData.mimeType, data: part.inlineData.data }
+  } catch (err) {
+    console.warn('[VTO] gemini dev failed:', err instanceof Error ? err.message : err)
+    return null
+  }
+}
+
 export async function POST(request: Request) {
   // --- Auth check ---
   const cookieStore = await cookies()
@@ -265,71 +351,50 @@ export async function POST(request: Request) {
       (productDesc ? ` Product: ${productDesc}.` : '') +
       ` Output only the generated image.`
 
-    const apiKey = process.env.GEMINI_API_KEY
-    if (!apiKey) {
-      return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 503 })
-    }
+    const requestParts: GeminiPart[] = [
+      { inlineData: { mimeType: personImg.mimetype, data: personImg.data } },
+      { inlineData: { mimeType: productImg.mimetype, data: productImg.data } },
+      { text: prompt },
+    ]
+
+    // Try each provider in order. Both speak the same Gemini-style
+    // request shape, so this is a simple loop — first one that returns
+    // an image wins. The Vertex path is preferred when the GCP credit
+    // applies; the Gemini Dev API stays as a known-good fallback for
+    // Vertex's stricter safety filter.
+    const order = providerOrder()
+    let imageReply: ImageReply | null = null
+    let usedProvider: Provider | null = null
+    const tried: Provider[] = []
 
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 120_000)
-
-    let body: {
-      candidates?: Array<{
-        content?: {
-          parts?: Array<{ text?: string; inlineData?: { mimeType?: string; data?: string } }>
-        }
-        finishReason?: string
-        safetyRatings?: unknown
-      }>
-      promptFeedback?: unknown
-    }
     try {
-      const apiRes = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                { inlineData: { mimeType: personImg.mimetype, data: personImg.data } },
-                { inlineData: { mimeType: productImg.mimetype, data: productImg.data } },
-                { text: prompt },
-              ],
-            },
-          ],
-          generationConfig: { responseModalities: ['IMAGE'] },
-        }),
-        signal: controller.signal,
-      })
-      if (!apiRes.ok) {
-        const text = await apiRes.text()
-        console.error('Gemini image API error:', apiRes.status, text.slice(0, 500))
-        return NextResponse.json({ error: `Gemini API error: ${apiRes.status}` }, { status: 502 })
+      for (const p of order) {
+        tried.push(p)
+        const reply =
+          p === 'vertex'
+            ? await callVertex(requestParts, controller.signal)
+            : await callGeminiDev(requestParts, controller.signal)
+        if (reply) {
+          imageReply = reply
+          usedProvider = p
+          break
+        }
       }
-      body = await apiRes.json()
     } finally {
       clearTimeout(timeout)
     }
 
-    const parts = body.candidates?.[0]?.content?.parts ?? []
-    const imgPart = parts.find((p) => p.inlineData?.mimeType?.startsWith('image/'))
-
-    if (!imgPart?.inlineData?.data) {
-      const debug = {
-        parts: parts.map((p) =>
-          p.inlineData
-            ? `[inline ${p.inlineData.mimeType} ${p.inlineData.data?.length || 0}b]`
-            : `[text] ${(p.text || '').slice(0, 120)}`,
-        ),
-        finishReason: body.candidates?.[0]?.finishReason,
-        promptFeedback: body.promptFeedback,
-      }
-      console.error('VTO: no image part returned.', JSON.stringify(debug))
-      return NextResponse.json({ error: 'no image returned', debug }, { status: 502 })
+    if (!imageReply || !usedProvider) {
+      console.error('[VTO] all providers failed', tried)
+      return NextResponse.json(
+        { error: 'Virtual try-on is unavailable right now. Please try again later.', tried },
+        { status: 502 },
+      )
     }
 
-    const resultDataUrl = `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`
+    const resultDataUrl = `data:${imageReply.mimeType};base64,${imageReply.data}`
 
     // Log this successful generation so the daily-quota counter
     // reflects it on the next request, and so a re-try with the same
@@ -347,6 +412,7 @@ export async function POST(request: Request) {
           ...(productId != null ? { product: Number(productId) } : {}),
           ...(hash ? { inputHash: hash } : {}),
           resultData: resultDataUrl,
+          provider: usedProvider,
         },
       })
     } catch (logErr) {
@@ -355,6 +421,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       image: resultDataUrl,
+      provider: usedProvider,
       quotaUsed: usedToday + 1,
       quotaLimit: VTO_DAILY_QUOTA,
     })
