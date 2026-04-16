@@ -106,7 +106,10 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
             <X className="w-4 h-4 transition-transform group-hover:rotate-90" />
           </motion.button>
 
-          <div className="grid md:grid-cols-[1fr,1fr] max-h-[90vh] overflow-hidden">
+          {/* 60/40 split: image gets the wider column so portrait product
+              shots breathe; the info panel scrolls if the description
+              expands. */}
+          <div className="grid md:grid-cols-[3fr_2fr] max-h-[90vh] overflow-hidden">
             {/* Image Section - Left Side */}
             <div
               className="relative bg-muted overflow-hidden h-full"
