@@ -128,24 +128,26 @@ export function transformProduct(product: Product): ProductForFrontend {
   const inStock =
     colorVariants.length > 0 ? colorVariants.some((v) => v.inStock) : (product.inStock ?? true)
 
-  // Get description as plain text (if richText). The Lexical root's
-  // children are block nodes (paragraph, heading, list-item, …) — the
-  // actual text lives on leaf `text` nodes one or more levels deeper.
-  // Recurse so we don't end up with an empty string.
-  const extractLexicalText = (node: any): string => {
+  // Flatten the Lexical richtext description into clean paragraph text.
+  // Within a block (paragraph/heading/etc.) inline text nodes are
+  // concatenated as-is and any stray `\n` are collapsed to single spaces
+  // so the sentence reads as prose. Blocks are separated by a single
+  // blank line so the storefront can render them as distinct paragraphs
+  // via `whitespace-pre-line`. Consecutive empty blocks are squashed.
+  const extractInline = (node: any): string => {
     if (!node) return ''
     if (typeof node.text === 'string') return node.text
-    if (Array.isArray(node.children)) {
-      return node.children.map(extractLexicalText).join('')
-    }
+    if (Array.isArray(node.children)) return node.children.map(extractInline).join('')
     return ''
   }
   let description = ''
   if (product.description?.root?.children) {
-    description = product.description.root.children
-      .map((child: any) => extractLexicalText(child))
-      .join('\n')
-      .trim()
+    const paragraphs: string[] = []
+    for (const child of product.description.root.children) {
+      const text = extractInline(child).replace(/\s*\n+\s*/g, ' ').replace(/\s+/g, ' ').trim()
+      if (text) paragraphs.push(text)
+    }
+    description = paragraphs.join('\n\n')
   }
 
   return {

@@ -220,7 +220,11 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
               </div>
 
               {product.description && (
-                <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+                <div className="space-y-3 text-muted-foreground leading-relaxed">
+                  {product.description.split(/\n{2,}/).map((para, i) => (
+                    <p key={i}>{para}</p>
+                  ))}
+                </div>
               )}
 
               {/* Color Selection */}
