@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { createHash } from 'crypto'
 import sharp from 'sharp'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 
 // Using the direct v1beta REST endpoint instead of the SDK. The
 // `@google/generative-ai@0.24.1` SDK silently drops the `responseModalities`
@@ -135,41 +136,12 @@ async function resolveToInlineImage(
 }
 
 // ---------------------------------------------------------------------------
-// In-memory sliding-window rate limiter (per user id)
+// DB-backed per-user daily quota (survives cold starts + multiple Cloud Run
+// instances; the previous in-memory sliding window reset whenever an
+// instance recycled, which gave premium users effectively unlimited tries).
 // ---------------------------------------------------------------------------
-const RATE_LIMIT_MAX = 5
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000 // 10 minutes
-
-/** token-key → list of request timestamps (ms) within the current window. */
-const rateLimitMap = new Map<string, number[]>()
-let rateLimitRequestCount = 0
-
-function getUserIdFromToken(token: string): string | null {
-  try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString('utf-8'))
-    return payload?.id != null ? String(payload.id) : null
-  } catch {
-    return null
-  }
-}
-
-function getRateLimitKey(token: string, scope: string): string {
-  const userId = getUserIdFromToken(token)
-  if (userId) return `${scope}_user_${userId}`
-  return `${scope}_tok_${createHash('sha256').update(token).digest('hex').slice(0, 16)}`
-}
-
-/** Remove stale entries to prevent unbounded memory growth. */
-function cleanupRateLimitMap(now: number) {
-  for (const [ip, timestamps] of rateLimitMap) {
-    const valid = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS)
-    if (valid.length === 0) {
-      rateLimitMap.delete(ip)
-    } else {
-      rateLimitMap.set(ip, valid)
-    }
-  }
-}
+const VTO_DAILY_QUOTA = 10
+const ONE_DAY_MS = 24 * 60 * 60 * 1000
 
 export async function POST(request: Request) {
   // --- Auth check ---
@@ -179,30 +151,36 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
 
-  // --- Rate-limit check (keyed by user id from JWT) ---
-  const now = Date.now()
-  const clientKey = getRateLimitKey(token, 'vto')
-
-  rateLimitRequestCount++
-  if (rateLimitRequestCount % 100 === 0 || rateLimitMap.size > 1000) {
-    cleanupRateLimitMap(now)
+  // Resolve the authenticated user via Payload's auth helper instead of
+  // hand-decoding the JWT (the route used to peek at the JWT claims to
+  // build a rate-limit key, but for a DB-backed quota we need the real
+  // user id and to be sure the session is valid).
+  const payload = await getPayload({ config: configPromise })
+  const { user } = await payload.auth({ headers: request.headers })
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
+  const userId = user.id
 
-  const timestamps = (rateLimitMap.get(clientKey) ?? []).filter(
-    (t) => now - t < RATE_LIMIT_WINDOW_MS,
-  )
+  // --- Daily quota check ---
+  const since = new Date(Date.now() - ONE_DAY_MS).toISOString()
+  const { totalDocs: usedToday } = await payload.count({
+    collection: 'vto-generations',
+    where: {
+      and: [{ user: { equals: userId } }, { createdAt: { greater_than: since } }],
+    },
+  })
 
-  if (timestamps.length >= RATE_LIMIT_MAX) {
-    const oldestInWindow = timestamps[0]
-    const retryAfterSeconds = (RATE_LIMIT_WINDOW_MS - (now - oldestInWindow)) / 1000
+  if (usedToday >= VTO_DAILY_QUOTA) {
     return NextResponse.json(
-      { error: 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau.' },
-      { status: 429, headers: { 'Retry-After': String(Math.ceil(retryAfterSeconds)) } },
+      {
+        error: `Bạn đã dùng hết ${VTO_DAILY_QUOTA} lượt thử đồ ảo trong ngày. Vui lòng quay lại vào ngày mai.`,
+        used: usedToday,
+        limit: VTO_DAILY_QUOTA,
+      },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(ONE_DAY_MS / 1000)) } },
     )
   }
-
-  timestamps.push(now)
-  rateLimitMap.set(clientKey, timestamps)
 
   // --- Parse body ---
   let body: {
@@ -210,6 +188,7 @@ export async function POST(request: Request) {
     productImage?: string
     productName?: string
     productColor?: string
+    productId?: number | string
   }
   try {
     body = await request.json()
@@ -217,7 +196,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { personImage, productImage, productName, productColor } = body
+  const { personImage, productImage, productName, productColor, productId } = body
 
   if (!personImage || !productImage) {
     return NextResponse.json(
@@ -305,16 +284,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'no image returned', debug }, { status: 502 })
     }
 
+    // Log this successful generation so the daily-quota counter
+    // reflects it on the next request. Failures are non-fatal —
+    // we'd rather under-count than block the response.
+    try {
+      await payload.create({
+        collection: 'vto-generations',
+        data: {
+          user: userId,
+          ...(productId != null ? { product: Number(productId) } : {}),
+        },
+      })
+    } catch (logErr) {
+      console.warn('[VTO] failed to log generation:', logErr)
+    }
+
     return NextResponse.json({
       image: `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`,
+      quotaUsed: usedToday + 1,
+      quotaLimit: VTO_DAILY_QUOTA,
     })
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err)
-    console.error(
-      '[VTO] /api/vto/generate failed:',
-      message,
-      err instanceof Error ? err.stack : '',
-    )
+    console.error('[VTO] /api/vto/generate failed:', message, err instanceof Error ? err.stack : '')
     if (message.includes('aborted')) {
       return NextResponse.json({ error: 'Request timed out' }, { status: 504 })
     }

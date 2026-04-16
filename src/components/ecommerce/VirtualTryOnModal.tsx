@@ -113,6 +113,9 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
             productImage: product.image,
             productName: product.name,
             productColor: product.color,
+            // Sent so the server can log which product the user tried on
+            // — used by the daily-quota counter and for analytics.
+            productId: product.id,
           }),
         })
         const data = await res.json()

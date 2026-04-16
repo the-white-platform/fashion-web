@@ -28,6 +28,7 @@ import { Reviews } from './collections/Reviews'
 import { SizeCharts } from './collections/SizeCharts'
 import { StockMovements } from './collections/StockMovements'
 import { Users } from './collections/Users'
+import { VtoGenerations } from './collections/VtoGenerations'
 import { Provinces, Districts, Wards } from './collections/VietnamAddresses'
 import { seedHandler } from './endpoints/seedHandler'
 import { bulkOrderStatusHandler } from './endpoints/bulkOrderStatus'
@@ -169,6 +170,7 @@ export default buildConfig({
     LoyaltyAccounts,
     LoyaltyTransactions,
     Referrals,
+    VtoGenerations,
   ],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
   endpoints: [

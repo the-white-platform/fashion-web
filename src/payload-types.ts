@@ -91,6 +91,7 @@ export interface Config {
     'loyalty-accounts': LoyaltyAccount;
     'loyalty-transactions': LoyaltyTransaction;
     referrals: Referral;
+    'vto-generations': VtoGeneration;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -126,6 +127,7 @@ export interface Config {
     'loyalty-accounts': LoyaltyAccountsSelect<false> | LoyaltyAccountsSelect<true>;
     'loyalty-transactions': LoyaltyTransactionsSelect<false> | LoyaltyTransactionsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
+    'vto-generations': VtoGenerationsSelect<false> | VtoGenerationsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -1408,6 +1410,19 @@ export interface Referral {
   createdAt: string;
 }
 /**
+ * Log of Virtual Try-On generations. Used to enforce the per-user daily quota.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vto-generations".
+ */
+export interface VtoGeneration {
+  id: number;
+  user: number | User;
+  product?: (number | null) | Product;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1599,6 +1614,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'referrals';
         value: number | Referral;
+      } | null)
+    | ({
+        relationTo: 'vto-generations';
+        value: number | VtoGeneration;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2454,6 +2473,16 @@ export interface ReferralsSelect<T extends boolean = true> {
   referrerReward?: T;
   refereeReward?: T;
   completedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "vto-generations_select".
+ */
+export interface VtoGenerationsSelect<T extends boolean = true> {
+  user?: T;
+  product?: T;
   updatedAt?: T;
   createdAt?: T;
 }
