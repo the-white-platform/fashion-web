@@ -823,16 +823,33 @@ export const seed = async ({
           'THE WHITE là thương hiệu thời trang thể thao Việt Nam, thiết kế và may đo 100% tại Việt Nam. ' +
           'Chúng tôi tập trung vào chất liệu kỹ thuật, phom dáng tối giản, ôm nhẹ, phù hợp cho gym, chạy bộ, yoga và hoạt động hằng ngày.',
         sizeGuide:
-          'Tổng quan size (áo + quần):\n' +
-          '- Áo (Tanktop, Tay Ngắn, Tay Dài): thiết kế slim-fit, co giãn 4 chiều. Chỉ còn size XL — phù hợp chiều cao 1m70–1m85, cân nặng 62–82kg.\n' +
-          '- Quần Short 1 Lớp / Tính Năng / Vải Gân / 2 Lớp: size M (eo 72–80cm, hông 88–96cm, phù hợp 1m65–1m75) và size L (eo 80–88cm, hông 96–104cm, phù hợp 1m75–1m85).\n' +
+          'Bảng số đo chính thức THE WHITE (đo sản phẩm khi nằm phẳng, đơn vị cm, chiều cao cm/m, cân nặng kg). Với chất liệu Polyester + Spandex co giãn 4 chiều — giữa 2 size, chọn size nhỏ để ôm, size lớn để thoải mái.\n' +
+          '\n' +
+          '=== ÁO (Tanktop / Tay Ngắn / Tay Dài / Tank Hở Sườn) ===\n' +
+          'Chỉ còn size L và XL.\n' +
+          '- Size L: chiều cao 1m6–1m7, cân nặng 55–65 kg. Dài thân trước 69 · 1/2 ngang ngực 51 · 1/2 ngang gấu 51 · ngang cổ 15.\n' +
+          '- Size XL: chiều cao 1m7–1m85, cân nặng 65–75 kg. Dài thân trước 71 · 1/2 ngang ngực 53 · 1/2 ngang gấu 53 · ngang cổ 16.5.\n' +
+          '\n' +
+          '=== QUẦN VẢI GÂN ===\n' +
+          '- Size M: chiều cao 1m6–1m7, cân nặng 55–65 kg. Dài quần 45.5 · vòng eo 35.5 · vòng mông 18.5.\n' +
+          '- Size L: chiều cao 1m7–1m85, cân nặng 65–75 kg. Dài quần 47 · vòng eo 36.5 · vòng mông 19.\n' +
+          '\n' +
+          '=== QUẦN SHORT 2 LỚP ===\n' +
+          '- Size M: chiều cao 1m6–1m7, cân nặng 55–65 kg. Dài quần 38 · vòng eo 39.5 · vòng mông 30 · bo gấu 20.\n' +
+          '- Size L: chiều cao 1m7–1m85, cân nặng 65–75 kg. Dài quần 39.2 · vòng eo 39.5 · vòng mông 31.5 · bo gấu 20.5.\n' +
+          '\n' +
+          '=== QUẦN 1 LỚP TÚI CHÉO ===\n' +
+          '- Size M: chiều cao 1m6–1m7, cân nặng 55–65 kg. Dài quần 40 · vòng eo 68 · vòng mông 32.5.\n' +
+          '- Size L: chiều cao 1m7–1m85, cân nặng 65–75 kg. Dài quần 41.5 · vòng eo 72 · vòng mông 34.\n' +
+          '\n' +
+          '=== QUẦN 1 LỚP TÚI SAU (TÍNH NĂNG) ===\n' +
+          '- Size M: chiều cao 1m6–1m7, cân nặng 55–65 kg. Dài quần 43.5 · 1/2 eo 36 · vòng mông 53 · ngang đùi 34.5 · ngang ống 31.\n' +
+          '- Size L: chiều cao 1m7–1m85, cân nặng 65–75 kg. Dài quần 44.5 · 1/2 eo 38 · vòng mông 55 · ngang đùi 35.5 · ngang ống 32.\n' +
           '\n' +
           'Gợi ý nhanh theo chiều cao:\n' +
-          '- 1m65–1m72 (nhẹ): Áo XL thường hơi rộng, quần chọn size M.\n' +
-          '- 1m73–1m80: Áo XL vừa, quần M hoặc L tuỳ cân nặng (dưới 72kg → M, trên 72kg → L).\n' +
-          '- 1m81–1m88: Áo XL vừa/ôm, quần L.\n' +
-          '\n' +
-          'Lưu ý: chất liệu Polyester/Spandex co giãn — nếu giữa 2 size, chọn size nhỏ hơn để ôm body, chọn size lớn hơn để thoải mái.',
+          '- 1m65–1m72 / dưới 65 kg: áo XL (hơi rộng nhưng vẫn đẹp) · quần size M.\n' +
+          '- 1m73–1m80 / 65–72 kg: áo XL vừa · quần M hoặc L tuỳ cân (dưới 70 kg → M, trên 70 kg → L).\n' +
+          '- 1m81–1m88 / 72–80 kg: áo XL ôm · quần size L.',
         shippingPolicy:
           'Ship toàn quốc qua đơn vị vận chuyển. Phí ship cố định 30.000₫ (miễn phí khi áp mã giảm vận chuyển). Thời gian giao dự kiến: HCM/Hà Nội 1–2 ngày làm việc, các tỉnh khác 3–5 ngày.',
         returnPolicy:
@@ -861,16 +878,33 @@ export const seed = async ({
           'THE WHITE is a Vietnamese athletic / streetwear brand, designed and stitched 100% in Vietnam. ' +
           'We focus on technical fabrics and minimalist silhouettes for gym, running, yoga, and everyday wear.',
         sizeGuide:
-          'Size overview:\n' +
-          '- Tops (Tanktop, Short Sleeve, Long Sleeve): slim 4-way stretch fit. Currently only size XL — fits 170–185cm, 62–82kg.\n' +
-          '- Shorts (Single-layer / Functional / Knit / 2-layer): size M (waist 72–80cm, hip 88–96cm, for 165–175cm) and size L (waist 80–88cm, hip 96–104cm, for 175–185cm).\n' +
+          'THE WHITE official size chart (flat-lay garment measurements in cm; height and weight are customer body metrics). Fabric is Polyester + 4-way-stretch Spandex — between two sizes, pick down for a tighter fit or up for a relaxed one.\n' +
+          '\n' +
+          '=== TOPS (Tanktop / Short Sleeve / Long Sleeve / Open-side Tank) ===\n' +
+          'Only L and XL in stock.\n' +
+          '- L: height 160–170 cm, weight 55–65 kg. Body length 69 · 1/2 chest 51 · 1/2 hem 51 · neck 15.\n' +
+          '- XL: height 170–185 cm, weight 65–75 kg. Body length 71 · 1/2 chest 53 · 1/2 hem 53 · neck 16.5.\n' +
+          '\n' +
+          '=== KNIT (VẢI GÂN) PANTS ===\n' +
+          '- M: height 160–170 cm, weight 55–65 kg. Inseam 45.5 · waist 35.5 · hip 18.5.\n' +
+          '- L: height 170–185 cm, weight 65–75 kg. Inseam 47 · waist 36.5 · hip 19.\n' +
+          '\n' +
+          '=== 2-LAYER SHORTS ===\n' +
+          '- M: 160–170 cm, 55–65 kg. Inseam 38 · waist 39.5 · hip 30 · hem 20.\n' +
+          '- L: 170–185 cm, 65–75 kg. Inseam 39.2 · waist 39.5 · hip 31.5 · hem 20.5.\n' +
+          '\n' +
+          '=== 1-LAYER SIDE-POCKET SHORTS ===\n' +
+          '- M: 160–170 cm, 55–65 kg. Inseam 40 · waist 68 · hip 32.5.\n' +
+          '- L: 170–185 cm, 65–75 kg. Inseam 41.5 · waist 72 · hip 34.\n' +
+          '\n' +
+          '=== 1-LAYER BACK-POCKET (FUNCTIONAL) SHORTS ===\n' +
+          '- M: 160–170 cm, 55–65 kg. Inseam 43.5 · 1/2 waist 36 · hip 53 · thigh 34.5 · leg opening 31.\n' +
+          '- L: 170–185 cm, 65–75 kg. Inseam 44.5 · 1/2 waist 38 · hip 55 · thigh 35.5 · leg opening 32.\n' +
           '\n' +
           'Quick height guide:\n' +
-          '- 165–172cm (lean): XL top runs slightly loose, choose M shorts.\n' +
-          '- 173–180cm: XL top fits well, M or L shorts depending on weight (<72kg → M, >72kg → L).\n' +
-          '- 181–188cm: XL top fits snug, L shorts.\n' +
-          '\n' +
-          'Stretchy fabric — between two sizes, pick down for a tighter fit, up for a relaxed one.',
+          '- 165–172 cm / under 65 kg: XL top (slightly loose but still looks good) · M shorts.\n' +
+          '- 173–180 cm / 65–72 kg: XL top fits well · M or L shorts based on weight (<70 → M, >70 → L).\n' +
+          '- 181–188 cm / 72–80 kg: XL top snug · L shorts.',
         shippingPolicy:
           'Nationwide shipping via courier. Flat 30,000₫ fee (free with shipping-discount coupons). ETA: 1–2 business days to HCMC / Hanoi, 3–5 days to other provinces.',
         returnPolicy:

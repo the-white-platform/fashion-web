@@ -47,7 +47,7 @@ export const sizeChartSeedData: SizeChartSeedData[] = [
     categoryTitle: 'Áo Thể Thao',
   },
   {
-    fileName: 'quan-2-lop.jpg',
+    fileName: 'quan-short-2-lop.jpg',
     titleVi: 'Bảng size — Quần Short 2 Lớp',
     titleEn: 'Size Chart — Double-Layer Shorts',
     altVi: 'Bảng hướng dẫn chọn size quần short 2 lớp',
