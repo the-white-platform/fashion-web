@@ -80,7 +80,9 @@ export function Cart({ onCheckout }: CartProps) {
                               variant="outline"
                               size="icon"
                               className="w-7 h-7"
-                              onClick={() => updateQuantity(item.id, item.size, item.quantity - 1)}
+                              onClick={() =>
+                                updateQuantity(item.id, item.size, item.quantity - 1, item.color)
+                              }
                             >
                               <Minus className="w-4 h-4" />
                             </Button>
@@ -89,7 +91,9 @@ export function Cart({ onCheckout }: CartProps) {
                               variant="outline"
                               size="icon"
                               className="w-7 h-7"
-                              onClick={() => updateQuantity(item.id, item.size, item.quantity + 1)}
+                              onClick={() =>
+                                updateQuantity(item.id, item.size, item.quantity + 1, item.color)
+                              }
                             >
                               <Plus className="w-4 h-4" />
                             </Button>
@@ -100,7 +104,7 @@ export function Cart({ onCheckout }: CartProps) {
                           variant="ghost"
                           size="icon"
                           className="h-fit"
-                          onClick={() => removeFromCart(item.id, item.size)}
+                          onClick={() => removeFromCart(item.id, item.size, item.color)}
                         >
                           <X className="w-4 h-4" />
                         </Button>
