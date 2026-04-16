@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.30.0](https://github.com/the-white-platform/fashion-web/compare/v0.29.0...v0.30.0) (2026-04-16)
+
+
+### Features
+
+* **homepage:** admin-editable feature highlights via PayloadCMS ([96135ab](https://github.com/the-white-platform/fashion-web/commit/96135ab1e17635c87f19bbd6f280f779adc8be94))
+
 ## [0.29.0](https://github.com/the-white-platform/fashion-web/compare/v0.28.3...v0.29.0) (2026-04-16)
 
 
