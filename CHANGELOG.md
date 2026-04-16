@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.22.27](https://github.com/the-white-platform/fashion-web/compare/v0.22.26...v0.22.27) (2026-04-16)
+
+
+### Bug Fixes
+
+* **orders:** skip decrementStockAfterOrder — it was deadlocking the POST ([6ae3598](https://github.com/the-white-platform/fashion-web/commit/6ae3598ab79f3e49e35db881025a60d53806467a))
+
 ### [0.22.26](https://github.com/the-white-platform/fashion-web/compare/v0.22.25...v0.22.26) (2026-04-16)
 
 ### [0.22.25](https://github.com/the-white-platform/fashion-web/compare/v0.22.24...v0.22.25) (2026-04-16)
