@@ -593,6 +593,7 @@
     "tryAgain": "Try Again with Another Photo",
     "doneClose": "Done & Close",
     "generate": "Generate Virtual Try-On",
+    "quota": "Used <strong>{used}</strong>/<strong>{limit}</strong> virtual try-ons today (retries with the same images don't count).",
     "disclaimer": "AI TRY-ON is a simulation technology; results may vary 2-5% from reality.",
     "errorGeneric": "An error occurred. Please try again.",
     "errorNetwork": "Cannot connect to server. Please try again.",

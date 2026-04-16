@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { createHash } from 'crypto'
 import sharp from 'sharp'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
@@ -140,8 +141,26 @@ async function resolveToInlineImage(
 // instances; the previous in-memory sliding window reset whenever an
 // instance recycled, which gave premium users effectively unlimited tries).
 // ---------------------------------------------------------------------------
-const VTO_DAILY_QUOTA = 10
+const VTO_DAILY_QUOTA = 5
 const ONE_DAY_MS = 24 * 60 * 60 * 1000
+
+/** Stable cache key for one VTO request — same inputs ⇒ same hash. */
+function inputHashFor(parts: {
+  personImage: string
+  productImage: string
+  productName?: string
+  productColor?: string
+}): string {
+  const h = createHash('sha256')
+  h.update(parts.personImage)
+  h.update('|')
+  h.update(parts.productImage)
+  h.update('|')
+  h.update(parts.productName || '')
+  h.update('|')
+  h.update(parts.productColor || '')
+  return h.digest('hex')
+}
 
 export async function POST(request: Request) {
   // --- Auth check ---
@@ -162,27 +181,7 @@ export async function POST(request: Request) {
   }
   const userId = user.id
 
-  // --- Daily quota check ---
-  const since = new Date(Date.now() - ONE_DAY_MS).toISOString()
-  const { totalDocs: usedToday } = await payload.count({
-    collection: 'vto-generations',
-    where: {
-      and: [{ user: { equals: userId } }, { createdAt: { greater_than: since } }],
-    },
-  })
-
-  if (usedToday >= VTO_DAILY_QUOTA) {
-    return NextResponse.json(
-      {
-        error: `Bạn đã dùng hết ${VTO_DAILY_QUOTA} lượt thử đồ ảo trong ngày. Vui lòng quay lại vào ngày mai.`,
-        used: usedToday,
-        limit: VTO_DAILY_QUOTA,
-      },
-      { status: 429, headers: { 'Retry-After': String(Math.ceil(ONE_DAY_MS / 1000)) } },
-    )
-  }
-
-  // --- Parse body ---
+  // --- Parse body (needed before cache lookup so we can hash it) ---
   let body: {
     personImage?: string
     productImage?: string
@@ -197,6 +196,52 @@ export async function POST(request: Request) {
   }
 
   const { personImage, productImage, productName, productColor, productId } = body
+
+  // --- Daily quota count (used by both cache + miss paths) ---
+  const since = new Date(Date.now() - ONE_DAY_MS).toISOString()
+  const { totalDocs: usedToday } = await payload.count({
+    collection: 'vto-generations',
+    where: {
+      and: [{ user: { equals: userId } }, { createdAt: { greater_than: since } }],
+    },
+  })
+
+  // --- Cache: same user re-running with the exact same inputs gets the
+  // previous result back without a Gemini call or a quota hit. Most of
+  // the cost in practice comes from users retrying the same upload —
+  // this turns those into free repeats. ---
+  if (personImage && productImage) {
+    const hash = inputHashFor({ personImage, productImage, productName, productColor })
+    const prior = await payload.find({
+      collection: 'vto-generations',
+      depth: 0,
+      limit: 1,
+      sort: '-createdAt',
+      where: {
+        and: [{ user: { equals: userId } }, { inputHash: { equals: hash } }],
+      },
+    })
+    const cached = prior.docs[0] as { resultData?: string } | undefined
+    if (cached?.resultData) {
+      return NextResponse.json({
+        image: cached.resultData,
+        cached: true,
+        quotaUsed: usedToday,
+        quotaLimit: VTO_DAILY_QUOTA,
+      })
+    }
+  }
+
+  if (usedToday >= VTO_DAILY_QUOTA) {
+    return NextResponse.json(
+      {
+        error: `Bạn đã dùng hết ${VTO_DAILY_QUOTA} lượt thử đồ ảo trong ngày. Vui lòng quay lại vào ngày mai.`,
+        used: usedToday,
+        limit: VTO_DAILY_QUOTA,
+      },
+      { status: 429, headers: { 'Retry-After': String(Math.ceil(ONE_DAY_MS / 1000)) } },
+    )
+  }
 
   if (!personImage || !productImage) {
     return NextResponse.json(
@@ -284,15 +329,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'no image returned', debug }, { status: 502 })
     }
 
+    const resultDataUrl = `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`
+
     // Log this successful generation so the daily-quota counter
-    // reflects it on the next request. Failures are non-fatal —
-    // we'd rather under-count than block the response.
+    // reflects it on the next request, and so a re-try with the same
+    // inputs hits the cache. Failures are non-fatal — we'd rather
+    // under-count than block the response.
     try {
+      const hash =
+        personImage && productImage
+          ? inputHashFor({ personImage, productImage, productName, productColor })
+          : undefined
       await payload.create({
         collection: 'vto-generations',
         data: {
           user: userId,
           ...(productId != null ? { product: Number(productId) } : {}),
+          ...(hash ? { inputHash: hash } : {}),
+          resultData: resultDataUrl,
         },
       })
     } catch (logErr) {
@@ -300,7 +354,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      image: `data:${imgPart.inlineData.mimeType};base64,${imgPart.inlineData.data}`,
+      image: resultDataUrl,
       quotaUsed: usedToday + 1,
       quotaLimit: VTO_DAILY_QUOTA,
     })

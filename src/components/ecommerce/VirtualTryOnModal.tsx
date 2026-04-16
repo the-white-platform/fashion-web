@@ -33,6 +33,8 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
   const [isGenerating, setIsGenerating] = useState(false)
   const [result, setResult] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [quotaUsed, setQuotaUsed] = useState<number | null>(null)
+  const [quotaLimit, setQuotaLimit] = useState<number | null>(null)
 
   // Hover-zoom state for the HD result image. Null = no hover; otherwise x/y
   // are the cursor position inside the image expressed as percentages.
@@ -119,6 +121,8 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
           }),
         })
         const data = await res.json()
+        if (typeof data.quotaUsed === 'number') setQuotaUsed(data.quotaUsed)
+        if (typeof data.quotaLimit === 'number') setQuotaLimit(data.quotaLimit)
         if (!res.ok || data.error) {
           setError(data.error || t('vto.errorGeneric'))
           return
@@ -542,6 +546,17 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
                   </button>
                 )}
               </div>
+              {/* Daily quota — surfaced server-side so the user knows
+                  how many free generations they have left today. */}
+              {quotaUsed != null && quotaLimit != null && (
+                <div className="px-4 pt-1 text-muted-foreground text-[10px] tracking-wide text-center">
+                  {t.rich('vto.quota', {
+                    used: quotaUsed,
+                    limit: quotaLimit,
+                    strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+                  })}
+                </div>
+              )}
               <div className="px-4 pb-2 text-muted-foreground text-[9px] uppercase font-bold tracking-[0.2em] text-center">
                 {t('vto.disclaimer')}
               </div>

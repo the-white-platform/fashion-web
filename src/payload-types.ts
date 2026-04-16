@@ -1419,6 +1419,11 @@ export interface VtoGeneration {
   id: number;
   user: number | User;
   product?: (number | null) | Product;
+  inputHash?: string | null;
+  /**
+   * data: URL of the generated image (used for retry caching)
+   */
+  resultData?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -2483,6 +2488,8 @@ export interface ReferralsSelect<T extends boolean = true> {
 export interface VtoGenerationsSelect<T extends boolean = true> {
   user?: T;
   product?: T;
+  inputHash?: T;
+  resultData?: T;
   updatedAt?: T;
   createdAt?: T;
 }

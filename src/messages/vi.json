@@ -593,6 +593,7 @@
     "tryAgain": "Thử Lại Với Ảnh Khác",
     "doneClose": "Xong & Đóng",
     "generate": "Tạo Thử Đồ Ảo Ngay",
+    "quota": "Đã dùng <strong>{used}</strong>/<strong>{limit}</strong> lượt thử đồ ảo hôm nay (lượt thử lại với cùng ảnh không tính phí).",
     "disclaimer": "AI TRY-ON là công nghệ mô phỏng, kết quả có thể chênh lệch 2-5% so với thực tế.",
     "errorGeneric": "Đã xảy ra lỗi. Vui lòng thử lại.",
     "errorNetwork": "Không thể kết nối đến server. Vui lòng thử lại.",
