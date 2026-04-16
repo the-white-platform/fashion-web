@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.23.0](https://github.com/the-white-platform/fashion-web/compare/v0.22.27...v0.23.0) (2026-04-16)
+
+
+### Features
+
+* **orders:** decrement stock via raw SQL update (fast + deadlock-free) ([b0b1e1d](https://github.com/the-white-platform/fashion-web/commit/b0b1e1d109fa3a956ed5d9f37bca8f3e0dcb2788))
+
 ### [0.22.27](https://github.com/the-white-platform/fashion-web/compare/v0.22.26...v0.22.27) (2026-04-16)
 
 
