@@ -23,12 +23,19 @@ export default function ComparePageClient() {
     const product = items.find((p) => p.id === productId)
     if (!product) return
     const size = selectedSizes[productId] || product.sizes[0] || ''
+    // Compare table has no color picker — fall back to the first variant
+    // so the order POST carries a non-empty `variant` field. Otherwise
+    // the server's stock-validation hook can't match the inventory row
+    // for products with multiple colors.
+    const defaultVariant = product.colorVariants?.[0]
     addToCart({
       id: product.id,
       name: product.name,
       price: product.priceNumber,
       image: product.image,
       size,
+      color: defaultVariant?.color,
+      colorHex: defaultVariant?.colorHex,
     })
     setIsCartOpen(true)
   }

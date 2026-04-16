@@ -1,3 +1,4 @@
+import { APIError } from 'payload'
 import type { CollectionBeforeChangeHook, CollectionAfterChangeHook } from 'payload'
 import type { Product } from '@/payload-types'
 
@@ -307,30 +308,48 @@ export const validateStockBeforeOrder: CollectionBeforeChangeHook = async ({
     })
 
     if (!product) {
-      throw new Error(`Product ${productId} not found`)
+      throw new APIError(`Product ${productId} not found`, 400)
+    }
+
+    const variants = product.colorVariants ?? []
+
+    // Backfill the variant when the client didn't send one: if the product
+    // has exactly one color, the customer never had a choice — use it. Also
+    // mutates `item.variant` so decrementStockAfterOrder can match the row.
+    if (!item.variant) {
+      if (variants.length === 1) {
+        item.variant = variants[0].color
+        payload.logger.info(
+          `[orders/hooks] backfilled empty variant for product ${productId} → "${item.variant}"`,
+        )
+      } else {
+        throw new APIError(
+          `Variant required for product ${productId} (has ${variants.length} colors)`,
+          400,
+        )
+      }
     }
 
     // Find the variant by color name
-    const variant = product.colorVariants?.find(
-      (v) => v.color === item.variant || v.id === item.variant,
-    )
+    const variant = variants.find((v) => v.color === item.variant || v.id === item.variant)
 
     if (!variant) {
-      throw new Error(`Variant "${item.variant}" not found for product ${productId}`)
+      throw new APIError(`Variant "${item.variant}" not found for product ${productId}`, 400)
     }
 
     // Find the size in inventory
     const sizeInventory = variant.sizeInventory?.find((s) => s.size === item.size)
 
     if (!sizeInventory) {
-      throw new Error(`Size "${item.size}" not available for variant "${item.variant}"`)
+      throw new APIError(`Size "${item.size}" not available for variant "${item.variant}"`, 400)
     }
 
     // Check stock
     if (sizeInventory.stock < item.quantity) {
-      throw new Error(
+      throw new APIError(
         `Insufficient stock for "${item.variant}" size ${item.size}. ` +
           `Available: ${sizeInventory.stock}, Requested: ${item.quantity}`,
+        409,
       )
     }
   }

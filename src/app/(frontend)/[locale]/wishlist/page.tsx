@@ -36,6 +36,8 @@ export default function WishlistPage() {
       price: item.price,
       image: item.image,
       size: size,
+      color: item.color,
+      colorHex: item.colorHex,
     })
     setIsCartOpen(true)
   }
@@ -50,6 +52,8 @@ export default function WishlistPage() {
           price: item.price,
           image: item.image,
           size: size,
+          color: item.color,
+          colorHex: item.colorHex,
         })
       }
     })

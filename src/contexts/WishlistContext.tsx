@@ -21,6 +21,12 @@ interface WishlistItem {
   image: string
   inStock: boolean
   sizes: string[]
+  // Color of the variant the user was viewing when they hearted this
+  // product. Used so the wishlist's "Add to Cart" can pass `color`
+  // through to the order POST — empty string would fail the server's
+  // stock-validation hook unless the product has only one variant.
+  color?: string
+  colorHex?: string
 }
 
 interface WishlistContextType {
@@ -138,6 +144,8 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
                 image: product.image,
                 inStock: product.inStock,
                 sizes: product.sizes,
+                color: product.colorVariants?.[0]?.color,
+                colorHex: product.colorVariants?.[0]?.colorHex,
               },
             ]
         debouncedSync(next)
