@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.42.5](https://github.com/the-white-platform/fashion-web/compare/v0.42.4...v0.42.5) (2026-04-16)
+
+
+### Bug Fixes
+
+* **mobile-nav:** point 'Theo dõi đơn hàng' at /orders (route /order-tracking doesn't exist) ([d8f2d6d](https://github.com/the-white-platform/fashion-web/commit/d8f2d6d9674020c359585af9a12150b26d4c721b))
+
 ### [0.42.4](https://github.com/the-white-platform/fashion-web/compare/v0.42.3...v0.42.4) (2026-04-16)
 
 
