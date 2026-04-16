@@ -452,15 +452,14 @@ export default function OrderDetailPage() {
                     </p>
 
                     {qrUrl && (
-                      // lg breakpoint (not md): the order-detail card
-                      // sits inside a 2-col grid on the parent page, so
-                      // the useful inner width is ~md-ish even on
-                      // desktop. Forcing side-by-side at md squeezed
-                      // the bank-details column down to letter-per-line
-                      // "HO KINH DOANH THE WHITE ACTIVE". Stacking until
-                      // lg gives the text room to breathe.
-                      <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 pt-4 border-t border-border">
-                        <div className="bg-white p-4 rounded-lg shadow-inner shrink-0 mx-auto lg:mx-0">
+                      // Always stack vertically: this whole card lives
+                      // in a lg:col-span-1 sidebar (~1/3 of viewport),
+                      // so at no breakpoint is there enough room for
+                      // QR + bank-info side by side without squeezing
+                      // "HO KINH DOANH THE WHITE ACTIVE" into letter-
+                      // per-line. QR on top, centered; info below.
+                      <div className="flex flex-col items-center gap-4 pt-4 border-t border-border">
+                        <div className="bg-white p-4 rounded-lg shadow-inner shrink-0">
                           <Image
                             src={qrUrl}
                             alt={t('checkout.scanQR')}
@@ -469,7 +468,7 @@ export default function OrderDetailPage() {
                             className="object-contain"
                           />
                         </div>
-                        <div className="text-left space-y-2 text-sm min-w-0 flex-1">
+                        <div className="text-left space-y-2 text-sm w-full">
                           <div>
                             <p className="text-xs text-muted-foreground uppercase tracking-widest">
                               {t('checkout.accountHolder')}
