@@ -25,7 +25,7 @@ export function ConfirmationStep({
   const t = useTranslations('checkout')
   const tNav = useTranslations('nav')
   const isBankTransfer = selectedPayment?.type === 'bank'
-  const qrUrl = `https://img.vietqr.io/image/VCB-kanetran29-compact2.png?amount=${total}&addInfo=${orderId}&accountName=KANE%20TRAN`
+  const qrUrl = `https://img.vietqr.io/image/BIDV-8601104886-compact2.png?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent('HO KINH DOANH THE WHITE ACTIVE')}`
 
   return (
     <motion.div
@@ -58,19 +58,19 @@ export function ConfirmationStep({
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
                   {t('accountHolder')}
                 </p>
-                <p className="font-bold uppercase tracking-wide">KANE TRAN</p>
+                <p className="font-bold uppercase tracking-wide">HO KINH DOANH THE WHITE ACTIVE</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
                   {t('accountNumber')}
                 </p>
-                <p className="font-bold text-lg">kanetran29</p>
+                <p className="font-bold text-lg">8601104886</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
                   {t('bank')}
                 </p>
-                <p className="font-bold">Vietcombank (VCB)</p>
+                <p className="font-bold">BIDV</p>
               </div>
               <div className="p-3 bg-muted rounded-sm border border-border">
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">

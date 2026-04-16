@@ -40,7 +40,7 @@ export function PaymentStep({
 
   const vietQrUrl = useMemo(() => {
     if (!isValidOrderId(orderId)) return null
-    return `https://img.vietqr.io/image/VCB-kanetran29-compact2.png?amount=${total}&addInfo=${orderId}&accountName=KANE%20TRAN`
+    return `https://img.vietqr.io/image/BIDV-8601104886-compact2.png?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent('HO KINH DOANH THE WHITE ACTIVE')}`
   }, [orderId, total])
 
   const [newPayment, setNewPayment] = useState({
@@ -162,11 +162,11 @@ export function PaymentStep({
                   <div className="space-y-1 text-sm text-foreground">
                     <p>
                       <span className="text-muted-foreground">{t('bank')}:</span>{' '}
-                      <strong>Vietcombank</strong>
+                      <strong>BIDV</strong>
                     </p>
                     <p>
                       <span className="text-muted-foreground">{t('accountNumber')}:</span>{' '}
-                      <strong>kanetran29</strong>
+                      <strong>8601104886</strong>
                     </p>
                     <p>
                       <span className="text-muted-foreground">{t('amount')}:</span>{' '}
