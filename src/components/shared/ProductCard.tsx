@@ -126,11 +126,11 @@ export function ProductCard({
           <div className="text-[10px] text-muted-foreground mb-1 uppercase tracking-[0.2em] font-medium">
             {product.category}
           </div>
-          {/* `leading-none` + Vietnamese = diacritic clipping (Ầ Ơ Ể Ớ Ấ Ắ
-              have marks above the cap line that get chopped when line-height
-              equals the font em). `leading-tight` (1.25) restores vertical
-              room without breaking the single-line clamp layout. */}
-          <h3 className="mb-1 text-lg uppercase font-semibold group-hover:text-muted-foreground transition-colors line-clamp-1 leading-tight">
+          {/* Show the full name — wrap to as many lines as needed.
+              Doc-overridden names like "Áo Tanktop nam training hở
+              sườn The White SS1" need 3 lines in narrow carousel
+              cells; clamping was hiding the model designation. */}
+          <h3 className="mb-1 text-xs md:text-sm uppercase font-semibold group-hover:text-muted-foreground transition-colors leading-snug">
             {product.name}
           </h3>
           {product.colors && product.colors.length > 0 && (
