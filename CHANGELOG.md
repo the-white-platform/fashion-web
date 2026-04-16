@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.22.24](https://github.com/the-white-platform/fashion-web/compare/v0.22.23...v0.22.24) (2026-04-16)
+
+
+### Bug Fixes
+
+* **orders:** disable sendOrderEmails hook (was deadlocking the POST) ([90cd5f8](https://github.com/the-white-platform/fashion-web/commit/90cd5f8aebbf0364470c969cdd8368e265981ab0))
+
 ### [0.22.23](https://github.com/the-white-platform/fashion-web/compare/v0.22.22...v0.22.23) (2026-04-16)
 
 ### [0.22.22](https://github.com/the-white-platform/fashion-web/compare/v0.22.21...v0.22.22) (2026-04-16)
