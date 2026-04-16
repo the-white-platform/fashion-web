@@ -15,6 +15,7 @@ export const validateAndRecalculateOrder: CollectionBeforeChangeHook = async ({
   if (operation !== 'create') return data
 
   const payload = req.payload
+  payload.logger.info('[orders/hooks] validateAndRecalculateOrder: enter')
   const items = (data.items || []) as Array<{
     product: number | { id: number }
     variant?: string
@@ -148,9 +149,7 @@ export const validateAndRecalculateOrder: CollectionBeforeChangeHook = async ({
   // Step 5: Validate and apply loyalty points discount
   // 1 point = 1000 VND (default rate — tune via follow-up if needed)
   const POINTS_TO_VND = 1000
-  req.payload.logger.warn(
-    'stockManagement: using default POINTS_TO_VND=1000 — verify redemption rate is correct',
-  )
+  payload.logger.info('[orders/hooks] validateAndRecalculateOrder: step 5 (loyalty)')
 
   let clampedPointsDiscount = 0
   const userId = data.customerInfo?.user
@@ -176,6 +175,7 @@ export const validateAndRecalculateOrder: CollectionBeforeChangeHook = async ({
   // Anonymous order → pointsDiscount stays 0
 
   data.totals.pointsDiscount = clampedPointsDiscount
+  payload.logger.info('[orders/hooks] validateAndRecalculateOrder: exit')
 
   // Step 5b: Set server-calculated discount and total
   data.totals.discount = discount
@@ -295,6 +295,7 @@ export const validateStockBeforeOrder: CollectionBeforeChangeHook = async ({
   if (operation !== 'create') return data
 
   const payload = req.payload
+  payload.logger.info('[orders/hooks] validateStockBeforeOrder: enter')
   const items = (data.items || []) as OrderItem[]
 
   for (const item of items) {
@@ -334,6 +335,7 @@ export const validateStockBeforeOrder: CollectionBeforeChangeHook = async ({
     }
   }
 
+  payload.logger.info('[orders/hooks] validateStockBeforeOrder: exit')
   return data
 }
 
