@@ -41,6 +41,8 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const [addedToCart, setAddedToCart] = useState(false)
   const { isWishlisted, toggleWishlist } = useWishlist()
   const [isImageHovered, setIsImageHovered] = useState(false)
+  const [descExpanded, setDescExpanded] = useState(false)
+  const tCommon = useTranslations('common')
   const { addToCart, setIsCartOpen } = useCart()
 
   // Get current variant or use default
@@ -283,9 +285,38 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       </span>
                     )}
                 </div>
-                <p className="text-muted-foreground text-xs leading-relaxed">
-                  {product.description || t('products.noDescription')}
-                </p>
+                {(() => {
+                  const raw = product.description ?? ''
+                  if (!raw) {
+                    return (
+                      <p className="text-muted-foreground text-xs leading-relaxed">
+                        {t('products.noDescription')}
+                      </p>
+                    )
+                  }
+                  const paragraphs = raw.split(/\n{2,}/).filter(Boolean)
+                  // Same threshold as the product detail page so both
+                  // surfaces collapse/expand at the same point.
+                  const isLong = paragraphs.length > 2 || (paragraphs[0]?.length ?? 0) > 260
+                  const visible = descExpanded || !isLong ? paragraphs : [paragraphs[0]]
+                  return (
+                    <div className="space-y-2 text-muted-foreground text-xs leading-relaxed">
+                      {visible.map((para, i) => (
+                        <p key={i}>{para}</p>
+                      ))}
+                      {isLong && (
+                        <button
+                          type="button"
+                          onClick={() => setDescExpanded((v) => !v)}
+                          className="inline-flex items-center text-[10px] uppercase tracking-wide text-foreground hover:underline font-bold"
+                        >
+                          {descExpanded ? tCommon('showLess') : tCommon('showMore')}
+                          <span className="ml-1">{descExpanded ? '↑' : '↓'}</span>
+                        </button>
+                      )}
+                    </div>
+                  )
+                })()}
               </motion.div>
 
               {/* Color Selection */}
