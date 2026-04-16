@@ -116,19 +116,18 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               onMouseEnter={() => setIsImageHovered(true)}
               onMouseLeave={() => setIsImageHovered(false)}
             >
-              {/* Product Image with Zoom Effect */}
-              <motion.div
-                className="relative w-full h-full"
-                animate={{ scale: isImageHovered ? 1.05 : 1 }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-              >
+              {/* Product Image with Zoom Effect — scale wraps ONLY the
+                  Image. Arrows + dot indicators sit at the same z-index
+                  but outside this scaling box, so hovering doesn't grow
+                  them along with the photo. */}
+              <div className="relative w-full h-full">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={`${selectedVariantIndex}-${currentImageIndex}`}
                     initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
+                    animate={{ opacity: 1, scale: isImageHovered ? 1.05 : 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
                     className="relative w-full h-full"
                   >
                     <Image
@@ -179,7 +178,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                     </div>
                   </>
                 )}
-              </motion.div>
+              </div>
 
               {/* Tag Badge — only when product has a tag */}
               {product.tag && (
