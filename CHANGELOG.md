@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.23.6](https://github.com/the-white-platform/fashion-web/compare/v0.23.5...v0.23.6) (2026-04-16)
+
+
+### Bug Fixes
+
+* **checkout:** let confirmation screen render after cart is cleared ([b69d004](https://github.com/the-white-platform/fashion-web/commit/b69d0040f1006c49d3c4e46315599547bc852bd1))
+
 ### [0.23.5](https://github.com/the-white-platform/fashion-web/compare/v0.23.4...v0.23.5) (2026-04-16)
 
 
