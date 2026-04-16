@@ -21,7 +21,11 @@ interface UseCheckoutReturn {
   orderNotes: string
   setOrderNotes: (notes: string) => void
   totals: OrderTotals
-  completeOrder: (appliedCoupon: AppliedCoupon | null, pointsToRedeem?: number) => Promise<void>
+  completeOrder: (
+    appliedCoupon: AppliedCoupon | null,
+    pointsToRedeem?: number,
+    orderNumber?: string,
+  ) => Promise<void>
   isSubmitting: boolean
   orderError: string | null
   orderResult: any | null
@@ -78,7 +82,11 @@ export function useCheckout(): UseCheckoutReturn {
     }
   }, [getTotalPrice, pointsToRedeem])
 
-  const completeOrder = async (appliedCoupon: AppliedCoupon | null, overridePoints?: number) => {
+  const completeOrder = async (
+    appliedCoupon: AppliedCoupon | null,
+    overridePoints?: number,
+    orderNumber?: string,
+  ) => {
     setIsSubmitting(true)
     setOrderError(null)
 
@@ -98,6 +106,10 @@ export function useCheckout(): UseCheckoutReturn {
       const paymentMethod = uiPaymentType === 'bank' ? 'bank_transfer' : uiPaymentType
 
       const orderData = {
+        // Pre-generated on the page so the VietQR memo on PaymentStep
+        // and the confirmation screen reference the same identifier.
+        // Server hook only auto-generates when this is missing.
+        ...(orderNumber ? { orderNumber } : {}),
         customerInfo: {
           customerName: user?.fullName ?? selectedAddress?.name ?? '',
           customerEmail: user?.email ?? '',

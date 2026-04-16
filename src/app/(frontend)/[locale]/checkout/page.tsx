@@ -31,9 +31,15 @@ export default function CheckoutPage() {
   const checkout = useCheckout()
   const coupon = useCoupon()
 
-  // Stable fallback order ID for PaymentStep — useState lazy initializer runs only once,
-  // keeping Date.now() out of the render path (satisfies react-hooks/purity)
-  const [fallbackOrderId] = useState<string>(() => `TW${Date.now()}`)
+  // Generate the human-readable orderNumber up-front so the VietQR memo
+  // shown on PaymentStep matches the ID saved in the DB and shown on
+  // ConfirmationStep. Format mirrors the server-side fallback in
+  // Orders.beforeChange (TW-{timestamp-b36}-{random}).
+  const [pendingOrderNumber] = useState<string>(() => {
+    const timestamp = Date.now().toString(36).toUpperCase()
+    const random = Math.random().toString(36).substring(2, 6).toUpperCase()
+    return `TW-${timestamp}-${random}`
+  })
 
   // UI toggle state (local to page — not shared with hooks)
   const [showNewAddress, setShowNewAddress] = useState(!user?.shippingAddresses?.length)
@@ -69,8 +75,10 @@ export default function CheckoutPage() {
     checkout.totals.subtotal + shippingFee - discount - pointsDiscount,
   )
 
-  // Derive order ID and total from API result for ConfirmationStep
-  const confirmedOrderId: string = checkout.orderResult?.doc?.id ?? checkout.orderResult?.id ?? ''
+  // Derive total from API result for ConfirmationStep; orderNumber is the
+  // client-generated one we already committed to the server, so it stays
+  // identical between payment (QR memo) and confirmation screens.
+  const confirmedOrderNumber: string = checkout.orderResult?.doc?.orderNumber ?? pendingOrderNumber
   const confirmedTotal: number = checkout.orderResult?.doc?.totals?.total ?? adjustedTotal
 
   return (
@@ -111,7 +119,7 @@ export default function CheckoutPage() {
                       showNewPayment={showNewPayment}
                       onToggleNewPayment={() => setShowNewPayment((prev) => !prev)}
                       total={adjustedTotal}
-                      orderId={confirmedOrderId || fallbackOrderId}
+                      orderId={pendingOrderNumber}
                       onBack={() => checkout.setStep('shipping')}
                       onNext={() => checkout.setStep('review')}
                     />
@@ -130,7 +138,9 @@ export default function CheckoutPage() {
                       total={adjustedTotal}
                       appliedCoupon={coupon.appliedCoupon}
                       onBack={() => checkout.setStep('payment')}
-                      onComplete={() => checkout.completeOrder(coupon.appliedCoupon)}
+                      onComplete={() =>
+                        checkout.completeOrder(coupon.appliedCoupon, undefined, pendingOrderNumber)
+                      }
                       pointsAvailable={checkout.pointsAvailable}
                       pointsToRedeem={checkout.pointsToRedeem}
                       onPointsChange={checkout.setPointsToRedeem}
@@ -268,7 +278,7 @@ export default function CheckoutPage() {
         {/* Confirmation Step */}
         {checkout.step === 'confirmation' && (
           <ConfirmationStep
-            orderId={confirmedOrderId}
+            orderId={confirmedOrderNumber}
             total={confirmedTotal}
             selectedPayment={checkout.selectedPayment}
             onViewOrders={() => router.push('/orders')}
