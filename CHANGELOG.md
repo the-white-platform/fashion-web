@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.42.10](https://github.com/the-white-platform/fashion-web/compare/v0.42.9...v0.42.10) (2026-04-16)
+
+
+### Bug Fixes
+
+* **size-picker:** modal stacks on mobile — explicit grid-cols-1 base ([0119bda](https://github.com/the-white-platform/fashion-web/commit/0119bda4fec9a053cc733fc98bc8c3e5e844d07e))
+
 ### [0.42.9](https://github.com/the-white-platform/fashion-web/compare/v0.42.8...v0.42.9) (2026-04-16)
 
 ### [0.42.8](https://github.com/the-white-platform/fashion-web/compare/v0.42.7...v0.42.8) (2026-04-16)
