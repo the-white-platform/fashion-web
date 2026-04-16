@@ -9,7 +9,8 @@ import {
 } from './Orders/hooks/stockManagement'
 import { logOrderActivity } from './Orders/hooks/activityLog'
 import { handleReturn } from './Orders/hooks/returnManagement'
-import { sendOrderEmails } from './Orders/hooks/sendOrderEmails'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { sendOrderEmails as _sendOrderEmails } from './Orders/hooks/sendOrderEmails'
 import { notifyOnOrder } from './Orders/hooks/notifyOnOrder'
 import { notifyOnStockChange } from './Orders/hooks/notifyOnStockChange'
 import { loyaltyEarn } from './Orders/hooks/loyaltyEarn'
@@ -686,9 +687,14 @@ export const Orders: CollectionConfig = {
       restoreStockOnCancel,
       // Increment coupon usageCount when an order is created with a coupon
       incrementCouponUsageAfterOrder,
-      // Send transactional emails to the customer
-      sendOrderEmails,
-      // Send in-app + push notifications to staff/admins
+      // NOTE: sendOrderEmails disabled — no email provider wired up yet.
+      // The Resend adapter with an unused-but-set RESEND_API_KEY held
+      // the afterChange's transaction idle-in-transaction long enough
+      // to deadlock the next order insert on a products lock. Re-enable
+      // once email is actually used; for now the staff get order alerts
+      // via `notifyOnOrder` (in-app dashboard notifications).
+      // sendOrderEmails,
+      // Send in-app notifications to staff/admins (push fires non-blocking)
       notifyOnOrder,
       // Send low-stock / out-of-stock notifications
       notifyOnStockChange,
