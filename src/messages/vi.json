@@ -1055,7 +1055,10 @@
       "height": "Chiều Cao (cm)",
       "weight": "Cân Nặng (kg)",
       "find": "Tìm Size Phù Hợp",
+      "finding": "Đang phân tích…",
+      "reset": "Làm Lại",
       "alertRequired": "Vui lòng nhập chiều cao và cân nặng!",
+      "errorGeneric": "Không gợi ý được size lúc này. Vui lòng thử lại.",
       "result": {
         "title": "Size Đề Xuất",
         "fit": "Phù hợp nhất với số đo của bạn",

@@ -1057,7 +1057,10 @@
       "height": "Height (cm)",
       "weight": "Weight (kg)",
       "find": "Find My Size",
+      "finding": "Analysing…",
+      "reset": "Reset",
       "alertRequired": "Please enter your height and weight!",
+      "errorGeneric": "Couldn't compute a size right now. Please try again.",
       "result": {
         "title": "Recommended Size",
         "fit": "Best fit for your measurements",

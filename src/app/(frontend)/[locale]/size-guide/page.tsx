@@ -1,12 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/Link'
 import { motion } from 'motion/react'
-import { Ruler, User, Weight, Sparkles, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { SmartSizePicker } from '@/components/ecommerce/SmartSizePicker'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -58,95 +57,12 @@ const sizeCharts = {
 export default function SizeGuidePage() {
   const t = useTranslations('sizeGuide')
   const tNav = useTranslations('nav')
-  const router = useRouter()
 
+  // Chart tab only — the AI calculator now lives in the shared
+  // <SmartSizePicker /> component (also used as a modal on the
+  // product detail page).
   const [gender, setGender] = useState<'men' | 'women'>('men')
   const [productType, setProductType] = useState<'shirt' | 'pants'>('shirt')
-
-  // AI Size Calculator
-  const [height, setHeight] = useState('')
-  const [weight, setWeight] = useState('')
-  const [chest, setChest] = useState('')
-  const [waist, setWaist] = useState('')
-  const [recommendedSize, setRecommendedSize] = useState<string | null>(null)
-  const [confidence, setConfidence] = useState<number>(0)
-
-  const calculateSize = () => {
-    const h = parseInt(height)
-    const w = parseInt(weight)
-    const c = parseInt(chest) || 0
-    const wa = parseInt(waist) || 0
-
-    if (!h || !w) {
-      alert(t('calculator.alertRequired'))
-      return
-    }
-
-    // Simple AI algorithm based on measurements
-    const chart = sizeCharts[gender][productType]
-
-    let bestMatch = chart[2] // Default to M
-    let bestScore = 0
-
-    chart.forEach((sizeData) => {
-      let score = 0
-      const [heightMin, heightMax] = sizeData.height.split('-').map(Number)
-      const weightRange =
-        productType === 'shirt' && 'weight' in sizeData
-          ? sizeData.weight!.split('-').map(Number)
-          : [0, 999]
-      const [weightMin, weightMax] = weightRange
-
-      // Height matching (40% weight)
-      if (h >= heightMin && h <= heightMax) score += 40
-      else score += Math.max(0, 40 - Math.abs(h - (heightMin + heightMax) / 2) / 2)
-
-      // Weight matching (30% weight)
-      if (productType === 'shirt' && w >= weightMin && w <= weightMax) score += 30
-      else if (productType === 'shirt')
-        score += Math.max(0, 30 - Math.abs(w - (weightMin + weightMax) / 2) / 5)
-
-      // Chest matching (15% weight)
-      if (c > 0 && 'chest' in sizeData) {
-        const [chestMin, chestMax] = sizeData.chest.split('-').map(Number)
-        if (c >= chestMin && c <= chestMax) score += 15
-        else score += Math.max(0, 15 - Math.abs(c - (chestMin + chestMax) / 2) / 3)
-      } else {
-        score += 7.5 // Half points if not provided
-      }
-
-      // Waist matching (15% weight)
-      if (wa > 0) {
-        const [waistMin, waistMax] = sizeData.waist.split('-').map(Number)
-        if (wa >= waistMin && wa <= waistMax) score += 15
-        else score += Math.max(0, 15 - Math.abs(wa - (waistMin + waistMax) / 2) / 3)
-      } else {
-        score += 7.5 // Half points if not provided
-      }
-
-      if (score > bestScore) {
-        bestScore = score
-        bestMatch = sizeData
-      }
-    })
-
-    setRecommendedSize(bestMatch.size)
-    setConfidence(Math.round(bestScore))
-
-    // Smooth scroll to result
-    setTimeout(() => {
-      document.getElementById('ai-result')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    }, 100)
-  }
-
-  const resetCalculator = () => {
-    setHeight('')
-    setWeight('')
-    setChest('')
-    setWaist('')
-    setRecommendedSize(null)
-    setConfidence(0)
-  }
 
   const currentChart = sizeCharts[gender][productType]
 
@@ -185,219 +101,9 @@ export default function SizeGuidePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-foreground to-foreground/80 text-background border-2 border-foreground rounded-sm p-8 mb-12"
+          className="mb-12"
         >
-          <div className="flex items-center gap-3 mb-6">
-            <Sparkles className="w-8 h-8" />
-            <h2 className="text-3xl uppercase tracking-wide">{t('calculator.title')}</h2>
-          </div>
-          <p className="opacity-80 mb-8">{t('calculator.desc')}</p>
-
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Input Form */}
-            <div className="bg-background text-foreground rounded-sm p-6 space-y-6">
-              {/* Gender Selection */}
-              <div>
-                <label className="block text-sm uppercase tracking-wide mb-3">
-                  {t('calculator.gender.label')}
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setGender('men')}
-                    className={`py-3 border-2 rounded-sm transition-all ${
-                      gender === 'men'
-                        ? 'bg-foreground text-background border-foreground'
-                        : 'bg-background text-foreground border-border hover:border-foreground'
-                    }`}
-                  >
-                    {t('calculator.gender.male')}
-                  </button>
-                  <button
-                    onClick={() => setGender('women')}
-                    className={`py-3 border-2 rounded-sm transition-all ${
-                      gender === 'women'
-                        ? 'bg-foreground text-background border-foreground'
-                        : 'bg-background text-foreground border-border hover:border-foreground'
-                    }`}
-                  >
-                    {t('calculator.gender.female')}
-                  </button>
-                </div>
-              </div>
-
-              {/* Product Type */}
-              <div>
-                <label className="block text-sm uppercase tracking-wide mb-3">
-                  {t('calculator.type.label')}
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setProductType('shirt')}
-                    className={`py-3 border-2 rounded-sm transition-all ${
-                      productType === 'shirt'
-                        ? 'bg-foreground text-background border-foreground'
-                        : 'bg-background text-foreground border-border hover:border-foreground'
-                    }`}
-                  >
-                    {t('calculator.type.shirt')}
-                  </button>
-                  <button
-                    onClick={() => setProductType('pants')}
-                    className={`py-3 border-2 rounded-sm transition-all ${
-                      productType === 'pants'
-                        ? 'bg-foreground text-background border-foreground'
-                        : 'bg-background text-foreground border-border hover:border-foreground'
-                    }`}
-                  >
-                    {t('calculator.type.pants')}
-                  </button>
-                </div>
-              </div>
-
-              {/* Measurements */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm uppercase tracking-wide mb-2">
-                    {t('calculator.height')} <span className="text-destructive">*</span>
-                  </label>
-                  <div className="relative">
-                    <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                    <input
-                      type="number"
-                      value={height}
-                      onChange={(e) => setHeight(e.target.value)}
-                      placeholder="170"
-                      className="w-full pl-10 pr-3 py-3 border-2 border-border rounded-sm outline-none focus:border-foreground transition-colors bg-background text-foreground"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm uppercase tracking-wide mb-2">
-                    {t('calculator.weight')} <span className="text-destructive">*</span>
-                  </label>
-                  <div className="relative">
-                    <Weight className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                    <input
-                      type="number"
-                      value={weight}
-                      onChange={(e) => setWeight(e.target.value)}
-                      placeholder="65"
-                      className="w-full pl-10 pr-3 py-3 border-2 border-border rounded-sm outline-none focus:border-foreground transition-colors bg-background text-foreground"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm uppercase tracking-wide mb-2">
-                    {t('chart.headers.chest')}
-                  </label>
-                  <div className="relative">
-                    <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                    <input
-                      type="number"
-                      value={chest}
-                      onChange={(e) => setChest(e.target.value)}
-                      placeholder="90"
-                      className="w-full pl-10 pr-3 py-3 border-2 border-border rounded-sm outline-none focus:border-foreground transition-colors bg-background text-foreground"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm uppercase tracking-wide mb-2">
-                    {t('chart.headers.waist')}
-                  </label>
-                  <div className="relative">
-                    <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                    <input
-                      type="number"
-                      value={waist}
-                      onChange={(e) => setWaist(e.target.value)}
-                      placeholder="80"
-                      className="w-full pl-10 pr-3 py-3 border-2 border-border rounded-sm outline-none focus:border-foreground transition-colors bg-background text-foreground"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={calculateSize}
-                  className="flex-1 bg-foreground text-background py-3 rounded-sm hover:opacity-90 transition-all uppercase tracking-wide flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-5 h-5" />
-                  {t('calculator.find')}
-                </button>
-                <button
-                  onClick={resetCalculator}
-                  className="px-6 border-2 border-border bg-background text-foreground py-3 rounded-sm hover:border-foreground transition-all uppercase tracking-wide"
-                >
-                  {t('calculator.find')}
-                </button>
-              </div>
-            </div>
-
-            {/* Result */}
-            <div id="ai-result" className="bg-background text-foreground rounded-sm p-6">
-              {recommendedSize ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center space-y-6"
-                >
-                  <div className="w-24 h-24 bg-foreground text-background rounded-full flex items-center justify-center mx-auto text-4xl font-bold">
-                    {recommendedSize}
-                  </div>
-                  <div>
-                    <h3 className="text-2xl uppercase tracking-wide mb-2">
-                      {t('calculator.result.title')}
-                    </h3>
-                    <p className="text-muted-foreground mb-4">
-                      {t('calculator.result.fit')}:{' '}
-                      <span className="font-bold text-foreground">{confidence}%</span>
-                    </p>
-                    <div className="flex items-center justify-center gap-2">
-                      {confidence >= 80 ? (
-                        <>
-                          <CheckCircle className="w-5 h-5 text-success" />
-                          <span className="text-success font-medium">
-                            {t('calculator.result.fit')}
-                          </span>
-                        </>
-                      ) : confidence >= 60 ? (
-                        <>
-                          <AlertCircle className="w-5 h-5 text-warning" />
-                          <span className="text-warning font-medium">
-                            {t('calculator.result.fit')}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <TrendingUp className="w-5 h-5 text-warning" />
-                          <span className="text-warning font-medium">
-                            {t('calculator.result.fit')}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => router.push(`/products?size=${recommendedSize}`)}
-                    className="w-full mt-4 py-3 border-2 border-foreground bg-background text-foreground rounded-sm hover:bg-foreground hover:text-background transition-all uppercase tracking-wide"
-                  >
-                    {t('calculator.result.viewProducts', { size: recommendedSize })}
-                  </button>
-                </motion.div>
-              ) : (
-                <div className="text-center py-12 text-muted-foreground">
-                  <User className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p>{t('calculator.desc')}</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <SmartSizePicker />
         </motion.div>
 
         {/* Size Chart */}

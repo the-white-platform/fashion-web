@@ -39,10 +39,15 @@ const VirtualTryOnModal = dynamic(
   () => import('@/components/ecommerce/VirtualTryOnModal').then((mod) => mod.VirtualTryOnModal),
   { ssr: false },
 )
+const SmartSizePicker = dynamic(
+  () => import('@/components/ecommerce/SmartSizePicker').then((mod) => mod.SmartSizePicker),
+  { ssr: false },
+)
 import type { ProductForFrontend } from '@/utilities/getProducts'
 import { getRelatedProducts } from '@/utilities/getRelatedProducts'
 import { Link } from '@/i18n/Link'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 interface ProductDetailClientProps {
   product: ProductForFrontend
@@ -66,6 +71,15 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
   const [quantity, setQuantity] = useState(1)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [isTryOnOpen, setIsTryOnOpen] = useState(false)
+  const [isSizePickerOpen, setIsSizePickerOpen] = useState(false)
+
+  // Best-effort: map category Áo -> shirt, Quần -> pants. Falls through
+  // to 'shirt' (safe default) for anything else.
+  const sizePickerDefaultType = useMemo<'shirt' | 'pants'>(() => {
+    const cat = (product.categories || [product.category] || []).join(' ').toLowerCase()
+    if (cat.includes('quần')) return 'pants'
+    return 'shirt'
+  }, [product.categories, product.category])
   const [descExpanded, setDescExpanded] = useState(false)
   const tCommon = useTranslations('common')
 
@@ -285,12 +299,13 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <label className="text-sm uppercase tracking-wide">Chọn Size</label>
-                    <Link
-                      href="/size-guide"
+                    <button
+                      type="button"
+                      onClick={() => setIsSizePickerOpen(true)}
                       className="text-xs text-muted-foreground hover:text-foreground underline"
                     >
-                      Hướng dẫn chọn size
-                    </Link>
+                      ✨ Tìm size phù hợp
+                    </button>
                   </div>
                   <div className="grid grid-cols-6 gap-2">
                     {currentSizes.map((size) => (
@@ -473,6 +488,35 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
         isOpen={isTryOnOpen}
         onClose={() => setIsTryOnOpen(false)}
       />
+
+      {/* Smart size picker — same component as the /size-guide page,
+          opened in a modal pre-filtered to this product's category.
+          On "apply", syncs the recommended size onto the product's
+          size selector and closes. */}
+      <Dialog open={isSizePickerOpen} onOpenChange={setIsSizePickerOpen}>
+        <DialogContent className="max-w-4xl p-0 sm:p-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6">
+            <DialogTitle className="uppercase tracking-wide">Chọn Size Thông Minh</DialogTitle>
+          </DialogHeader>
+          <div className="p-4 sm:p-6">
+            <SmartSizePicker
+              hideHeader
+              defaultProductType={sizePickerDefaultType}
+              onPickSize={(size) => {
+                if (currentSizes.includes(size)) {
+                  setSelectedSize(size)
+                  setIsSizePickerOpen(false)
+                  toast.success(`Đã chọn size ${size}`)
+                } else {
+                  toast.info(
+                    `Sản phẩm này không còn size ${size} — gợi ý các size hiện có: ${currentSizes.join(', ') || 'hết hàng'}`,
+                  )
+                }
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   )
 }
