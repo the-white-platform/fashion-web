@@ -23,93 +23,6 @@ interface FeaturedProductsProps {
   onViewAll?: () => void
 }
 
-// Default products fallback (shown if no products passed from server)
-const defaultProducts: ProductForFrontend[] = [
-  {
-    id: 1,
-    name: 'Áo Training Performance',
-    slug: 'ao-training-performance',
-    category: 'Áo Thể Thao',
-    categories: ['Áo Thể Thao'],
-    categorySlug: 'ao-the-thao',
-    price: '890.000₫',
-    priceNumber: 890000,
-    image:
-      'https://images.unsplash.com/photo-1679768763201-e07480531b49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-    images: [],
-    colorVariants: [],
-    colors: [],
-    sizes: [],
-    tag: 'MỚI',
-    inStock: true,
-    featured: false,
-    features: [],
-  },
-  {
-    id: 2,
-    name: 'Giày Chạy Bộ Elite',
-    slug: 'giay-chay-bo-elite',
-    category: 'Giày Thể Thao',
-    categories: ['Giày Thể Thao'],
-    categorySlug: 'giay-the-thao',
-    price: '1.890.000₫',
-    priceNumber: 1890000,
-    image:
-      'https://images.unsplash.com/photo-1619253341026-74c609e6ce50?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-    images: [],
-    colorVariants: [],
-    colors: [],
-    sizes: [],
-    tag: 'BÁN CHẠY',
-    inStock: true,
-    featured: false,
-    features: [],
-  },
-  {
-    id: 3,
-    name: 'Set Tập Gym Premium',
-    slug: 'set-tap-gym-premium',
-    category: 'Bộ Tập Luyện',
-    categories: ['Bộ Tập Luyện'],
-    categorySlug: 'bo-tap-luyen',
-    price: '1.590.000₫',
-    priceNumber: 1590000,
-    image:
-      'https://images.unsplash.com/photo-1734191979156-57972139dfee?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-    images: [],
-    colorVariants: [],
-    colors: [],
-    sizes: [],
-    tag: 'GIẢM 20%',
-    inStock: true,
-    featured: false,
-    features: [],
-  },
-  {
-    id: 4,
-    name: 'Quần Short Training',
-    slug: 'quan-short-training',
-    category: 'Quần Thể Thao',
-    categories: ['Quần Thể Thao'],
-    categorySlug: 'quan-the-thao',
-    price: '690.000₫',
-    priceNumber: 690000,
-    image:
-      'https://images.unsplash.com/photo-1599058917212-d750089bc07e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=800',
-    images: [],
-    colorVariants: [],
-    colors: [],
-    sizes: [],
-    tag: 'MỚI',
-    inStock: true,
-    featured: false,
-    features: [],
-  },
-]
-
-// Default filters fallback
-const defaultFilters: QuickFilter[] = [{ id: 'all', label: 'Tất Cả', filterType: 'all' }]
-
 export function FeaturedProducts({
   products,
   quickFilters,
@@ -121,9 +34,14 @@ export function FeaturedProducts({
   const [activeFilterId, setActiveFilterId] = useState<string>('')
   const [activeSort, setActiveSort] = useState('newest')
 
-  // Use passed products/filters if available, otherwise use fallback
-  const baseProducts = products && products.length > 0 ? products : defaultProducts
-  const filters = quickFilters && quickFilters.length > 0 ? quickFilters : defaultFilters
+  // CMS-only: if the admin hasn't flagged any product as `featured` or
+  // configured quick filters, the whole section hides. No Unsplash
+  // demo products, no "Tất Cả" placeholder — the admin sees exactly
+  // what is configured.
+  const baseProducts = products ?? []
+  const filters = quickFilters ?? []
+
+  if (baseProducts.length === 0) return null
 
   // Set initial active filter on first render
   const initialFilterId = filters[0]?.id || 'all'

@@ -88,11 +88,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         })
         .filter(Boolean) as QuickFilter[]
 
-      // If no quick filters configured, use defaults
-      if (quickFilters.length === 0) {
-        quickFilters = [{ id: 'all', label: 'Tất Cả', filterType: 'all' }]
-      }
-
       // Fetch activity categories for Shop By Activity section (from homepage global)
       const configuredActivityCategories = (homepage.activityCategories || []) as (
         | number
