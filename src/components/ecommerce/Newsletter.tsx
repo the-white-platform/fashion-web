@@ -86,7 +86,6 @@ export function Newsletter() {
           </form>
 
           {error && <p className="text-sm text-destructive mt-2">{error}</p>}
-          <p className="text-sm text-muted-foreground mt-4">{t('note')}</p>
         </motion.div>
       </div>
     </section>
