@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.43.0](https://github.com/the-white-platform/fashion-web/compare/v0.42.10...v0.43.0) (2026-04-16)
+
+
+### Features
+
+* **sizing:** real size chart measurements from Drive ([4016b3e](https://github.com/the-white-platform/fashion-web/commit/4016b3ee54881f829214e972c33783681b0ea779))
+
 ### [0.42.10](https://github.com/the-white-platform/fashion-web/compare/v0.42.9...v0.42.10) (2026-04-16)
 
 
