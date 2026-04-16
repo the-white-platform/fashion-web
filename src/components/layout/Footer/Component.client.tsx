@@ -4,8 +4,13 @@ import { Facebook, Instagram, Phone, Mail } from 'lucide-react'
 import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/shared/Logo/Logo'
+import type { FooterCategoryLink } from './Component'
 
-export function FooterClient() {
+interface FooterClientProps {
+  categories?: FooterCategoryLink[]
+}
+
+export function FooterClient({ categories = [] }: FooterClientProps) {
   const t = useTranslations()
 
   return (
@@ -42,54 +47,34 @@ export function FooterClient() {
             </div>
           </div>
 
-          {/* Products */}
-          <div className="col-span-1">
-            <h3 className="text-lg font-semibold mb-4 uppercase tracking-wide">
-              {t('nav.products')}
-            </h3>
-            <ul className="space-y-2 text-muted-foreground font-normal">
-              <li>
-                <Link
-                  href="/products"
-                  className="hover:text-foreground transition-colors text-left text-sm block"
-                >
-                  {t('footer.products.shirts')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products"
-                  className="hover:text-foreground transition-colors text-left text-sm block"
-                >
-                  {t('footer.products.pants')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products"
-                  className="hover:text-foreground transition-colors text-left text-sm block"
-                >
-                  {t('footer.products.shoes')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products"
-                  className="hover:text-foreground transition-colors text-left text-sm block"
-                >
-                  {t('footer.products.accessories')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/products"
-                  className="hover:text-foreground transition-colors text-left text-sm block"
-                >
-                  {t('footer.products.new')}
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Products — driven from real categories with at least one product */}
+          {categories.length > 0 && (
+            <div className="col-span-1">
+              <h3 className="text-lg font-semibold mb-4 uppercase tracking-wide">
+                {t('nav.products')}
+              </h3>
+              <ul className="space-y-2 text-muted-foreground font-normal">
+                <li>
+                  <Link
+                    href="/products"
+                    className="hover:text-foreground transition-colors text-left text-sm block"
+                  >
+                    {t('common.all') || 'Tất Cả'}
+                  </Link>
+                </li>
+                {categories.map((cat) => (
+                  <li key={cat.slug}>
+                    <Link
+                      href={`/products?category=${cat.slug}`}
+                      className="hover:text-foreground transition-colors text-left text-sm block"
+                    >
+                      {cat.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Support */}
           <div className="col-span-1">
