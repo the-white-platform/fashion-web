@@ -5,6 +5,34 @@ import { unstable_cache } from 'next/cache'
 import { slugify } from '@/utilities/slugify'
 import { formatPrice } from '@/utilities/formatPrice'
 
+/**
+ * Pick a reasonably-sized URL off a Payload Media doc.
+ *
+ * Media originals on prod are 10–21 MB PNGs (hi-res shoot output). The
+ * Next.js Image optimizer was fetching the full original to generate
+ * every srcset variant, so a single product card wedged Cloud Run for
+ * ~30 s on cold hit and ~4 s warm. Payload's upload config already
+ * generates a pyramid (thumbnail / square / small / medium / large /
+ * xlarge) on GCS; prefer `medium` (900×900, ~150 KB) as the seed URL
+ * so downstream optimization starts from something small.
+ *
+ * Preference order: medium → small → square → thumbnail → large → xlarge → original.
+ * Falls back to a placeholder when nothing is available.
+ */
+function pickMediaUrl(media: Media | null | undefined): string {
+  if (!media) return '/assets/placeholder.jpg'
+  const sizes = (media as unknown as { sizes?: Record<string, { url?: string | null } | null> })
+    .sizes
+  if (sizes) {
+    const order = ['medium', 'small', 'square', 'thumbnail', 'large', 'xlarge'] as const
+    for (const key of order) {
+      const url = sizes[key]?.url
+      if (url) return url
+    }
+  }
+  return media.url || '/assets/placeholder.jpg'
+}
+
 export interface ColorVariant {
   color: string
   colorHex: string
@@ -71,7 +99,7 @@ export function transformProduct(product: Product): ProductForFrontend {
     (variant: any) => {
       const variantImages = (variant.images || []).map((img: any) => {
         const media = img as Media
-        return media?.url || '/assets/placeholder.jpg'
+        return pickMediaUrl(media)
       })
 
       // Get sizes from sizeInventory (new structure) or fallback to sizes array
@@ -105,7 +133,7 @@ export function transformProduct(product: Product): ProductForFrontend {
   if (!defaultVariant && (product as any).images) {
     const legacyImages = ((product as any).images || []).map((img: any) => {
       const media = img as Media
-      return media?.url || '/assets/placeholder.jpg'
+      return pickMediaUrl(media)
     })
     defaultImages.push(...legacyImages)
   }
