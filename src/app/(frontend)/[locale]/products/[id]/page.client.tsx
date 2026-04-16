@@ -33,6 +33,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import dynamic from 'next/dynamic'
+import { toast } from 'sonner'
 
 const VirtualTryOnModal = dynamic(
   () => import('@/components/ecommerce/VirtualTryOnModal').then((mod) => mod.VirtualTryOnModal),
@@ -229,8 +230,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                   // description is short enough to live in ~2 paragraphs
                   // we just render the whole thing; otherwise show only
                   // the first paragraph + a "View more" toggle.
-                  const isLong =
-                    paragraphs.length > 2 || (paragraphs[0]?.length ?? 0) > 260
+                  const isLong = paragraphs.length > 2 || (paragraphs[0]?.length ?? 0) > 260
                   const visible = descExpanded || !isLong ? paragraphs : [paragraphs[0]]
 
                   return (
@@ -363,7 +363,37 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                     />
                     {isWishlisted(product.id) ? 'Đã Lưu' : 'Yêu Thích'}
                   </button>
-                  <button className="border-2 border-border py-4 rounded-sm hover:border-foreground transition-all hover:scale-[1.02] flex items-center justify-center gap-2 uppercase tracking-[0.1em] font-bold text-[10px]">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      const url = typeof window !== 'undefined' ? window.location.href : ''
+                      const shareData = {
+                        title: product.name,
+                        text: product.name,
+                        url,
+                      }
+                      // Web Share API on supported devices (mobile mostly)
+                      // — opens the native sheet so users can pick Zalo,
+                      // Messenger, etc. AbortError = user dismissed; not
+                      // worth toasting.
+                      if (typeof navigator !== 'undefined' && navigator.share) {
+                        try {
+                          await navigator.share(shareData)
+                          return
+                        } catch (err) {
+                          if ((err as { name?: string })?.name === 'AbortError') return
+                          // fall through to clipboard
+                        }
+                      }
+                      try {
+                        await navigator.clipboard.writeText(url)
+                        toast.success('Đã sao chép link sản phẩm')
+                      } catch {
+                        toast.error('Không thể sao chép link')
+                      }
+                    }}
+                    className="border-2 border-border py-4 rounded-sm hover:border-foreground transition-all hover:scale-[1.02] flex items-center justify-center gap-2 uppercase tracking-[0.1em] font-bold text-[10px]"
+                  >
                     <Share2 className="w-4 h-4" />
                     Chia Sẻ
                   </button>
