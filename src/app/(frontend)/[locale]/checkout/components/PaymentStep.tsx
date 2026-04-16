@@ -132,8 +132,8 @@ export function PaymentStep({
           )}
 
           {newPayment.type === 'cod' && (
-            <div className="bg-warning/10 border border-warning/20 rounded-sm p-4 text-warning">
-              <p className="text-sm">{t('codNote')}</p>
+            <div className="bg-warning/10 border border-warning/30 rounded-sm p-4">
+              <p className="text-sm text-foreground">{t('codNote')}</p>
             </div>
           )}
         </div>
