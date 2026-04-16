@@ -352,6 +352,8 @@ export const decrementStockAfterOrder: CollectionAfterChangeHook = async ({
   const payload = req.payload
   const order = doc as Order
 
+  payload.logger.info(`[orders/hooks] decrementStockAfterOrder: enter (operation=${operation}, order=${order.id})`)
+
   // Only decrement stock on order creation, not on status transitions
   if (operation !== 'create') return doc
 
@@ -472,6 +474,7 @@ export const decrementStockAfterOrder: CollectionAfterChangeHook = async ({
     }
   }
 
+  payload.logger.info(`[orders/hooks] decrementStockAfterOrder: exit`)
   return doc
 }
 

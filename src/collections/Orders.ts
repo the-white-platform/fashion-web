@@ -663,12 +663,15 @@ export const Orders: CollectionConfig = {
       // Validate stock availability before creating order
       validateStockBeforeOrder,
       // Auto-generate order number
-      async ({ data, operation }) => {
+      async ({ data, operation, req }) => {
         if (operation === 'create' && !data.orderNumber) {
           const timestamp = Date.now().toString(36).toUpperCase()
           const random = Math.random().toString(36).substring(2, 6).toUpperCase()
           data.orderNumber = `TW-${timestamp}-${random}`
         }
+        req.payload.logger.info(
+          `[orders/hooks] orderNumber generated: ${data.orderNumber} (operation=${operation})`,
+        )
         return data
       },
       // Handle return status changes (stock restore, refund propagation)
