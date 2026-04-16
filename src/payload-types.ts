@@ -146,12 +146,14 @@ export interface Config {
     footer: Footer;
     homepage: Homepage;
     'payment-methods': PaymentMethod;
+    'chat-context': ChatContext;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     homepage: HomepageSelect<false> | HomepageSelect<true>;
     'payment-methods': PaymentMethodsSelect<false> | PaymentMethodsSelect<true>;
+    'chat-context': ChatContextSelect<false> | ChatContextSelect<true>;
   };
   locale: 'vi' | 'en';
   user: User;
@@ -2916,6 +2918,35 @@ export interface PaymentMethod {
   createdAt?: string | null;
 }
 /**
+ * Context the Wolfies AI assistant reads when answering customer questions. Edits apply immediately — no deploy needed.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-context".
+ */
+export interface ChatContext {
+  id: number;
+  /**
+   * Short brand story the assistant can quote. Keep it under ~200 words.
+   */
+  brandBio?: string | null;
+  /**
+   * Plain-text size guide. Include height/weight → size mapping per product line + fit notes (e.g. "Quần vải gân chạy nhỏ 1 size").
+   */
+  sizeGuide?: string | null;
+  shippingPolicy?: string | null;
+  returnPolicy?: string | null;
+  /**
+   * Phone / email / Zalo / store hours — anything the assistant should quote verbatim.
+   */
+  contactInfo?: string | null;
+  /**
+   * Optional override for the default "friendly, concise, warm" tone. Leave empty to use the default.
+   */
+  tonePrompt?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -3063,6 +3094,21 @@ export interface PaymentMethodsSelect<T extends boolean = true> {
         icon?: T;
         sortOrder?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-context_select".
+ */
+export interface ChatContextSelect<T extends boolean = true> {
+  brandBio?: T;
+  sizeGuide?: T;
+  shippingPolicy?: T;
+  returnPolicy?: T;
+  contactInfo?: T;
+  tonePrompt?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

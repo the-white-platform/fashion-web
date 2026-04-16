@@ -809,6 +809,71 @@ export const seed = async ({
 
     payload.logger.info(`  ✓ Payment methods configured`)
 
+    // 6b. Configure Wolfies AI assistant context
+    payload.logger.info(`— Configuring chat assistant context...`)
+
+    await payload.updateGlobal({
+      slug: 'chat-context',
+      locale: 'vi',
+      data: {
+        brandBio:
+          'THE WHITE là thương hiệu thời trang thể thao Việt Nam, thiết kế và may đo 100% tại Việt Nam. ' +
+          'Chúng tôi tập trung vào chất liệu kỹ thuật, phom dáng tối giản, ôm nhẹ, phù hợp cho gym, chạy bộ, yoga và hoạt động hằng ngày.',
+        sizeGuide:
+          'Tổng quan size (áo + quần):\n' +
+          '- Áo (Tanktop, Tay Ngắn, Tay Dài): thiết kế slim-fit, co giãn 4 chiều. Chỉ còn size XL — phù hợp chiều cao 1m70–1m85, cân nặng 62–82kg.\n' +
+          '- Quần Short 1 Lớp / Tính Năng / Vải Gân / 2 Lớp: size M (eo 72–80cm, hông 88–96cm, phù hợp 1m65–1m75) và size L (eo 80–88cm, hông 96–104cm, phù hợp 1m75–1m85).\n' +
+          '\n' +
+          'Gợi ý nhanh theo chiều cao:\n' +
+          '- 1m65–1m72 (nhẹ): Áo XL thường hơi rộng, quần chọn size M.\n' +
+          '- 1m73–1m80: Áo XL vừa, quần M hoặc L tuỳ cân nặng (dưới 72kg → M, trên 72kg → L).\n' +
+          '- 1m81–1m88: Áo XL vừa/ôm, quần L.\n' +
+          '\n' +
+          'Lưu ý: chất liệu Polyester/Spandex co giãn — nếu giữa 2 size, chọn size nhỏ hơn để ôm body, chọn size lớn hơn để thoải mái.',
+        shippingPolicy:
+          'Ship toàn quốc qua đơn vị vận chuyển. Phí ship cố định 30.000₫ (miễn phí khi áp mã giảm vận chuyển). Thời gian giao dự kiến: HCM/Hà Nội 1–2 ngày làm việc, các tỉnh khác 3–5 ngày.',
+        returnPolicy:
+          'Đổi/trả miễn phí trong 7 ngày kể từ ngày nhận hàng, với điều kiện sản phẩm còn nguyên tem mác, chưa qua sử dụng. Liên hệ Zalo hoặc email để mở yêu cầu đổi trả.',
+        contactInfo:
+          'Hotline/Zalo: +84 877 749 777\n' +
+          'Email: contact@thewhite.cool\n' +
+          'Facebook: facebook.com/thewhiteactive\n' +
+          'Instagram: @thewhite.cool',
+      },
+    })
+
+    await payload.updateGlobal({
+      slug: 'chat-context',
+      locale: 'en',
+      data: {
+        brandBio:
+          'THE WHITE is a Vietnamese athletic / streetwear brand, designed and stitched 100% in Vietnam. ' +
+          'We focus on technical fabrics and minimalist silhouettes for gym, running, yoga, and everyday wear.',
+        sizeGuide:
+          'Size overview:\n' +
+          '- Tops (Tanktop, Short Sleeve, Long Sleeve): slim 4-way stretch fit. Currently only size XL — fits 170–185cm, 62–82kg.\n' +
+          '- Shorts (Single-layer / Functional / Knit / 2-layer): size M (waist 72–80cm, hip 88–96cm, for 165–175cm) and size L (waist 80–88cm, hip 96–104cm, for 175–185cm).\n' +
+          '\n' +
+          'Quick height guide:\n' +
+          '- 165–172cm (lean): XL top runs slightly loose, choose M shorts.\n' +
+          '- 173–180cm: XL top fits well, M or L shorts depending on weight (<72kg → M, >72kg → L).\n' +
+          '- 181–188cm: XL top fits snug, L shorts.\n' +
+          '\n' +
+          'Stretchy fabric — between two sizes, pick down for a tighter fit, up for a relaxed one.',
+        shippingPolicy:
+          'Nationwide shipping via courier. Flat 30,000₫ fee (free with shipping-discount coupons). ETA: 1–2 business days to HCMC / Hanoi, 3–5 days to other provinces.',
+        returnPolicy:
+          'Free returns within 7 days of receipt if the item is unworn and tags are intact. Message us on Zalo or email to open a return request.',
+        contactInfo:
+          'Hotline / Zalo: +84 877 749 777\n' +
+          'Email: contact@thewhite.cool\n' +
+          'Facebook: facebook.com/thewhiteactive\n' +
+          'Instagram: @thewhite.cool',
+      },
+    })
+
+    payload.logger.info(`  ✓ Chat assistant context configured (vi + en)`)
+
     // 7. Configure Footer
     payload.logger.info(`— Configuring footer navigation...`)
 

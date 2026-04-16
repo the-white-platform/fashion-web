@@ -5,6 +5,7 @@ import * as migration_20260416_091050_vto_generations from './20260416_091050_vt
 import * as migration_20260416_092317_vto_cache_fields from './20260416_092317_vto_cache_fields'
 import * as migration_20260416_093233_vto_provider_field from './20260416_093233_vto_provider_field'
 import * as migration_20260416_114044_order_email_optional from './20260416_114044_order_email_optional'
+import * as migration_20260416_121609_chat_context_global from './20260416_121609_chat_context_global'
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20260416_114044_order_email_optional.up,
     down: migration_20260416_114044_order_email_optional.down,
     name: '20260416_114044_order_email_optional',
+  },
+  {
+    up: migration_20260416_121609_chat_context_global.up,
+    down: migration_20260416_121609_chat_context_global.down,
+    name: '20260416_121609_chat_context_global',
   },
 ]

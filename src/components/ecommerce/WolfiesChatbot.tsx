@@ -215,6 +215,9 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
             messages: historyToSend,
             productContext,
             conversationId: conversationIdRef.current,
+            // So the server fetches the CMS-editable context pack in
+            // the right language (brand bio, size guide, policies).
+            locale: locale === 'en' ? 'en' : 'vi',
           }),
           signal: controller.signal,
         })

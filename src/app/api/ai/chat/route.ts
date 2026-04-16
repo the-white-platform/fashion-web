@@ -48,6 +48,7 @@ interface RequestBody {
   productContext?: ProductContext
   conversationId?: string
   guestId?: string
+  locale?: 'vi' | 'en'
 }
 
 // ---------------------------------------------------------------------------
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
   }
 
   const { messages, productContext, conversationId, guestId } = body
+  const locale: 'vi' | 'en' = body.locale === 'en' ? 'en' : 'vi'
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: 'messages array is required' }), {
@@ -179,20 +181,32 @@ export async function POST(request: Request) {
   }
 
   // --- Build system instruction ---
+  // Load a CMS-editable + catalog-driven context pack (brand bio, size
+  // guide, shipping / return policy, contact info, current product
+  // table) and stitch it into the system prompt. This is how the
+  // assistant avoids hallucinating SKUs, prices, and return windows.
+  const { getChatContextPack } = await import('@/utilities/getChatContextPack')
+  const contextPack = await getChatContextPack(locale).catch((err) => {
+    console.warn('[chat/route] context pack failed, continuing without:', err)
+    return ''
+  })
+
   let systemInstruction =
-    'You are a friendly and knowledgeable fashion styling assistant for THE WHITE, a Vietnamese athletic and streetwear brand. ' +
-    'Help customers with outfit advice, styling tips, product questions, and size guidance. ' +
-    'Be concise, warm, and encouraging. ' +
+    'You are Wolfies, the friendly AI assistant for THE WHITE, a Vietnamese athletic and streetwear brand. ' +
+    'Answer ONLY from the context below — if a user asks about a product that is not in the current catalog, or about policies not covered here, say so honestly rather than guessing. ' +
     'Detect the language of the user message and always respond in the same language. ' +
-    'If writing in Vietnamese, use natural, friendly Vietnamese.'
+    'Keep answers concise, warm, and practical. Prefer specific recommendations (product name, size, price) over vague advice.'
+
+  if (contextPack) {
+    systemInstruction += '\n\n' + contextPack
+  }
 
   if (productContext) {
     systemInstruction +=
-      `\n\nThe customer is currently viewing this product:\n` +
+      `\n\n## Currently viewing\n` +
       `- Name: ${productContext.name}\n` +
       `- Category: ${productContext.category}\n` +
-      `- Price: ${productContext.price}\n` +
-      `Use this context to give relevant, specific styling advice about this item.`
+      `- Price: ${productContext.price}`
   }
 
   // --- Stream response ---

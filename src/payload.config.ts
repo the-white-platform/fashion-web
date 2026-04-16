@@ -39,6 +39,7 @@ import { Footer } from './components/layout/Footer/config'
 import { Header } from './components/layout/Header/config'
 import { Homepage } from './globals/Homepage'
 import { PaymentMethods } from './globals/PaymentMethods'
+import { ChatContext } from './globals/ChatContext'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { migrations } from './migrations'
@@ -202,7 +203,7 @@ export default buildConfig({
       path: '/newsletter-subscribers/unsubscribe',
     },
   ],
-  globals: [Header, Footer, Homepage, PaymentMethods],
+  globals: [Header, Footer, Homepage, PaymentMethods, ChatContext],
   plugins: [
     ...plugins,
     // GCS object storage for Payload uploads. Enabled when PAYLOAD_MEDIA_BUCKET
