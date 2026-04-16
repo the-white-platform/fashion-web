@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.28.3](https://github.com/the-white-platform/fashion-web/compare/v0.28.2...v0.28.3) (2026-04-16)
+
+
+### Bug Fixes
+
+* **cart:** pass item.color to remove + quantity buttons ([71f0c27](https://github.com/the-white-platform/fashion-web/commit/71f0c2787eb74c52d2a03fbda1f0f096b7989a75))
+
 ### [0.28.2](https://github.com/the-white-platform/fashion-web/compare/v0.28.1...v0.28.2) (2026-04-16)
 
 
