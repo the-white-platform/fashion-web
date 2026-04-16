@@ -96,66 +96,11 @@ export default function CheckoutPage() {
             <CheckoutProgress currentStep={checkout.step} />
 
             <div className="grid lg:grid-cols-3 gap-8">
-              {/* Main Content */}
-              <div className="lg:col-span-2">
-                <AnimatePresence mode="wait">
-                  {checkout.step === 'shipping' && (
-                    <ShippingStep
-                      key="shipping"
-                      user={user}
-                      selectedAddress={checkout.selectedAddress}
-                      onSelectAddress={checkout.setSelectedAddress}
-                      showNewAddress={showNewAddress}
-                      onToggleNewAddress={() => setShowNewAddress((prev) => !prev)}
-                      onNext={() => checkout.setStep('payment')}
-                    />
-                  )}
-                  {checkout.step === 'payment' && (
-                    <PaymentStep
-                      key="payment"
-                      user={user}
-                      selectedPayment={checkout.selectedPayment}
-                      onSelectPayment={checkout.setSelectedPayment}
-                      showNewPayment={showNewPayment}
-                      onToggleNewPayment={() => setShowNewPayment((prev) => !prev)}
-                      onBack={() => checkout.setStep('shipping')}
-                      onNext={() => checkout.setStep('review')}
-                    />
-                  )}
-                  {checkout.step === 'review' && (
-                    <ReviewStep
-                      key="review"
-                      cartItems={cartItems}
-                      selectedAddress={checkout.selectedAddress}
-                      selectedPayment={checkout.selectedPayment}
-                      orderNotes={checkout.orderNotes}
-                      onNotesChange={checkout.setOrderNotes}
-                      subtotal={checkout.totals.subtotal}
-                      shipping={shippingFee}
-                      discount={discount}
-                      total={adjustedTotal}
-                      appliedCoupon={coupon.appliedCoupon}
-                      onBack={() => checkout.setStep('payment')}
-                      onComplete={() =>
-                        checkout.completeOrder(coupon.appliedCoupon, undefined, pendingOrderNumber)
-                      }
-                      pointsAvailable={checkout.pointsAvailable}
-                      pointsToRedeem={checkout.pointsToRedeem}
-                      onPointsChange={checkout.setPointsToRedeem}
-                      pointsDiscount={pointsDiscount}
-                    />
-                  )}
-                </AnimatePresence>
-
-                {/* Order error from API */}
-                {checkout.orderError && (
-                  <p className="mt-4 text-sm text-destructive text-center">{checkout.orderError}</p>
-                )}
-              </div>
-
-              {/* Order Summary Sidebar */}
+              {/* Order Summary Sidebar — first in DOM so on mobile it
+                  stacks above the form, and on desktop it lands in the
+                  left column of the lg:grid-cols-3 layout. */}
               <div className="lg:col-span-1">
-                <div className="bg-card border border-border rounded-sm p-6 sticky top-24">
+                <div className="bg-card border border-border rounded-sm p-6 lg:sticky lg:top-24">
                   <h3 className="text-xl uppercase tracking-wide mb-6">{t('orderSummary')}</h3>
 
                   {/* Cart Items */}
@@ -268,6 +213,64 @@ export default function CheckoutPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Main Content (form steps) — second in DOM so on desktop
+                  it sits in the right two-thirds of the grid. */}
+              <div className="lg:col-span-2">
+                <AnimatePresence mode="wait">
+                  {checkout.step === 'shipping' && (
+                    <ShippingStep
+                      key="shipping"
+                      user={user}
+                      selectedAddress={checkout.selectedAddress}
+                      onSelectAddress={checkout.setSelectedAddress}
+                      showNewAddress={showNewAddress}
+                      onToggleNewAddress={() => setShowNewAddress((prev) => !prev)}
+                      onNext={() => checkout.setStep('payment')}
+                    />
+                  )}
+                  {checkout.step === 'payment' && (
+                    <PaymentStep
+                      key="payment"
+                      user={user}
+                      selectedPayment={checkout.selectedPayment}
+                      onSelectPayment={checkout.setSelectedPayment}
+                      showNewPayment={showNewPayment}
+                      onToggleNewPayment={() => setShowNewPayment((prev) => !prev)}
+                      onBack={() => checkout.setStep('shipping')}
+                      onNext={() => checkout.setStep('review')}
+                    />
+                  )}
+                  {checkout.step === 'review' && (
+                    <ReviewStep
+                      key="review"
+                      cartItems={cartItems}
+                      selectedAddress={checkout.selectedAddress}
+                      selectedPayment={checkout.selectedPayment}
+                      orderNotes={checkout.orderNotes}
+                      onNotesChange={checkout.setOrderNotes}
+                      subtotal={checkout.totals.subtotal}
+                      shipping={shippingFee}
+                      discount={discount}
+                      total={adjustedTotal}
+                      appliedCoupon={coupon.appliedCoupon}
+                      onBack={() => checkout.setStep('payment')}
+                      onComplete={() =>
+                        checkout.completeOrder(coupon.appliedCoupon, undefined, pendingOrderNumber)
+                      }
+                      pointsAvailable={checkout.pointsAvailable}
+                      pointsToRedeem={checkout.pointsToRedeem}
+                      onPointsChange={checkout.setPointsToRedeem}
+                      pointsDiscount={pointsDiscount}
+                    />
+                  )}
+                </AnimatePresence>
+
+                {/* Order error from API */}
+                {checkout.orderError && (
+                  <p className="mt-4 text-sm text-destructive text-center">{checkout.orderError}</p>
+                )}
               </div>
             </div>
           </>
