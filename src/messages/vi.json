@@ -516,14 +516,7 @@
   "search": {
     "placeholder": "Tìm kiếm sản phẩm...",
     "popular": "Tìm Kiếm Phổ Biến",
-    "recent": "Sản Phẩm Xem Gần Đây",
-    "terms": {
-      "tshirt": "Áo thun nam",
-      "shoes": "Giày chạy bộ",
-      "yoga": "Quần yoga",
-      "jacket": "Áo khoác thể thao",
-      "training": "Giày training"
-    }
+    "recent": "Sản Phẩm Xem Gần Đây"
   },
   "newsletter": {
     "title": "Nhận Ưu Đãi Độc Quyền",

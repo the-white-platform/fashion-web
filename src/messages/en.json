@@ -516,14 +516,7 @@
   "search": {
     "placeholder": "Search products...",
     "popular": "Popular Searches",
-    "recent": "Recently Viewed",
-    "terms": {
-      "tshirt": "Men's T-Shirts",
-      "shoes": "Running Shoes",
-      "yoga": "Yoga Pants",
-      "jacket": "Sports Jacket",
-      "training": "Training Shoes"
-    }
+    "recent": "Recently Viewed"
   },
   "newsletter": {
     "title": "Get Exclusive Offers",

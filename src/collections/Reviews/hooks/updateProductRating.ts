@@ -4,6 +4,12 @@ import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'paylo
  * After-change / after-delete hook.
  * Recomputes averageRating and reviewCount on the related product
  * by querying all approved reviews for that product.
+ *
+ * Uses raw SQL to write the two scalar columns. payload.update on
+ * products triggers Payload's full-product replace cascade — every
+ * color variant and media relation is re-written, which idles a
+ * transaction on SELECT media and stalls the review POST at 300s.
+ * Same trap that bit decrementStockAfterOrder.
  */
 async function recalcProductRating(productId: number | string, payload: any): Promise<void> {
   const reviews = await payload.find({
@@ -23,14 +29,18 @@ async function recalcProductRating(productId: number | string, payload: any): Pr
     avg = Math.round((sum / count) * 10) / 10
   }
 
-  await payload.update({
-    collection: 'products',
-    id: productId,
-    data: {
-      averageRating: avg,
-      reviewCount: count,
-    },
-  })
+  const { sql } = await import('drizzle-orm')
+  const db = (
+    payload.db as unknown as {
+      drizzle: { execute: (q: ReturnType<typeof sql>) => Promise<unknown> }
+    }
+  ).drizzle
+
+  await db.execute(sql`
+    UPDATE products
+    SET average_rating = ${avg}, review_count = ${count}
+    WHERE id = ${Number(productId)}
+  `)
 }
 
 export const updateProductRating: CollectionAfterChangeHook = async ({ doc, req }) => {

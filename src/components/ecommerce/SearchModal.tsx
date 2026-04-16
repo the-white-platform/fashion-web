@@ -5,48 +5,45 @@ import { motion, AnimatePresence } from 'motion/react'
 import { useState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
+import { useRouter } from '@/i18n/useRouter'
+import { useRecentlyViewed } from '@/contexts/RecentlyViewedContext'
+import { slugify } from '@/utilities/slugify'
 
 interface SearchModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-const popularSearches = [
-  'Áo thun nam',
-  'Giày chạy bộ',
-  'Quần yoga',
-  'Áo khoác thể thao',
-  'Giày training',
-]
-
-const recentProducts = [
-  {
-    id: 1,
-    name: 'Áo Training Performance',
-    price: '890.000₫',
-    image:
-      'https://images.unsplash.com/photo-1679768763201-e07480531b49?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=200',
-  },
-  {
-    id: 2,
-    name: 'Giày Chạy Bộ Elite',
-    price: '1.890.000₫',
-    image:
-      'https://images.unsplash.com/photo-1619253341026-74c609e6ce50?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=200',
-  },
-]
+interface PopularCategory {
+  title: string
+  slug: string
+}
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [popular, setPopular] = useState<PopularCategory[]>([])
   const t = useTranslations('search')
+  const router = useRouter()
+  const { items: recentItems } = useRecentlyViewed()
 
-  const popularSearches = [
-    { key: 'tshirt', label: t('terms.tshirt') },
-    { key: 'shoes', label: t('terms.shoes') },
-    { key: 'yoga', label: t('terms.yoga') },
-    { key: 'jacket', label: t('terms.jacket') },
-    { key: 'training', label: t('terms.training') },
-  ]
+  // Pull "popular" category labels from the real catalog so the chips
+  // mirror what the admin actually has, not a stale i18n list.
+  useEffect(() => {
+    if (!isOpen) return
+    if (popular.length > 0) return
+    fetch('/api/categories?limit=20&depth=0', { credentials: 'include' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (!data?.docs) return
+        setPopular(
+          data.docs
+            .filter((c: { title?: string }) => Boolean(c?.title))
+            .slice(0, 8)
+            .map((c: { title: string }) => ({ title: c.title, slug: slugify(c.title) })),
+        )
+      })
+      .catch(() => {})
+  }, [isOpen, popular.length])
 
   // Close on Escape key
   useEffect(() => {
@@ -59,6 +56,16 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     window.addEventListener('keydown', handleEscape)
     return () => window.removeEventListener('keydown', handleEscape)
   }, [isOpen, onClose])
+
+  const submitSearch = (q: string) => {
+    const trimmed = q.trim()
+    if (!trimmed) return
+    router.push(`/products?q=${encodeURIComponent(trimmed)}`)
+    onClose()
+    setSearchQuery('')
+  }
+
+  const recent = recentItems.slice(0, 4)
 
   return (
     <AnimatePresence>
@@ -83,7 +90,13 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           >
             <div className="container mx-auto px-6 py-8">
               {/* Search Input */}
-              <div className="flex items-center gap-4 mb-8">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  submitSearch(searchQuery)
+                }}
+                className="flex items-center gap-4 mb-8"
+              >
                 <div className="flex-1 relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-muted-foreground" />
                   <input
@@ -96,64 +109,78 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   />
                 </div>
                 <button
+                  type="button"
                   onClick={onClose}
                   className="p-4 hover:bg-muted rounded-sm transition-colors text-foreground"
                   aria-label="Close search"
                 >
                   <X className="w-6 h-6" />
                 </button>
-              </div>
+              </form>
 
               <div className="grid md:grid-cols-2 gap-8">
-                {/* Popular Searches */}
-                <div>
-                  <h3 className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
-                    {t('popular')}
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {popularSearches.map((search) => (
-                      <button
-                        key={search.key}
-                        onClick={() => {
-                          setSearchQuery(search.label)
-                          // Could navigate to search results here
-                        }}
-                        className="px-4 py-2 border border-border rounded-sm text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all"
-                      >
-                        {search.label}
-                      </button>
-                    ))}
+                {/* Popular Searches — categories with at least one product */}
+                {popular.length > 0 && (
+                  <div>
+                    <h3 className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
+                      {t('popular')}
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {popular.map((cat) => (
+                        <button
+                          key={cat.slug}
+                          type="button"
+                          onClick={() => {
+                            router.push(`/products?category=${cat.slug}`)
+                            onClose()
+                            setSearchQuery('')
+                          }}
+                          className="px-4 py-2 border border-border rounded-sm text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all"
+                        >
+                          {cat.title}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                {/* Recent Products */}
-                <div>
-                  <h3 className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
-                    {t('recent')}
-                  </h3>
-                  <div className="space-y-4">
-                    {recentProducts.map((product) => (
-                      <div
-                        key={product.id}
-                        className="flex gap-4 p-2 hover:bg-muted rounded-sm transition-colors cursor-pointer group"
-                      >
-                        <div className="relative w-16 h-16 flex-shrink-0">
-                          <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            className="object-cover rounded-sm group-hover:scale-105 transition-transform"
-                            sizes="64px"
-                          />
-                        </div>
-                        <div>
-                          <h4 className="mb-1 text-foreground font-medium">{product.name}</h4>
-                          <p className="text-sm text-muted-foreground">{product.price}</p>
-                        </div>
-                      </div>
-                    ))}
+                {/* Recently viewed — driven by RecentlyViewedContext */}
+                {recent.length > 0 && (
+                  <div>
+                    <h3 className="mb-4 text-sm uppercase tracking-wide text-muted-foreground">
+                      {t('recent')}
+                    </h3>
+                    <div className="space-y-4">
+                      {recent.map((product) => (
+                        <button
+                          key={product.id}
+                          type="button"
+                          onClick={() => {
+                            router.push(`/products/${product.slug}`)
+                            onClose()
+                          }}
+                          className="w-full flex gap-4 p-2 hover:bg-muted rounded-sm transition-colors cursor-pointer group text-left"
+                        >
+                          <div className="relative w-16 h-16 flex-shrink-0">
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              fill
+                              className="object-cover rounded-sm group-hover:scale-105 transition-transform"
+                              sizes="64px"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="mb-1 text-foreground font-medium truncate">
+                              {product.name}
+                            </h4>
+                            <p className="text-sm text-muted-foreground">{product.price}</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </motion.div>
