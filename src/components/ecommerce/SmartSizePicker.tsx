@@ -104,7 +104,7 @@ export function SmartSizePicker({
     <div
       className={
         hideHeader
-          ? 'grid lg:grid-cols-2 gap-6'
+          ? 'grid grid-cols-1 lg:grid-cols-2 gap-6'
           : 'bg-gradient-to-br from-foreground to-foreground/80 text-background border-2 border-foreground rounded-sm p-8'
       }
     >
@@ -118,7 +118,7 @@ export function SmartSizePicker({
         </>
       )}
 
-      <div className={hideHeader ? 'contents' : 'grid lg:grid-cols-2 gap-8'}>
+      <div className={hideHeader ? 'contents' : 'grid grid-cols-1 lg:grid-cols-2 gap-8'}>
         {/* Input form */}
         <div className="bg-background text-foreground rounded-sm p-6 space-y-6">
           {/* Gender */}
