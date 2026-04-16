@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.31.1](https://github.com/the-white-platform/fashion-web/compare/v0.31.0...v0.31.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* **quickview:** hover-zoom only the image, not the carousel arrows/dots ([1356496](https://github.com/the-white-platform/fashion-web/commit/1356496c1a7578cd467eb5cf4b58c885a2263ecb))
+
 ## [0.31.0](https://github.com/the-white-platform/fashion-web/compare/v0.30.0...v0.31.0) (2026-04-16)
 
 
