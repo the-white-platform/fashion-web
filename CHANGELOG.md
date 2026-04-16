@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.23.4](https://github.com/the-white-platform/fashion-web/compare/v0.23.3...v0.23.4) (2026-04-16)
+
+
+### Performance Improvements
+
+* **images:** serve Payload's 900px variant, not the 21 MB original ([eb8255c](https://github.com/the-white-platform/fashion-web/commit/eb8255c67ae9283bc35dc0f57c494f0206bfed18))
+
 ### [0.23.3](https://github.com/the-white-platform/fashion-web/compare/v0.23.2...v0.23.3) (2026-04-16)
 
 ### [0.23.2](https://github.com/the-white-platform/fashion-web/compare/v0.23.1...v0.23.2) (2026-04-16)
