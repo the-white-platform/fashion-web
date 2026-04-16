@@ -1258,7 +1258,6 @@
     "welcomeMessage": "Hello! I'm THE WHITE's AI assistant. I can help you with outfit advice, size selection, or answer any questions you have. Ask me anything!",
     "inputPlaceholder": "Type a message...",
     "quickReply": {
-      "outfitAdvice": "Outfit advice",
       "sizeGuide": "Size guide",
       "returnPolicy": "Return policy",
       "bestSellers": "Best sellers"

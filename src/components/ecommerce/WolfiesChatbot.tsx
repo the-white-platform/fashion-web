@@ -143,7 +143,6 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
   }, [messages, isOpen, isMinimized, scrollToBottom])
 
   const quickReplies = [
-    t('quickReply.outfitAdvice'),
     t('quickReply.sizeGuide'),
     t('quickReply.returnPolicy'),
     t('quickReply.bestSellers'),

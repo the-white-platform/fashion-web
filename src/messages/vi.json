@@ -1251,7 +1251,6 @@
     "welcomeMessage": "Xin chào! Tôi là trợ lý AI của THE WHITE. Tôi có thể giúp bạn tư vấn thời trang, chọn size, hoặc trả lời bất kỳ câu hỏi nào. Hãy hỏi tôi!",
     "inputPlaceholder": "Nhập tin nhắn...",
     "quickReply": {
-      "outfitAdvice": "Tư vấn outfit",
       "sizeGuide": "Hướng dẫn chọn size",
       "returnPolicy": "Chính sách đổi trả",
       "bestSellers": "Sản phẩm bán chạy"
