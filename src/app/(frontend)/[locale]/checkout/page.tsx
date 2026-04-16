@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from '@/i18n/useRouter'
 import { AnimatePresence } from 'motion/react'
-import { ChevronLeft, Package, Tag } from 'lucide-react'
+import { ChevronLeft, Package, Tag, X } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,7 @@ export default function CheckoutPage() {
   const tCart = useTranslations('cart')
   const tCoupon = useTranslations('coupon')
   const router = useRouter()
-  const { items: cartItems } = useCart()
+  const { items: cartItems, removeFromCart } = useCart()
   const { user } = useUser()
 
   const checkout = useCheckout()
@@ -106,7 +106,7 @@ export default function CheckoutPage() {
                   {/* Cart Items */}
                   <div className="space-y-4 mb-6 max-h-64 overflow-y-auto">
                     {cartItems.map((item, index) => (
-                      <div key={index} className="flex gap-3">
+                      <div key={index} className="flex gap-3 group">
                         <div className="relative w-16 h-20 bg-muted rounded-sm overflow-hidden shrink-0">
                           <Image
                             src={item.image}
@@ -123,6 +123,14 @@ export default function CheckoutPage() {
                             {item.price.toLocaleString('vi-VN')}₫ × {item.quantity}
                           </p>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFromCart(item.id, item.size, item.color)}
+                          aria-label={t('remove')}
+                          className="self-start w-7 h-7 -mr-1 rounded-sm flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                     ))}
                   </div>
