@@ -27,29 +27,12 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 20 })
   const [selectedIndex, setSelectedIndex] = useState(0)
 
-  // Default slides — TheWhite editorial photoshoot (public/demo/carousel-N.jpg)
-  const defaultSlides = [
-    {
-      id: 1,
-      image: '/demo/carousel-1.jpg',
-      titleKey: 'slides.winter2026.title',
-      subtitleKey: 'slides.winter2026.subtitle',
-      ctaKey: 'slides.winter2026.cta',
-      link: '/products',
-    },
-    {
-      id: 2,
-      image: '/demo/carousel-2.jpg',
-      titleKey: 'slides.performancePro.title',
-      subtitleKey: 'slides.performancePro.subtitle',
-      ctaKey: 'slides.performancePro.cta',
-      link: '/products',
-    },
-  ]
-
-  // Use CMS slides if available and has items, otherwise use default
-  const useCmsSlides = cmsSlides && cmsSlides.length > 0
-  const carouselSlides = useCmsSlides ? cmsSlides : defaultSlides
+  // Carousel is CMS-only — slides come from the Homepage global
+  // (/admin/globals/homepage → Carousel Slides). If the array is empty
+  // the component renders nothing so the admin immediately sees the
+  // effect of deleting slides.
+  const carouselSlides = cmsSlides ?? []
+  if (carouselSlides.length === 0) return null
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev()
@@ -85,23 +68,14 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
       <div className="relative h-screen overflow-hidden" ref={emblaRef}>
         <div className="flex h-full">
           {carouselSlides.map((slide, index) => {
-            // Check if this is a CMS slide or default slide
-            const isCmsSlide = useCmsSlides
-            const slideImage = isCmsSlide
-              ? (slide as any).backgroundImage?.url || '/demo/carousel-1.jpg'
-              : (slide as any).image
-            const slideTitle =
-              (isCmsSlide ? (slide as any).title : t((slide as any).titleKey)) || ''
-            const slideSubtitle =
-              (isCmsSlide ? (slide as any).subtitle : t((slide as any).subtitleKey)) || ''
-            const slideCta = (isCmsSlide ? (slide as any).ctaText : t((slide as any).ctaKey)) || ''
-            const slideLink = (isCmsSlide ? (slide as any).ctaLink : (slide as any).link) || '#'
+            const slideImage = (slide as any).backgroundImage?.url || '/assets/placeholder.jpg'
+            const slideTitle = (slide as any).title || ''
+            const slideSubtitle = (slide as any).subtitle || ''
+            const slideCta = (slide as any).ctaText || ''
+            const slideLink = (slide as any).ctaLink || '#'
 
             return (
-              <div
-                key={isCmsSlide ? index : (slide as any).id}
-                className="relative min-w-0 flex-[0_0_100%]"
-              >
+              <div key={index} className="relative min-w-0 flex-[0_0_100%]">
                 <div className="relative h-full">
                   {/* Background Image */}
                   <div className="absolute inset-0">
