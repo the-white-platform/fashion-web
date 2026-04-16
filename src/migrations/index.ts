@@ -4,6 +4,7 @@ import * as migration_20260416_090220_hot_tag_filter from './20260416_090220_hot
 import * as migration_20260416_091050_vto_generations from './20260416_091050_vto_generations'
 import * as migration_20260416_092317_vto_cache_fields from './20260416_092317_vto_cache_fields'
 import * as migration_20260416_093233_vto_provider_field from './20260416_093233_vto_provider_field'
+import * as migration_20260416_114044_order_email_optional from './20260416_114044_order_email_optional'
 
 export const migrations = [
   {
@@ -35,5 +36,10 @@ export const migrations = [
     up: migration_20260416_093233_vto_provider_field.up,
     down: migration_20260416_093233_vto_provider_field.down,
     name: '20260416_093233_vto_provider_field',
+  },
+  {
+    up: migration_20260416_114044_order_email_optional.up,
+    down: migration_20260416_114044_order_email_optional.down,
+    name: '20260416_114044_order_email_optional',
   },
 ]

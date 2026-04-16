@@ -982,7 +982,7 @@ export interface Order {
   status: 'pending' | 'confirmed' | 'processing' | 'shipping' | 'delivered' | 'cancelled' | 'refunded';
   customerInfo: {
     customerName: string;
-    customerEmail: string;
+    customerEmail?: string | null;
     customerPhone: string;
     /**
      * If customer was logged in

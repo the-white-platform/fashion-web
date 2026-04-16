@@ -110,12 +110,21 @@ export function useCheckout(): UseCheckoutReturn {
         // and the confirmation screen reference the same identifier.
         // Server hook only auto-generates when this is missing.
         ...(orderNumber ? { orderNumber } : {}),
-        customerInfo: {
-          customerName: user?.fullName ?? selectedAddress?.name ?? '',
-          customerEmail: user?.email ?? '',
-          customerPhone: user?.phone ?? selectedAddress?.phone ?? '',
-          ...(user?.id ? { user: user.id } : {}),
-        },
+        customerInfo: (() => {
+          // Strip empty-string fields — Payload's email validator
+          // rejects "" as "not a valid email", which blew up every
+          // anonymous order before we made email optional. Name and
+          // phone are still required by the schema; falling back to
+          // the shipping-address values mirrors the old behaviour.
+          const info: Record<string, unknown> = {
+            customerName: user?.fullName || selectedAddress?.name || '',
+            customerPhone: user?.phone || selectedAddress?.phone || '',
+          }
+          const email = user?.email?.trim()
+          if (email) info.customerEmail = email
+          if (user?.id) info.user = user.id
+          return info
+        })(),
         shippingAddress: {
           address: selectedAddress?.address ?? '',
           city: selectedAddress?.province?.id ?? null,

@@ -107,9 +107,13 @@ export const Orders: CollectionConfig = {
               label: { vi: 'Họ và tên', en: 'Full Name' },
             },
             {
+              // Optional — many VN customers check out by phone and
+              // never fill an email. Payload's email validator also
+              // rejects empty strings, so required:true + "" from the
+              // client was causing 400s on every anonymous order.
               name: 'customerEmail',
               type: 'email',
-              required: true,
+              required: false,
               label: { vi: 'Email', en: 'Email' },
             },
           ],
