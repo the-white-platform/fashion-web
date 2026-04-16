@@ -114,7 +114,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header,
                   transition={{ delay: 0.5 }}
                 >
                   <Link
-                    href="/order-tracking"
+                    href="/orders"
                     onClick={onClose}
                     className="flex items-center gap-4 p-4 bg-card border border-border hover:bg-accent transition-all rounded-none"
                   >
