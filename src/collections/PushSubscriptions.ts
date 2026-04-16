@@ -11,6 +11,10 @@ export const PushSubscriptions: CollectionConfig = {
     useAsTitle: 'endpoint',
     defaultColumns: ['user', 'active', 'createdAt'],
     group: { vi: 'Hệ thống', en: 'System' },
+    // Hidden from the sidebar — there's no customer-facing subscribe
+    // UI yet, so this collection stays empty and only adds noise.
+    // Restore by removing this when web-push is actually wired up.
+    hidden: true,
   },
   access: {
     read: ({ req: { user } }) => {

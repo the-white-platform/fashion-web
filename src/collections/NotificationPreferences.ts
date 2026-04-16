@@ -11,6 +11,10 @@ export const NotificationPreferences: CollectionConfig = {
     useAsTitle: 'user',
     defaultColumns: ['user', 'updatedAt'],
     group: { vi: 'Hệ thống', en: 'System' },
+    // Hidden — no customer-facing preferences UI yet; createNotification
+    // writes records but nobody edits them. Restore when we build the
+    // notification-settings screen.
+    hidden: true,
   },
   access: {
     read: ({ req: { user } }) => {
