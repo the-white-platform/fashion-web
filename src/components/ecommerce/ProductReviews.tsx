@@ -10,8 +10,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Store,
-  ImagePlus,
-  X,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Link } from '@/i18n/Link'
@@ -539,59 +537,6 @@ function ReviewForm({
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  // ── Image upload state ──────────────────────────────────────────────────────
-  interface UploadedImage {
-    id: number
-    url: string
-    localPreview: string
-  }
-  const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([])
-  const [uploadingCount, setUploadingCount] = useState(0)
-  const MAX_IMAGES = 5
-
-  const handleImageFiles = async (files: FileList | null) => {
-    if (!files || files.length === 0) return
-    const remaining = MAX_IMAGES - uploadedImages.length
-    const toUpload = Array.from(files).slice(0, remaining)
-
-    setUploadingCount((c) => c + toUpload.length)
-
-    await Promise.all(
-      toUpload.map(async (file) => {
-        const localPreview = URL.createObjectURL(file)
-        const form = new FormData()
-        form.append('file', file)
-        form.append('alt', file.name)
-
-        try {
-          const res = await fetch('/api/media', {
-            method: 'POST',
-            credentials: 'include',
-            body: form,
-          })
-          if (!res.ok) throw new Error('upload failed')
-          const data = await res.json()
-          const mediaId: number = data?.doc?.id ?? data?.id
-          const mediaUrl: string = data?.doc?.url ?? data?.url ?? localPreview
-          if (!mediaId) throw new Error('no media id returned')
-          setUploadedImages((prev) => [...prev, { id: mediaId, url: mediaUrl, localPreview }])
-        } catch {
-          setError(t('images.uploadError'))
-        } finally {
-          setUploadingCount((c) => c - 1)
-        }
-      }),
-    )
-  }
-
-  const removeImage = (id: number) => {
-    setUploadedImages((prev) => {
-      const removed = prev.find((img) => img.id === id)
-      if (removed) URL.revokeObjectURL(removed.localPreview)
-      return prev.filter((img) => img.id !== id)
-    })
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!rating || !comment.trim()) {
@@ -617,7 +562,6 @@ function ReviewForm({
     if (fit) body.fit = fit
     if (height && !isNaN(Number(height))) body.height = Number(height)
     if (weight && !isNaN(Number(weight))) body.weight = Number(weight)
-    if (uploadedImages.length > 0) body.images = uploadedImages.map((img) => img.id)
 
     try {
       const res = await fetch('/api/reviews', {
@@ -778,70 +722,6 @@ function ReviewForm({
             onChange={(e) => setWeight(e.target.value)}
             placeholder={t('placeholders.weight')}
           />
-        </div>
-      </div>
-
-      {/* Image upload */}
-      <div className="mb-6">
-        <label className="block text-sm uppercase tracking-wide mb-2 text-foreground">
-          {t('images.label')}
-        </label>
-        <p className="text-xs text-muted-foreground mb-3">{t('images.hint')}</p>
-
-        {/* Thumbnails + upload trigger */}
-        <div className="flex flex-wrap gap-3 items-center">
-          {uploadedImages.map((img) => (
-            <div key={img.id} className="relative w-20 h-20 flex-shrink-0">
-              <img
-                src={img.url || img.localPreview}
-                alt="Review image preview"
-                className="w-full h-full object-cover rounded-sm border border-border"
-              />
-              <button
-                type="button"
-                aria-label={t('images.remove')}
-                onClick={() => removeImage(img.id)}
-                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full w-5 h-5 flex items-center justify-center shadow"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          ))}
-
-          {/* Uploading spinners */}
-          {uploadingCount > 0 &&
-            Array.from({ length: uploadingCount }).map((_, i) => (
-              <div
-                key={`spinner-${i}`}
-                className="w-20 h-20 flex-shrink-0 rounded-sm border border-border bg-muted flex items-center justify-center"
-              >
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-foreground" />
-              </div>
-            ))}
-
-          {/* Add button — hidden when at limit */}
-          {uploadedImages.length < MAX_IMAGES && uploadingCount === 0 && (
-            <label
-              className={`w-20 h-20 flex-shrink-0 rounded-sm border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-foreground/50 transition-colors text-muted-foreground hover:text-foreground ${
-                submitting ? 'pointer-events-none opacity-50' : ''
-              }`}
-            >
-              <ImagePlus className="w-6 h-6 mb-1" />
-              <span className="text-xs text-center leading-tight">{t('images.addMore')}</span>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                className="sr-only"
-                disabled={submitting}
-                onChange={(e) => handleImageFiles(e.target.files)}
-                onClick={(e) => {
-                  // Reset value so the same file can be re-selected after removal
-                  ;(e.target as HTMLInputElement).value = ''
-                }}
-              />
-            </label>
-          )}
         </div>
       </div>
 
