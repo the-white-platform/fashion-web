@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.35.0](https://github.com/the-white-platform/fashion-web/compare/v0.34.0...v0.35.0) (2026-04-16)
+
+
+### Features
+
+* **products:** mirror search query to ?q= as the user types ([b9e631d](https://github.com/the-white-platform/fashion-web/commit/b9e631d1e0a829ea508f8ab91866808aeee248f9))
+
 ## [0.34.0](https://github.com/the-white-platform/fashion-web/compare/v0.33.0...v0.34.0) (2026-04-16)
 
 
