@@ -10,7 +10,10 @@ import {
 import { logOrderActivity } from './Orders/hooks/activityLog'
 import { handleReturn } from './Orders/hooks/returnManagement'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { sendZaloOrderNotifications } from './Orders/hooks/sendZaloOrderNotifications'
+// Kept imported (unused) so re-enabling is a one-line uncomment in
+// the afterChange list once ZNS templates + refresh token are live.
+import { sendZaloOrderNotifications as _sendZaloOrderNotifications } from './Orders/hooks/sendZaloOrderNotifications'
+void _sendZaloOrderNotifications
 import { sendOrderEmails as _sendOrderEmails } from './Orders/hooks/sendOrderEmails'
 import { notifyOnOrder } from './Orders/hooks/notifyOnOrder'
 import { notifyOnStockChange } from './Orders/hooks/notifyOnStockChange'
@@ -689,9 +692,12 @@ export const Orders: CollectionConfig = {
       restoreStockOnCancel,
       incrementCouponUsageAfterOrder,
       // sendOrderEmails disabled (no email provider yet — see notes on
-      // the previous commit). Zalo ZNS is what actually delivers the
-      // "your order is confirmed / shipping" pings to the customer.
-      sendZaloOrderNotifications,
+      // the previous commit). Zalo ZNS is what will deliver the
+      // "your order is confirmed / shipping" pings to the customer
+      // — but the OA still needs ZNS templates approved + the
+      // refresh token registered before it can send anything, so
+      // keep the hook off the chain until those are in place.
+      // sendZaloOrderNotifications,
       notifyOnOrder,
       notifyOnStockChange,
       loyaltyEarn,
