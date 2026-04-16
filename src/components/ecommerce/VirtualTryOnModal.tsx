@@ -65,14 +65,6 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
     }
   }, [isOpen])
 
-  // Reset mode-specific state when switching modes
-  const handleModeSwitch = (newMode: 'hd' | 'ai') => {
-    setMode(newMode)
-    setResult(null)
-    setAiDescription(null)
-    setError(null)
-  }
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -227,30 +219,10 @@ export function VirtualTryOnModal({ isOpen, onClose, product }: VirtualTryOnModa
               </div>
 
               {/* Mode Toggle — compact */}
-              <div className="inline-flex border-2 border-foreground rounded-none overflow-hidden flex-shrink-0 mr-12">
-                <button
-                  onClick={() => handleModeSwitch('hd')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-all ${
-                    mode === 'hd'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-background text-foreground hover:bg-muted'
-                  }`}
-                >
-                  <Sparkles className="w-3 h-3" />
-                  {t('vto.modeHd')}
-                </button>
-                <button
-                  onClick={() => handleModeSwitch('ai')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] transition-all border-l-2 border-foreground ${
-                    mode === 'ai'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-background text-foreground hover:bg-muted'
-                  }`}
-                >
-                  <Wand2 className="w-3 h-3" />
-                  {t('vto.modeAi')}
-                </button>
-              </div>
+              {/* Mode switcher removed: HD is the only mode now. The AI
+                  outfit-advice branches below are dead code paths kept
+                  so the diff stays small; they can be cleaned up
+                  whenever this file is refactored. */}
             </div>
 
             {/* Main Content — mobile: 3 stacked cards w/ natural height + scroll;
