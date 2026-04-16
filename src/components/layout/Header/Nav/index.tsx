@@ -6,6 +6,7 @@ import { cn } from '@/utilities/cn'
 import type { Header as HeaderType } from '@/payload-types'
 
 import { CMSLink } from '@/components/shared/Link'
+import { Link } from '@/i18n/Link'
 import { Search, ShoppingBag, User } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
@@ -21,6 +22,7 @@ export const HeaderNav: React.FC<{
   const navItems = header?.navItems || []
   const { items, setIsCartOpen } = useCart()
   const { user } = useUser()
+  const t = useTranslations()
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
   return (
