@@ -39,8 +39,11 @@ export default function CheckoutPage() {
   const [showNewAddress, setShowNewAddress] = useState(!user?.shippingAddresses?.length)
   const [showNewPayment, setShowNewPayment] = useState(!user?.paymentMethods?.length)
 
-  // Guard: redirect if cart is empty (also shows empty state while redirecting)
-  if (!cartItems || cartItems.length === 0) {
+  // Guard: empty cart → show an empty-state screen. Skip the guard once
+  // we've hit the confirmation step — by then `completeOrder` has
+  // intentionally cleared the cart and we want the success screen to
+  // render, not the "empty cart" one.
+  if ((!cartItems || cartItems.length === 0) && checkout.step !== 'confirmation') {
     return (
       <div className="min-h-screen bg-background pb-12">
         <div className="container mx-auto px-6 max-w-2xl">
