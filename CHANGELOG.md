@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.32.6](https://github.com/the-white-platform/fashion-web/compare/v0.32.5...v0.32.6) (2026-04-16)
+
+
+### Bug Fixes
+
+* **homepage:** hide "Shop By Activity" section when no categories configured ([504430a](https://github.com/the-white-platform/fashion-web/commit/504430a2028cb026276293dbeaef9367f67faee3))
+
 ### [0.32.5](https://github.com/the-white-platform/fashion-web/compare/v0.32.4...v0.32.5) (2026-04-16)
 
 ### [0.32.4](https://github.com/the-white-platform/fashion-web/compare/v0.32.3...v0.32.4) (2026-04-16)
