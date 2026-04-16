@@ -566,7 +566,10 @@ export const seed = async ({
           {
             link: {
               type: 'custom',
-              label: 'Men',
+              // Link.label is not localized in the shared `link()` field;
+              // seed Vietnamese (primary audience). The NavComponent has
+              // a matching VI fallback if the admin clears these.
+              label: 'NAM',
               url: '/products?category=nam',
               newTab: false,
             },
@@ -574,7 +577,7 @@ export const seed = async ({
           {
             link: {
               type: 'custom',
-              label: 'New Arrivals',
+              label: 'MỚI NHẤT',
               url: '/products?category=moi-nhat',
               newTab: false,
             },
@@ -582,7 +585,7 @@ export const seed = async ({
           {
             link: {
               type: 'custom',
-              label: 'Hot',
+              label: 'HOT',
               url: '/products?tag=hot',
               newTab: false,
             },
@@ -890,58 +893,8 @@ export const seed = async ({
 
     payload.logger.info(`  ✓ Chat assistant context configured (vi + en)`)
 
-    // 7. Configure Footer
-    payload.logger.info(`— Configuring footer navigation...`)
-
-    const footerLinksVi = [
-      { label: 'Về Chúng Tôi', url: '/about' },
-      { label: 'Chính Sách Vận Chuyển', url: '/delivery' },
-      { label: 'Chính Sách Đổi Trả', url: '/returns' },
-      { label: 'Điều Khoản Dịch Vụ', url: '/terms' },
-      { label: 'Chính Sách Bảo Mật', url: '/privacy' },
-      { label: 'Liên Hệ', url: '/contact' },
-    ]
-
-    const footerLinksEn = [
-      { label: 'About Us', url: '/about' },
-      { label: 'Delivery Policy', url: '/delivery' },
-      { label: 'Returns Policy', url: '/returns' },
-      { label: 'Terms of Service', url: '/terms' },
-      { label: 'Privacy Policy', url: '/privacy' },
-      { label: 'Contact Us', url: '/contact' },
-    ]
-
-    await payload.updateGlobal({
-      slug: 'footer',
-      locale: 'vi',
-      data: {
-        navItems: footerLinksVi.map((link) => ({
-          link: {
-            type: 'custom' as const,
-            label: link.label,
-            url: link.url,
-            newTab: false,
-          },
-        })),
-      },
-    })
-
-    await payload.updateGlobal({
-      slug: 'footer',
-      locale: 'en',
-      data: {
-        navItems: footerLinksEn.map((link) => ({
-          link: {
-            type: 'custom' as const,
-            label: link.label,
-            url: link.url,
-            newTab: false,
-          },
-        })),
-      },
-    })
-
-    payload.logger.info(`  ✓ Footer configured`)
+    // Footer is now hardcoded + category-driven; no fields to seed.
+    // (See src/components/layout/Footer/Component.tsx.)
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     if (msg.includes('static generation store missing')) {
