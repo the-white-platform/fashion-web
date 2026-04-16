@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.42.4](https://github.com/the-white-platform/fashion-web/compare/v0.42.3...v0.42.4) (2026-04-16)
+
+
+### Bug Fixes
+
+* **size-picker:** use ?sizes= (plural) to match products page filter param ([99bea52](https://github.com/the-white-platform/fashion-web/commit/99bea52b947e8fdf0be92bef234813a396486abd))
+
 ### [0.42.3](https://github.com/the-white-platform/fashion-web/compare/v0.42.2...v0.42.3) (2026-04-16)
 
 
