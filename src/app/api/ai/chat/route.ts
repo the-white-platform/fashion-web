@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { geminiFlash } from '@/lib/gemini'
+import { genAI } from '@/lib/gemini'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -197,7 +197,14 @@ export async function POST(request: Request) {
 
   // --- Stream response ---
   try {
-    const model = geminiFlash
+    // Construct the model per-request: the Gemini SDK expects
+    // `systemInstruction` on getGenerativeModel(), NOT on startChat().
+    // Passing it to startChat is silently rejected with a 400
+    // BadRequest, which is what was firing in prod.
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      systemInstruction,
+    })
 
     // Build history (all messages except the last user message)
     const history = messages.slice(0, -1).map((msg) => ({
@@ -207,10 +214,7 @@ export async function POST(request: Request) {
 
     const lastMessage = messages[messages.length - 1]
 
-    const chat = model.startChat({
-      history,
-      systemInstruction,
-    })
+    const chat = model.startChat({ history })
 
     const result = await chat.sendMessageStream(lastMessage.content)
 
