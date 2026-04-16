@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.44.1](https://github.com/the-white-platform/fashion-web/compare/v0.44.0...v0.44.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* **migration:** idempotent DROP for size-chart FK + index ([6156f38](https://github.com/the-white-platform/fashion-web/commit/6156f38fe27d19e5b3c1c4863d8bb88762babcd3))
+
 ## [0.44.0](https://github.com/the-white-platform/fashion-web/compare/v0.43.0...v0.44.0) (2026-04-16)
 
 
