@@ -345,136 +345,107 @@ export const validateStockBeforeOrder: CollectionBeforeChangeHook = async ({
  */
 export const decrementStockAfterOrder: CollectionAfterChangeHook = async ({
   doc,
-  previousDoc,
   operation,
   req,
 }) => {
   const payload = req.payload
   const order = doc as Order
 
-  payload.logger.info(`[orders/hooks] decrementStockAfterOrder: enter (operation=${operation}, order=${order.id})`)
-
   // Only decrement stock on order creation, not on status transitions
   if (operation !== 'create') return doc
 
-  for (const item of order.items) {
+  // Direct SQL against the size-inventory row so we don't trigger
+  // Payload's full-product replace-cascade (which re-writes every
+  // variant row and re-populates media relations — that's what was
+  // leaving the afterChange transaction idle-in-transaction on a
+  // SELECT media and timing the checkout out at 300s).
+  //
+  // Raw atomic update: single UPDATE ... SET stock = GREATEST(0, stock - N)
+  // joined through the variant + locale so we match by color name.
+  const { sql } = await import('drizzle-orm')
+  const db = (
+    payload.db as unknown as {
+      drizzle: { execute: (q: ReturnType<typeof sql>) => Promise<unknown> }
+    }
+  ).drizzle
+
+  for (const item of order.items ?? []) {
     const productId = typeof item.product === 'object' ? item.product.id : item.product
+    if (productId == null || !item.size || !item.variant) continue
 
     try {
-      const product = await payload.findByID({
-        collection: 'products',
-        id: productId,
-        depth: 0,
-      })
+      // Locale in which the color name was sent. The seed writes `Đen` (vi)
+      // and `Black` (en) on the same variant row; match whichever the order
+      // references.
+      const locales: Array<'vi' | 'en'> = ['vi', 'en']
 
-      if (!product || !product.colorVariants) continue
+      const result = (await db.execute(sql`
+        UPDATE products_color_variants_size_inventory AS si
+        SET stock = GREATEST(0, si.stock - ${item.quantity})
+        FROM products_color_variants AS cv
+        JOIN products_color_variants_locales AS cvl ON cvl._parent_id = cv.id
+        WHERE si._parent_id = cv.id
+          AND cv._parent_id = ${productId}
+          AND cvl.color = ${item.variant}
+          AND cvl._locale = ANY(${locales})
+          AND si.size = ${item.size}
+        RETURNING si.stock, si.low_stock_threshold
+      `)) as { rows?: Array<{ stock: number; low_stock_threshold: number | null }> }
 
-      // Update the colorVariants with decremented stock
-      const updatedVariants = product.colorVariants.map((variant) => {
-        if (variant.color !== item.variant && variant.id !== item.variant) {
-          return variant
-        }
-
-        const updatedSizeInventory = variant.sizeInventory?.map((sizeItem) => {
-          if (sizeItem.size !== item.size) {
-            return sizeItem
-          }
-
-          const newStock = Math.max(0, sizeItem.stock - item.quantity)
-
-          // Log low stock warning
-          if (
-            sizeItem.lowStockThreshold &&
-            newStock <= sizeItem.lowStockThreshold &&
-            newStock > 0
-          ) {
-            payload.logger.warn(
-              `⚠ Low stock alert: Product ${productId}, ${item.variant} ${item.size} - Only ${newStock} left`,
-            )
-          }
-
-          // Log out of stock
-          if (newStock === 0) {
-            payload.logger.warn(
-              `🚨 Out of stock: Product ${productId}, ${item.variant} ${item.size}`,
-            )
-          }
-
-          return {
-            ...sizeItem,
-            stock: newStock,
-          }
-        })
-
-        return {
-          ...variant,
-          sizeInventory: updatedSizeInventory,
-        }
-      })
-
-      await payload.update({
-        collection: 'products',
-        id: productId,
-        data: {
-          colorVariants: updatedVariants,
-        },
-      })
-
-      // Record stock movements for each affected size
-      const matchedVariant = product.colorVariants?.find(
-        (v) => v.color === item.variant || v.id === item.variant,
-      )
-      const sizeItem = matchedVariant?.sizeInventory?.find((s) => s.size === item.size)
-      if (sizeItem !== undefined) {
-        const previousStock = sizeItem.stock
-        const newStock = Math.max(0, previousStock - item.quantity)
-        try {
-          await payload.create({
-            collection: 'stock-movements',
-            data: {
-              product: productId,
-              variant: item.variant ?? '',
-              size: item.size,
-              type: 'sale',
-              quantity: -item.quantity,
-              previousStock,
-              newStock,
-              order: doc.id,
-              performedBy: req.user?.id ?? null,
-            },
-          })
-        } catch (movementError) {
-          payload.logger.error(
-            `Failed to create stock movement for product ${productId}: ${movementError}`,
-          )
-        }
+      const row = result.rows?.[0]
+      if (!row) {
+        payload.logger.warn(
+          `[orders/hooks] decrementStock: no row matched product=${productId} color="${item.variant}" size=${item.size}`,
+        )
+        continue
       }
 
-      // Defense-in-depth: re-read to detect negative stock from concurrent orders
-      const updatedProduct = await payload.findByID({
-        collection: 'products',
-        id: productId,
-        depth: 0,
-      })
-      for (const variant of updatedProduct?.colorVariants || []) {
-        for (const inv of variant.sizeInventory || []) {
-          if (inv.stock < 0) {
-            payload.logger.error(
-              `CRITICAL: Negative stock detected for product ${productId}, variant ${variant.color}, size ${inv.size}: ${inv.stock}`,
-            )
-          }
-        }
+      const newStock = row.stock
+      const threshold = row.low_stock_threshold ?? 0
+      if (newStock === 0) {
+        payload.logger.warn(
+          `🚨 Out of stock: product=${productId} ${item.variant}/${item.size} after order ${order.id}`,
+        )
+      } else if (threshold > 0 && newStock <= threshold) {
+        payload.logger.warn(
+          `⚠ Low stock: product=${productId} ${item.variant}/${item.size} → ${newStock} (threshold ${threshold})`,
+        )
+      }
+
+      // Record a stock movement for traceability. This writes to a small
+      // append-only table via Payload so the normal access/hooks apply;
+      // if it ever becomes the slow step we can drop it to raw SQL too.
+      try {
+        await payload.create({
+          collection: 'stock-movements',
+          data: {
+            product: productId,
+            variant: item.variant,
+            size: item.size,
+            type: 'sale',
+            quantity: -item.quantity,
+            previousStock: newStock + item.quantity,
+            newStock,
+            order: order.id,
+            performedBy: req.user?.id ?? null,
+          },
+        })
+      } catch (movementError) {
+        payload.logger.error(
+          `[orders/hooks] stock-movement insert failed for product=${productId}: ${movementError}`,
+        )
       }
 
       payload.logger.info(
-        `✓ Stock decremented: Product ${productId}, ${item.variant} ${item.size} (-${item.quantity})`,
+        `✓ Stock decremented: product=${productId} ${item.variant}/${item.size} -${item.quantity} (new=${newStock})`,
       )
     } catch (error) {
-      payload.logger.error(`Failed to decrement stock for product ${productId}: ${error}`)
+      payload.logger.error(
+        `[orders/hooks] decrementStock failed for product=${productId}: ${error}`,
+      )
     }
   }
 
-  payload.logger.info(`[orders/hooks] decrementStockAfterOrder: exit`)
   return doc
 }
 

@@ -681,15 +681,10 @@ export const Orders: CollectionConfig = {
       logOrderActivity,
     ],
     afterChange: [
-      // decrementStockAfterOrder disabled: its payload.update on the
-      // product's `colorVariants` array triggers Payload's cascade
-      // replace-all-rows + media-relation repopulate, which consistently
-      // left the afterChange transaction idle-in-transaction on a media
-      // SELECT and timed the checkout out at 300s. Rewriting to a raw
-      // drizzle update on the single stock column is a follow-up; for
-      // now live stock drift on Black/XL is less bad than a broken
-      // checkout.
-      // decrementStockAfterOrder,
+      // Raw-SQL UPDATE on the size-inventory row — no full-product
+      // replace-cascade, so the outer transaction no longer goes
+      // idle-in-transaction on media SELECTs.
+      decrementStockAfterOrder,
       restoreStockOnCancel,
       incrementCouponUsageAfterOrder,
       // sendOrderEmails disabled (no email provider yet — see notes on
