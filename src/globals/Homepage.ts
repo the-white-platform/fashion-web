@@ -117,6 +117,7 @@ export const Homepage: GlobalConfig = {
             { label: 'Sale / Discount', value: 'sale' },
             { label: 'New Arrivals', value: 'new' },
             { label: 'Best Sellers', value: 'bestseller' },
+            { label: 'Hot', value: 'hot' },
           ],
           admin: {
             condition: (data, siblingData) => siblingData?.filterType === 'tag',

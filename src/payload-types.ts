@@ -2776,7 +2776,7 @@ export interface Homepage {
         /**
          * Select the tag type to filter products by
          */
-        tagFilter?: ('sale' | 'new' | 'bestseller') | null;
+        tagFilter?: ('sale' | 'new' | 'bestseller' | 'hot') | null;
         id?: string | null;
       }[]
     | null;

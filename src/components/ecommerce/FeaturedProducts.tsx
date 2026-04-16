@@ -13,7 +13,7 @@ interface QuickFilter {
   label: string
   filterType: 'all' | 'category' | 'tag'
   categoryId?: number
-  tagFilter?: 'sale' | 'new' | 'bestseller'
+  tagFilter?: 'sale' | 'new' | 'bestseller' | 'hot'
 }
 
 interface FeaturedProductsProps {
@@ -80,6 +80,8 @@ export function FeaturedProducts({
                 return tagLower.includes('mới') || tagLower.includes('new')
               case 'bestseller':
                 return tagLower.includes('bán chạy') || tagLower.includes('best')
+              case 'hot':
+                return tagLower.includes('hot')
               default:
                 return true
             }

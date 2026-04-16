@@ -14,7 +14,7 @@ interface QuickFilter {
   label: string
   filterType: 'all' | 'category' | 'tag'
   categoryId?: number
-  tagFilter?: 'sale' | 'new' | 'bestseller'
+  tagFilter?: 'sale' | 'new' | 'bestseller' | 'hot'
 }
 
 interface FeatureHighlight {

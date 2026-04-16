@@ -90,6 +90,10 @@ function ProductsPageContent({
   )
   const [showFilters, setShowFilters] = useState(false)
   const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '')
+  // Tag filter — driven by ?tag= in the URL (e.g. ?tag=hot from the
+  // header nav). Read-only on this page; we don't expose a sidebar
+  // chip for it yet.
+  const tagFilter = (searchParams.get('tag') || '').toLowerCase()
 
   const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'newest')
   const [currentPage, setCurrentPage] = useState(() => {
@@ -244,6 +248,12 @@ function ProductsPageContent({
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false
       }
+      // ?tag=hot / ?tag=mới / ?tag=sale — substring match on the
+      // product's tag string. Lower-case both sides; supports the
+      // header nav link for "HOT" and similar one-off entry points.
+      if (tagFilter && !(product.tag || '').toLowerCase().includes(tagFilter)) {
+        return false
+      }
       return true
     })
 
@@ -278,6 +288,7 @@ function ProductsPageContent({
     selectedSizes,
     selectedColors,
     allProducts,
+    tagFilter,
   ])
 
   const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage)
