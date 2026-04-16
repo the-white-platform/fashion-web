@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback, Suspense } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
@@ -169,7 +169,10 @@ function ProductsPageContent({
     [updateURL],
   )
 
-  // Handle search
+  // Handle search — onBlur / Enter path: commits the URL immediately
+  // and resets pagination. The debounced effect below also writes to
+  // the URL while the user is typing, so deep-linking / browser
+  // back / sharing all work without waiting for blur.
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearchQuery(value)
@@ -178,6 +181,31 @@ function ProductsPageContent({
     },
     [updateURL],
   )
+
+  // Debounced URL sync as the user types. Uses router.replace (via
+  // updateURL is push, so we mirror it here directly with replace) so
+  // every keystroke doesn't pile up in history. 400ms keeps the URL
+  // close-to-live without thrashing.
+  const initialQueryRef = useRef(searchQuery)
+  useEffect(() => {
+    if (searchQuery === initialQueryRef.current) return
+    const t = setTimeout(() => {
+      const newParams = new URLSearchParams(searchParams.toString())
+      if (searchQuery) {
+        newParams.set('q', searchQuery)
+      } else {
+        newParams.delete('q')
+      }
+      newParams.delete('page')
+      const qs = newParams.toString()
+      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    }, 400)
+    return () => clearTimeout(t)
+    // searchParams is intentionally omitted — including it would re-run
+    // this effect every time we touch any other filter, which would
+    // double-write the q param.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, router, pathname])
 
   // Handle price range change
   const handlePriceRangeChange = useCallback(
