@@ -30,11 +30,16 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   
   ALTER TABLE "size_charts" DISABLE ROW LEVEL SECURITY;
   ALTER TABLE "size_charts_locales" DISABLE ROW LEVEL SECURITY;
+  -- DROP TABLE ... CASCADE removes the FK constraint
+  -- (payload_locked_documents_rels_size_charts_fk) and its backing index
+  -- (payload_locked_documents_rels_size_charts_id_idx) automatically, so
+  -- the explicit DROP CONSTRAINT / DROP INDEX below must use IF EXISTS
+  -- to stay idempotent across pg versions.
   DROP TABLE "size_charts" CASCADE;
   DROP TABLE "size_charts_locales" CASCADE;
-  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT "payload_locked_documents_rels_size_charts_fk";
-  
-  DROP INDEX "payload_locked_documents_rels_size_charts_id_idx";
+  ALTER TABLE "payload_locked_documents_rels" DROP CONSTRAINT IF EXISTS "payload_locked_documents_rels_size_charts_fk";
+
+  DROP INDEX IF EXISTS "payload_locked_documents_rels_size_charts_id_idx";
   ALTER TABLE "products_locales" ADD COLUMN "size_chart_note" varchar;
   ALTER TABLE "products_size_chart_columns" ADD CONSTRAINT "products_size_chart_columns_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."products"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "products_size_chart_columns_locales" ADD CONSTRAINT "products_size_chart_columns_locales_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."products_size_chart_columns"("id") ON DELETE cascade ON UPDATE no action;
