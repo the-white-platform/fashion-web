@@ -374,11 +374,10 @@ export const decrementStockAfterOrder: CollectionAfterChangeHook = async ({
     if (productId == null || !item.size || !item.variant) continue
 
     try {
-      // Locale in which the color name was sent. The seed writes `Đen` (vi)
-      // and `Black` (en) on the same variant row; match whichever the order
-      // references.
-      const locales: Array<'vi' | 'en'> = ['vi', 'en']
-
+      // Locale column is an enum (`_locales`), so ANY(array) fails to
+      // cast — cast to text and use IN. The seed writes `Đen` (vi) and
+      // `Black` (en) on the same variant row; match whichever the
+      // order's variant field refers to.
       const result = (await db.execute(sql`
         UPDATE products_color_variants_size_inventory AS si
         SET stock = GREATEST(0, si.stock - ${item.quantity})
@@ -387,7 +386,7 @@ export const decrementStockAfterOrder: CollectionAfterChangeHook = async ({
         WHERE si._parent_id = cv.id
           AND cv._parent_id = ${productId}
           AND cvl.color = ${item.variant}
-          AND cvl._locale = ANY(${locales})
+          AND cvl._locale::text IN ('vi', 'en')
           AND si.size = ${item.size}
         RETURNING si.stock, si.low_stock_threshold
       `)) as { rows?: Array<{ stock: number; low_stock_threshold: number | null }> }
