@@ -6,7 +6,6 @@ import { cn } from '@/utilities/cn'
 import type { Header as HeaderType } from '@/payload-types'
 
 import { CMSLink } from '@/components/shared/Link'
-import { Link } from '@/i18n/Link'
 import { Search, ShoppingBag, User } from 'lucide-react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
@@ -22,53 +21,26 @@ export const HeaderNav: React.FC<{
   const navItems = header?.navItems || []
   const { items, setIsCartOpen } = useCart()
   const { user } = useUser()
-  const t = useTranslations()
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
-
-  // Default navigation items as fallback — brand only sells men's line for v1
-  const defaultNavItems = [
-    { label: t('nav.men'), url: '/products?category=nam' },
-    { label: t('nav.new'), url: '/products?category=moi-nhat' },
-    { label: t('nav.hot'), url: '/products?tag=hot' },
-  ]
-
-  const displayNavItems = navItems.length > 0 ? navItems : defaultNavItems
 
   return (
     <>
-      {/* Navigation - Desktop */}
+      {/* Navigation - Desktop — pure CMS. Admin owns /admin/globals/header
+          navItems; no in-code fallback. If the array is empty the nav
+          renders nothing (matches the carousel / featured-products /
+          activity-categories pattern). */}
       <nav className="hidden lg:flex items-center gap-8 flex-1 justify-center">
-        {displayNavItems.map((item, i) => {
-          // Handle both CMS items and default items
-          if ('link' in item) {
-            // CMS item
-            return (
-              <CMSLink
-                key={i}
-                {...item.link}
-                appearance="inline"
-                className={cn(
-                  'hover:text-muted-foreground transition-all tracking-wide uppercase text-sm font-medium text-foreground',
-                  !isScrolled && 'drop-shadow-sm',
-                )}
-              />
-            )
-          } else {
-            // Default item
-            return (
-              <Link
-                key={i}
-                href={item.url}
-                className={cn(
-                  'hover:text-muted-foreground transition-all tracking-wide uppercase text-sm font-medium text-foreground',
-                  !isScrolled && 'drop-shadow-sm',
-                )}
-              >
-                {item.label}
-              </Link>
-            )
-          }
-        })}
+        {navItems.map((item, i) => (
+          <CMSLink
+            key={i}
+            {...item.link}
+            appearance="inline"
+            className={cn(
+              'hover:text-muted-foreground transition-all tracking-wide uppercase text-sm font-medium text-foreground',
+              !isScrolled && 'drop-shadow-sm',
+            )}
+          />
+        ))}
       </nav>
 
       {/* Actions */}
