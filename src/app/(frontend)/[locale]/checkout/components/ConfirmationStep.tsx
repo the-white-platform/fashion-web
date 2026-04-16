@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { Recommendations } from '@/components/ecommerce/Recommendations'
+import { usePaymentMethods } from '@/hooks/usePaymentMethods'
 
 interface ConfirmationStepProps {
   orderId: string
@@ -25,7 +26,19 @@ export function ConfirmationStep({
   const t = useTranslations('checkout')
   const tNav = useTranslations('nav')
   const isBankTransfer = selectedPayment?.type === 'bank'
-  const qrUrl = `https://img.vietqr.io/image/BIDV-8601104886-compact2.png?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent('HO KINH DOANH THE WHITE ACTIVE')}`
+
+  // Bank details from the PaymentMethods global — no fallback. If the
+  // admin hasn't configured them the QR + account block won't render.
+  const paymentMethods = usePaymentMethods()
+  const bank = paymentMethods?.bankTransfer
+  const bankName = bank?.bankName || ''
+  const bankCode = bankName.toUpperCase().replace(/\s+/g, '')
+  const accountNumber = bank?.accountNumber || ''
+  const accountName = bank?.accountName || ''
+  const hasBankDetails = Boolean(bankName && accountNumber && accountName)
+  const qrUrl = hasBankDetails
+    ? `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent(accountName)}`
+    : null
 
   return (
     <motion.div
@@ -40,7 +53,7 @@ export function ConfirmationStep({
       <h1 className="text-3xl uppercase tracking-wide mb-4">{t('success')}</h1>
       <p className="text-muted-foreground mb-8">{t('successDesc')}</p>
 
-      {isBankTransfer && (
+      {isBankTransfer && hasBankDetails && qrUrl && (
         <div className="bg-card border-2 border-primary/20 rounded-sm p-8 mb-8 shadow-xl">
           <h2 className="text-xl uppercase tracking-widest mb-6 font-bold flex items-center justify-center gap-2">
             <span className="w-8 h-8 bg-primary text-primary-foreground flex items-center justify-center rounded-full text-xs">
@@ -58,19 +71,19 @@ export function ConfirmationStep({
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
                   {t('accountHolder')}
                 </p>
-                <p className="font-bold uppercase tracking-wide">HO KINH DOANH THE WHITE ACTIVE</p>
+                <p className="font-bold uppercase tracking-wide">{accountName}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
                   {t('accountNumber')}
                 </p>
-                <p className="font-bold text-lg">8601104886</p>
+                <p className="font-bold text-lg">{accountNumber}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
                   {t('bank')}
                 </p>
-                <p className="font-bold">BIDV</p>
+                <p className="font-bold">{bankName}</p>
               </div>
               <div className="p-3 bg-muted rounded-sm border border-border">
                 <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">

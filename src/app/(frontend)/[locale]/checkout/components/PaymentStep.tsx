@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
+import { usePaymentMethods } from '@/hooks/usePaymentMethods'
 
 interface PaymentStepProps {
   user: any
@@ -35,13 +36,25 @@ export function PaymentStep({
 }: PaymentStepProps) {
   const t = useTranslations('checkout')
 
+  // Bank / account fields come from the PaymentMethods global — no
+  // fallback: if the admin hasn't filled them in, the bank-transfer
+  // block won't render (better to show nothing than stale defaults
+  // that can't be corrected without a deploy).
+  const paymentMethods = usePaymentMethods()
+  const bank = paymentMethods?.bankTransfer
+  const bankName = bank?.bankName || ''
+  const bankCode = bankName.toUpperCase().replace(/\s+/g, '')
+  const accountNumber = bank?.accountNumber || ''
+  const accountName = bank?.accountName || ''
+  const hasBankDetails = Boolean(bankName && accountNumber && accountName)
+
   const isValidOrderId = (id: string | null | undefined): id is string =>
     Boolean(id) && !id!.startsWith('temp_') && !id!.startsWith('draft_')
 
   const vietQrUrl = useMemo(() => {
-    if (!isValidOrderId(orderId)) return null
-    return `https://img.vietqr.io/image/BIDV-8601104886-compact2.png?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent('HO KINH DOANH THE WHITE ACTIVE')}`
-  }, [orderId, total])
+    if (!isValidOrderId(orderId) || !hasBankDetails) return null
+    return `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent(accountName)}`
+  }, [orderId, total, bankCode, accountNumber, accountName, hasBankDetails])
 
   const [newPayment, setNewPayment] = useState({
     type: 'bank' as 'bank' | 'cod',
@@ -162,11 +175,11 @@ export function PaymentStep({
                   <div className="space-y-1 text-sm text-foreground">
                     <p>
                       <span className="text-muted-foreground">{t('bank')}:</span>{' '}
-                      <strong>BIDV</strong>
+                      <strong>{bankName}</strong>
                     </p>
                     <p>
                       <span className="text-muted-foreground">{t('accountNumber')}:</span>{' '}
-                      <strong>8601104886</strong>
+                      <strong>{accountNumber}</strong>
                     </p>
                     <p>
                       <span className="text-muted-foreground">{t('amount')}:</span>{' '}
