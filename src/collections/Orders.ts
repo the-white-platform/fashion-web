@@ -681,25 +681,18 @@ export const Orders: CollectionConfig = {
       logOrderActivity,
     ],
     afterChange: [
-      // Decrement stock after order is created/confirmed
-      decrementStockAfterOrder,
-      // Restore stock if order is cancelled
-      restoreStockOnCancel,
-      // Increment coupon usageCount when an order is created with a coupon
-      incrementCouponUsageAfterOrder,
-      // NOTE: sendOrderEmails disabled — no email provider wired up yet.
-      // The Resend adapter with an unused-but-set RESEND_API_KEY held
-      // the afterChange's transaction idle-in-transaction long enough
-      // to deadlock the next order insert on a products lock. Re-enable
-      // once email is actually used; for now the staff get order alerts
-      // via `notifyOnOrder` (in-app dashboard notifications).
+      // TEMP: all afterChange hooks disabled while we isolate the order
+      // POST hang. Leaving only Payload's core insert path active to
+      // confirm the baseline write completes. Re-enable hooks one by
+      // one after we find the culprit.
+      //
+      // decrementStockAfterOrder,
+      // restoreStockOnCancel,
+      // incrementCouponUsageAfterOrder,
       // sendOrderEmails,
-      // Send in-app notifications to staff/admins (push fires non-blocking)
-      notifyOnOrder,
-      // Send low-stock / out-of-stock notifications
-      notifyOnStockChange,
-      // Award loyalty points when order is delivered
-      loyaltyEarn,
+      // notifyOnOrder,
+      // notifyOnStockChange,
+      // loyaltyEarn,
     ],
   },
   timestamps: true,
