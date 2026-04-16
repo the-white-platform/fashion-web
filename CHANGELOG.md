@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.42.8](https://github.com/the-white-platform/fashion-web/compare/v0.42.7...v0.42.8) (2026-04-16)
+
+
+### Bug Fixes
+
+* **header:** restore useTranslations + Link imports used by cart/profile icons ([20fec5f](https://github.com/the-white-platform/fashion-web/commit/20fec5f5886ea12c8cb8a6075dc7a007f34cf0c0))
+
 ### [0.42.7](https://github.com/the-white-platform/fashion-web/compare/v0.42.6...v0.42.7) (2026-04-16)
 
 
