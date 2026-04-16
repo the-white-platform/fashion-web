@@ -29,12 +29,19 @@ interface QuickFilter {
   tagFilter?: 'sale' | 'new' | 'bestseller'
 }
 
+interface FeatureHighlight {
+  title: string
+  description: string
+  icon: string
+}
+
 interface HomePageClientProps {
   featuredProducts?: ProductForFrontend[]
   carouselSlides?: any[]
   featuredCategories?: any[]
   activityCategories?: any[]
   quickFilters?: QuickFilter[]
+  featureHighlights?: FeatureHighlight[]
 }
 
 export default function HomePageClient({
@@ -43,6 +50,7 @@ export default function HomePageClient({
   featuredCategories,
   activityCategories,
   quickFilters,
+  featureHighlights,
 }: HomePageClientProps) {
   const router = useRouter()
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
@@ -79,7 +87,7 @@ export default function HomePageClient({
       </AlternatingSection>
 
       <AlternatingSection index={3}>
-        <ExploreMore categories={featuredCategories} />
+        <ExploreMore categories={featuredCategories} highlights={featureHighlights} />
       </AlternatingSection>
 
       <AlternatingSection index={4}>

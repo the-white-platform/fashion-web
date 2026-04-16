@@ -2780,6 +2780,17 @@ export interface Homepage {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Four highlight tiles shown in the "Explore More" section on the homepage. Leave empty to hide the whole block.
+   */
+  featureHighlights?:
+    | {
+        title: string;
+        description: string;
+        icon: 'zap' | 'trending' | 'award' | 'users' | 'flag' | 'heart' | 'sparkles' | 'shield' | 'truck' | 'leaf';
+        id?: string | null;
+      }[]
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2935,6 +2946,14 @@ export interface HomepageSelect<T extends boolean = true> {
         filterType?: T;
         category?: T;
         tagFilter?: T;
+        id?: T;
+      };
+  featureHighlights?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
         id?: T;
       };
   updatedAt?: T;

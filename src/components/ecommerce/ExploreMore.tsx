@@ -1,10 +1,23 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { ArrowRight, Zap, TrendingUp, Award, Users } from 'lucide-react'
+import {
+  ArrowRight,
+  Zap,
+  TrendingUp,
+  Award,
+  Users,
+  Flag,
+  Heart,
+  Sparkles,
+  Shield,
+  Truck,
+  Leaf,
+} from 'lucide-react'
 import { useRouter } from '@/i18n/routing'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
+import type { ComponentType, SVGProps } from 'react'
 
 interface Category {
   id: number
@@ -12,37 +25,43 @@ interface Category {
   slug: string
 }
 
-interface ExploreMoreProps {
-  categories?: Category[]
+interface FeatureHighlight {
+  title: string
+  description: string
+  icon: string
 }
 
-export function ExploreMore({ categories }: ExploreMoreProps = {}) {
+interface ExploreMoreProps {
+  categories?: Category[]
+  highlights?: FeatureHighlight[]
+}
+
+const ICON_MAP: Record<string, ComponentType<SVGProps<SVGSVGElement>>> = {
+  zap: Zap,
+  trending: TrendingUp,
+  award: Award,
+  users: Users,
+  flag: Flag,
+  heart: Heart,
+  sparkles: Sparkles,
+  shield: Shield,
+  truck: Truck,
+  leaf: Leaf,
+}
+
+export function ExploreMore({ categories, highlights }: ExploreMoreProps = {}) {
   const router = useRouter()
   const t = useTranslations('exploreMore')
   const tCommon = useTranslations('common')
 
-  const features = [
-    {
-      icon: Zap,
-      title: t('feature1.title'),
-      description: t('feature1.desc'),
-    },
-    {
-      icon: TrendingUp,
-      title: t('feature2.title'),
-      description: t('feature2.desc'),
-    },
-    {
-      icon: Award,
-      title: t('feature3.title'),
-      description: t('feature3.desc'),
-    },
-    {
-      icon: Users,
-      title: t('feature4.title'),
-      description: t('feature4.desc'),
-    },
-  ]
+  // Highlights are CMS-only — admin configures them in
+  // /admin/globals/homepage. If nothing is configured, the feature
+  // grid is hidden (matches carousel + featured-products treatment).
+  const features = (highlights ?? []).map((h) => ({
+    icon: ICON_MAP[h.icon] ?? Sparkles,
+    title: h.title,
+    description: h.description,
+  }))
 
   // Map categories to collections with translated descriptions
   const collections =
@@ -79,30 +98,32 @@ export function ExploreMore({ categories }: ExploreMoreProps = {}) {
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">{t('subtitle')}</p>
         </motion.div>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          {features.map((feature, index) => {
-            const Icon = feature.icon
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="text-center group"
-              >
-                <div className="w-16 h-16 bg-primary text-primary-foreground rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Icon className="w-8 h-8" />
-                </div>
-                <h3 className="text-xl uppercase tracking-wide mb-2 text-foreground">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground text-sm">{feature.description}</p>
-              </motion.div>
-            )
-          })}
-        </div>
+        {/* Features Grid — only render when admin has configured highlights */}
+        {features.length > 0 && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+            {features.map((feature, index) => {
+              const Icon = feature.icon
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className="text-center group"
+                >
+                  <div className="w-16 h-16 bg-primary text-primary-foreground rounded-sm flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <Icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-xl uppercase tracking-wide mb-2 text-foreground">
+                    {feature.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm">{feature.description}</p>
+                </motion.div>
+              )
+            })}
+          </div>
+        )}
 
         {/* Collections Grid */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">

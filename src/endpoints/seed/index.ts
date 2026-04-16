@@ -654,6 +654,28 @@ export const seed = async ({
         ],
         activityCategories: activityCategoryIds,
         quickFilters: quickFiltersBase,
+        featureHighlights: [
+          {
+            icon: 'zap',
+            title: 'Hiệu Suất Cao',
+            description: 'Vải công nghệ tiên tiến, thoáng khí và thấm hút mồ hôi tối ưu',
+          },
+          {
+            icon: 'sparkles',
+            title: 'Thiết Kế Hiện Đại',
+            description: 'Phong cách tối giản, sang trọng phù hợp mọi hoạt động',
+          },
+          {
+            icon: 'award',
+            title: 'Chất Lượng Premium',
+            description: 'Cam kết 100% chất lượng, bền bỉ theo thời gian',
+          },
+          {
+            icon: 'flag',
+            title: '100% Thuần Việt',
+            description: 'Thiết kế, sản xuất và may đo hoàn toàn tại Việt Nam',
+          },
+        ],
       },
     })
 
@@ -699,6 +721,30 @@ export const seed = async ({
       },
     )
 
+    // English feature highlights — same IDs, English copy
+    const featureHighlightsEn = (savedHomepage.featureHighlights || []).map(
+      (h: any, index: number) => {
+        const en = [
+          {
+            title: 'High Performance',
+            description: 'Advanced fabric tech — breathable and moisture-wicking',
+          },
+          { title: 'Modern Design', description: 'Minimalist, premium style for every activity' },
+          { title: 'Premium Quality', description: '100% quality commitment, built to last' },
+          {
+            title: '100% Made in Vietnam',
+            description: 'Designed, sourced and stitched entirely in Vietnam',
+          },
+        ]
+        return {
+          id: h.id,
+          icon: h.icon,
+          title: en[index]?.title || h.title,
+          description: en[index]?.description || h.description,
+        }
+      },
+    )
+
     // Step 5: Update English locale with same IDs
     await payload.updateGlobal({
       slug: 'homepage',
@@ -707,6 +753,7 @@ export const seed = async ({
         carouselSlides: carouselSlidesEn,
         activityCategories: activityCategoryIds,
         quickFilters: quickFiltersEn,
+        featureHighlights: featureHighlightsEn,
       },
     })
 

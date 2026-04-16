@@ -17,6 +17,12 @@ interface QuickFilter {
   tagFilter?: 'sale' | 'new' | 'bestseller'
 }
 
+interface FeatureHighlight {
+  title: string
+  description: string
+  icon: string
+}
+
 // Always use the custom e-commerce home page
 // The CMS home page is available via /home if needed
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -34,6 +40,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   let featuredCategories: any[] = []
   let activityCategories: any[] = []
   let quickFilters: QuickFilter[] = []
+  let featureHighlights: FeatureHighlight[] = []
 
   try {
     // Only fetch if configPromise is available
@@ -72,6 +79,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
     if (homepage) {
       carouselSlides = homepage.carouselSlides || []
+      featureHighlights = ((homepage.featureHighlights || []) as any[])
+        .filter((f) => f && f.title)
+        .map((f) => ({ title: f.title, description: f.description, icon: f.icon }))
 
       // Process quick filters from CMS
       const cmsQuickFilters = (homepage.quickFilters || []) as any[]
@@ -162,6 +172,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       featuredCategories={featuredCategories}
       activityCategories={activityCategories}
       quickFilters={quickFilters}
+      featureHighlights={featureHighlights}
     />
   )
 }

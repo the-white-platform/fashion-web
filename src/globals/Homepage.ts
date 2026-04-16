@@ -125,5 +125,52 @@ export const Homepage: GlobalConfig = {
         },
       ],
     },
+    {
+      name: 'featureHighlights',
+      type: 'array',
+      label: { vi: 'Điểm nổi bật', en: 'Feature Highlights' },
+      maxRows: 4,
+      admin: {
+        description: {
+          vi: 'Bốn ô đặc trưng hiển thị ở khu vực "Khám Phá Thêm" trên trang chủ. Để trống để ẩn cả khối.',
+          en: 'Four highlight tiles shown in the "Explore More" section on the homepage. Leave empty to hide the whole block.',
+        },
+      },
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+          localized: true,
+          label: { vi: 'Tiêu đề', en: 'Title' },
+        },
+        {
+          name: 'description',
+          type: 'text',
+          required: true,
+          localized: true,
+          label: { vi: 'Mô tả', en: 'Description' },
+        },
+        {
+          name: 'icon',
+          type: 'select',
+          required: true,
+          defaultValue: 'sparkles',
+          label: { vi: 'Biểu tượng', en: 'Icon' },
+          options: [
+            { label: 'Zap (lightning)', value: 'zap' },
+            { label: 'Trending Up', value: 'trending' },
+            { label: 'Award', value: 'award' },
+            { label: 'Users', value: 'users' },
+            { label: 'Flag (Vietnam)', value: 'flag' },
+            { label: 'Heart', value: 'heart' },
+            { label: 'Sparkles', value: 'sparkles' },
+            { label: 'Shield', value: 'shield' },
+            { label: 'Truck', value: 'truck' },
+            { label: 'Leaf', value: 'leaf' },
+          ],
+        },
+      ],
+    },
   ],
 }
