@@ -394,6 +394,8 @@ export async function POST(request: Request) {
       )
     }
 
+    console.log(`[VTO] served by ${usedProvider} (tried: ${tried.join(',')})`)
+
     const resultDataUrl = `data:${imageReply.mimeType};base64,${imageReply.data}`
 
     // Log this successful generation so the daily-quota counter

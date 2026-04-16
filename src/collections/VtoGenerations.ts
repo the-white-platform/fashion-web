@@ -60,9 +60,12 @@ export const VtoGenerations: CollectionConfig = {
       // The data: URL of the generated image. Stored in DB to keep the
       // cache lookup atomic with the quota row. ~250KB per row at
       // current compression — fine at launch volume; if it grows, move
-      // to GCS keyed by inputHash.
+      // to GCS keyed by inputHash. Default Payload textarea maxLength
+      // is 40,000 chars which is too small for a base64 image, so
+      // bump it explicitly to ~1MB.
       name: 'resultData',
       type: 'textarea',
+      maxLength: 1_500_000,
       label: { vi: 'Ảnh kết quả', en: 'Result Image' },
       admin: {
         description: 'data: URL of the generated image (used for retry caching)',
