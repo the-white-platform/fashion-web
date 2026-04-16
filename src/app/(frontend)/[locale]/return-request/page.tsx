@@ -20,7 +20,7 @@ import {
 
 export default function ReturnRequestPage() {
   const router = useRouter()
-  const { user } = useUser()
+  const { user, isLoading: isAuthLoading } = useUser()
   const t = useTranslations('returnRequest')
   const tNav = useTranslations('nav')
 
@@ -45,9 +45,7 @@ export default function ReturnRequestPage() {
 
   const order = deliveredOrders.find((o) => o.orderNumber === selectedOrder) || null
 
-  const reasons = (
-    ['r1', 'r2', 'r3', 'r4', 'r5', 'r6'] as const
-  ).map((key) => t(`reason.${key}`))
+  const reasons = (['r1', 'r2', 'r3', 'r4', 'r5', 'r6'] as const).map((key) => t(`reason.${key}`))
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,7 +60,10 @@ export default function ReturnRequestPage() {
     }
   }
 
-  // Redirect if not authenticated
+  // Redirect if not authenticated. Wait for the auth probe to finish
+  // first — `user` starts as null while /api/users/me is in flight, so
+  // redirecting eagerly would bounce a logged-in user on refresh.
+  if (isAuthLoading) return null
   if (!user) {
     router.push('/login')
     return null
@@ -146,8 +147,7 @@ export default function ReturnRequestPage() {
                 <option value="">{t('order.selectDefault')}</option>
                 {deliveredOrders.map((o: any) => (
                   <option key={o.id} value={o.orderNumber}>
-                    #{o.orderNumber} —{' '}
-                    {new Date(o.createdAt).toLocaleDateString('vi-VN')} —{' '}
+                    #{o.orderNumber} — {new Date(o.createdAt).toLocaleDateString('vi-VN')} —{' '}
                     {(o.totals?.total || 0).toLocaleString('vi-VN')}₫
                   </option>
                 ))}

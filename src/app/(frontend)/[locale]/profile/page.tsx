@@ -49,6 +49,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const {
     user,
+    isLoading: isAuthLoading,
     logout,
     updateProfile,
     updateShippingAddress,
@@ -57,6 +58,7 @@ export default function ProfilePage() {
     deletePaymentMethod,
   } = useUser()
   const t = useTranslations()
+  const tCommon = useTranslations('common')
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [editPhone, setEditPhone] = useState('')
@@ -65,12 +67,15 @@ export default function ProfilePage() {
   const [orders, setOrders] = useState<any[]>([])
   const [loyalty, setLoyalty] = useState<LoyaltySummary | null>(null)
 
-  // Redirect to login if not authenticated
+  // Redirect to login only after the auth probe has finished. Without
+  // this guard the page redirects on first paint (user is null while
+  // /api/users/me is still in flight), so a logged-in user who hits
+  // refresh gets bounced to /login and looks "logged out".
   useEffect(() => {
-    if (!user) {
+    if (!isAuthLoading && !user) {
       router.push('/login')
     }
-  }, [user, router])
+  }, [isAuthLoading, user, router])
 
   // Fetch latest 5 orders for the orders tab
   useEffect(() => {
@@ -230,7 +235,7 @@ export default function ProfilePage() {
                     className="flex items-center gap-2 px-4 py-2 border border-border rounded-sm hover:bg-muted transition-colors text-sm uppercase tracking-wide"
                   >
                     <Pencil className="w-4 h-4" />
-                    {t('common.edit') || 'Edit'}
+                    {tCommon('edit')}
                   </button>
                 )}
               </div>
