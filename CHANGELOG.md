@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.39.0](https://github.com/the-white-platform/fashion-web/compare/v0.38.3...v0.39.0) (2026-04-16)
+
+
+### Features
+
+* **chatbot:** ground Wolfies with CMS-editable brand + catalog context ([79430fc](https://github.com/the-white-platform/fashion-web/commit/79430fcff70b03fd5c2a1942903c2336deb565d0))
+
 ### [0.38.3](https://github.com/the-white-platform/fashion-web/compare/v0.38.2...v0.38.3) (2026-04-16)
 
 
