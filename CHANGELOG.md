@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.31.2](https://github.com/the-white-platform/fashion-web/compare/v0.31.1...v0.31.2) (2026-04-16)
+
+
+### Bug Fixes
+
+* **checkout:** order summary on left (desktop) / on top (mobile) ([e2f16de](https://github.com/the-white-platform/fashion-web/commit/e2f16def0b5332f9e93a4e0366ce1dc17a0100b3))
+
 ### [0.31.1](https://github.com/the-white-platform/fashion-web/compare/v0.31.0...v0.31.1) (2026-04-16)
 
 
