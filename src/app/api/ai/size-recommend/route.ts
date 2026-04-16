@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { genAI } from '@/lib/gemini'
+import { vertexGeminiGenerate } from '@/lib/vertex'
 import { getChatContextPack } from '@/utilities/getChatContextPack'
 
 /**
@@ -59,11 +59,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'weightKg must be between 30 and 200' }, { status: 400 })
   }
 
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) {
-    return NextResponse.json({ error: 'GEMINI_API_KEY is not configured' }, { status: 503 })
-  }
-
   const contextPack = await getChatContextPack(locale).catch(() => '')
 
   const systemInstruction =
@@ -86,30 +81,28 @@ export async function POST(request: Request) {
     .join('\n')
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+    const { text } = await vertexGeminiGenerate({
       systemInstruction,
+      userMessage,
       generationConfig: {
         responseMimeType: 'application/json',
         responseSchema: {
-          type: 'object',
+          type: 'OBJECT',
           properties: {
-            recommendedSize: { type: 'string', enum: ['XS', 'S', 'M', 'L', 'XL', '2XL'] },
-            confidence: { type: 'integer' },
-            reasoning: { type: 'string' },
+            recommendedSize: { type: 'STRING', enum: ['XS', 'S', 'M', 'L', 'XL', '2XL'] },
+            confidence: { type: 'INTEGER' },
+            reasoning: { type: 'STRING' },
           },
           required: ['recommendedSize', 'confidence', 'reasoning'],
-        } as never,
+        },
       },
     })
 
-    const result = await model.generateContent(userMessage)
-    const text = result.response.text()
     let parsed: Reply
     try {
       parsed = JSON.parse(text) as Reply
     } catch {
-      console.error('[size-recommend] non-JSON reply from Gemini:', text.slice(0, 300))
+      console.error('[size-recommend] non-JSON reply from Vertex:', text.slice(0, 300))
       return NextResponse.json({ error: 'Model returned non-JSON output' }, { status: 502 })
     }
 
@@ -122,7 +115,7 @@ export async function POST(request: Request) {
       reasoning: parsed.reasoning,
     })
   } catch (err) {
-    console.error('[size-recommend] Gemini error:', err)
+    console.error('[size-recommend] Vertex error:', err)
     return NextResponse.json(
       { error: 'Size recommendation is unavailable right now.' },
       { status: 502 },

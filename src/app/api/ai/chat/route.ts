@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers'
-import { genAI } from '@/lib/gemini'
+import { vertexGeminiStream } from '@/lib/vertex'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
@@ -211,26 +211,13 @@ export async function POST(request: Request) {
 
   // --- Stream response ---
   try {
-    // Construct the model per-request: the Gemini SDK expects
-    // `systemInstruction` on getGenerativeModel(), NOT on startChat().
-    // Passing it to startChat is silently rejected with a 400
-    // BadRequest, which is what was firing in prod.
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      systemInstruction,
-    })
-
-    // Build history (all messages except the last user message)
+    // Vertex AI (not Gemini Dev API) so billing lands on the GCP trial
+    // credit instead of AI Studio's separate Gemini API plan.
     const history = messages.slice(0, -1).map((msg) => ({
-      role: msg.role,
+      role: msg.role as 'user' | 'model',
       parts: [{ text: msg.content }],
     }))
-
     const lastMessage = messages[messages.length - 1]
-
-    const chat = model.startChat({ history })
-
-    const result = await chat.sendMessageStream(lastMessage.content)
 
     // Accumulate the full assistant response for persistence
     let fullAssistantContent = ''
@@ -238,8 +225,11 @@ export async function POST(request: Request) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of result.stream) {
-            const text = chunk.text()
+          for await (const text of vertexGeminiStream({
+            systemInstruction,
+            history,
+            userMessage: lastMessage.content,
+          })) {
             if (text) {
               fullAssistantContent += text
               controller.enqueue(new TextEncoder().encode(text))

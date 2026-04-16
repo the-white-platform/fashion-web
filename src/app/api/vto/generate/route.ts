@@ -168,7 +168,12 @@ function inputHashFor(parts: {
 // callable only differs in URL + auth header.
 // ---------------------------------------------------------------------------
 type Provider = 'vertex' | 'gemini'
-const DEFAULT_ORDER: Provider[] = ['vertex', 'gemini']
+// Default is vertex-only so all billing lands on the GCP trial credit
+// instead of AI Studio's separate Gemini API plan. Set
+// VTO_PROVIDER_ORDER=vertex,gemini on Cloud Run to re-enable the
+// Gemini Dev API fallback (useful if Vertex safety filters start
+// rejecting real person uploads).
+const DEFAULT_ORDER: Provider[] = ['vertex']
 
 function providerOrder(): Provider[] {
   const env = (process.env.VTO_PROVIDER_ORDER || '').toLowerCase().trim()
