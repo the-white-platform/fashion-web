@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.42.7](https://github.com/the-white-platform/fashion-web/compare/v0.42.6...v0.42.7) (2026-04-16)
+
+
+### Code Refactoring
+
+* **header:** remove in-code navItems fallback — CMS is the only source ([e9ef5aa](https://github.com/the-white-platform/fashion-web/commit/e9ef5aaff686f5a054d63a040714d90f64888dde))
+
 ### [0.42.6](https://github.com/the-white-platform/fashion-web/compare/v0.42.5...v0.42.6) (2026-04-16)
 
 ### [0.42.5](https://github.com/the-white-platform/fashion-web/compare/v0.42.4...v0.42.5) (2026-04-16)
