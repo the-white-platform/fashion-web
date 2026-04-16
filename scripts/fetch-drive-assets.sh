@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# fetch-drive-assets.sh — one-time download of lookbook + size-chart images from Google Drive.
+# fetch-drive-assets.sh — one-time download of lookbook + hi-res images from Google Drive.
 # Reuses the shared dev-script helpers and the `gws` Google Workspace CLI (must be authenticated).
 #
 # Output:
 #   src/endpoints/seed/lookbook/<product-slug>/<image-name>
-#   src/endpoints/seed/size-charts/<category-slug>.<ext>
+#   src/endpoints/seed/hi-res/<image-name>
 #
 # Safe to re-run: skips files that already exist on disk.
 
@@ -15,7 +15,6 @@ check_command jq
 
 MANIFEST="$SCRIPT_DIR/drive-manifest.json"
 LOOKBOOK_DIR="$PROJECT_ROOT/src/endpoints/seed/lookbook"
-SIZECHARTS_DIR="$PROJECT_ROOT/src/endpoints/seed/size-charts"
 HIRES_DIR="$PROJECT_ROOT/src/endpoints/seed/hi-res"
 
 [[ -f "$MANIFEST" ]] || { error "Manifest not found: $MANIFEST"; exit 1; }
@@ -25,7 +24,7 @@ if ! gws auth status 2>/dev/null | grep -q '"token_valid": true'; then
   exit 1
 fi
 
-mkdir -p "$LOOKBOOK_DIR" "$SIZECHARTS_DIR" "$HIRES_DIR"
+mkdir -p "$LOOKBOOK_DIR" "$HIRES_DIR"
 
 # ── Lookbook products ────────────────────────────────────────────────────────
 info "Downloading lookbook folders…"
@@ -77,26 +76,6 @@ for i in $(seq 0 $((product_count - 1))); do
   done
 done
 
-# ── Size charts ─────────────────────────────────────────────────────────────
-info "Downloading size charts…"
-
-chart_count=$(jq '.sizeCharts | length' "$MANIFEST")
-for i in $(seq 0 $((chart_count - 1))); do
-  cat_slug=$(jq -r ".sizeCharts[$i].categorySlug" "$MANIFEST")
-  file_id=$(jq -r ".sizeCharts[$i].driveFileId" "$MANIFEST")
-  ext=$(jq -r ".sizeCharts[$i].ext" "$MANIFEST")
-  dest="$SIZECHARTS_DIR/$cat_slug.$ext"
-
-  if [[ -f "$dest" ]]; then
-    info "  [skip] $cat_slug.$ext (exists)"
-    continue
-  fi
-
-  gws drive files get --params "{\"fileId\":\"$file_id\",\"alt\":\"media\"}" -o "$dest" >/dev/null 2>&1 \
-    && success "  [ok]   $cat_slug.$ext" \
-    || warn "  [fail] $cat_slug.$ext"
-done
-
 # ── Hi-res product gallery (N1-N28.png from the shared "2D" Drive folder) ───
 hires_folder_id=$(jq -r '.hiResFolderId // empty' "$MANIFEST")
 if [[ -n "$hires_folder_id" ]]; then
@@ -126,4 +105,4 @@ success "Drive asset download complete."
 echo
 info "Summary:"
 echo "  lookbook:    $(find "$LOOKBOOK_DIR" -type f 2>/dev/null | wc -l | tr -d ' ') files in $(find "$LOOKBOOK_DIR" -maxdepth 1 -type d 2>/dev/null | tail -n +2 | wc -l | tr -d ' ') product folders"
-echo "  size charts: $(find "$SIZECHARTS_DIR" -type f 2>/dev/null | wc -l | tr -d ' ') files"
+echo "  hi-res:      $(find "$HIRES_DIR" -type f 2>/dev/null | wc -l | tr -d ' ') files"

@@ -3,7 +3,7 @@ import * as client from 'openid-client'
 
 export async function GET(request: Request) {
   const googleClientId = process.env.GOOGLE_CLIENT_ID
-  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3200'
 
   if (!googleClientId) {
     return NextResponse.json({ error: 'Google Client ID not configured' }, { status: 500 })

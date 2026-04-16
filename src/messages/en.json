@@ -62,15 +62,17 @@
     "quickView": "Quick View",
     "outOfStock": "Out of Stock",
     "quantity": "Quantity",
-    "guide": "Guide",
     "noDescription": "No description available",
     "viewAll": "View All",
     "filter": "Filter",
     "sort": "Sort",
     "size": "Size",
+    "sizeChartNote": "Note",
+    "sizeChartTitle": "Size Chart",
     "color": "Color",
     "price": "Price",
-    "category": "Category"
+    "category": "Category",
+    "viewSizeChart": "View size chart"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -273,7 +275,6 @@
       "title": "Customer Service",
       "returns": "Return Policy",
       "shipping": "Shipping Partners",
-      "sizeGuide": "Size Guide",
       "contact": "Contact",
       "faq": "FAQ"
     },
@@ -619,6 +620,7 @@
     "title": "Filter",
     "clear": "Clear All Filters",
     "apply": "Apply",
+    "searchPlaceholder": "Search products...",
     "category": {
       "title": "Category",
       "tshirt": "T-Shirt",
@@ -637,6 +639,11 @@
       "above2000": "Over 2m"
     },
     "size": "Size",
+    "stockStatus": {
+      "title": "Stock Status",
+      "inStock": "In Stock",
+      "outOfStock": "Out of Stock"
+    },
     "color": {
       "title": "Color",
       "white": "White",
@@ -647,6 +654,7 @@
       "green": "Green"
     },
     "sort": {
+      "title": "Sort by",
       "newest": "Newest",
       "priceAsc": "Price: Low to High",
       "priceDesc": "Price: High to Low",
@@ -681,7 +689,7 @@
       },
       "rights": {
         "title": "6. Your Rights Under GDPR",
-        "content": "You have the following rights:\n\n**Right of access:** Request a copy of your personal data\n\n**Right to rectification:** Update inaccurate information\n\n**Right to erasure (\"Right to be Forgotten\"):** Request deletion of your data\n\n**Right to restrict processing:** Pause data processing in specific cases\n\n**Right to data portability:** Receive data in a readable format\n\n**Right to object:** Refuse data processing for marketing purposes\n\n**Right to withdraw consent:** Cancel consent given at any time\n\n**How to exercise rights:**\n📧 Email: privacy@thewhite.vn\n📞 Hotline: 0123 456 789\n⏱️ Response time: 30 days"
+        "content": "You have the following rights:\n\n**Right of access:** Request a copy of your personal data\n\n**Right to rectification:** Update inaccurate information\n\n**Right to erasure (\"Right to be Forgotten\"):** Request deletion of your data\n\n**Right to restrict processing:** Pause data processing in specific cases\n\n**Right to data portability:** Receive data in a readable format\n\n**Right to object:** Refuse data processing for marketing purposes\n\n**Right to withdraw consent:** Cancel consent given at any time\n\n**How to exercise rights:**\n📧 Email: contact@thewhite.cool\n📞 Hotline: +84 886 402 616\n⏱️ Response time: 30 days"
       },
       "international": {
         "title": "7. International Data Transfer",
@@ -710,7 +718,7 @@
     "sections": {
       "acceptance": {
         "title": "1. Acceptance of Terms",
-        "content": "By accessing and using TheWhite website (www.thewhite.vn), you agree to comply with these terms and conditions of use.\n\nIf you do not agree to any part of the terms, please do not use our services.\n\nWe reserve the right to change these terms at any time. Continued use after changes constitutes your acceptance of the new terms."
+        "content": "By accessing and using TheWhite website (thewhite.cool), you agree to comply with these terms and conditions of use.\n\nIf you do not agree to any part of the terms, please do not use our services.\n\nWe reserve the right to change these terms at any time. Continued use after changes constitutes your acceptance of the new terms."
       },
       "account": {
         "title": "2. User Account",
@@ -837,8 +845,7 @@
       "title": "Quick Links",
       "faq": "Frequently Asked Questions",
       "returnPolicy": "Return Policy",
-      "shoppingGuide": "Shopping Guide",
-      "sizeGuide": "Size Guide"
+      "shoppingGuide": "Shopping Guide"
     }
   },
   "faq": {
@@ -1036,13 +1043,6 @@
     }
   },
   "sizeGuide": {
-    "breadcrumb": "Size Guide",
-    "title": "Size Guide",
-    "subtitle": "Find your perfect fit",
-    "tabs": {
-      "calculator": "AI Size Finder",
-      "chart": "Size Chart"
-    },
     "calculator": {
       "title": "AI Size Finder",
       "desc": "Enter your measurements and we'll recommend the best size",
@@ -1070,30 +1070,10 @@
       }
     },
     "chart": {
-      "title": "Men's Size Chart",
-      "womenTitle": "Women's Size Chart",
-      "shirt": "Shirt / Top",
-      "pants": "Pants / Bottom",
-      "gender": {
-        "men": "Men",
-        "women": "Women"
-      },
       "headers": {
-        "size": "Size",
-        "height": "Height (cm)",
-        "weight": "Weight (kg)",
         "chest": "Chest (cm)",
-        "waist": "Waist (cm)",
-        "hip": "Hip (cm)",
-        "inseam": "Inseam (cm)"
+        "waist": "Waist (cm)"
       }
-    },
-    "tips": {
-      "title": "Fitting Tips",
-      "t1": "Take measurements in the morning when your body is at its natural state",
-      "t2": "Use a flexible measuring tape for accuracy",
-      "t3": "If between sizes, go one size up for a comfortable fit",
-      "t4": "Different fabrics may fit differently — check each product's notes"
     }
   },
   "shipping": {
@@ -1236,7 +1216,7 @@
     "welcomeMessage": "Hello! I'm THE WHITE's AI assistant. I can help you with outfit advice, size selection, or answer any questions you have. Ask me anything!",
     "inputPlaceholder": "Type a message...",
     "quickReply": {
-      "sizeGuide": "Size guide",
+      "sizeGuide": "Size advice",
       "returnPolicy": "Return policy",
       "bestSellers": "Best sellers"
     },

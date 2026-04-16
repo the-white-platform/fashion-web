@@ -19,7 +19,6 @@ test-results
 /tmp
 src/endpoints/seed/hi-res/
 src/endpoints/seed/lookbook/
-public/size-charts/
 
 # Local-only: temp doc-export dir from gws
 /.product-docs/

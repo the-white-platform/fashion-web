@@ -104,7 +104,7 @@ export function SmartSizePicker({
     <div
       className={
         hideHeader
-          ? 'grid grid-cols-1 lg:grid-cols-2 gap-6'
+          ? 'flex flex-col gap-4'
           : 'bg-gradient-to-br from-foreground to-foreground/80 text-background border-2 border-foreground rounded-sm p-8'
       }
     >
@@ -204,111 +204,115 @@ export function SmartSizePicker({
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           {/* Actions */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="button"
               onClick={submit}
               disabled={loading}
-              className="flex-1 bg-foreground text-background py-3 rounded-sm hover:opacity-90 disabled:opacity-50 transition-all uppercase tracking-wide flex items-center justify-center gap-2"
+              className="flex-1 whitespace-nowrap bg-foreground text-background py-3 px-4 rounded-sm hover:opacity-90 disabled:opacity-50 transition-all uppercase tracking-wide flex items-center justify-center gap-2"
             >
-              <Sparkles className="w-5 h-5" />
-              {loading ? t('calculator.finding') : t('calculator.find')}
+              <Sparkles className="w-5 h-5 shrink-0" />
+              <span>{loading ? t('calculator.finding') : t('calculator.find')}</span>
             </button>
             <button
               type="button"
               onClick={reset}
               disabled={loading}
-              className="px-6 border-2 border-border bg-background text-foreground py-3 rounded-sm hover:border-foreground disabled:opacity-50 transition-all uppercase tracking-wide"
+              className="px-6 py-3 whitespace-nowrap border-2 border-border bg-background text-foreground rounded-sm hover:border-foreground disabled:opacity-50 transition-all uppercase tracking-wide"
             >
               {t('calculator.reset')}
             </button>
           </div>
         </div>
 
-        {/* Result */}
-        <div className="bg-background text-foreground rounded-sm p-6 flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            {loading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-12 text-muted-foreground"
-              >
-                <Sparkles className="w-10 h-10 mx-auto mb-3 animate-pulse" />
-                <p>{t('calculator.finding')}</p>
-              </motion.div>
-            ) : result ? (
-              <motion.div
-                key="result"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                className="w-full text-center space-y-5"
-              >
-                <div className="w-24 h-24 bg-foreground text-background rounded-full flex items-center justify-center mx-auto text-4xl font-bold">
-                  {result.recommendedSize}
-                </div>
-                <div>
-                  <h3 className="text-2xl uppercase tracking-wide mb-2">
-                    {t('calculator.result.title')}
-                  </h3>
-                  <p className="text-muted-foreground mb-1">
-                    {t('calculator.result.fit')}:{' '}
-                    <span className="font-bold text-foreground">{result.confidence}%</span>
-                  </p>
-                  <div className="h-1.5 w-full bg-muted rounded-sm overflow-hidden mt-2 mb-3">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${result.confidence}%` }}
-                      transition={{ duration: 0.6 }}
-                      className="h-full bg-foreground"
-                    />
+        {/* Result — hide the empty-state card inside the modal (hideHeader) since
+            the form description already tells the user what to do. Keeps the
+            loading/result views for both contexts. */}
+        {(loading || result || !hideHeader) && (
+          <div className="bg-background text-foreground rounded-sm p-6 flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              {loading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-center py-12 text-muted-foreground"
+                >
+                  <Sparkles className="w-10 h-10 mx-auto mb-3 animate-pulse" />
+                  <p>{t('calculator.finding')}</p>
+                </motion.div>
+              ) : result ? (
+                <motion.div
+                  key="result"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="w-full text-center space-y-5"
+                >
+                  <div className="w-24 h-24 bg-foreground text-background rounded-full flex items-center justify-center mx-auto text-4xl font-bold">
+                    {result.recommendedSize}
                   </div>
-                  <div className="flex items-center justify-center gap-2">
-                    <confidenceIcon.Icon className={`w-5 h-5 ${confidenceIcon.tone}`} />
-                    <span className={`text-sm ${confidenceIcon.tone}`}>
-                      {t('calculator.result.fit')}
-                    </span>
-                  </div>
-                  {result.reasoning && (
-                    <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
-                      {result.reasoning}
+                  <div>
+                    <h3 className="text-2xl uppercase tracking-wide mb-2">
+                      {t('calculator.result.title')}
+                    </h3>
+                    <p className="text-muted-foreground mb-1">
+                      {t('calculator.result.fit')}:{' '}
+                      <span className="font-bold text-foreground">{result.confidence}%</span>
                     </p>
+                    <div className="h-1.5 w-full bg-muted rounded-sm overflow-hidden mt-2 mb-3">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${result.confidence}%` }}
+                        transition={{ duration: 0.6 }}
+                        className="h-full bg-foreground"
+                      />
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <confidenceIcon.Icon className={`w-5 h-5 ${confidenceIcon.tone}`} />
+                      <span className={`text-sm ${confidenceIcon.tone}`}>
+                        {t('calculator.result.fit')}
+                      </span>
+                    </div>
+                    {result.reasoning && (
+                      <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                        {result.reasoning}
+                      </p>
+                    )}
+                  </div>
+                  {onPickSize ? (
+                    <button
+                      type="button"
+                      onClick={() => onPickSize(result.recommendedSize)}
+                      className="w-full py-3 border-2 border-foreground bg-foreground text-background rounded-sm hover:opacity-90 transition-all uppercase tracking-wide"
+                    >
+                      {tCommon('apply')} size {result.recommendedSize}
+                    </button>
+                  ) : (
+                    <a
+                      href={`/${locale}/products?sizes=${result.recommendedSize}`}
+                      className="block w-full py-3 border-2 border-foreground bg-background text-foreground rounded-sm hover:bg-foreground hover:text-background transition-all uppercase tracking-wide"
+                    >
+                      {t('calculator.result.viewProducts', { size: result.recommendedSize })}
+                    </a>
                   )}
-                </div>
-                {onPickSize ? (
-                  <button
-                    type="button"
-                    onClick={() => onPickSize(result.recommendedSize)}
-                    className="w-full py-3 border-2 border-foreground bg-foreground text-background rounded-sm hover:opacity-90 transition-all uppercase tracking-wide"
-                  >
-                    {tCommon('apply')} size {result.recommendedSize}
-                  </button>
-                ) : (
-                  <a
-                    href={`/${locale}/products?sizes=${result.recommendedSize}`}
-                    className="block w-full py-3 border-2 border-foreground bg-background text-foreground rounded-sm hover:bg-foreground hover:text-background transition-all uppercase tracking-wide"
-                  >
-                    {t('calculator.result.viewProducts', { size: result.recommendedSize })}
-                  </a>
-                )}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="text-center py-12 text-muted-foreground"
-              >
-                <User className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p>{t('calculator.desc')}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="text-center py-12 text-muted-foreground"
+                >
+                  <User className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                  <p>{t('calculator.desc')}</p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </div>
   )

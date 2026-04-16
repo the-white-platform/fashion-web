@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const state = searchParams.get('state')
 
-  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3200'
   const facebookAppId = process.env.FACEBOOK_CLIENT_ID
   const facebookAppSecret = process.env.FACEBOOK_CLIENT_SECRET
 

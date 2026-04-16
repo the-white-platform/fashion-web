@@ -344,11 +344,8 @@ export default function ProfilePage() {
             <div className="bg-card rounded-sm border border-border p-6 md:p-8">
               <h2 className="text-2xl uppercase tracking-wide mb-6">{t('profile.size')}</h2>
               <p className="text-muted-foreground">
-                Tính năng này sẽ được triển khai sớm. Sử dụng{' '}
-                <Link href="/size-guide" className="text-foreground underline">
-                  Hướng Dẫn Chọn Size
-                </Link>{' '}
-                để tìm size phù hợp.
+                Tính năng này sẽ được triển khai sớm. Vui lòng xem bảng kích thước trên trang từng
+                sản phẩm.
               </p>
             </div>
           )}

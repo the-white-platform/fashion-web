@@ -1,10 +1,36 @@
 'use client'
 
+import type { SVGProps } from 'react'
 import { Facebook, Instagram, Phone, Mail } from 'lucide-react'
 import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/shared/Logo/Logo'
 import type { FooterCategoryLink } from './Component'
+
+// Shopee icon, outlined to match the lucide-react style used for the
+// Facebook/Instagram icons next to it (fill="none", stroke="currentColor",
+// 24×24 viewBox, 2px stroke, round caps/joins).
+function ShopeeIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      {/* Bag body */}
+      <path d="M3 7h18l-1.1 13.1a2 2 0 0 1-2 1.9H6.1a2 2 0 0 1-2-1.9L3 7z" />
+      {/* Handle arch */}
+      <path d="M7.5 7V5.75a4.5 4.5 0 0 1 9 0V7" />
+      {/* S curve inside the bag */}
+      <path d="M14.5 11.4c-.9-.5-2.1-.7-3.1-.3-1 .5-1.1 1.8-.1 2.3l2.6 1.1c1 .4 1 1.8 0 2.3-1 .5-2.2.2-3.1-.3" />
+    </svg>
+  )
+}
 
 interface FooterClientProps {
   categories?: FooterCategoryLink[]
@@ -44,6 +70,15 @@ export function FooterClient({ categories = [] }: FooterClientProps) {
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href="https://shopee.vn/thewhiteactive"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-background text-foreground flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all rounded-md border border-border"
+                aria-label="Shopee"
+              >
+                <ShopeeIcon className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -97,14 +132,6 @@ export function FooterClient({ categories = [] }: FooterClientProps) {
                   className="hover:text-foreground transition-colors text-left text-sm block"
                 >
                   {t('footer.customerService.shipping')}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/size-guide"
-                  className="hover:text-foreground transition-colors text-left text-sm block"
-                >
-                  {t('footer.customerService.sizeGuide')}
                 </Link>
               </li>
               <li>

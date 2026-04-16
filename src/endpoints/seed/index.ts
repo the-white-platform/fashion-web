@@ -3,14 +3,12 @@ import { readFile } from 'fs/promises'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { productSeedData, categorySeedData } from './products'
-import { sizeChartSeedData } from './size-charts'
 import { seedVietnamAddresses } from './vietnamAddresses'
 import productDocsRaw from './product-docs.json'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const LOOKBOOK_DIR = path.join(__dirname, 'lookbook')
-const SIZE_CHARTS_DIR = path.join(__dirname, 'size-charts')
 
 // Vietnamese names + descriptions sourced from the Drive doc inside each
 // product folder. Falls back to whatever's hardcoded in products.ts if a slug
@@ -28,7 +26,6 @@ const collections: CollectionSlug[] = [
   'products',
   'orders',
   'coupons',
-  'size-charts',
   'forms',
   'form-submissions',
   'search',
@@ -224,47 +221,6 @@ export const seed = async ({
     })
 
     payload.logger.info(`  ✓ Created category: ${cat.title} / ${cat.titleEn}`)
-  }
-
-  // 2.5 Create size charts (one per product line)
-  payload.logger.info(`— Creating ${sizeChartSeedData.length} size charts...`)
-  for (const chart of sizeChartSeedData) {
-    const categoryId = categoryMap[chart.categoryTitle]
-    if (!categoryId) {
-      payload.logger.warn(`  ⚠ Category not found for size chart: ${chart.categoryTitle}`)
-      continue
-    }
-    const absPath = path.resolve(SIZE_CHARTS_DIR, chart.fileName)
-    try {
-      const buffer = await readFile(absPath)
-      const mimetype = mimeTypeFor(absPath)
-      const chartDoc = await payload.create({
-        collection: 'size-charts',
-        data: {
-          title: chart.titleVi,
-          alt: chart.altVi,
-          category: categoryId,
-        },
-        file: {
-          name: chart.fileName,
-          data: buffer,
-          mimetype,
-          size: buffer.length,
-        },
-        locale: 'vi',
-      })
-      await payload.update({
-        collection: 'size-charts',
-        id: chartDoc.id,
-        data: { title: chart.titleEn, alt: chart.altEn },
-        locale: 'en',
-      })
-      payload.logger.info(`  ✓ ${chart.titleVi}`)
-    } catch (err) {
-      payload.logger.error(
-        `  ✗ Failed size chart ${chart.fileName}: ${err instanceof Error ? err.message : String(err)}`,
-      )
-    }
   }
 
   // 3. Create products with color variants (PARALLEL PROCESSING)
@@ -477,6 +433,17 @@ export const seed = async ({
       const viDescription = docOverride?.description?.trim() || productData.description
       const enDescription = docOverride?.descriptionEn?.trim() || productData.descriptionEn
 
+      // Build VI sizeChart payload (if present)
+      const sizeChartVi = productData.sizeChart
+        ? {
+            columns: productData.sizeChart.columns.map((c) => ({ header: c.headerVi })),
+            rows: productData.sizeChart.rows.map((cells) => ({
+              cells: cells.map((value) => ({ value })),
+            })),
+            note: productData.sizeChart.noteVi,
+          }
+        : undefined
+
       // Create product with Vietnamese content
       payload.logger.info(`  [${index + 1}]   creating product (vi)...`)
       const product = await payload.create({
@@ -492,6 +459,7 @@ export const seed = async ({
           featured: productData.featured,
           description: toRichText(viDescription) as any,
           features: productData.features.map((f) => ({ feature: f })),
+          ...(sizeChartVi ? { sizeChart: sizeChartVi as any } : {}),
         },
         locale: 'vi',
       })
@@ -506,6 +474,20 @@ export const seed = async ({
         ...cv,
         id: createdVariants[i]?.id,
       }))
+
+      // Build EN sizeChart update — mirror column IDs from VI creation, EN headers only.
+      // Rows are NOT passed in the EN update since cells aren't localized.
+      const createdSizeChart = (product as any).sizeChart
+      const sizeChartEn = productData.sizeChart
+        ? {
+            columns: productData.sizeChart.columns.map((c, i) => ({
+              id: createdSizeChart?.columns?.[i]?.id,
+              header: c.headerEn,
+            })),
+            note: productData.sizeChart.noteEn,
+          }
+        : undefined
+
       payload.logger.info(`  [${index + 1}]   updating en translation...`)
       await payload.update({
         collection: 'products',
@@ -515,6 +497,7 @@ export const seed = async ({
           colorVariants: colorVariantsEnWithIds,
           description: toRichText(enDescription) as any,
           features: productData.featuresEn.map((f) => ({ feature: f })),
+          ...(sizeChartEn ? { sizeChart: sizeChartEn as any } : {}),
         },
         locale: 'en',
       })

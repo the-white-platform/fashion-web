@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
   const facebookAppId = process.env.FACEBOOK_CLIENT_ID
-  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3200'
 
   if (!facebookAppId) {
     return NextResponse.json({ error: 'Facebook App ID not configured' }, { status: 500 })

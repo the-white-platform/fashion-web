@@ -76,7 +76,6 @@ export interface Config {
     reviews: Review;
     orders: Order;
     coupons: Coupon;
-    'size-charts': SizeChart;
     'stock-movements': StockMovement;
     provinces: Province;
     districts: District;
@@ -112,7 +111,6 @@ export interface Config {
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     coupons: CouponsSelect<false> | CouponsSelect<true>;
-    'size-charts': SizeChartsSelect<false> | SizeChartsSelect<true>;
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
@@ -147,6 +145,7 @@ export interface Config {
     homepage: Homepage;
     'payment-methods': PaymentMethod;
     'chat-context': ChatContext;
+    'company-info': CompanyInfo;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -154,6 +153,7 @@ export interface Config {
     homepage: HomepageSelect<false> | HomepageSelect<true>;
     'payment-methods': PaymentMethodsSelect<false> | PaymentMethodsSelect<true>;
     'chat-context': ChatContextSelect<false> | ChatContextSelect<true>;
+    'company-info': CompanyInfoSelect<false> | CompanyInfoSelect<true>;
   };
   locale: 'vi' | 'en';
   user: User;
@@ -665,6 +665,38 @@ export interface Product {
       }[]
     | null;
   sizes?: ('XS' | 'S' | 'M' | 'L' | 'XL' | '2X' | '39' | '40' | '41' | '42' | '43' | '44' | '45')[] | null;
+  /**
+   * Leave empty to hide the size chart for this product.
+   */
+  sizeChart?: {
+    /**
+     * Example: Size, Chest (cm), Waist (cm), Length (cm)
+     */
+    columns?:
+      | {
+          header: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Each row should have the same number of cells as columns above.
+     */
+    rows?:
+      | {
+          cells?:
+            | {
+                value: string;
+                id?: string | null;
+              }[]
+            | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Optional: measuring tips, fit guidance...
+     */
+    note?: string | null;
+  };
   tag?: ('MỚI' | 'BÁN CHẠY' | 'GIẢM 20%' | 'GIẢM 30%' | 'GIẢM 50%' | 'HOT') | null;
   inStock?: boolean | null;
   stockStatus?: ('in_stock' | 'low_stock' | 'out_of_stock') | null;
@@ -1119,56 +1151,6 @@ export interface Coupon {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "size-charts".
- */
-export interface SizeChart {
-  id: number;
-  title: string;
-  /**
-   * Size chart linked to a product category.
-   */
-  category: number | Category;
-  alt: string;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumbnail?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    medium?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    large?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "stock-movements".
  */
 export interface StockMovement {
@@ -1562,10 +1544,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'coupons';
         value: number | Coupon;
-      } | null)
-    | ({
-        relationTo: 'size-charts';
-        value: number | SizeChart;
       } | null)
     | ({
         relationTo: 'stock-movements';
@@ -2054,6 +2032,28 @@ export interface ProductsSelect<T extends boolean = true> {
         id?: T;
       };
   sizes?: T;
+  sizeChart?:
+    | T
+    | {
+        columns?:
+          | T
+          | {
+              header?: T;
+              id?: T;
+            };
+        rows?:
+          | T
+          | {
+              cells?:
+                | T
+                | {
+                    value?: T;
+                    id?: T;
+                  };
+              id?: T;
+            };
+        note?: T;
+      };
   tag?: T;
   inStock?: T;
   stockStatus?: T;
@@ -2210,60 +2210,6 @@ export interface CouponsSelect<T extends boolean = true> {
   active?: T;
   updatedAt?: T;
   createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "size-charts_select".
- */
-export interface SizeChartsSelect<T extends boolean = true> {
-  title?: T;
-  category?: T;
-  alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-  sizes?:
-    | T
-    | {
-        thumbnail?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        medium?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-        large?:
-          | T
-          | {
-              url?: T;
-              width?: T;
-              height?: T;
-              mimeType?: T;
-              filesize?: T;
-              filename?: T;
-            };
-      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2938,6 +2884,24 @@ export interface ChatContext {
   createdAt?: string | null;
 }
 /**
+ * Contact details displayed on Privacy Policy, Terms of Use, and other legal pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "company-info".
+ */
+export interface CompanyInfo {
+  id: number;
+  companyName?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  /**
+   * No protocol — e.g. thewhite.cool
+   */
+  websiteUrl?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -3087,6 +3051,19 @@ export interface ChatContextSelect<T extends boolean = true> {
   contactInfo?: T;
   siteFeatures?: T;
   tonePrompt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "company-info_select".
+ */
+export interface CompanyInfoSelect<T extends boolean = true> {
+  companyName?: T;
+  email?: T;
+  phone?: T;
+  websiteUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

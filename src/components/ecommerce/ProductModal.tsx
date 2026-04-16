@@ -17,7 +17,7 @@ import { useTranslations } from 'next-intl'
 import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { VirtualTryOnModal } from './VirtualTryOnModal'
 import Image from 'next/image'
-import { Link } from '@/i18n/Link'
+import { SizeChartModal } from '@/components/ecommerce/SizeChartModal'
 import { useState } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { useWishlist } from '@/contexts/WishlistContext'
@@ -392,14 +392,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   <label className="text-[9px] uppercase tracking-[0.15em] font-bold text-foreground">
                     {t('products.size')}
                   </label>
-                  <Link
-                    href="/size-guide"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[9px] text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {t('products.guide')}
-                  </Link>
+                  <SizeChartModal sizeChart={product.sizeChart} productName={product.name} />
                 </div>
                 <div className="flex gap-2 flex-wrap">
                   {availableSizes.map((size, idx) => (

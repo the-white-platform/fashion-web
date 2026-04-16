@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test'
 
 const BASE =
   process.env.PLAYWRIGHT_BASE_URL ||
-  `http://localhost:${process.env.PLAYWRIGHT_PORT || process.env.PORT || '3000'}`
+  `http://localhost:${process.env.PLAYWRIGHT_PORT || process.env.PORT || '3200'}`
 
 /**
  * Unauthenticated requests to protected API endpoints must be rejected

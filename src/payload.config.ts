@@ -25,7 +25,6 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Products } from './collections/Products'
 import { Reviews } from './collections/Reviews'
-import { SizeCharts } from './collections/SizeCharts'
 import { StockMovements } from './collections/StockMovements'
 import { Users } from './collections/Users'
 import { VtoGenerations } from './collections/VtoGenerations'
@@ -40,6 +39,7 @@ import { Header } from './components/layout/Header/config'
 import { Homepage } from './globals/Homepage'
 import { PaymentMethods } from './globals/PaymentMethods'
 import { ChatContext } from './globals/ChatContext'
+import { CompanyInfo } from './globals/CompanyInfo'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { migrations } from './migrations'
@@ -156,7 +156,6 @@ export default buildConfig({
     Reviews,
     Orders,
     Coupons,
-    SizeCharts,
     StockMovements,
     Provinces,
     Districts,
@@ -203,7 +202,7 @@ export default buildConfig({
       path: '/newsletter-subscribers/unsubscribe',
     },
   ],
-  globals: [Header, Footer, Homepage, PaymentMethods, ChatContext],
+  globals: [Header, Footer, Homepage, PaymentMethods, ChatContext, CompanyInfo],
   plugins: [
     ...plugins,
     // GCS object storage for Payload uploads. Enabled when PAYLOAD_MEDIA_BUCKET
@@ -216,7 +215,6 @@ export default buildConfig({
             bucket: process.env.PAYLOAD_MEDIA_BUCKET,
             collections: {
               media: true,
-              'size-charts': true,
             },
             // On Cloud Run the service account is auto-detected via ADC.
             // Locally, GOOGLE_APPLICATION_CREDENTIALS points at a JSON key if

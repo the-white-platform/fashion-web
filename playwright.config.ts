@@ -1,8 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// Allow the port to be overridden at runtime (e.g. when 3000 is occupied by
-// another dev server on the same machine). Defaults to 3000.
-const PORT = process.env.PLAYWRIGHT_PORT || process.env.PORT || '3000'
+// Allow the port to be overridden at runtime (e.g. when 3200 is occupied by
+// another dev server on the same machine). Defaults to 3200.
+const PORT = process.env.PLAYWRIGHT_PORT || process.env.PORT || '3200'
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${PORT}`
 
 export default defineConfig({

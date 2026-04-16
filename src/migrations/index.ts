@@ -8,6 +8,8 @@ import * as migration_20260416_114044_order_email_optional from './20260416_1140
 import * as migration_20260416_121609_chat_context_global from './20260416_121609_chat_context_global'
 import * as migration_20260416_122610_chat_context_site_features from './20260416_122610_chat_context_site_features'
 import * as migration_20260416_133436_drop_footer_nav_items from './20260416_133436_drop_footer_nav_items'
+import * as migration_20260416_213253 from './20260416_213253'
+import * as migration_20260416_231504 from './20260416_231504'
 
 export const migrations = [
   {
@@ -59,5 +61,15 @@ export const migrations = [
     up: migration_20260416_133436_drop_footer_nav_items.up,
     down: migration_20260416_133436_drop_footer_nav_items.down,
     name: '20260416_133436_drop_footer_nav_items',
+  },
+  {
+    up: migration_20260416_213253.up,
+    down: migration_20260416_213253.down,
+    name: '20260416_213253',
+  },
+  {
+    up: migration_20260416_231504.up,
+    down: migration_20260416_231504.down,
+    name: '20260416_231504',
   },
 ]

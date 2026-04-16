@@ -5,7 +5,7 @@ import redirects from './redirects.js'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
-const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://thewhite.local:3000'
+const NEXT_PUBLIC_SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL || 'http://thewhite.local:3200'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

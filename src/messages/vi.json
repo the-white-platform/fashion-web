@@ -62,15 +62,17 @@
     "quickView": "Xem Nhanh",
     "outOfStock": "Hết Hàng",
     "quantity": "Số Lượng",
-    "guide": "Hướng dẫn",
     "noDescription": "Chưa có mô tả",
     "viewAll": "Xem Tất Cả",
     "filter": "Lọc",
     "sort": "Sắp Xếp",
     "size": "Kích Thước",
+    "sizeChartNote": "Ghi chú",
+    "sizeChartTitle": "Bảng kích thước",
     "color": "Màu Sắc",
     "price": "Giá",
-    "category": "Danh Mục"
+    "category": "Danh Mục",
+    "viewSizeChart": "Xem bảng kích thước"
   },
   "cart": {
     "title": "Giỏ Hàng",
@@ -273,7 +275,6 @@
       "title": "Chăm Sóc Khách Hàng",
       "returns": "Chính Sách Đổi Trả",
       "shipping": "Thanh Toán & Vận Chuyển",
-      "sizeGuide": "Hướng Dẫn Chọn Size",
       "contact": "Liên Hệ",
       "faq": "Câu Hỏi Thường Gặp"
     },
@@ -619,6 +620,7 @@
     "title": "Bộ Lọc",
     "clear": "Xóa Tất Cả Bộ Lọc",
     "apply": "Áp Dụng",
+    "searchPlaceholder": "Tìm kiếm sản phẩm...",
     "category": {
       "title": "Danh Mục",
       "tshirt": "Áo Thun",
@@ -637,6 +639,11 @@
       "above2000": "Trên 2tr"
     },
     "size": "Kích Thước",
+    "stockStatus": {
+      "title": "Tình Trạng",
+      "inStock": "Còn Hàng",
+      "outOfStock": "Hết Hàng"
+    },
     "color": {
       "title": "Màu Sắc",
       "white": "Trắng",
@@ -647,10 +654,11 @@
       "green": "Xanh Lá"
     },
     "sort": {
+      "title": "Sắp xếp",
       "newest": "Mới Nhất",
       "priceAsc": "Giá: Thấp → Cao",
       "priceDesc": "Giá: Cao → Thấp",
-      "popular": "Phổ Biến"
+      "popular": "Bán Chạy"
     }
   },
   "privacyPolicy": {
@@ -681,7 +689,7 @@
       },
       "rights": {
         "title": "6. Quyền Của Bạn Theo GDPR",
-        "content": "Bạn có các quyền sau:\n\n**Quyền truy cập:** Yêu cầu bản sao dữ liệu cá nhân của bạn\n\n**Quyền chỉnh sửa:** Cập nhật thông tin không chính xác\n\n**Quyền xóa (\"Right to be Forgotten\"):** Yêu cầu xóa dữ liệu của bạn\n\n**Quyền hạn chế xử lý:** Tạm dừng xử lý dữ liệu trong trường hợp cụ thể\n\n**Quyền di chuyển dữ liệu:** Nhận dữ liệu ở định dạng có thể đọc được\n\n**Quyền phản đối:** Từ chối xử lý dữ liệu cho mục đích marketing\n\n**Quyền rút lại đồng ý:** Hủy đồng ý đã cung cấp bất kỳ lúc nào\n\n**Cách thực hiện quyền:**\n📧 Email: privacy@thewhite.vn\n📞 Hotline: 0123 456 789\n⏱️ Thời gian phản hồi: 30 ngày"
+        "content": "Bạn có các quyền sau:\n\n**Quyền truy cập:** Yêu cầu bản sao dữ liệu cá nhân của bạn\n\n**Quyền chỉnh sửa:** Cập nhật thông tin không chính xác\n\n**Quyền xóa (\"Right to be Forgotten\"):** Yêu cầu xóa dữ liệu của bạn\n\n**Quyền hạn chế xử lý:** Tạm dừng xử lý dữ liệu trong trường hợp cụ thể\n\n**Quyền di chuyển dữ liệu:** Nhận dữ liệu ở định dạng có thể đọc được\n\n**Quyền phản đối:** Từ chối xử lý dữ liệu cho mục đích marketing\n\n**Quyền rút lại đồng ý:** Hủy đồng ý đã cung cấp bất kỳ lúc nào\n\n**Cách thực hiện quyền:**\n📧 Email: contact@thewhite.cool\n📞 Hotline: +84 886 402 616\n⏱️ Thời gian phản hồi: 30 ngày"
       },
       "international": {
         "title": "7. Chuyển Giao Dữ Liệu Quốc Tế",
@@ -710,7 +718,7 @@
     "sections": {
       "acceptance": {
         "title": "1. Chấp Nhận Điều Khoản",
-        "content": "Bằng việc truy cập và sử dụng website TheWhite (www.thewhite.vn), bạn đồng ý tuân thủ các điều khoản và điều kiện sử dụng này.\n\nNếu bạn không đồng ý với bất kỳ phần nào của điều khoản, vui lòng không sử dụng dịch vụ của chúng tôi.\n\nChúng tôi có quyền thay đổi điều khoản này bất kỳ lúc nào. Việc tiếp tục sử dụng sau khi có thay đổi đồng nghĩa với việc bạn chấp nhận các điều khoản mới."
+        "content": "Bằng việc truy cập và sử dụng website TheWhite (thewhite.cool), bạn đồng ý tuân thủ các điều khoản và điều kiện sử dụng này.\n\nNếu bạn không đồng ý với bất kỳ phần nào của điều khoản, vui lòng không sử dụng dịch vụ của chúng tôi.\n\nChúng tôi có quyền thay đổi điều khoản này bất kỳ lúc nào. Việc tiếp tục sử dụng sau khi có thay đổi đồng nghĩa với việc bạn chấp nhận các điều khoản mới."
       },
       "account": {
         "title": "2. Tài Khoản Người Dùng",
@@ -828,8 +836,7 @@
       "title": "Liên Kết Nhanh",
       "faq": "Câu Hỏi Thường Gặp",
       "returnPolicy": "Chính Sách Đổi Trả",
-      "shoppingGuide": "Hướng Dẫn Mua Hàng",
-      "sizeGuide": "Hướng Dẫn Chọn Size"
+      "shoppingGuide": "Hướng Dẫn Mua Hàng"
     }
   },
   "faq": {
@@ -1034,64 +1041,37 @@
     }
   },
   "sizeGuide": {
-    "breadcrumb": "Hướng Dẫn Chọn Size",
-    "title": "Hướng Dẫn Chọn Size",
-    "subtitle": "Tìm size hoàn hảo với công nghệ AI thông minh",
-    "tabs": {
-      "calculator": "Chọn Size AI",
-      "chart": "Bảng Size"
-    },
     "calculator": {
-      "title": "Chọn Size Thông Minh AI",
-      "desc": "Nhập số đo của bạn — AI sẽ gợi ý size phù hợp nhất",
+      "title": "AI Tư Vấn Size",
+      "desc": "Nhập số đo của bạn và chúng tôi sẽ gợi ý size phù hợp nhất",
       "gender": {
-        "label": "Giới Tính",
+        "label": "Giới tính",
         "male": "Nam",
         "female": "Nữ"
       },
       "type": {
-        "label": "Loại Sản Phẩm",
+        "label": "Loại sản phẩm",
         "shirt": "Áo",
         "pants": "Quần"
       },
-      "height": "Chiều Cao (cm)",
-      "weight": "Cân Nặng (kg)",
-      "find": "Tìm Size Phù Hợp",
+      "height": "Chiều cao (cm)",
+      "weight": "Cân nặng (kg)",
+      "find": "Tìm Size Của Tôi",
       "finding": "Đang phân tích…",
-      "reset": "Làm Lại",
+      "reset": "Đặt lại",
       "alertRequired": "Vui lòng nhập chiều cao và cân nặng!",
-      "errorGeneric": "Không gợi ý được size lúc này. Vui lòng thử lại.",
+      "errorGeneric": "Không thể tính size ngay lúc này. Vui lòng thử lại.",
       "result": {
         "title": "Size Đề Xuất",
         "fit": "Phù hợp nhất với số đo của bạn",
-        "viewProducts": "Xem Sản Phẩm Size {size}"
+        "viewProducts": "Xem sản phẩm size {size}"
       }
     },
     "chart": {
-      "title": "Bảng Size Nam",
-      "womenTitle": "Bảng Size Nữ",
-      "shirt": "Áo",
-      "pants": "Quần",
-      "gender": {
-        "men": "Nam",
-        "women": "Nữ"
-      },
       "headers": {
-        "size": "Size",
-        "height": "Chiều Cao (cm)",
-        "weight": "Cân Nặng (kg)",
-        "chest": "Vòng Ngực (cm)",
-        "waist": "Vòng Eo (cm)",
-        "hip": "Vòng Mông (cm)",
-        "inseam": "Chiều Dài (cm)"
+        "chest": "Ngực (cm)",
+        "waist": "Eo (cm)"
       }
-    },
-    "tips": {
-      "title": "Mẹo Chọn Size",
-      "t1": "Đo số đo vào buổi sáng khi cơ thể ở trạng thái tự nhiên nhất",
-      "t2": "Dùng thước dây mềm để đo chính xác",
-      "t3": "Nếu số đo nằm giữa 2 size, chọn size lớn hơn để thoải mái hơn",
-      "t4": "Các chất liệu khác nhau có thể fit khác — đọc ghi chú của từng sản phẩm"
     }
   },
   "shipping": {
@@ -1229,7 +1209,7 @@
     "welcomeMessage": "Xin chào! Tôi là trợ lý AI của THE WHITE. Tôi có thể giúp bạn tư vấn thời trang, chọn size, hoặc trả lời bất kỳ câu hỏi nào. Hãy hỏi tôi!",
     "inputPlaceholder": "Nhập tin nhắn...",
     "quickReply": {
-      "sizeGuide": "Hướng dẫn chọn size",
+      "sizeGuide": "Tư vấn size",
       "returnPolicy": "Chính sách đổi trả",
       "bestSellers": "Sản phẩm bán chạy"
     },

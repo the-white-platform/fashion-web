@@ -24,7 +24,7 @@ services:
     container_name: fashion-web-app
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '3200:3200'
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,7 +32,7 @@ services:
       - NODE_ENV=production
       - DATABASE_URI=postgres://payload:payload@postgres:5432/payload
       - PAYLOAD_SECRET=${PAYLOAD_SECRET:?PAYLOAD_SECRET is required - set it in .env}
-      - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
+      - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL:-http://localhost:3200}
     env_file:
       - .env
 
@@ -45,7 +45,7 @@ services:
       - .:/app
       - node_modules:/app/node_modules
     ports:
-      - '3000:3000'
+      - '3200:3200'
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,7 +53,7 @@ services:
       - NODE_ENV=development
       - DATABASE_URI=postgres://payload:payload@postgres:5432/payload
       - PAYLOAD_SECRET=${PAYLOAD_SECRET:?PAYLOAD_SECRET is required - set it in .env}
-      - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL:-http://localhost:3000}
+      - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL:-http://localhost:3200}
     env_file:
       - .env
     command: sh -c "corepack enable && corepack prepare pnpm@9.7.1 --activate && pnpm install && pnpm dev"

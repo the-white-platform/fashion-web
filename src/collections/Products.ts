@@ -247,6 +247,78 @@ export const Products: CollectionConfig = {
       defaultValue: ['S', 'M', 'L', 'XL'],
     },
     {
+      name: 'sizeChart',
+      type: 'group',
+      label: { vi: 'Bảng Kích Thước', en: 'Size Chart' },
+      admin: {
+        description: {
+          vi: 'Bỏ trống nếu không muốn hiển thị bảng kích thước cho sản phẩm này.',
+          en: 'Leave empty to hide the size chart for this product.',
+        },
+      },
+      fields: [
+        {
+          name: 'columns',
+          type: 'array',
+          label: { vi: 'Cột (Tiêu đề)', en: 'Columns (Headers)' },
+          admin: {
+            description: {
+              vi: 'Ví dụ: Size, Ngực (cm), Eo (cm), Dài (cm)',
+              en: 'Example: Size, Chest (cm), Waist (cm), Length (cm)',
+            },
+          },
+          fields: [
+            {
+              name: 'header',
+              type: 'text',
+              required: true,
+              localized: true,
+              label: { vi: 'Tiêu đề cột', en: 'Column header' },
+            },
+          ],
+        },
+        {
+          name: 'rows',
+          type: 'array',
+          label: { vi: 'Hàng (Giá trị)', en: 'Rows (Values)' },
+          admin: {
+            description: {
+              vi: 'Mỗi hàng phải có số ô bằng số cột ở trên.',
+              en: 'Each row should have the same number of cells as columns above.',
+            },
+          },
+          fields: [
+            {
+              name: 'cells',
+              type: 'array',
+              label: { vi: 'Ô', en: 'Cells' },
+              fields: [
+                {
+                  name: 'value',
+                  type: 'text',
+                  required: true,
+                  label: { vi: 'Giá trị', en: 'Value' },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'note',
+          type: 'textarea',
+          localized: true,
+          required: false,
+          label: { vi: 'Ghi chú', en: 'Note' },
+          admin: {
+            description: {
+              vi: 'Tùy chọn: ghi chú về cách đo, hướng dẫn chọn size...',
+              en: 'Optional: measuring tips, fit guidance...',
+            },
+          },
+        },
+      ],
+    },
+    {
       name: 'tag',
       type: 'select',
       label: { vi: 'Nhãn', en: 'Tag' },

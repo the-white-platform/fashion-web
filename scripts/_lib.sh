@@ -88,14 +88,14 @@ seed_database() {
   pnpm dev &>/dev/null &
   dev_pid=$!
 
-  if ! wait_for_url "http://localhost:3000" 120; then
+  if ! wait_for_url "http://localhost:3200" 120; then
     error "Dev server failed to start. Cannot seed."
     exit 1
   fi
 
   info "Seeding database via /api/seed..."
   local http_code
-  http_code=$(curl -sf -o /dev/null -w '%{http_code}' --max-time 120 "http://localhost:3000/api/seed")
+  http_code=$(curl -sf -o /dev/null -w '%{http_code}' --max-time 120 "http://localhost:3200/api/seed")
 
   if [ "$http_code" = "200" ]; then
     success "Database seeded successfully."

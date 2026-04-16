@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { Link } from '@/i18n/Link'
+import { useTranslations } from 'next-intl'
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
 import { ProductCard } from '@/components/shared/ProductCard'
 import { motion } from 'motion/react'
@@ -42,12 +43,14 @@ interface ProductsPageClientProps {
 
 const sizes = ['XS', 'S', 'M', 'L', 'XL', '2X']
 
+// Price buckets — `i18nKey` selects the localized label; numeric bounds
+// drive filtering and stay fixed regardless of locale.
 const priceRanges = [
-  { label: 'Dưới 500K', min: 0, max: 500000 },
-  { label: '500K - 1M', min: 500000, max: 1000000 },
-  { label: '1M - 2M', min: 1000000, max: 2000000 },
-  { label: 'Trên 2M', min: 2000000, max: Infinity },
-]
+  { i18nKey: 'under500', min: 0, max: 500000 },
+  { i18nKey: '500-1000', min: 500000, max: 1000000 },
+  { i18nKey: '1000-2000', min: 1000000, max: 2000000 },
+  { i18nKey: 'above2000', min: 2000000, max: Infinity },
+] as const
 
 function ProductsPageContent({
   allProducts,
@@ -102,6 +105,22 @@ function ProductsPageContent({
   })
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const itemsPerPage = 9
+
+  const tFilter = useTranslations('filter')
+
+  // Auto-close the mobile filter drawer when the viewport crosses into
+  // desktop (lg = 1024px). Without this the drawer stays mounted behind
+  // the desktop sidebar if the user resizes or rotates while it's open.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mql = window.matchMedia('(min-width: 1024px)')
+    const handle = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) setShowFilters(false)
+    }
+    handle(mql)
+    mql.addEventListener('change', handle)
+    return () => mql.removeEventListener('change', handle)
+  }, [])
 
   const [expandedSections, setExpandedSections] = useState({
     size: true,
@@ -266,7 +285,7 @@ function ProductsPageContent({
         }
       }
       if (selectedPriceRange) {
-        const range = priceRanges.find((r) => r.label === selectedPriceRange)
+        const range = priceRanges.find((r) => r.i18nKey === selectedPriceRange)
         if (range && (product.priceNumber < range.min || product.priceNumber >= range.max)) {
           return false
         }
@@ -404,14 +423,17 @@ function ProductsPageContent({
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            {/* Search and Sort Row */}
+            {/* Search + sort/filter controls. Layout:
+                • mobile: search (row 1) then sort + filter side-by-side (row 2, 50/50)
+                • sm+:    everything inline in one row
+                • lg+:    filter button drops away (desktop sidebar takes over) */}
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Search Input */}
-              <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1 sm:max-w-md">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Tìm kiếm sản phẩm..."
+                  placeholder={tFilter('searchPlaceholder')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onBlur={(e) => handleSearchChange(e.target.value)}
@@ -424,29 +446,34 @@ function ProductsPageContent({
                 />
               </div>
 
-              {/* Sort Dropdown */}
-              <div className="relative">
-                <select
-                  value={sortBy}
-                  onChange={(e) => handleSortChange(e.target.value)}
-                  className="bg-muted border border-border px-4 py-3 pr-10 rounded-sm outline-none focus:border-primary transition-colors appearance-none cursor-pointer uppercase text-xs tracking-wide text-foreground h-full"
-                >
-                  <option value="newest">MỚI NHẤT</option>
-                  <option value="price-low">Giá: Thấp → Cao</option>
-                  <option value="price-high">Giá: Cao → Thấp</option>
-                  <option value="popular">Bán Chạy</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
-              </div>
+              <div className="flex gap-3 sm:gap-4">
+                {/* Sort dropdown — equal share of the mobile sort+filter row;
+                    shrinks to content on sm+ so it can sit inline with the
+                    search bar. */}
+                <div className="relative flex-1 sm:flex-none">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="w-full bg-muted border border-border px-4 py-3 pr-10 rounded-sm outline-none focus:border-primary transition-colors appearance-none cursor-pointer uppercase text-xs tracking-wide text-foreground h-full"
+                  >
+                    <option value="newest">{tFilter('sort.newest')}</option>
+                    <option value="price-low">{tFilter('sort.priceAsc')}</option>
+                    <option value="price-high">{tFilter('sort.priceDesc')}</option>
+                    <option value="popular">{tFilter('sort.popular')}</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-muted-foreground" />
+                </div>
 
-              {/* Mobile Filter Button */}
-              <button
-                onClick={() => setShowFilters(true)}
-                className="lg:hidden bg-primary text-primary-foreground px-5 py-3 flex items-center justify-center gap-2 uppercase tracking-wider text-xs font-bold rounded-sm active:scale-95 transition-all"
-              >
-                <SlidersHorizontal className="w-4 h-4" />
-                <span>Bộ Lọc</span>
-              </button>
+                {/* Mobile Filter Button — equal share of the mobile row,
+                    hidden entirely on lg+ where the sidebar filter shows. */}
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className="flex-1 sm:flex-none lg:hidden bg-primary text-primary-foreground px-5 py-3 flex items-center justify-center gap-2 uppercase tracking-wider text-xs font-bold rounded-sm active:scale-95 transition-all"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                  <span>{tFilter('title')}</span>
+                </button>
+              </div>
             </div>
           </motion.div>
 
@@ -460,7 +487,7 @@ function ProductsPageContent({
                 <ScrollIndicator className="h-full" withShadows={true}>
                   <div className="p-6 space-y-6">
                     <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-lg uppercase tracking-wide">Bộ Lọc</h2>
+                      <h2 className="text-lg uppercase tracking-wide">{tFilter('title')}</h2>
                       <SlidersHorizontal className="w-5 h-5" />
                     </div>
 
@@ -470,7 +497,7 @@ function ProductsPageContent({
                         onClick={() => toggleSection('size')}
                         className="flex items-center justify-between w-full mb-3 text-sm uppercase tracking-wide hover:text-muted-foreground transition-colors"
                       >
-                        Size
+                        {tFilter('size')}
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
                             expandedSections.size ? 'rotate-180' : ''
@@ -508,7 +535,7 @@ function ProductsPageContent({
                         onClick={() => toggleSection('availability')}
                         className="flex items-center justify-between w-full mb-3 text-sm uppercase tracking-wide hover:text-muted-foreground transition-colors"
                       >
-                        Tình Trạng
+                        {tFilter('stockStatus.title')}
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
                             expandedSections.availability ? 'rotate-180' : ''
@@ -529,7 +556,7 @@ function ProductsPageContent({
                               className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                             />
                             <span className="group-hover:text-muted-foreground transition-colors">
-                              Còn hàng{' '}
+                              {tFilter('stockStatus.inStock')}{' '}
                               <span className="text-muted-foreground">({inStockCount})</span>
                             </span>
                           </label>
@@ -541,7 +568,7 @@ function ProductsPageContent({
                               className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                             />
                             <span className="group-hover:text-muted-foreground transition-colors">
-                              Hết hàng{' '}
+                              {tFilter('stockStatus.outOfStock')}{' '}
                               <span className="text-muted-foreground">({outOfStockCount})</span>
                             </span>
                           </label>
@@ -557,7 +584,7 @@ function ProductsPageContent({
                         onClick={() => toggleSection('category')}
                         className="flex items-center justify-between w-full mb-3 text-sm uppercase tracking-wide hover:text-muted-foreground transition-colors"
                       >
-                        Danh Mục
+                        {tFilter('category.title')}
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
                             expandedSections.category ? 'rotate-180' : ''
@@ -604,7 +631,7 @@ function ProductsPageContent({
                         onClick={() => toggleSection('colors')}
                         className="flex items-center justify-between w-full mb-3 text-sm uppercase tracking-wide hover:text-muted-foreground transition-colors"
                       >
-                        Màu Sắc
+                        {tFilter('color.title')}
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
                             expandedSections.colors ? 'rotate-180' : ''
@@ -642,7 +669,7 @@ function ProductsPageContent({
                         onClick={() => toggleSection('price')}
                         className="flex items-center justify-between w-full mb-3 text-sm uppercase tracking-wide hover:text-muted-foreground transition-colors"
                       >
-                        Giá
+                        {tFilter('price.title')}
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
                             expandedSections.price ? 'rotate-180' : ''
@@ -657,19 +684,19 @@ function ProductsPageContent({
                         >
                           {priceRanges.map((range) => (
                             <button
-                              key={range.label}
+                              key={range.i18nKey}
                               onClick={() =>
                                 handlePriceRangeChange(
-                                  selectedPriceRange === range.label ? null : range.label,
+                                  selectedPriceRange === range.i18nKey ? null : range.i18nKey,
                                 )
                               }
                               className={`w-full text-left px-3 py-2 rounded-sm transition-colors ${
-                                selectedPriceRange === range.label
+                                selectedPriceRange === range.i18nKey
                                   ? 'bg-foreground text-background'
                                   : 'hover:bg-muted'
                               }`}
                             >
-                              {range.label}
+                              {tFilter(`price.${range.i18nKey}` as const)}
                             </button>
                           ))}
                         </motion.div>
@@ -681,43 +708,176 @@ function ProductsPageContent({
                       onClick={clearFilters}
                       className="w-full border-2 border-border py-3 rounded-sm hover:border-foreground hover:bg-foreground hover:text-background transition-all text-sm uppercase tracking-wide"
                     >
-                      Xóa Bộ Lọc
+                      {tFilter('clear')}
                     </button>
                   </div>
                 </ScrollIndicator>
               </div>
             </motion.aside>
 
-            {/* Mobile Filter Sheet */}
+            {/* Mobile Filter Sheet — mirrors the desktop sidebar. Sections are
+                always expanded (no collapsing) so the drawer reads as one
+                scrollable list. Action handlers are shared with the desktop
+                sidebar so the URL/state stay in sync either way. */}
             <Sheet open={showFilters} onOpenChange={setShowFilters}>
               <SheetContent side="left" className="w-[300px] p-0 overflow-hidden">
                 <ScrollIndicator className="h-full" withShadows={true}>
                   <div className="p-6 space-y-6">
                     <SheetHeader>
-                      <SheetTitle>Bộ Lọc</SheetTitle>
+                      <SheetTitle>{tFilter('title')}</SheetTitle>
                     </SheetHeader>
-                    <div className="space-y-6">
-                      {/* Same filter content as desktop - simplified for mobile */}
-                      <div>
-                        <h3 className="text-sm uppercase mb-3 text-foreground">Size</h3>
-                        <div className="grid grid-cols-3 gap-2">
-                          {sizes.map((size) => (
-                            <button
-                              key={size}
-                              onClick={() => toggleSize(size)}
-                              className={`py-2 border rounded-sm transition-all hover:scale-105 ${
-                                selectedSizes.includes(size)
-                                  ? 'bg-foreground text-background border-foreground'
-                                  : 'border-border hover:border-foreground'
+
+                    {/* Size */}
+                    <div>
+                      <h3 className="text-sm uppercase tracking-wide mb-3">{tFilter('size')}</h3>
+                      <div className="grid grid-cols-3 gap-2">
+                        {sizes.map((size) => (
+                          <button
+                            key={size}
+                            onClick={() => toggleSize(size)}
+                            className={`py-2 border rounded-sm transition-all active:scale-95 ${
+                              selectedSizes.includes(size)
+                                ? 'bg-foreground text-background border-foreground'
+                                : 'border-border hover:border-foreground'
+                            }`}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-border" />
+
+                    {/* Availability */}
+                    <div>
+                      <h3 className="text-sm uppercase tracking-wide mb-3">
+                        {tFilter('stockStatus.title')}
+                      </h3>
+                      <div className="space-y-3">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={showInStock}
+                            onChange={(e) => setShowInStock(e.target.checked)}
+                            className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
+                          />
+                          <span className="group-hover:text-muted-foreground transition-colors">
+                            {tFilter('stockStatus.inStock')}{' '}
+                            <span className="text-muted-foreground">({inStockCount})</span>
+                          </span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={showOutOfStock}
+                            onChange={(e) => setShowOutOfStock(e.target.checked)}
+                            className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
+                          />
+                          <span className="group-hover:text-muted-foreground transition-colors">
+                            {tFilter('stockStatus.outOfStock')}{' '}
+                            <span className="text-muted-foreground">({outOfStockCount})</span>
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="h-px bg-border" />
+
+                    {/* Category */}
+                    <div>
+                      <h3 className="text-sm uppercase tracking-wide mb-3">
+                        {tFilter('category.title')}
+                      </h3>
+                      <div className="space-y-2">
+                        {categories.map((cat) => (
+                          <button
+                            key={cat.name}
+                            onClick={() => handleCategoryChange(cat.name)}
+                            className={`w-full text-left px-3 py-2 rounded-sm transition-colors ${
+                              selectedCategory === cat.name
+                                ? 'bg-foreground text-background'
+                                : 'hover:bg-muted'
+                            }`}
+                          >
+                            <span>{cat.name}</span>
+                            <span
+                              className={`ml-2 text-sm ${
+                                selectedCategory === cat.name
+                                  ? 'text-background'
+                                  : 'text-muted-foreground'
                               }`}
                             >
-                              {size}
-                            </button>
-                          ))}
-                        </div>
+                              ({cat.count})
+                            </span>
+                          </button>
+                        ))}
                       </div>
-                      {/* Add other filters as needed for mobile */}
                     </div>
+
+                    <div className="h-px bg-border" />
+
+                    {/* Colors */}
+                    {colors.length > 0 && (
+                      <>
+                        <div>
+                          <h3 className="text-sm uppercase tracking-wide mb-3">
+                            {tFilter('color.title')}
+                          </h3>
+                          <div className="flex gap-2 flex-wrap">
+                            {colors.map((color) => (
+                              <button
+                                key={color.hex}
+                                onClick={() => toggleColor(color.hex)}
+                                className={`w-10 h-10 rounded-sm border-2 transition-all ${
+                                  selectedColors.includes(color.hex)
+                                    ? 'border-foreground'
+                                    : 'border-border'
+                                }`}
+                                style={{ backgroundColor: color.hex }}
+                                title={color.name}
+                              />
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="h-px bg-border" />
+                      </>
+                    )}
+
+                    {/* Price */}
+                    <div>
+                      <h3 className="text-sm uppercase tracking-wide mb-3">
+                        {tFilter('price.title')}
+                      </h3>
+                      <div className="space-y-2">
+                        {priceRanges.map((range) => (
+                          <button
+                            key={range.i18nKey}
+                            onClick={() =>
+                              handlePriceRangeChange(
+                                selectedPriceRange === range.i18nKey ? null : range.i18nKey,
+                              )
+                            }
+                            className={`w-full text-left px-3 py-2 rounded-sm transition-colors ${
+                              selectedPriceRange === range.i18nKey
+                                ? 'bg-foreground text-background'
+                                : 'hover:bg-muted'
+                            }`}
+                          >
+                            {tFilter(`price.${range.i18nKey}` as const)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Clear */}
+                    <button
+                      onClick={clearFilters}
+                      className="w-full border-2 border-border py-3 rounded-sm hover:border-foreground hover:bg-foreground hover:text-background transition-all text-sm uppercase tracking-wide"
+                    >
+                      {tFilter('clear')}
+                    </button>
                   </div>
                 </ScrollIndicator>
               </SheetContent>

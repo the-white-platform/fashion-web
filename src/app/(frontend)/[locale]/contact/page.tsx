@@ -317,12 +317,6 @@ export default function ContactPage() {
                   → {t('quickLinks.returnPolicy')}
                 </Link>
                 <Link
-                  href="/size-guide"
-                  className="block text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  → {t('quickLinks.sizeGuide')}
-                </Link>
-                <Link
                   href="/orders"
                   className="block text-muted-foreground hover:text-foreground transition-colors"
                 >

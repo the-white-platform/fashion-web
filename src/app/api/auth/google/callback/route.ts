@@ -7,7 +7,7 @@ import { cookies } from 'next/headers'
 import jwt from 'jsonwebtoken'
 
 export async function GET(request: Request) {
-  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3200'
   const googleClientId = process.env.GOOGLE_CLIENT_ID
   const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET
 

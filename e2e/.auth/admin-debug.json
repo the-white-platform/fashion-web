@@ -13,7 +13,7 @@
   ],
   "origins": [
     {
-      "origin": "http://localhost:3000",
+      "origin": "http://localhost:3200",
       "localStorage": [
         {
           "name": "thewhite_recently_viewed",

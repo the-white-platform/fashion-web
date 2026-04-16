@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 import { slugify } from '@/utilities/slugify'
 import { formatPrice } from '@/utilities/formatPrice'
+import type { SizeChartData } from '@/components/ecommerce/SizeChartModal'
 
 /**
  * Pick a reasonably-sized URL off a Payload Media doc.
@@ -64,6 +65,7 @@ export interface ProductForFrontend {
   features: string[]
   averageRating?: number
   reviewCount?: number
+  sizeChart?: SizeChartData | null
 }
 
 export interface CategoryForFrontend {
@@ -172,7 +174,10 @@ export function transformProduct(product: Product): ProductForFrontend {
   if (product.description?.root?.children) {
     const paragraphs: string[] = []
     for (const child of product.description.root.children) {
-      const text = extractInline(child).replace(/\s*\n+\s*/g, ' ').replace(/\s+/g, ' ').trim()
+      const text = extractInline(child)
+        .replace(/\s*\n+\s*/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
       if (text) paragraphs.push(text)
     }
     description = paragraphs.join('\n\n')
@@ -201,6 +206,7 @@ export function transformProduct(product: Product): ProductForFrontend {
     features: (product.features || []).map((f) => f.feature),
     averageRating: (product as any).averageRating ?? 0,
     reviewCount: (product as any).reviewCount ?? 0,
+    sizeChart: (product as any).sizeChart ?? null,
   }
 }
 

@@ -17,7 +17,7 @@ Next.js 16 + Payload CMS v3 e-commerce app for The White (Vietnamese fashion bra
 ## Commands
 
 ```bash
-pnpm dev                # Dev server (http://localhost:3000)
+pnpm dev                # Dev server (http://localhost:3200)
 pnpm lint               # ESLint check
 pnpm lint:fix           # ESLint autofix
 pnpm format             # Prettier write

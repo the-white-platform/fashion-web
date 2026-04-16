@@ -14,7 +14,7 @@ import {
   Minus,
   ArrowRightLeft,
 } from 'lucide-react'
-import { motion } from 'motion/react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useCart } from '@/contexts/CartContext'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { useRecentlyViewed } from '@/contexts/RecentlyViewedContext'
@@ -43,6 +43,7 @@ const SmartSizePicker = dynamic(
   () => import('@/components/ecommerce/SmartSizePicker').then((mod) => mod.SmartSizePicker),
   { ssr: false },
 )
+import { SizeChartModal } from '@/components/ecommerce/SizeChartModal'
 import type { ProductForFrontend } from '@/utilities/getProducts'
 import { getRelatedProducts } from '@/utilities/getRelatedProducts'
 import { Link } from '@/i18n/Link'
@@ -70,6 +71,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
   const [selectedSize, setSelectedSize] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [imageDirection, setImageDirection] = useState(0)
   const [isTryOnOpen, setIsTryOnOpen] = useState(false)
   const [isSizePickerOpen, setIsSizePickerOpen] = useState(false)
 
@@ -90,6 +92,18 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
     () => selectedVariant?.sizes || product.sizes || [],
     [selectedVariant?.sizes, product.sizes],
   )
+
+  // Warm the browser cache for every image in the current variant so
+  // thumbnail-driven swaps are instant (no flash of loading image mid-slide).
+  // Runs on mount and again whenever the user changes color variant.
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    currentImages.forEach((src) => {
+      if (!src) return
+      const img = new window.Image()
+      img.src = src
+    })
+  }, [currentImages])
 
   let actualSelectedSize = selectedSize
   if (currentSizes.length > 0 && !currentSizes.includes(selectedSize)) {
@@ -183,13 +197,41 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
               animate={{ opacity: 1, x: 0 }}
               className="space-y-4"
             >
-              {/* Main Image with Zoom */}
-              <ImageZoom
-                src={currentImages[selectedImageIndex] || product.image}
-                alt={product.name}
-                className="aspect-[3/4] bg-muted rounded-sm"
-                zoomLevel={2.5}
-              />
+              {/* Main Image with Zoom — crossfade + slide on change. The
+                  outer div reserves space via aspect-[3/4] so the absolutely
+                  positioned motion children have a defined height to fill.
+                  `imageDirection` tracks the last user input (thumbnail or
+                  variant swap) so slide direction matches intuition. */}
+              {/* Carousel — both outgoing and incoming images share the same
+                  absolute frame and slide together. overflow-hidden on the
+                  frame clips the off-screen image. Direction-aware so clicks
+                  forward slide the new image in from the right, backward
+                  from the left. */}
+              <div className="relative aspect-[3/4] overflow-hidden rounded-sm bg-muted">
+                <AnimatePresence initial={false} custom={imageDirection}>
+                  <motion.div
+                    key={currentImages[selectedImageIndex] || product.image}
+                    custom={imageDirection}
+                    variants={{
+                      enter: (dir: number) => ({ x: dir >= 0 ? '100%' : '-100%' }),
+                      center: { x: 0 },
+                      exit: (dir: number) => ({ x: dir >= 0 ? '-100%' : '100%' }),
+                    }}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    transition={{ x: { type: 'tween', duration: 0.35, ease: [0.32, 0.72, 0, 1] } }}
+                    className="absolute inset-0"
+                  >
+                    <ImageZoom
+                      src={currentImages[selectedImageIndex] || product.image}
+                      alt={product.name}
+                      className="aspect-[3/4]"
+                      zoomLevel={2.5}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
               {/* Thumbnail Images */}
               {currentImages.length > 1 && (
@@ -197,7 +239,12 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                   {currentImages.map((img, index) => (
                     <button
                       key={index}
-                      onClick={() => setSelectedImageIndex(index)}
+                      onClick={() => {
+                        setImageDirection(
+                          index > selectedImageIndex ? 1 : index < selectedImageIndex ? -1 : 0,
+                        )
+                        setSelectedImageIndex(index)
+                      }}
                       className={`aspect-square bg-muted rounded-sm overflow-hidden border-2 transition-all hover:scale-105 ${
                         selectedImageIndex === index ? 'border-foreground' : 'border-transparent'
                       }`}
@@ -299,13 +346,16 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <label className="text-sm uppercase tracking-wide">Chọn Size</label>
-                    <button
-                      type="button"
-                      onClick={() => setIsSizePickerOpen(true)}
-                      className="text-xs text-muted-foreground hover:text-foreground underline"
-                    >
-                      ✨ Tìm size phù hợp
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <SizeChartModal sizeChart={product.sizeChart} productName={product.name} />
+                      <button
+                        type="button"
+                        onClick={() => setIsSizePickerOpen(true)}
+                        className="text-xs text-muted-foreground hover:text-foreground underline"
+                      >
+                        ✨ Tìm size phù hợp
+                      </button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-6 gap-2">
                     {currentSizes.map((size) => (
@@ -489,12 +539,12 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
         onClose={() => setIsTryOnOpen(false)}
       />
 
-      {/* Smart size picker — same component as the /size-guide page,
-          opened in a modal pre-filtered to this product's category.
-          On "apply", syncs the recommended size onto the product's
-          size selector and closes. */}
+      {/* Smart size picker — /size-guide has been removed; the picker
+          is now only accessible here, opened in a modal pre-filtered
+          to this product's category. On "apply", syncs the recommended
+          size onto the product's size selector and closes. */}
       <Dialog open={isSizePickerOpen} onOpenChange={setIsSizePickerOpen}>
-        <DialogContent className="max-w-4xl p-0 sm:p-0 overflow-hidden">
+        <DialogContent className="max-w-lg p-0 sm:p-0 overflow-hidden">
           <DialogHeader className="px-6 pt-6">
             <DialogTitle className="uppercase tracking-wide">Chọn Size Thông Minh</DialogTitle>
           </DialogHeader>

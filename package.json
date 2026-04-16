@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--no-deprecation NEXT_TELEMETRY_DISABLED=1 next build",
-    "dev": "(sleep 3 && open http://thewhite.local:3000) & cross-env NODE_OPTIONS=--no-deprecation next dev -H thewhite.local",
+    "dev": "(sleep 3 && open http://thewhite.local:3200) & cross-env NODE_OPTIONS=--no-deprecation next dev -H thewhite.local -p 3200",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && pnpm build && pnpm start",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
@@ -17,7 +17,7 @@
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
     "reinstall": "cross-env NODE_OPTIONS=--no-deprecation rm -rf node_modules && rm pnpm-lock.yaml && pnpm --ignore-workspace install",
-    "start": "cross-env NODE_OPTIONS=--no-deprecation next start -H thewhite.local",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start -H thewhite.local -p 3200",
     "prepare": "node -e \"try { require('fs').accessSync('.git'); require('child_process').execSync('husky', { stdio: 'inherit' }); } catch(e) { console.log('Skipping husky: .git not found (Docker/CI environment)'); }\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
