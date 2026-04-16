@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.44.0](https://github.com/the-white-platform/fashion-web/compare/v0.43.0...v0.44.0) (2026-04-16)
+
+
+### Features
+
+* **catalog:** structured size charts, company info global, mobile filter parity ([67a5dfc](https://github.com/the-white-platform/fashion-web/commit/67a5dfcac752d69bb57236da8b23063e7449a126))
+
 ## [0.43.0](https://github.com/the-white-platform/fashion-web/compare/v0.42.10...v0.43.0) (2026-04-16)
 
 
