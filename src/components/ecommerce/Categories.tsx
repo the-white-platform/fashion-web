@@ -53,6 +53,11 @@ export function Categories({ categories }: CategoriesProps = {}) {
       href: `/products?category=${cat.slug}`,
     })) || []
 
+  // Hide the whole section when no activity categories are configured
+  // in /admin/globals/homepage — otherwise the page shows the
+  // "MUA SẮM THEO HOẠT ĐỘNG" title with an empty grid underneath.
+  if (displayCategories.length === 0) return null
+
   return (
     <section className="py-24 text-foreground">
       <div className="container mx-auto px-6">
