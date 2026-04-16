@@ -288,7 +288,7 @@ export function SmartSizePicker({
                   </button>
                 ) : (
                   <a
-                    href={`/${locale}/products?size=${result.recommendedSize}`}
+                    href={`/${locale}/products?sizes=${result.recommendedSize}`}
                     className="block w-full py-3 border-2 border-foreground bg-background text-foreground rounded-sm hover:bg-foreground hover:text-background transition-all uppercase tracking-wide"
                   >
                     {t('calculator.result.viewProducts', { size: result.recommendedSize })}
