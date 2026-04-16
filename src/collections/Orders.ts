@@ -10,6 +10,7 @@ import {
 import { logOrderActivity } from './Orders/hooks/activityLog'
 import { handleReturn } from './Orders/hooks/returnManagement'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { sendZaloOrderNotifications } from './Orders/hooks/sendZaloOrderNotifications'
 import { sendOrderEmails as _sendOrderEmails } from './Orders/hooks/sendOrderEmails'
 import { notifyOnOrder } from './Orders/hooks/notifyOnOrder'
 import { notifyOnStockChange } from './Orders/hooks/notifyOnStockChange'
@@ -688,7 +689,9 @@ export const Orders: CollectionConfig = {
       restoreStockOnCancel,
       incrementCouponUsageAfterOrder,
       // sendOrderEmails disabled (no email provider yet — see notes on
-      // the previous commit).
+      // the previous commit). Zalo ZNS is what actually delivers the
+      // "your order is confirmed / shipping" pings to the customer.
+      sendZaloOrderNotifications,
       notifyOnOrder,
       notifyOnStockChange,
       loyaltyEarn,

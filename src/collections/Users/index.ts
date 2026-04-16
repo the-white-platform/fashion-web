@@ -237,7 +237,10 @@ export const Users: CollectionConfig = {
       name: 'zaloNotifications',
       type: 'checkbox',
       label: { vi: 'Nhận thông báo qua Zalo', en: 'Receive Zalo Notifications' },
-      defaultValue: false,
+      // Default ON — these are transactional order pings (confirmed
+      // / shipping), not marketing. Customers can flip it off in
+      // their profile if they don't want the OA messages.
+      defaultValue: true,
       admin: {
         position: 'sidebar',
         description: {
