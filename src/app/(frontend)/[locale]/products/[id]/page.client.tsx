@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
@@ -64,6 +65,8 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
   const [quantity, setQuantity] = useState(1)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [isTryOnOpen, setIsTryOnOpen] = useState(false)
+  const [descExpanded, setDescExpanded] = useState(false)
+  const tCommon = useTranslations('common')
 
   // Get current variant
   const selectedVariant = product.colorVariants[selectedVariantIndex]
@@ -219,13 +222,35 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                 <p className="text-sm text-muted-foreground mt-1">Đã bao gồm VAT</p>
               </div>
 
-              {product.description && (
-                <div className="space-y-3 text-muted-foreground leading-relaxed">
-                  {product.description.split(/\n{2,}/).map((para, i) => (
-                    <p key={i}>{para}</p>
-                  ))}
-                </div>
-              )}
+              {product.description &&
+                (() => {
+                  const paragraphs = product.description.split(/\n{2,}/).filter(Boolean)
+                  // Treat the first paragraph as the teaser. If the
+                  // description is short enough to live in ~2 paragraphs
+                  // we just render the whole thing; otherwise show only
+                  // the first paragraph + a "View more" toggle.
+                  const isLong =
+                    paragraphs.length > 2 || (paragraphs[0]?.length ?? 0) > 260
+                  const visible = descExpanded || !isLong ? paragraphs : [paragraphs[0]]
+
+                  return (
+                    <div className="space-y-3 text-muted-foreground leading-relaxed">
+                      {visible.map((para, i) => (
+                        <p key={i}>{para}</p>
+                      ))}
+                      {isLong && (
+                        <button
+                          type="button"
+                          onClick={() => setDescExpanded((v) => !v)}
+                          className="inline-flex items-center text-sm uppercase tracking-wide text-foreground hover:underline"
+                        >
+                          {descExpanded ? tCommon('showLess') : tCommon('showMore')}
+                          <span className="ml-1">{descExpanded ? '↑' : '↓'}</span>
+                        </button>
+                      )}
+                    </div>
+                  )
+                })()}
 
               {/* Color Selection */}
               {product.colorVariants.length > 0 && (

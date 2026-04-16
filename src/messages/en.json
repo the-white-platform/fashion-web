@@ -405,7 +405,8 @@
       "description": "This page could not be found.",
       "home": "Go Home"
     },
-    "edit": "Edit"
+    "edit": "Edit",
+    "showLess": "Show Less"
   },
   "carousel": {
     "slides": {

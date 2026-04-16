@@ -405,7 +405,8 @@
       "description": "Trang này không tồn tại.",
       "home": "Về Trang Chủ"
     },
-    "edit": "Chỉnh Sửa"
+    "edit": "Chỉnh Sửa",
+    "showLess": "Thu Gọn"
   },
   "carousel": {
     "slides": {
