@@ -31,6 +31,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { reorderItems } from '@/utilities/reorder'
 import { toast } from 'sonner'
+import { usePaymentMethods } from '@/hooks/usePaymentMethods'
 
 function useGetStatusInfo() {
   const t = useTranslations()
@@ -137,6 +138,7 @@ export default function OrderDetailPage() {
   const getStatusInfo = useGetStatusInfo()
   const getTimeline = useGetTimeline()
   const orderId = params?.id ? String(params.id) : ''
+  const paymentMethods = usePaymentMethods()
 
   const [order, setOrder] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(!!orderId)
@@ -418,13 +420,81 @@ export default function OrderDetailPage() {
               </div>
             )}
 
-            {/* Payment Method */}
-            {order.payment?.method && (
-              <div className="bg-card border border-border rounded-sm p-6">
-                <h3 className="text-lg uppercase tracking-wide mb-4">{t('orders.payment')}</h3>
-                <p className="text-sm text-muted-foreground">{order.payment.method}</p>
-              </div>
-            )}
+            {/* Payment Method + bank-transfer QR (so customer can pay later from profile) */}
+            {order.payment?.method &&
+              (() => {
+                const method = order.payment.method
+                const isBank = method === 'bank_transfer' || method === 'bank'
+                const isPaid = order.payment?.paymentStatus === 'paid'
+                const bank = paymentMethods?.bankTransfer
+                const bankName = bank?.bankName || ''
+                const accountNumber = bank?.accountNumber || ''
+                const accountName = bank?.accountName || ''
+                const hasBankDetails = Boolean(bankName && accountNumber && accountName)
+                const bankCode = bankName.toUpperCase().replace(/\s+/g, '')
+                const totalAmount = order.totals?.total || 0
+                const memo = order.orderNumber || ''
+                const qrUrl =
+                  isBank && !isPaid && hasBankDetails && memo
+                    ? `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${totalAmount}&addInfo=${encodeURIComponent(memo)}&accountName=${encodeURIComponent(accountName)}`
+                    : null
+
+                return (
+                  <div className="bg-card border border-border rounded-sm p-6">
+                    <h3 className="text-lg uppercase tracking-wide mb-4">{t('orders.payment')}</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {isBank
+                        ? t('checkout.paymentMethods.bank')
+                        : method === 'cod'
+                          ? t('checkout.paymentMethods.cod')
+                          : method}
+                    </p>
+
+                    {qrUrl && (
+                      <div className="flex flex-col md:flex-row items-center gap-6 pt-4 border-t border-border">
+                        <div className="bg-white p-4 rounded-lg shadow-inner shrink-0">
+                          <Image
+                            src={qrUrl}
+                            alt={t('checkout.scanQR')}
+                            width={240}
+                            height={240}
+                            className="object-contain"
+                          />
+                        </div>
+                        <div className="text-left space-y-2 text-sm">
+                          <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                              {t('checkout.accountHolder')}
+                            </p>
+                            <p className="font-bold uppercase">{accountName}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                              {t('checkout.accountNumber')}
+                            </p>
+                            <p className="font-bold">{accountNumber}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                              {t('checkout.bank')}
+                            </p>
+                            <p className="font-bold">{bankName}</p>
+                          </div>
+                          <div className="p-2 bg-muted rounded-sm border border-border mt-2">
+                            <p className="text-xs text-muted-foreground uppercase tracking-widest">
+                              {t('checkout.content')}
+                            </p>
+                            <p className="font-mono font-bold text-primary">{memo}</p>
+                          </div>
+                          <p className="text-[10px] italic text-muted-foreground mt-2">
+                            {t('checkout.qrNote')}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
             {/* Order Summary */}
             <div className="bg-muted rounded-sm p-6">

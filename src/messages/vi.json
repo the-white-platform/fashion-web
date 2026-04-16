@@ -141,6 +141,7 @@
     "invalidCoupon": "Mã giảm giá không hợp lệ",
     "momoNote": "Bạn sẽ được chuyển đến ứng dụng MoMo để hoàn tất thanh toán.",
     "codNote": "Thanh toán bằng tiền mặt khi nhận hàng. Vui lòng chuẩn bị đúng số tiền.",
+    "bankTransferConfirmNote": "Mã QR và thông tin tài khoản sẽ hiển thị ở bước xác nhận đơn hàng.",
     "addressPlaceholder": "Số nhà, tên đường",
     "cityPlaceholder": "Tỉnh/Thành phố",
     "districtPlaceholder": "Quận/Huyện",

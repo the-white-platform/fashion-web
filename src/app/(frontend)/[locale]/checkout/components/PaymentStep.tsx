@@ -1,15 +1,12 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
 import { useTranslations } from 'next-intl'
-import Image from 'next/image'
-import { usePaymentMethods } from '@/hooks/usePaymentMethods'
 
 interface PaymentStepProps {
   user: any
@@ -17,8 +14,6 @@ interface PaymentStepProps {
   onSelectPayment: (payment: any) => void
   showNewPayment: boolean
   onToggleNewPayment: () => void
-  total: number
-  orderId: string | null | undefined
   onBack: () => void
   onNext: () => void
 }
@@ -29,32 +24,10 @@ export function PaymentStep({
   onSelectPayment,
   showNewPayment,
   onToggleNewPayment,
-  total,
-  orderId,
   onBack,
   onNext,
 }: PaymentStepProps) {
   const t = useTranslations('checkout')
-
-  // Bank / account fields come from the PaymentMethods global — no
-  // fallback: if the admin hasn't filled them in, the bank-transfer
-  // block won't render (better to show nothing than stale defaults
-  // that can't be corrected without a deploy).
-  const paymentMethods = usePaymentMethods()
-  const bank = paymentMethods?.bankTransfer
-  const bankName = bank?.bankName || ''
-  const bankCode = bankName.toUpperCase().replace(/\s+/g, '')
-  const accountNumber = bank?.accountNumber || ''
-  const accountName = bank?.accountName || ''
-  const hasBankDetails = Boolean(bankName && accountNumber && accountName)
-
-  const isValidOrderId = (id: string | null | undefined): id is string =>
-    Boolean(id) && !id!.startsWith('temp_') && !id!.startsWith('draft_')
-
-  const vietQrUrl = useMemo(() => {
-    if (!isValidOrderId(orderId) || !hasBankDetails) return null
-    return `https://img.vietqr.io/image/${bankCode}-${accountNumber}-compact2.png?amount=${total}&addInfo=${orderId}&accountName=${encodeURIComponent(accountName)}`
-  }, [orderId, total, bankCode, accountNumber, accountName, hasBankDetails])
 
   const [newPayment, setNewPayment] = useState({
     type: 'bank' as 'bank' | 'cod',
@@ -153,52 +126,8 @@ export function PaymentStep({
           </div>
 
           {newPayment.type === 'bank' && (
-            <div className="bg-primary/5 border border-primary/20 rounded-sm p-6 text-primary">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="bg-white p-4 rounded-lg shadow-sm shrink-0">
-                  {vietQrUrl ? (
-                    <Image
-                      src={vietQrUrl}
-                      alt="VietQR"
-                      width={280}
-                      height={280}
-                      className="object-contain"
-                    />
-                  ) : (
-                    <Skeleton className="aspect-square w-full max-w-sm" />
-                  )}
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <p className="text-sm mb-3 font-bold uppercase tracking-wider text-primary">
-                    🏦 {t('bankTransferQR')}
-                  </p>
-                  <div className="space-y-1 text-sm text-foreground">
-                    <p>
-                      <span className="text-muted-foreground">{t('bank')}:</span>{' '}
-                      <strong>{bankName}</strong>
-                    </p>
-                    <p>
-                      <span className="text-muted-foreground">{t('accountNumber')}:</span>{' '}
-                      <strong>{accountNumber}</strong>
-                    </p>
-                    <p>
-                      <span className="text-muted-foreground">{t('amount')}:</span>{' '}
-                      <strong>{total.toLocaleString('vi-VN')}₫</strong>
-                    </p>
-                    <p className="p-2 bg-primary/10 rounded-sm mt-2 font-mono text-xs border border-primary/20">
-                      <span className="text-muted-foreground">{t('content')}:</span>{' '}
-                      {isValidOrderId(orderId) ? (
-                        <strong>{orderId}</strong>
-                      ) : (
-                        <Skeleton className="inline-block h-4 w-32 align-middle" />
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <p className="text-[10px] mt-4 italic text-muted-foreground text-center">
-                {t('qrNote')}
-              </p>
+            <div className="bg-primary/5 border border-primary/20 rounded-sm p-4 text-sm text-foreground">
+              {t('bankTransferConfirmNote')}
             </div>
           )}
 

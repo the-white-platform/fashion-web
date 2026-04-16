@@ -141,6 +141,7 @@
     "invalidCoupon": "Invalid coupon code",
     "momoNote": "You will be redirected to the MoMo app to complete the payment.",
     "codNote": "Cash on delivery. Please prepare the exact amount.",
+    "bankTransferConfirmNote": "The QR code and bank details will appear on the confirmation step.",
     "addressPlaceholder": "123 Street Name",
     "cityPlaceholder": "City Name",
     "districtPlaceholder": "District",

@@ -118,8 +118,6 @@ export default function CheckoutPage() {
                       onSelectPayment={checkout.setSelectedPayment}
                       showNewPayment={showNewPayment}
                       onToggleNewPayment={() => setShowNewPayment((prev) => !prev)}
-                      total={adjustedTotal}
-                      orderId={pendingOrderNumber}
                       onBack={() => checkout.setStep('shipping')}
                       onNext={() => checkout.setStep('review')}
                     />
