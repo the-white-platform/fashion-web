@@ -681,18 +681,22 @@ export const Orders: CollectionConfig = {
       logOrderActivity,
     ],
     afterChange: [
-      // TEMP: all afterChange hooks disabled while we isolate the order
-      // POST hang. Leaving only Payload's core insert path active to
-      // confirm the baseline write completes. Re-enable hooks one by
-      // one after we find the culprit.
-      //
+      // decrementStockAfterOrder disabled: its payload.update on the
+      // product's `colorVariants` array triggers Payload's cascade
+      // replace-all-rows + media-relation repopulate, which consistently
+      // left the afterChange transaction idle-in-transaction on a media
+      // SELECT and timed the checkout out at 300s. Rewriting to a raw
+      // drizzle update on the single stock column is a follow-up; for
+      // now live stock drift on Black/XL is less bad than a broken
+      // checkout.
       // decrementStockAfterOrder,
-      // restoreStockOnCancel,
-      // incrementCouponUsageAfterOrder,
-      // sendOrderEmails,
-      // notifyOnOrder,
-      // notifyOnStockChange,
-      // loyaltyEarn,
+      restoreStockOnCancel,
+      incrementCouponUsageAfterOrder,
+      // sendOrderEmails disabled (no email provider yet — see notes on
+      // the previous commit).
+      notifyOnOrder,
+      notifyOnStockChange,
+      loyaltyEarn,
     ],
   },
   timestamps: true,
