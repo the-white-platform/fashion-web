@@ -835,7 +835,7 @@ export const seed = async ({
         returnPolicy:
           'Đổi/trả miễn phí trong 7 ngày kể từ ngày nhận hàng, với điều kiện sản phẩm còn nguyên tem mác, chưa qua sử dụng. Liên hệ Zalo hoặc email để mở yêu cầu đổi trả.',
         contactInfo:
-          'Hotline/Zalo: +84 877 749 777\n' +
+          'Hotline/Zalo: +84 886 402 616\n' +
           'Email: contact@thewhite.cool\n' +
           'Facebook: facebook.com/thewhiteactive\n' +
           'Instagram: @thewhite.cool',
@@ -873,7 +873,7 @@ export const seed = async ({
         returnPolicy:
           'Free returns within 7 days of receipt if the item is unworn and tags are intact. Message us on Zalo or email to open a return request.',
         contactInfo:
-          'Hotline / Zalo: +84 877 749 777\n' +
+          'Hotline / Zalo: +84 886 402 616\n' +
           'Email: contact@thewhite.cool\n' +
           'Facebook: facebook.com/thewhiteactive\n' +
           'Instagram: @thewhite.cool',

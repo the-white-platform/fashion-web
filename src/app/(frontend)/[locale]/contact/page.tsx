@@ -222,10 +222,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="uppercase tracking-wide mb-1">{t('info.phoneLabel')}</h3>
-                    <a
-                      href="tel:+84877749777"
-                      className="text-foreground hover:underline"
-                    >
+                    <a href="tel:+84886402616" className="text-foreground hover:underline">
                       {t('info.phoneValue')}
                     </a>
                   </div>
@@ -289,7 +286,7 @@ export default function ContactPage() {
                 </a>
 
                 <a
-                  href="https://zalo.me/84877749777"
+                  href="https://zalo.me/84886402616"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-4 p-4 bg-background/10 rounded-sm hover:bg-background/20 transition-colors"
@@ -297,7 +294,7 @@ export default function ContactPage() {
                   <MessageCircle className="w-6 h-6" />
                   <div>
                     <p className="uppercase tracking-wide">Zalo Official</p>
-                    <p className="text-sm opacity-60">+84 877 749 777</p>
+                    <p className="text-sm opacity-60">+84 886 402 616</p>
                   </div>
                 </a>
               </div>

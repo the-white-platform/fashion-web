@@ -134,7 +134,7 @@ export function FooterClient({ categories = [] }: FooterClientProps) {
             <ul className="space-y-3 text-muted-foreground font-normal">
               <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
                 <Phone className="w-4 h-4" />
-                <a href="tel:+84877749777">+84 877 749 777</a>
+                <a href="tel:+84886402616">+84 886 402 616</a>
               </li>
               <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
                 <Mail className="w-4 h-4" />
@@ -152,8 +152,8 @@ export function FooterClient({ categories = [] }: FooterClientProps) {
               </li>
               <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
                 <Phone className="w-4 h-4" />
-                <a href="https://zalo.me/84877749777" target="_blank" rel="noopener noreferrer">
-                  Zalo: +84 877 749 777
+                <a href="https://zalo.me/84886402616" target="_blank" rel="noopener noreferrer">
+                  Zalo: +84 886 402 616
                 </a>
               </li>
               <li className="pt-2">
