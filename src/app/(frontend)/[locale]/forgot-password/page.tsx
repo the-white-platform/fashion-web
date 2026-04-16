@@ -10,6 +10,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 
 export default function ForgotPasswordPage() {
   const t = useTranslations()
+  const tCommon = useTranslations('common')
   const [email, setEmail] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -126,9 +127,7 @@ export default function ForgotPasswordPage() {
                 disabled={isLoading}
                 className="w-full bg-foreground text-background py-4 rounded-sm hover:opacity-90 transition-colors uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading
-                  ? t('common.processing') || 'Processing...'
-                  : t('auth.sendResetLink') || 'Send Reset Link'}
+                {isLoading ? tCommon('processing') : t('auth.sendResetLink') || 'Send Reset Link'}
               </button>
             </form>
           )}

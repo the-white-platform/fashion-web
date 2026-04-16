@@ -14,6 +14,7 @@ export default function RegisterPage() {
   const searchParams = useSearchParams()
   const { register } = useUser()
   const t = useTranslations()
+  const tCommon = useTranslations('common')
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -371,7 +372,7 @@ export default function RegisterPage() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                <span>{t('common.processing')}</span>
+                <span>{tCommon('processing')}</span>
               </>
             ) : (
               <>

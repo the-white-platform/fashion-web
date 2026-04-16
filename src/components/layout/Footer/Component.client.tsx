@@ -12,6 +12,7 @@ interface FooterClientProps {
 
 export function FooterClient({ categories = [] }: FooterClientProps) {
   const t = useTranslations()
+  const tCommon = useTranslations('common')
 
   return (
     <footer className="bg-background text-foreground py-12 lg:py-16 border-t border-border">
@@ -59,7 +60,7 @@ export function FooterClient({ categories = [] }: FooterClientProps) {
                     href="/products"
                     className="hover:text-foreground transition-colors text-left text-sm block"
                   >
-                    {t('common.all') || 'Tất Cả'}
+                    {tCommon('all')}
                   </Link>
                 </li>
                 {categories.map((cat) => (

@@ -28,6 +28,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams()
   const { login } = useUser()
   const t = useTranslations()
+  const tCommon = useTranslations('common')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -170,7 +171,7 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                <span>{t('common.processing')}</span>
+                <span>{tCommon('processing')}</span>
               </>
             ) : (
               <>

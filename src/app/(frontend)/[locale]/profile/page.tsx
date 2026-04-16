@@ -303,16 +303,14 @@ export default function ProfilePage() {
                       disabled={isSaving}
                       className="bg-foreground text-background px-6 py-3 rounded-sm hover:opacity-90 transition-colors uppercase tracking-wide disabled:opacity-50"
                     >
-                      {isSaving
-                        ? t('common.processing') || 'Saving...'
-                        : t('common.save') || 'Save'}
+                      {isSaving ? tCommon('processing') : tCommon('save')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsEditing(false)}
                       className="px-6 py-3 border border-border rounded-sm hover:bg-muted transition-colors uppercase tracking-wide"
                     >
-                      {t('common.cancel') || 'Cancel'}
+                      {tCommon('cancel')}
                     </button>
                   </div>
                 </form>
@@ -408,7 +406,7 @@ export default function ProfilePage() {
                           className="flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 uppercase tracking-wide"
                         >
                           <Trash2 className="w-3 h-3" />
-                          {t('common.delete') || 'Delete'}
+                          {tCommon('delete')}
                         </button>
                       </div>
                     </div>
@@ -466,7 +464,7 @@ export default function ProfilePage() {
                           className="flex items-center gap-1 text-xs text-destructive hover:text-destructive/80 uppercase tracking-wide"
                         >
                           <Trash2 className="w-3 h-3" />
-                          {t('common.delete') || 'Delete'}
+                          {tCommon('delete')}
                         </button>
                       </div>
                     </div>

@@ -12,6 +12,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 
 export default function ResetPasswordPage() {
   const t = useTranslations()
+  const tCommon = useTranslations('common')
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
@@ -172,9 +173,7 @@ export default function ResetPasswordPage() {
                 disabled={isLoading}
                 className="w-full bg-foreground text-background py-4 rounded-sm hover:opacity-90 transition-colors uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading
-                  ? t('common.processing') || 'Processing...'
-                  : t('auth.resetPassword') || 'Reset Password'}
+                {isLoading ? tCommon('processing') : t('auth.resetPassword') || 'Reset Password'}
               </button>
             </form>
           )}

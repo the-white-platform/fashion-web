@@ -135,6 +135,7 @@ export default function OrderDetailPage() {
   const { user } = useUser()
   const { addToCart, setIsCartOpen } = useCart()
   const t = useTranslations()
+  const tCommon = useTranslations('common')
   const getStatusInfo = useGetStatusInfo()
   const getTimeline = useGetTimeline()
   const orderId = params?.id ? String(params.id) : ''
@@ -255,7 +256,7 @@ export default function OrderDetailPage() {
           className="flex items-center gap-2 mb-8 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
-          <span>{t('common.back')}</span>
+          <span>{tCommon('back')}</span>
         </button>
 
         {/* Order Header */}
@@ -451,8 +452,15 @@ export default function OrderDetailPage() {
                     </p>
 
                     {qrUrl && (
-                      <div className="flex flex-col md:flex-row items-center gap-6 pt-4 border-t border-border">
-                        <div className="bg-white p-4 rounded-lg shadow-inner shrink-0">
+                      // lg breakpoint (not md): the order-detail card
+                      // sits inside a 2-col grid on the parent page, so
+                      // the useful inner width is ~md-ish even on
+                      // desktop. Forcing side-by-side at md squeezed
+                      // the bank-details column down to letter-per-line
+                      // "HO KINH DOANH THE WHITE ACTIVE". Stacking until
+                      // lg gives the text room to breathe.
+                      <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 pt-4 border-t border-border">
+                        <div className="bg-white p-4 rounded-lg shadow-inner shrink-0 mx-auto lg:mx-0">
                           <Image
                             src={qrUrl}
                             alt={t('checkout.scanQR')}
@@ -461,7 +469,7 @@ export default function OrderDetailPage() {
                             className="object-contain"
                           />
                         </div>
-                        <div className="text-left space-y-2 text-sm">
+                        <div className="text-left space-y-2 text-sm min-w-0 flex-1">
                           <div>
                             <p className="text-xs text-muted-foreground uppercase tracking-widest">
                               {t('checkout.accountHolder')}
