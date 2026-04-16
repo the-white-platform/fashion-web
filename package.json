@@ -27,7 +27,8 @@
     "release:major": "standard-version --release-as major",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation tsx --tsconfig tsconfig.json scripts/seed.ts",
     "setup": "bash scripts/setup.sh",
-    "db:reset": "bash scripts/db-reset.sh"
+    "db:reset": "bash scripts/db-reset.sh",
+    "zalo:auth": "node --env-file=.env scripts/zalo-auth.mjs"
   },
   "dependencies": {
     "@google-cloud/tasks": "^6.2.1",
