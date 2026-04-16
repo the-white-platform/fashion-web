@@ -88,11 +88,38 @@ async function urlToCompressed(
  * Handles absolute URLs (http/https), relative URLs (starting with /),
  * and base64 / data-URL strings.
  */
+/**
+ * Rewrite a same-origin Payload media URL to its public GCS equivalent
+ * when PAYLOAD_MEDIA_BUCKET is set. Cloud Run → same-origin HTTPS fetches
+ * are flaky (fetch fails outright with "fetch failed") — resolving to
+ * storage.googleapis.com avoids the self-call entirely.
+ */
+function maybeRewriteToGcs(pathOrUrl: string): string | null {
+  const bucket = process.env.PAYLOAD_MEDIA_BUCKET
+  if (!bucket) return null
+  // Accept `/api/media/file/NAME`, `/media/NAME`, or an absolute same-origin
+  // URL that contains those prefixes.
+  const match = pathOrUrl.match(/\/(?:api\/media\/file|media)\/([^?#]+)/)
+  if (!match) return null
+  return `https://storage.googleapis.com/${bucket}/${match[1]}`
+}
+
 async function resolveToInlineImage(
   value: string,
   requestUrl: string,
 ): Promise<{ data: string; mimetype: string }> {
   const selfOrigin = new URL(requestUrl).origin
+
+  // Short-circuit: if this looks like one of OUR Payload media URLs and we
+  // have a GCS bucket configured, fetch from the public GCS URL directly.
+  // The bucket objects are already public-read, and this is significantly
+  // more reliable than bouncing back through the Cloud Run service itself.
+  const gcsUrl = maybeRewriteToGcs(value)
+  if (gcsUrl) {
+    const { buffer, mimetype } = await urlToCompressed(gcsUrl, selfOrigin)
+    return { data: buffer.toString('base64'), mimetype }
+  }
+
   if (value.startsWith('http://') || value.startsWith('https://')) {
     const { buffer, mimetype } = await urlToCompressed(value, selfOrigin)
     return { data: buffer.toString('base64'), mimetype }
