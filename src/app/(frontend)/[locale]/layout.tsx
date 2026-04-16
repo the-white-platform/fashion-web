@@ -91,6 +91,12 @@ export default async function RootLayout({ children, params }: Props) {
   return (
     <html className={cn(inter.variable, theWhite.variable)} lang={locale} suppressHydrationWarning>
       <head>
+        {/* Zalo Platform site verification — keep early in <head> so
+            Zalo's crawler finds it within its 512KB head-scan budget. */}
+        <meta
+          name="zalo-platform-site-verification"
+          content="EjcV1Cl65Lq1zQvzXS8YOth3iZgMjMTdCJSs"
+        />
         <InitTheme />
         <link rel="preload" href="/logo/W.svg" as="image" type="image/svg+xml" />
       </head>

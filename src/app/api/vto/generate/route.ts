@@ -416,7 +416,15 @@ export async function POST(request: Request) {
         },
       })
     } catch (logErr) {
-      console.warn('[VTO] failed to log generation:', logErr)
+      const detail =
+        logErr && typeof logErr === 'object' && 'data' in logErr
+          ? JSON.stringify(
+              (logErr as { data: unknown }).data,
+              (_k, v) => (typeof v === 'string' && v.length > 80 ? `${v.slice(0, 80)}…` : v),
+              2,
+            )
+          : String(logErr)
+      console.warn('[VTO] failed to log generation:', detail)
     }
 
     return NextResponse.json({
