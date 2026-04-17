@@ -11,14 +11,12 @@ import { Link } from '@/i18n/Link'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { cn } from '@/utilities/cn'
 import { useState } from 'react'
-import { localizeProductTag } from '@/utilities/productTag'
 
 export default function ComparePageClient() {
   const { items, removeFromCompare, clearCompare } = useCompare()
   const { addToCart, setIsCartOpen } = useCart()
   const { isWishlisted, toggleWishlist } = useWishlist()
   const t = useTranslations('compare')
-  const tRoot = useTranslations()
   const [selectedSizes, setSelectedSizes] = useState<Record<number, string>>({})
 
   const handleAddToCart = (productId: number) => {
@@ -166,7 +164,7 @@ export default function ComparePageClient() {
                         />
                         {product.tag && (
                           <div className="absolute top-0 left-0 bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase">
-                            {localizeProductTag(product.tag, tRoot)}
+                            {product.tagLabel || product.tag}
                           </div>
                         )}
                       </div>

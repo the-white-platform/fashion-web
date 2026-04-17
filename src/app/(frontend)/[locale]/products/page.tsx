@@ -40,7 +40,7 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
     })
 
     // Transform products
-    const products = productsResult.docs.map(transformProduct)
+    const products = productsResult.docs.map((p) => transformProduct(p, locale as 'vi' | 'en'))
     transformedProducts = products
 
     // Get unique colors from all products

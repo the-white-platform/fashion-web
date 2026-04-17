@@ -4,7 +4,45 @@ import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 import { slugify } from '@/utilities/slugify'
 import { formatPrice } from '@/utilities/formatPrice'
+import { Products as ProductsCollection } from '@/collections/Products'
 import type { SizeChartData } from '@/components/ecommerce/SizeChartModal'
+
+type Locale = 'vi' | 'en'
+
+/**
+ * Read the `label: { vi, en }` map off the Products collection's `tag`
+ * select field so adding a new option in `Products.ts` ripples to the
+ * storefront without any messages-JSON edit. Falls back to the raw value
+ * if an option is missing a label (e.g. the HOT entry) or if the tag
+ * doesn't match any option.
+ */
+const tagLabelByValue: Map<string, { vi: string; en: string }> = (() => {
+  const m = new Map<string, { vi: string; en: string }>()
+  const tagField = (ProductsCollection.fields as any[]).find((f) => f.name === 'tag')
+  const options = (tagField?.options ?? []) as Array<{
+    value: string
+    label: string | { vi?: string; en?: string }
+  }>
+  for (const opt of options) {
+    const label = opt.label
+    if (typeof label === 'string') {
+      m.set(opt.value, { vi: label, en: label })
+    } else {
+      m.set(opt.value, {
+        vi: label?.vi ?? opt.value,
+        en: label?.en ?? label?.vi ?? opt.value,
+      })
+    }
+  }
+  return m
+})()
+
+function resolveTagLabel(tag: string | null | undefined, locale: Locale): string {
+  if (!tag) return ''
+  const entry = tagLabelByValue.get(tag)
+  if (!entry) return tag
+  return entry[locale] ?? tag
+}
 
 /**
  * Pick a reasonably-sized URL off a Payload Media doc.
@@ -59,6 +97,14 @@ export interface ProductForFrontend {
   colors: { name: string; hex: string }[] // Aggregated from variants
   sizes: string[] // Aggregated from all variants
   tag: string
+  /**
+   * Display-ready tag label for the active locale. Resolved from the
+   * `label: { vi, en }` map on the `tag` select options in
+   * `src/collections/Products.ts` — the storefront renders this, not the
+   * raw `tag` value. Admins add new tags in one place (the collection
+   * config) and the translated badge appears automatically.
+   */
+  tagLabel: string
   inStock: boolean
   featured: boolean
   description?: string
@@ -75,9 +121,13 @@ export interface CategoryForFrontend {
 }
 
 /**
- * Transform a Product from Payload to a frontend-friendly format
+ * Transform a Product from Payload to a frontend-friendly format.
+ *
+ * `locale` controls the display-only `tagLabel` field; all other string
+ * fields (name, description, colorVariants[].color, …) come back already
+ * localized from Payload via the `locale` arg passed to `payload.find`.
  */
-export function transformProduct(product: Product): ProductForFrontend {
+export function transformProduct(product: Product, locale: Locale = 'vi'): ProductForFrontend {
   // Get category info
   const rawCategories = product.category
   const categoriesList = Array.isArray(rawCategories)
@@ -200,6 +250,7 @@ export function transformProduct(product: Product): ProductForFrontend {
     colors,
     sizes,
     tag: product.tag || '',
+    tagLabel: resolveTagLabel(product.tag, locale),
     inStock,
     featured: product.featured ?? false,
     description,
@@ -227,15 +278,16 @@ async function getProducts(options?: {
     where.featured = { equals: true }
   }
 
+  const locale: Locale = (options?.locale as Locale) || 'vi'
   const products = await payload.find({
     collection: 'products',
     depth: 2,
     limit: options?.limit || 100,
-    locale: (options?.locale as 'vi' | 'en') || 'vi',
+    locale,
     where: Object.keys(where).length > 0 ? where : undefined,
   })
 
-  return products.docs.map(transformProduct)
+  return products.docs.map((p) => transformProduct(p, locale))
 }
 
 /**
@@ -243,12 +295,13 @@ async function getProducts(options?: {
  */
 async function getProductBySlug(slug: string, locale?: string) {
   const payload = await getPayload({ config: configPromise })
+  const activeLocale: Locale = (locale as Locale) || 'vi'
 
   // Try to find by slug first
   let result = await payload.find({
     collection: 'products',
     depth: 2,
-    locale: (locale as 'vi' | 'en') || 'vi',
+    locale: activeLocale,
     where: {
       slug: { equals: slug },
     },
@@ -264,10 +317,10 @@ async function getProductBySlug(slug: string, locale?: string) {
           collection: 'products',
           id,
           depth: 2,
-          locale: (locale as 'vi' | 'en') || 'vi',
+          locale: activeLocale,
         })
         if (product) {
-          return transformProduct(product)
+          return transformProduct(product, activeLocale)
         }
       } catch {
         // Product not found by ID
@@ -276,7 +329,7 @@ async function getProductBySlug(slug: string, locale?: string) {
     return null
   }
 
-  return transformProduct(result.docs[0])
+  return transformProduct(result.docs[0], activeLocale)
 }
 
 /**

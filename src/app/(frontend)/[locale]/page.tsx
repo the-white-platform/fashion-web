@@ -68,7 +68,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     if (result?.docs) {
       featuredProducts = result.docs
         .filter((product): product is Product => Boolean(product))
-        .map((product: Product) => transformProduct(product))
+        .map((product: Product) => transformProduct(product, locale as 'vi' | 'en'))
     }
 
     // Fetch carousel slides, activity categories, and quick filters from homepage global
