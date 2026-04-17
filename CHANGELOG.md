@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.44.6](https://github.com/the-white-platform/fashion-web/compare/v0.44.5...v0.44.6) (2026-04-17)
+
+
+### Bug Fixes
+
+* **quickview:** use flex-col on mobile so image + details stack cleanly ([fc96711](https://github.com/the-white-platform/fashion-web/commit/fc967118593f6e4389001412135f304db9404a20))
+
 ### [0.44.5](https://github.com/the-white-platform/fashion-web/compare/v0.44.4...v0.44.5) (2026-04-17)
 
 
