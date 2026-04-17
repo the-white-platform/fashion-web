@@ -851,7 +851,9 @@
       "order": "Đặt Hàng",
       "payment": "Thanh Toán",
       "shipping": "Vận Chuyển",
-      "return": "Đổi Trả"
+      "return": "Đổi Trả",
+      "product": "Sản Phẩm",
+      "account": "Tài Khoản"
     },
     "noResults": "Không tìm thấy câu hỏi phù hợp",
     "clearFilter": "Xóa bộ lọc",
@@ -1166,7 +1168,17 @@
     "returnRefundDesc": "Sản phẩm sẽ được hoàn tiền 100%",
     "exchange": "Đổi Sản Phẩm",
     "exchangeDesc": "Đổi size hoặc màu khác",
-    "reason": "4. Lý Do",
+    "reason": {
+      "selectDefault": "-- Chọn lý do --",
+      "r1": "Sản phẩm không đúng size",
+      "r2": "Sản phẩm bị lỗi/hỏng",
+      "r3": "Sản phẩm không đúng mô tả",
+      "r4": "Nhầm sản phẩm",
+      "r5": "Đổi ý",
+      "r6": "Khác",
+      "descLabel": "Mô Tả Chi Tiết",
+      "descPlaceholder": "Mô tả chi tiết vấn đề với sản phẩm..."
+    },
     "reasonPlaceholder": "-- Chọn lý do --",
     "reasonWrongSize": "Sản phẩm không đúng size",
     "reasonDefective": "Sản phẩm bị lỗi/hỏng",
@@ -1176,7 +1188,10 @@
     "reasonOther": "Khác",
     "descriptionLabel": "Mô Tả Chi Tiết",
     "descriptionPlaceholder": "Mô tả chi tiết vấn đề với sản phẩm...",
-    "images": "5. Hình Ảnh (Tùy Chọn)",
+    "images": {
+      "dragDrop": "Kéo thả hoặc click để tải ảnh lên",
+      "format": "PNG, JPG tối đa 5MB"
+    },
     "imagesDesc": "Đính kèm hình ảnh sản phẩm nếu có lỗi",
     "uploadDrop": "Kéo thả hoặc click để tải ảnh lên",
     "uploadLimit": "PNG, JPG tối đa 5MB",
@@ -1189,7 +1204,42 @@
       "p3": "• Miễn phí đổi size lần đầu và trả hàng nếu sản phẩm lỗi",
       "p4": "• Hoàn tiền trong vòng 5-7 ngày sau khi nhận hàng trả",
       "p5prefix": "• Xem chi tiết tại ",
-      "p5link": "Chính Sách Đổi Trả"
+      "p5link": "Chính Sách Đổi Trả",
+      "p5": "• Xem chi tiết tại ",
+      "policyLink": "Chính Sách Đổi Trả"
+    },
+    "breadcrumb": "Yêu Cầu Đổi/Trả Hàng",
+    "success": {
+      "title": "Yêu Cầu Đã Được Gửi!",
+      "descReturn": "Chúng tôi sẽ xử lý yêu cầu trả hàng của bạn trong vòng 24-48h. Bạn sẽ nhận được email xác nhận sớm nhất.",
+      "descExchange": "Chúng tôi sẽ xử lý yêu cầu đổi hàng của bạn trong vòng 24-48h. Bạn sẽ nhận được email xác nhận sớm nhất.",
+      "home": "Về Trang Chủ",
+      "another": "Gửi Yêu Cầu Khác"
+    },
+    "steps": {
+      "s1": "1. Chọn Đơn Hàng",
+      "s2": "2. Chọn Sản Phẩm",
+      "s3": "3. Loại Yêu Cầu",
+      "s4": "4. Lý Do",
+      "s5": "5. Hình Ảnh (Tùy Chọn)"
+    },
+    "order": {
+      "selectDefault": "-- Chọn đơn hàng --",
+      "noOrders": "Bạn chưa có đơn hàng nào đã giao"
+    },
+    "items": {
+      "size": "Size",
+      "qty": "Số lượng"
+    },
+    "type": {
+      "return": "Trả Hàng & Hoàn Tiền",
+      "returnDesc": "Sản phẩm sẽ được hoàn tiền 100%",
+      "exchange": "Đổi Sản Phẩm",
+      "exchangeDesc": "Đổi size hoặc màu khác"
+    },
+    "buttons": {
+      "cancel": "Hủy",
+      "submit": "Gửi Yêu Cầu"
     }
   },
   "coupon": {

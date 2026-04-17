@@ -937,6 +937,15 @@
         "question": "How can I contact TheWhite?",
         "answer": "Hotline: 1900 xxxx (8:00–22:00 daily). Email: hello@thewhite.vn (reply within 24h). Live chat on website (8:00–22:00). Facebook/Instagram: @thewhite.vn. In-store: 123 Fashion Street, District 1, HCMC."
       }
+    },
+    "breadcrumbHome": "Home",
+    "breadcrumbPage": "FAQ",
+    "clearFilter": "Clear filter",
+    "support": {
+      "title": "Didn't find your answer?",
+      "subtitle": "TheWhite's support team is here to help 24/7",
+      "chat": "Chat With Us",
+      "hotline": "Call hotline: 1900-xxxx"
     }
   },
   "returnPolicy": {
