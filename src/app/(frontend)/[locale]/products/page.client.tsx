@@ -133,26 +133,56 @@ function ProductsPageContent({
     price: true,
   })
 
-  // Helper to update URL with new params
+  // Pending updates buffer + commit-after-microtask scheduler.
+  //
+  // Multiple handlers may call `updateURL` in the same tick (e.g.
+  // `clearFilters` calls four of them in a row). The previous
+  // implementation read `searchParams.toString()` at call time, so each
+  // call computed its newParams from the SAME stale URL — the four
+  // resulting `router.push`es collided and only the last write
+  // (or worse, none) actually stuck.
+  //
+  // The fix: collect updates in a ref-backed object across the tick, and
+  // schedule a single `router.push` at microtask time that merges all of
+  // them. The sequential calls within `clearFilters` now compose into one
+  // navigation. Updaters that need to reset pagination still implicitly
+  // do so because we delete `page` whenever any non-page key is touched.
+  const pendingUpdatesRef = useRef<Record<string, string | null> | null>(null)
   const updateURL = useCallback(
     (updates: Record<string, string | null>) => {
-      const newParams = new URLSearchParams(searchParams.toString())
+      // Merge into the pending bucket. A second call that touches the
+      // same key wins (last write wins inside the tick).
+      pendingUpdatesRef.current = { ...(pendingUpdatesRef.current ?? {}), ...updates }
 
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || value === '' || value === 'all') {
-          newParams.delete(key)
-        } else {
-          newParams.set(key, value)
-        }
-      })
+      // First update of the tick — schedule the flush. Subsequent
+      // updates land in the same bucket and the already-queued microtask
+      // commits them all together.
+      if (Object.keys(pendingUpdatesRef.current).length === Object.keys(updates).length) {
+        queueMicrotask(() => {
+          const merged = pendingUpdatesRef.current
+          pendingUpdatesRef.current = null
+          if (!merged) return
 
-      // Always reset to page 1 when filters change (except for page changes)
-      if (!('page' in updates)) {
-        newParams.delete('page')
+          const newParams = new URLSearchParams(searchParams.toString())
+          for (const [key, value] of Object.entries(merged)) {
+            if (value === null || value === '' || value === 'all') {
+              newParams.delete(key)
+            } else {
+              newParams.set(key, value)
+            }
+          }
+
+          // Always reset to page 1 when any filter changes — the only
+          // call that explicitly opts out is `handlePageChange` itself,
+          // which always passes `page` so this branch leaves it alone.
+          if (!('page' in merged)) {
+            newParams.delete('page')
+          }
+
+          const queryString = newParams.toString()
+          router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
+        })
       }
-
-      const queryString = newParams.toString()
-      router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
     },
     [searchParams, router, pathname],
   )
@@ -200,6 +230,26 @@ function ProductsPageContent({
       setSearchQuery(value)
       setCurrentPage(1)
       updateURL({ q: value || null })
+    },
+    [updateURL],
+  )
+
+  // Stock filters — keep them in the URL so /products?inStock=false is
+  // shareable. `inStock=true` and `outOfStock=false` are the defaults so
+  // we omit them to keep URLs tidy.
+  const handleInStockChange = useCallback(
+    (checked: boolean) => {
+      setShowInStock(checked)
+      setCurrentPage(1)
+      updateURL({ inStock: checked ? null : 'false' })
+    },
+    [updateURL],
+  )
+  const handleOutOfStockChange = useCallback(
+    (checked: boolean) => {
+      setShowOutOfStock(checked)
+      setCurrentPage(1)
+      updateURL({ outOfStock: checked ? 'true' : null })
     },
     [updateURL],
   )
@@ -361,11 +411,26 @@ function ProductsPageContent({
   const clearFilters = () => {
     setSelectedSizes([])
     setSelectedColors([])
-    handleCategoryChange(allCategoryName)
-    handlePriceRangeChange(null)
+    setSelectedCategory(allCategoryName)
+    setSelectedPriceRange(null)
     setShowInStock(true)
     setShowOutOfStock(false)
-    handleSearchChange('')
+    setSearchQuery('')
+    setSortBy('newest')
+    setCurrentPage(1)
+    // Single URL write — the microtask-batched updateURL collapses these
+    // into one navigation. Setting every filter key to null clears them.
+    updateURL({
+      sizes: null,
+      colors: null,
+      category: null,
+      price: null,
+      inStock: null,
+      outOfStock: null,
+      q: null,
+      sort: null,
+      tag: null,
+    })
   }
 
   return (
@@ -558,7 +623,7 @@ function ProductsPageContent({
                             <input
                               type="checkbox"
                               checked={showInStock}
-                              onChange={(e) => setShowInStock(e.target.checked)}
+                              onChange={(e) => handleInStockChange(e.target.checked)}
                               className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                             />
                             <span className="group-hover:text-muted-foreground transition-colors">
@@ -570,7 +635,7 @@ function ProductsPageContent({
                             <input
                               type="checkbox"
                               checked={showOutOfStock}
-                              onChange={(e) => setShowOutOfStock(e.target.checked)}
+                              onChange={(e) => handleOutOfStockChange(e.target.checked)}
                               className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                             />
                             <span className="group-hover:text-muted-foreground transition-colors">
@@ -765,7 +830,7 @@ function ProductsPageContent({
                           <input
                             type="checkbox"
                             checked={showInStock}
-                            onChange={(e) => setShowInStock(e.target.checked)}
+                            onChange={(e) => handleInStockChange(e.target.checked)}
                             className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                           />
                           <span className="group-hover:text-muted-foreground transition-colors">
@@ -777,7 +842,7 @@ function ProductsPageContent({
                           <input
                             type="checkbox"
                             checked={showOutOfStock}
-                            onChange={(e) => setShowOutOfStock(e.target.checked)}
+                            onChange={(e) => handleOutOfStockChange(e.target.checked)}
                             className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                           />
                           <span className="group-hover:text-muted-foreground transition-colors">
