@@ -209,6 +209,7 @@ export const Products: CollectionConfig = {
           name: 'name',
           type: 'text',
           required: true,
+          localized: true,
           label: { vi: 'Tên Màu', en: 'Color Name' },
         },
         {
