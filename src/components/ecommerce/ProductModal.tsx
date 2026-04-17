@@ -94,7 +94,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="!max-w-[95vw] !w-[95vw] md:!max-w-6xl md:!w-auto !max-h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0 shadow-2xl rounded-sm">
+        <DialogContent className="!max-w-[95vw] !w-[95vw] md:!max-w-6xl md:!w-auto !max-h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0 shadow-2xl rounded-sm flex flex-col">
           {/* Close Button */}
           <motion.button
             initial={{ opacity: 0, rotate: -90 }}
@@ -106,13 +106,15 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
             <X className="w-4 h-4 transition-transform group-hover:rotate-90" />
           </motion.button>
 
-          {/* 60/40 split: image gets the wider column so portrait product
-              shots breathe; the info panel scrolls if the description
-              expands. */}
-          <div className="grid md:grid-cols-[3fr_2fr] max-h-[90vh] overflow-hidden">
+          {/* 60/40 split on desktop; on mobile the sections stack and the
+              whole modal scrolls vertically (DialogContent is flex-col so
+              this inner grid owns the overflow). The image column needs an
+              explicit aspect ratio on mobile because md:grid cells have no
+              intrinsic height, which would collapse Image fill to 0px. */}
+          <div className="grid md:grid-cols-[3fr_2fr] overflow-y-auto overflow-x-hidden md:overflow-hidden flex-1 min-h-0">
             {/* Image Section - Left Side */}
             <div
-              className="relative bg-muted overflow-hidden h-full"
+              className="relative bg-muted overflow-hidden aspect-[3/4] md:aspect-auto md:h-full"
               onMouseEnter={() => setIsImageHovered(true)}
               onMouseLeave={() => setIsImageHovered(false)}
             >
