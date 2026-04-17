@@ -23,7 +23,11 @@ export const Products: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'category', 'price', 'stockStatus', 'tag', 'inStock'],
+    defaultColumns: ['name', 'category', 'price', 'stockStatus', 'tag', 'displayOrder', 'inStock'],
+    // `displayOrder` is shown as a sortable column so editors can click
+    // the header to see the list in storefront order. Payload v3's
+    // CollectionAdminOptions doesn't expose a `defaultSort` key; the
+    // per-user list sort preference persists automatically in the admin.
   },
   labels: {
     singular: { vi: 'Sản Phẩm', en: 'Product' },
@@ -364,6 +368,20 @@ export const Products: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: { vi: 'Hiển thị ở trang chủ', en: 'Display on homepage' },
+      },
+    },
+    {
+      name: 'displayOrder',
+      type: 'number',
+      defaultValue: 0,
+      index: true,
+      label: { vi: 'Thứ tự hiển thị', en: 'Display Order' },
+      admin: {
+        position: 'sidebar',
+        description: {
+          vi: 'Nhỏ hơn hiện trước trên trang /products. Nhiều sản phẩm có cùng số thì cái mới nhất (id cao hơn) lên trước. Mặc định 0.',
+          en: 'Smaller numbers show first on /products. Ties are broken by id desc (newer first). Default 0.',
+        },
       },
     },
     {

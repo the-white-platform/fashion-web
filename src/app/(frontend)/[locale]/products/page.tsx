@@ -23,12 +23,17 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
   try {
     const payload = await getPayload({ config: configPromise })
 
-    // Fetch all products with locale
+    // Fetch all products with locale. Sort by `displayOrder` (admin-
+    // controlled from the Payload product edit page) ascending, then by
+    // id descending so ties fall to "newer first" — matching the
+    // implicit "newest" assumption the client-side `sortBy='newest'`
+    // path uses.
     const productsResult = await payload.find({
       collection: 'products',
       depth: 2,
       limit: 100,
       locale: locale as 'vi' | 'en',
+      sort: ['displayOrder', '-id'],
     })
 
     // Fetch categories with locale

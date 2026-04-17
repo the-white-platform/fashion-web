@@ -715,6 +715,10 @@ export interface Product {
    * Display on homepage
    */
   featured?: boolean | null;
+  /**
+   * Smaller numbers show first on /products. Ties are broken by id desc (newer first). Default 0.
+   */
+  displayOrder?: number | null;
   description?: {
     root: {
       type: string;
@@ -2124,6 +2128,7 @@ export interface ProductsSelect<T extends boolean = true> {
   inStock?: T;
   stockStatus?: T;
   featured?: T;
+  displayOrder?: T;
   description?: T;
   features?:
     | T

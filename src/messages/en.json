@@ -720,6 +720,7 @@
     },
     "sort": {
       "title": "Sort by",
+      "default": "Recommended",
       "newest": "Newest",
       "priceAsc": "Price: Low to High",
       "priceDesc": "Price: High to Low",

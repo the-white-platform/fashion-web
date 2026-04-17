@@ -98,7 +98,10 @@ function ProductsPageContent({
   // chip for it yet.
   const tagFilter = (searchParams.get('tag') || '').toLowerCase()
 
-  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'newest')
+  // Default sort is the server order (the Payload admin's
+  // `displayOrder` field, tied by id desc). Explicit user picks like
+  // `newest` / `price-low` / `price-high` / `popular` override it.
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'default')
   const [currentPage, setCurrentPage] = useState(() => {
     const page = searchParams.get('page')
     return page ? parseInt(page, 10) : 1
@@ -210,7 +213,9 @@ function ProductsPageContent({
     (value: string) => {
       setSortBy(value)
       setCurrentPage(1)
-      updateURL({ sort: value === 'newest' ? null : value })
+      // `default` (admin's displayOrder) is the implicit state — keep
+      // it out of the URL so deep links stay tidy.
+      updateURL({ sort: value === 'default' ? null : value })
     },
     [updateURL],
   )
@@ -366,7 +371,12 @@ function ProductsPageContent({
       return true
     })
 
-    // Sort products
+    // Sort products. `default` keeps whatever order the server gave us
+    // (sorted by the admin-controlled `displayOrder` in the Payload
+    // collection, tie-break by id desc). Explicit sorts replace it.
+    if (sortBy === 'default' || !sortBy) {
+      return filtered
+    }
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
@@ -381,9 +391,12 @@ function ProductsPageContent({
           if (ratingDiff !== 0) return ratingDiff
           return (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
         case 'newest':
-        default:
-          // Newest first (by ID, assuming higher ID = newer)
+          // Explicit "newest" = id desc. Different from default because
+          // default respects admin-chosen display order, which may put
+          // older items at the front when displayOrder says so.
           return b.id - a.id
+        default:
+          return 0
       }
     })
 
@@ -531,6 +544,7 @@ function ProductsPageContent({
                     onChange={(e) => handleSortChange(e.target.value)}
                     className="w-full bg-muted border border-border px-4 py-3 pr-10 rounded-sm outline-none focus:border-primary transition-colors appearance-none cursor-pointer uppercase text-xs tracking-wide text-foreground h-full"
                   >
+                    <option value="default">{tFilter('sort.default')}</option>
                     <option value="newest">{tFilter('sort.newest')}</option>
                     <option value="price-low">{tFilter('sort.priceAsc')}</option>
                     <option value="price-high">{tFilter('sort.priceDesc')}</option>
