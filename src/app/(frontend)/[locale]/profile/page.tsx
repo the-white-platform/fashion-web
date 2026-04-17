@@ -370,9 +370,16 @@ export default function ProfilePage() {
                           <p className="font-medium text-foreground">{address.name}</p>
                           <p className="text-muted-foreground text-sm">{address.address}</p>
                           <p className="text-muted-foreground text-sm">
-                            {address.ward?.name || address.ward},{' '}
-                            {address.district?.name || address.district},{' '}
-                            {address.province?.name || address.province}
+                            {[address.ward, address.district, address.province]
+                              .map((v) =>
+                                typeof v === 'object' && v !== null
+                                  ? ((v as { name?: string }).name ?? '')
+                                  : typeof v === 'string'
+                                    ? v
+                                    : '',
+                              )
+                              .filter(Boolean)
+                              .join(', ')}
                           </p>
                           <p className="text-muted-foreground text-sm">{address.phone}</p>
                         </div>

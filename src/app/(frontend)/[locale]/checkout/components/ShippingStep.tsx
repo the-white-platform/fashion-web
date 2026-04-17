@@ -130,6 +130,17 @@ export function ShippingStep({
     })
   }, [showNewAddress, user?.fullName, user?.phone])
 
+  // Preselect the default saved address on mount so the user isn't blocked
+  // at "Tiếp Theo" until they manually click a radio.
+  useEffect(() => {
+    if (selectedAddress || showNewAddress) return
+    const list = user?.shippingAddresses as any[] | undefined
+    if (!list?.length) return
+    const pick = list.find((a) => a.isDefault) ?? list[0]
+    onSelectAddress(pick)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.shippingAddresses?.length])
+
   const handleNext = () => {
     if (!selectedAddress && !showNewAddress) {
       alert(t('addressInfo'))
@@ -165,29 +176,62 @@ export function ShippingStep({
     >
       <h2 className="text-2xl uppercase tracking-wide mb-6">{t('shipping')}</h2>
 
-      {/* Saved Addresses */}
+      {/* Saved Addresses — one RadioGroup across the list (not one per item)
+          so the group manages `value` / onValueChange and the label-for-id
+          click target actually toggles the selection. Previously each card
+          wrapped a single RadioGroupItem with no `value` on the group, which
+          is why clicking the card did nothing.
+
+          City/district/ward come back as relationship objects when the user
+          is fetched with depth≥1, so we extract the `.name` field to avoid
+          "[object Object]" appearing in the address line. */}
       {user?.shippingAddresses && user.shippingAddresses.length > 0 && !showNewAddress && (
-        <div className="space-y-4 mb-6">
-          {user.shippingAddresses.map((address: any, index: number) => (
-            <label
-              key={index}
-              className={`block p-4 border-2 rounded-sm cursor-pointer transition-all ${
-                selectedAddress === address
-                  ? 'border-foreground bg-background'
-                  : 'border-border hover:border-foreground'
-              }`}
-            >
-              <RadioGroup>
+        <RadioGroup
+          value={(() => {
+            const idx = user.shippingAddresses.indexOf(selectedAddress)
+            return idx >= 0 ? String(idx) : ''
+          })()}
+          onValueChange={(val) => {
+            const idx = Number(val)
+            onSelectAddress(user.shippingAddresses[idx] ?? null)
+          }}
+          className="space-y-4 mb-6"
+        >
+          {user.shippingAddresses.map((address: any, index: number) => {
+            const addressId = `saved-address-${index}`
+            // UserContext.mapPayloadUser renames Payload's `city` field to
+            // `province` and exposes each as { id, name }. We also fall
+            // through to the raw `city` field in case some code path bypasses
+            // the mapper and passes the unnormalized Payload shape.
+            const nameOf = (v: unknown): string =>
+              typeof v === 'object' && v !== null
+                ? ((v as { name?: string }).name ?? '')
+                : typeof v === 'string'
+                  ? v
+                  : ''
+            const ward = nameOf(address.ward)
+            const district = nameOf(address.district)
+            const province = nameOf(address.province ?? address.city)
+            return (
+              <Label
+                key={index}
+                htmlFor={addressId}
+                className={`block p-4 border-2 rounded-sm cursor-pointer transition-all ${
+                  selectedAddress === address
+                    ? 'border-foreground bg-background'
+                    : 'border-border hover:border-foreground'
+                }`}
+              >
                 <div className="flex items-start gap-3">
-                  <RadioGroupItem value={String(index)} checked={selectedAddress === address} />
+                  <RadioGroupItem value={String(index)} id={addressId} />
                   <div className="flex-1">
                     <p className="font-semibold mb-1">{address.name}</p>
                     <p className="text-sm text-muted-foreground">{address.phone}</p>
                     <p className="text-sm text-muted-foreground">
                       {address.address}
-                      {address.ward && `, ${address.ward}`}
-                      {address.district && `, ${address.district}`}
-                      {address.city && `, ${address.city}`}
+                      {ward && `, ${ward}`}
+                      {district && `, ${district}`}
+                      {province && `, ${province}`}
                     </p>
                     {address.isDefault && (
                       <Badge variant="secondary" className="mt-2">
@@ -196,10 +240,10 @@ export function ShippingStep({
                     )}
                   </div>
                 </div>
-              </RadioGroup>
-            </label>
-          ))}
-        </div>
+              </Label>
+            )
+          })}
+        </RadioGroup>
       )}
 
       {/* New Address Form */}
