@@ -282,7 +282,16 @@
       "confirmed": "Order confirmed",
       "shipping": "Order shipped",
       "delivered": "Order delivered"
-    }
+    },
+    "processing": "Processing...",
+    "addedWithSkipped": "Added {added} item(s) ({skipped} out of stock)",
+    "addedToCart": "Added {added} item(s) to cart",
+    "allOutOfStock": "All items are out of stock",
+    "cannotAdd": "Could not add items to cart",
+    "reorder": "Reorder",
+    "cannotReorder": "Could not reorder",
+    "addedItem": "Added to cart",
+    "itemOutOfStock": "Item is out of stock"
   },
   "footer": {
     "about": "About TheWhite",

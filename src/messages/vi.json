@@ -282,7 +282,16 @@
       "confirmed": "Đơn hàng đã được xác nhận",
       "shipping": "Đơn hàng đang được giao",
       "delivered": "Đã giao hàng thành công"
-    }
+    },
+    "processing": "Đang xử lý...",
+    "addedWithSkipped": "Đã thêm {added} sản phẩm ({skipped} hết hàng)",
+    "addedToCart": "Đã thêm {added} sản phẩm vào giỏ hàng",
+    "allOutOfStock": "Tất cả sản phẩm đã hết hàng",
+    "cannotAdd": "Không thể thêm sản phẩm vào giỏ hàng",
+    "reorder": "Đặt lại",
+    "cannotReorder": "Không thể đặt lại đơn hàng",
+    "addedItem": "Đã thêm vào giỏ hàng",
+    "itemOutOfStock": "Sản phẩm đã hết hàng"
   },
   "footer": {
     "about": "Về TheWhite",

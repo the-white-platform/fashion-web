@@ -104,14 +104,14 @@ export default function OrdersPage() {
         setIsCartOpen(true)
         toast.success(
           skipped > 0
-            ? `Đã thêm ${added} sản phẩm (${skipped} hết hàng)`
-            : `Đã thêm ${added} sản phẩm vào giỏ hàng`,
+            ? t('orders.addedWithSkipped', { added, skipped })
+            : t('orders.addedToCart', { added }),
         )
       } else {
-        toast.error('Tất cả sản phẩm đã hết hàng')
+        toast.error(t('orders.allOutOfStock'))
       }
     } catch {
-      toast.error('Không thể thêm sản phẩm vào giỏ hàng')
+      toast.error(t('orders.cannotAdd'))
     } finally {
       setReordering(null)
     }
@@ -267,7 +267,9 @@ export default function OrdersPage() {
                             className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-sm hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <ShoppingBag className="w-4 h-4" />
-                            {reordering === order.id ? 'Đang xử lý...' : t('orders.buyAgain')}
+                            {reordering === order.id
+                              ? t('orders.processing')
+                              : t('orders.buyAgain')}
                           </button>
                         )}
                         <button
