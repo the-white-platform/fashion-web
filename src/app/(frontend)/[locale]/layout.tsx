@@ -99,6 +99,41 @@ export default async function RootLayout({ children, params }: Props) {
         />
         <InitTheme />
         <link rel="preload" href="/logo/W.svg" as="image" type="image/svg+xml" />
+        {/* Organization schema — helps Google/LinkedIn render richer
+            link previews (brand name, logo, social profiles). */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'TheWhite',
+              alternateName: 'The White',
+              url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool',
+              logo: `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/logo/W.svg`,
+              description:
+                'TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ cho phong cách năng động.',
+              sameAs: ['https://www.facebook.com/thewhite', 'https://www.instagram.com/thewhite'],
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'TheWhite',
+              url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool',
+              inLanguage: ['vi-VN', 'en-US'],
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/search?q={search_term_string}`,
+                'query-input': 'required name=search_term_string',
+              },
+            }),
+          }}
+        />
       </head>
       <body className="relative font-sans antialiased">
         {/* Noisy Background Texture - matching prototype */}
@@ -138,16 +173,46 @@ export default async function RootLayout({ children, params }: Props) {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'),
+  title: {
+    default: 'TheWhite — Thời Trang Thể Thao Hiện Đại',
+    template: '%s | TheWhite',
+  },
+  description:
+    'TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ. Khám phá bộ sưu tập mới nhất cho phong cách năng động.',
+  applicationName: 'TheWhite',
+  keywords: [
+    'thời trang thể thao',
+    'activewear',
+    'gym',
+    'training',
+    'sportswear',
+    'The White',
+    'thời trang nam',
+    'thời trang Việt',
+  ],
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',
     creator: '@thewhite',
+    site: '@thewhite',
+    title: 'TheWhite — Take Action',
+    description: 'Thời trang thể thao hiện đại, tối giản, bền bỉ.',
+    images: ['/demo/carousel-1.jpg'],
   },
   icons: {
     icon: [
       { url: '/logo/W-dark.ico', media: '(prefers-color-scheme: light)' },
       { url: '/logo/W-light.ico', media: '(prefers-color-scheme: dark)' },
     ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+    },
   },
 }

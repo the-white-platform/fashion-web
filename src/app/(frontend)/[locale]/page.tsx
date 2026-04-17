@@ -178,6 +178,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 }
 
 export const metadata: Metadata = {
-  title: 'TheWhite - Thời Trang Thể Thao Hiện Đại',
-  description: 'Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite',
+  title: 'TheWhite — Thời Trang Thể Thao Hiện Đại',
+  description:
+    'Khám phá bộ sưu tập thời trang thể thao cao cấp của TheWhite. Thiết kế tối giản, chất liệu bền bỉ, phù hợp cho gym, chạy bộ và lối sống năng động.',
+  alternates: {
+    canonical: '/',
+  },
 }
