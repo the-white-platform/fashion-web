@@ -95,7 +95,13 @@
       "share": "Share",
       "specifications": "Specifications",
       "related": "Related Products"
-    }
+    },
+    "allCategory": "All",
+    "loading": "Loading...",
+    "breadcrumbHome": "Home",
+    "breadcrumbProducts": "Products",
+    "heading": "Products",
+    "description": "Explore THE WHITE's premium athletic fashion collection. Minimal design, maximum performance."
   },
   "cart": {
     "title": "Shopping Cart",

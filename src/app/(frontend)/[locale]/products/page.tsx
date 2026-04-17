@@ -14,7 +14,7 @@ export const revalidate = 600
 export default async function ProductsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
   const t = await getTranslations('products')
-  const allLabel = locale === 'en' ? 'All' : 'Tất Cả'
+  const allLabel = t('allCategory')
 
   let transformedProducts: ProductForFrontend[] = []
   let outCategories: CategoryForFrontend[] = [{ name: allLabel, slug: 'all', count: 0 }]

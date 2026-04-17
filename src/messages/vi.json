@@ -95,7 +95,13 @@
       "share": "Chia Sẻ",
       "specifications": "Đặc Điểm Kỹ Thuật",
       "related": "Sản Phẩm Liên Quan"
-    }
+    },
+    "allCategory": "Tất Cả",
+    "loading": "Đang tải...",
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbProducts": "Sản phẩm",
+    "heading": "Sản Phẩm",
+    "description": "Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite. Thiết kế tối giản, hiệu năng tối đa."
   },
   "cart": {
     "title": "Giỏ Hàng",

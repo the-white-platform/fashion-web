@@ -67,12 +67,13 @@ function ProductsPageContent({
 
   // Initialize state from URL params
   const getInitialCategory = () => {
+    const allName = categories[0]?.name ?? t('allCategory')
     const slug = searchParams.get('category')
     if (slug) {
       const matched = categories.find((cat) => cat.slug === slug)
-      return matched?.name || 'Tất Cả'
+      return matched?.name || allName
     }
-    return 'Tất Cả'
+    return allName
   }
 
   const [selectedSizes, setSelectedSizes] = useState<string[]>(() => {
@@ -106,7 +107,9 @@ function ProductsPageContent({
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const itemsPerPage = 9
 
+  const t = useTranslations('products')
   const tFilter = useTranslations('filter')
+  const allCategoryName = categories[0]?.name ?? t('allCategory')
 
   // Auto-close the mobile filter drawer when the viewport crosses into
   // desktop (lg = 1024px). Without this the drawer stays mounted behind
@@ -162,10 +165,10 @@ function ProductsPageContent({
 
       const matchedCategory = categories.find((cat) => cat.name === categoryName)
       updateURL({
-        category: categoryName === 'Tất Cả' ? null : matchedCategory?.slug || null,
+        category: categoryName === allCategoryName ? null : matchedCategory?.slug || null,
       })
     },
-    [categories, updateURL],
+    [categories, updateURL, allCategoryName],
   )
 
   // Handle sort change
@@ -264,7 +267,7 @@ function ProductsPageContent({
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = allProducts.filter((product) => {
       // Filter by category (check if product belongs to selected category)
-      if (selectedCategory !== 'Tất Cả') {
+      if (selectedCategory !== allCategoryName) {
         if (product.categories && product.categories.length > 0) {
           if (!product.categories.includes(selectedCategory)) return false
         } else if (product.category !== selectedCategory) {
@@ -352,7 +355,7 @@ function ProductsPageContent({
   const clearFilters = () => {
     setSelectedSizes([])
     setSelectedColors([])
-    handleCategoryChange('Tất Cả')
+    handleCategoryChange(allCategoryName)
     handlePriceRangeChange(null)
     setShowInStock(true)
     setShowOutOfStock(false)
@@ -383,14 +386,14 @@ function ProductsPageContent({
                       href="/"
                       className="hover:text-foreground transition-colors uppercase tracking-widest text-[10px]"
                     >
-                      Trang chủ
+                      {t('breadcrumbHome')}
                     </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage className="text-foreground uppercase tracking-widest text-[10px] font-bold">
-                    Sản phẩm
+                    {t('breadcrumbProducts')}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
@@ -406,12 +409,9 @@ function ProductsPageContent({
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <h1 className="text-5xl mb-4 uppercase tracking-tighter font-bold italic">
-                  Sản Phẩm
+                  {t('heading')}
                 </h1>
-                <p className="text-muted-foreground max-w-md">
-                  Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite. Thiết kế tối giản,
-                  hiệu năng tối đa.
-                </p>
+                <p className="text-muted-foreground max-w-md">{t('description')}</p>
               </div>
             </div>
           </motion.div>
@@ -1005,19 +1005,22 @@ function ProductsPageContent({
   )
 }
 
+function ProductsLoadingFallback() {
+  const t = useTranslations('products')
+  return (
+    <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
+      {t('loading')}
+    </div>
+  )
+}
+
 export default function ProductsPageClient({
   initialProducts,
   categories,
   colors,
 }: ProductsPageClientProps) {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
-          Đang tải...
-        </div>
-      }
-    >
+    <Suspense fallback={<ProductsLoadingFallback />}>
       <ProductsPageContent allProducts={initialProducts} categories={categories} colors={colors} />
     </Suspense>
   )
