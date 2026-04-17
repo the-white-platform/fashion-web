@@ -2,6 +2,34 @@ import { APIError } from 'payload'
 import type { CollectionBeforeChangeHook, CollectionAfterChangeHook } from 'payload'
 import type { Product } from '@/payload-types'
 
+// `colorVariants[].color` is a localized field. When fetched with `locale: 'all'`
+// it comes back as `{ vi, en }`; when fetched with a single locale it's a string.
+// Clients send the color in whatever locale the user was browsing, so match
+// against any available locale value (and accept the plain-string shape for
+// safety against legacy rows).
+function colorMatchesAnyLocale(color: unknown, target: string): boolean {
+  if (color == null || target == null) return false
+  if (typeof color === 'string') return color === target
+  if (typeof color === 'object') {
+    return Object.values(color as Record<string, unknown>).some((v) => v === target)
+  }
+  return false
+}
+
+// Pick a display name from a (possibly localized) color value. VI is the
+// default locale, so prefer it, then EN, then the first truthy value. Used
+// when backfilling `item.variant` for single-variant products.
+function colorNameOf(variant: { color: unknown }): string {
+  const c = variant.color
+  if (typeof c === 'string') return c
+  if (c && typeof c === 'object') {
+    const obj = c as Record<string, unknown>
+    const pick = obj.vi ?? obj.en ?? Object.values(obj).find((v) => typeof v === 'string' && v)
+    return typeof pick === 'string' ? pick : ''
+  }
+  return ''
+}
+
 /**
  * Server-side price and coupon validation hook.
  * Recalculates all prices, discounts, and totals from DB on order creation.
@@ -301,24 +329,28 @@ export const validateStockBeforeOrder: CollectionBeforeChangeHook = async ({
 
   for (const item of items) {
     const productId = typeof item.product === 'object' ? item.product.id : item.product
-    const product = await payload.findByID({
+    // locale: 'all' returns `color` as `{ vi, en }` instead of the default-locale
+    // string. We accept a match against EITHER locale value because the client
+    // renders + sends the color name in whatever locale the user is browsing in.
+    const product = (await payload.findByID({
       collection: 'products',
       id: productId,
       depth: 0,
-    })
+      locale: 'all',
+    })) as any
 
     if (!product) {
       throw new APIError(`Product ${productId} not found`, 400)
     }
 
-    const variants = product.colorVariants ?? []
+    const variants: any[] = product.colorVariants ?? []
 
     // Backfill the variant when the client didn't send one: if the product
     // has exactly one color, the customer never had a choice — use it. Also
     // mutates `item.variant` so decrementStockAfterOrder can match the row.
     if (!item.variant) {
       if (variants.length === 1) {
-        item.variant = variants[0].color
+        item.variant = colorNameOf(variants[0])
         payload.logger.info(
           `[orders/hooks] backfilled empty variant for product ${productId} → "${item.variant}"`,
         )
@@ -330,8 +362,10 @@ export const validateStockBeforeOrder: CollectionBeforeChangeHook = async ({
       }
     }
 
-    // Find the variant by color name
-    const variant = variants.find((v) => v.color === item.variant || v.id === item.variant)
+    // Match by variant id OR any locale of `color`.
+    const variant = variants.find(
+      (v) => v.id === item.variant || colorMatchesAnyLocale(v.color, item.variant as string),
+    )
 
     if (!variant) {
       throw new APIError(`Variant "${item.variant}" not found for product ${productId}`, 400)
@@ -487,21 +521,27 @@ export const restoreStockOnCancel: CollectionAfterChangeHook = async ({
     const productId = typeof item.product === 'object' ? item.product.id : item.product
 
     try {
-      const product = await payload.findByID({
+      // locale: 'all' so the color lookup matches whatever locale the order
+      // was placed in, and the write-back preserves both locales intact.
+      const product = (await payload.findByID({
         collection: 'products',
         id: productId,
         depth: 0,
-      })
+        locale: 'all',
+      })) as any
 
       if (!product || !product.colorVariants) continue
 
       // Update the colorVariants with restored stock
-      const updatedVariants = product.colorVariants.map((variant) => {
-        if (variant.color !== item.variant && variant.id !== item.variant) {
+      const updatedVariants = product.colorVariants.map((variant: any) => {
+        if (
+          variant.id !== item.variant &&
+          !colorMatchesAnyLocale(variant.color, item.variant as string)
+        ) {
           return variant
         }
 
-        const updatedSizeInventory = variant.sizeInventory?.map((sizeItem) => {
+        const updatedSizeInventory = variant.sizeInventory?.map((sizeItem: any) => {
           if (sizeItem.size !== item.size) {
             return sizeItem
           }
@@ -519,7 +559,7 @@ export const restoreStockOnCancel: CollectionAfterChangeHook = async ({
       })
 
       const matchedVariantForCancel = product.colorVariants?.find(
-        (v) => v.color === item.variant || v.id === item.variant,
+        (v: any) => v.id === item.variant || colorMatchesAnyLocale(v.color, item.variant as string),
       )
       const sizeItemForCancel = matchedVariantForCancel?.sizeInventory?.find(
         (s) => s.size === item.size,
