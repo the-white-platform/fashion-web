@@ -1315,5 +1315,18 @@
     "similar": "Similar Products",
     "cartBased": "You May Also Like",
     "popular": "Popular Products"
+  },
+  "cookieSettings": {
+    "privacy": "Privacy",
+    "title": "Cookie Settings",
+    "description": "We use cookies to improve your experience. You can choose which types of cookies you allow.",
+    "necessary": "Necessary cookies",
+    "necessaryDesc": "Required for the website to function",
+    "analytics": "Analytics cookies",
+    "analyticsDesc": "Help us improve our website",
+    "marketing": "Marketing cookies",
+    "marketingDesc": "Personalize ads for you",
+    "save": "Save preferences",
+    "acceptAll": "Accept all"
   }
 }

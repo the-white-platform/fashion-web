@@ -1349,5 +1349,18 @@
     "similar": "Sản Phẩm Tương Tự",
     "cartBased": "Có Thể Bạn Cũng Thích",
     "popular": "Sản Phẩm Phổ Biến"
+  },
+  "cookieSettings": {
+    "privacy": "Quyền riêng tư",
+    "title": "Cài đặt Cookie",
+    "description": "Chúng tôi sử dụng cookie để cải thiện trải nghiệm của bạn. Bạn có thể chọn loại cookie mà bạn cho phép.",
+    "necessary": "Cookie cần thiết",
+    "necessaryDesc": "Bắt buộc để website hoạt động",
+    "analytics": "Cookie phân tích",
+    "analyticsDesc": "Giúp chúng tôi cải thiện website",
+    "marketing": "Cookie tiếp thị",
+    "marketingDesc": "Cá nhân hóa quảng cáo cho bạn",
+    "save": "Lưu tùy chọn",
+    "acceptAll": "Chấp nhận tất cả"
   }
 }
