@@ -338,21 +338,25 @@ export function ShippingStep({
             </div>
           </div>
 
-          {user && (
-            <div className="flex items-center space-x-2 mt-4">
-              <Checkbox
-                id="save-address"
-                checked={saveAddress}
-                onCheckedChange={(checked) => setSaveAddress(checked as boolean)}
-              />
-              <label
-                htmlFor="save-address"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                {t('saveAddress')}
-              </label>
-            </div>
-          )}
+          <div className="flex items-start space-x-2 mt-4">
+            <Checkbox
+              id="save-address"
+              checked={saveAddress}
+              onCheckedChange={(checked) => setSaveAddress(checked as boolean)}
+              className="mt-0.5"
+            />
+            <label
+              htmlFor="save-address"
+              className="text-sm font-medium leading-snug cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              {t('saveAddress')}
+              {!user && (
+                <span className="block text-xs text-muted-foreground font-normal mt-0.5">
+                  {t('saveAddressGuestHint')}
+                </span>
+              )}
+            </label>
+          </div>
         </div>
       )}
 

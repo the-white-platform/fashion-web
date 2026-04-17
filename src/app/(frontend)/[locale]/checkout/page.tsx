@@ -99,7 +99,7 @@ export default function CheckoutPage() {
               {/* Order Summary Sidebar — first in DOM so on mobile it
                   stacks above the form, and on desktop it lands in the
                   left column of the lg:grid-cols-3 layout. */}
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 min-w-0">
                 <div className="bg-card border border-border rounded-sm p-6 lg:sticky lg:top-24">
                   <h3 className="text-xl uppercase tracking-wide mb-6">{t('orderSummary')}</h3>
 
@@ -225,7 +225,7 @@ export default function CheckoutPage() {
 
               {/* Main Content (form steps) — second in DOM so on desktop
                   it sits in the right two-thirds of the grid. */}
-              <div className="lg:col-span-2">
+              <div className="lg:col-span-2 min-w-0">
                 <AnimatePresence mode="wait">
                   {checkout.step === 'shipping' && (
                     <ShippingStep

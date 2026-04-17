@@ -124,6 +124,7 @@
     "useSavedAddress": "Chọn địa chỉ có sẵn",
     "addNewAddress": "Thêm địa chỉ mới",
     "saveAddress": "Lưu địa chỉ này cho lần sau",
+    "saveAddressGuestHint": "Đăng nhập để lưu địa chỉ cho các đơn hàng sau.",
     "useSavedPayment": "Chọn phương thức có sẵn",
     "addNewPayment": "Thêm phương thức mới",
     "orderNotes": "Ghi Chú Đơn Hàng",

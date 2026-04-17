@@ -124,6 +124,7 @@
     "useSavedAddress": "Use Saved Address",
     "addNewAddress": "Add New Address",
     "saveAddress": "Save this address for future use",
+    "saveAddressGuestHint": "Sign in to save addresses for later orders.",
     "useSavedPayment": "Use Saved Payment",
     "addNewPayment": "Add New Payment",
     "orderNotes": "Order Notes",

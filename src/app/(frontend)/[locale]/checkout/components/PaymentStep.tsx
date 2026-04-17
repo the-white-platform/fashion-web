@@ -115,7 +115,7 @@ export function PaymentStep({
                   {type === 'momo' && '📱'}
                   {type === 'cod' && '💵'}
                 </span>
-                <span className="text-sm">
+                <span className="text-sm whitespace-normal text-center leading-tight">
                   {type === 'card' && t('paymentMethods.card')}
                   {type === 'bank' && t('paymentMethods.bank')}
                   {type === 'momo' && t('paymentMethods.momo')}
