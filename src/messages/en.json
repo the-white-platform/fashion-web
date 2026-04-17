@@ -1328,5 +1328,13 @@
     "marketingDesc": "Personalize ads for you",
     "save": "Save preferences",
     "acceptAll": "Accept all"
+  },
+  "unsubscribe": {
+    "processing": "Processing...",
+    "successTitle": "Unsubscribed",
+    "successDesc": "You have successfully unsubscribed from our newsletter. We will no longer send you emails.",
+    "backHome": "Back to home",
+    "errorTitle": "Invalid link",
+    "errorDesc": "This unsubscribe link is invalid or has expired."
   }
 }

@@ -1362,5 +1362,13 @@
     "marketingDesc": "Cá nhân hóa quảng cáo cho bạn",
     "save": "Lưu tùy chọn",
     "acceptAll": "Chấp nhận tất cả"
+  },
+  "unsubscribe": {
+    "processing": "Đang xử lý...",
+    "successTitle": "Đã hủy đăng ký",
+    "successDesc": "Bạn đã hủy đăng ký nhận bản tin thành công. Chúng tôi sẽ không gửi email cho bạn nữa.",
+    "backHome": "Về trang chủ",
+    "errorTitle": "Liên kết không hợp lệ",
+    "errorDesc": "Liên kết hủy đăng ký này không hợp lệ hoặc đã hết hạn."
   }
 }
