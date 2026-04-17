@@ -1,6 +1,5 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
 import { ProductCard } from '@/components/shared/ProductCard'
 import { motion } from 'motion/react'
 import { useState, useMemo } from 'react'
@@ -32,7 +31,6 @@ export function FeaturedProducts({
   const t = useTranslations()
   const { isWishlisted, toggleWishlist } = useWishlist()
   const [activeFilterId, setActiveFilterId] = useState<string>('')
-  const [activeSort, setActiveSort] = useState('newest')
 
   // CMS-only: if the admin hasn't flagged any product as `featured` or
   // configured quick filters, the whole section hides. No Unsplash
@@ -52,7 +50,9 @@ export function FeaturedProducts({
   // Get the current active filter
   const activeFilter = filters.find((f) => f.id === activeFilterId) || filters[0]
 
-  // Apply filtering and sorting
+  // Apply filtering. Ordering comes from the server (product id desc, i.e.
+  // newest first) and is intentional — no client-side sort UI: the featured
+  // block is a curated hero, not a shoppable index.
   const displayProducts = useMemo(() => {
     let filtered = [...baseProducts]
 
@@ -91,30 +91,6 @@ export function FeaturedProducts({
       })
     }
 
-    // Apply sorting
-    switch (activeSort) {
-      case 'priceAsc':
-        filtered.sort((a, b) => a.priceNumber - b.priceNumber)
-        break
-      case 'priceDesc':
-        filtered.sort((a, b) => b.priceNumber - a.priceNumber)
-        break
-      case 'popular':
-        // Rating-driven, tag-independent. Higher average rating first;
-        // ties broken by review count so genuinely popular items beat
-        // lightly-reviewed 5-star listings.
-        filtered.sort((a, b) => {
-          const ratingDiff = (b.averageRating ?? 0) - (a.averageRating ?? 0)
-          if (ratingDiff !== 0) return ratingDiff
-          return (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
-        })
-        break
-      case 'newest':
-      default:
-        filtered.sort((a, b) => b.id - a.id)
-        break
-    }
-
     // Trim to the largest multiple of 4 (desktop) / 2 (mobile) so the
     // last row is always complete. An orphan row with 1-2 cards next to
     // empty columns looks broken. On lg the grid is 4 cols, so we floor
@@ -129,14 +105,7 @@ export function FeaturedProducts({
     }
 
     return filtered
-  }, [baseProducts, activeFilter, activeSort])
-
-  const sorts = [
-    { key: 'newest', label: t('filter.sort.newest') },
-    { key: 'priceAsc', label: t('filter.sort.priceAsc') },
-    { key: 'priceDesc', label: t('filter.sort.priceDesc') },
-    { key: 'popular', label: t('filter.sort.popular') },
-  ]
+  }, [baseProducts, activeFilter])
 
   return (
     <section className="py-20 bg-transparent text-foreground">
@@ -158,8 +127,8 @@ export function FeaturedProducts({
         </div>
 
         {/* Filters - CMS Configurable */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-between items-start sm:items-center">
-          <div className="flex gap-2 flex-wrap">
+        {filters.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-10">
             {filters.map((filter) => (
               <button
                 key={filter.id}
@@ -174,22 +143,7 @@ export function FeaturedProducts({
               </button>
             ))}
           </div>
-
-          <div className="relative">
-            <select
-              value={activeSort}
-              onChange={(e) => setActiveSort(e.target.value)}
-              className="px-4 py-2 pr-10 border border-border rounded-sm bg-background text-sm font-medium uppercase tracking-wider focus:outline-none focus:border-primary appearance-none cursor-pointer"
-            >
-              {sorts.map((sort) => (
-                <option key={sort.key} value={sort.key}>
-                  {sort.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
-          </div>
-        </div>
+        )}
 
         {/* Products Grid */}
         {displayProducts.length > 0 ? (
