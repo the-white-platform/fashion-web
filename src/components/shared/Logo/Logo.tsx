@@ -44,7 +44,7 @@ export const Logo: React.FC<LogoProps> = ({ showSlogan = true, className }) => {
             delay: mounted ? TOTAL_ANIMATION_DURATION + 0.1 : 0,
             ease: [0.33, 1, 0.68, 1],
           }}
-          className="text-2xl lg:text-3xl font-bold tracking-wider font-white"
+          className="text-2xl lg:text-3xl font-bold tracking-wider font-white whitespace-nowrap"
         >
           THE WHITE
         </motion.h1>

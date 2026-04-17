@@ -9,7 +9,7 @@ export function BrandStory() {
   const t = useTranslations('brandStory')
 
   return (
-    <section className="py-20 bg-transparent text-foreground">
+    <section className="py-20 bg-transparent text-foreground overflow-x-clip">
       <div className="container mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left - Image */}
