@@ -104,11 +104,11 @@ function ProductsPageContent({
     return page ? parseInt(page, 10) : 1
   })
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
-  // 6 per page is the LCM of the grid columns (sm=2, lg=3) so every
-  // page — except possibly the last — fills complete rows. With the
-  // current catalog (8 products) this yields 2 pages (6 + 2); as the
-  // catalogue grows the math stays clean.
-  const itemsPerPage = 6
+  // 9 per page → 3 clean rows on desktop (lg:grid-cols-3), 4.5 on
+  // tablet (sm:grid-cols-2). Pagination UI only renders when
+  // totalPages > 1, so with the current 8-product catalogue the bar
+  // stays hidden and appears automatically once catalogue crosses 10+.
+  const itemsPerPage = 9
 
   const t = useTranslations('products')
   const tFilter = useTranslations('filter')
