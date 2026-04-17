@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.44.2](https://github.com/the-white-platform/fashion-web/compare/v0.44.1...v0.44.2) (2026-04-17)
+
+
+### Bug Fixes
+
+* **checkout:** saved-address selection + rendering ([c85209e](https://github.com/the-white-platform/fashion-web/commit/c85209e545906bcf94142b2111429b0308c2e200))
+
 ### [0.44.1](https://github.com/the-white-platform/fashion-web/compare/v0.44.0...v0.44.1) (2026-04-16)
 
 
