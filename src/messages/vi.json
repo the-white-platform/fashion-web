@@ -220,7 +220,14 @@
     "paymentDeleted": "Đã xóa phương thức thanh toán",
     "emailReadOnly": "Email không thể thay đổi",
     "updateSuccess": "Cập nhật thành công",
-    "updateError": "Cập nhật thất bại. Vui lòng thử lại."
+    "updateError": "Cập nhật thất bại. Vui lòng thử lại.",
+    "pointsSuffix": "điểm",
+    "viewAll": "Xem tất cả",
+    "itemCount": "{n} sản phẩm",
+    "noOrders": "Bạn chưa có đơn hàng nào",
+    "exploreProducts": "Khám Phá Sản Phẩm",
+    "sizeComingSoon": "Tính năng này sẽ được triển khai sớm. Vui lòng xem bảng kích thước trên trang từng sản phẩm.",
+    "vtoComingSoon": "Tính năng Virtual Try-On sẽ được triển khai sớm. Tính năng này cho phép bạn thử đồ ảo bằng công nghệ AI."
   },
   "orders": {
     "title": "Đơn Hàng Của Tôi",

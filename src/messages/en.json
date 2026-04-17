@@ -220,7 +220,14 @@
     "paymentDeleted": "Payment method deleted",
     "emailReadOnly": "Email cannot be changed",
     "updateSuccess": "Profile updated successfully",
-    "updateError": "Failed to update profile. Please try again."
+    "updateError": "Failed to update profile. Please try again.",
+    "pointsSuffix": "points",
+    "viewAll": "View all",
+    "itemCount": "{n} items",
+    "noOrders": "You have no orders yet",
+    "exploreProducts": "Explore Products",
+    "sizeComingSoon": "This feature is coming soon. Please check the size chart on each product page.",
+    "vtoComingSoon": "Virtual Try-On is coming soon. This feature lets you try on clothes virtually using AI technology."
   },
   "orders": {
     "title": "My Orders",

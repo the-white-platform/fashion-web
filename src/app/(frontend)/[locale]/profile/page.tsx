@@ -31,13 +31,6 @@ interface LoyaltySummary {
   tier: string
 }
 
-const TIER_LABELS: Record<string, string> = {
-  bronze: 'Đồng',
-  silver: 'Bạc',
-  gold: 'Vàng',
-  platinum: 'Bạch Kim',
-}
-
 const TIER_COLORS: Record<string, string> = {
   bronze: 'text-amber-700 bg-amber-100',
   silver: 'text-slate-500 bg-slate-100',
@@ -59,6 +52,8 @@ export default function ProfilePage() {
   } = useUser()
   const t = useTranslations()
   const tCommon = useTranslations('common')
+  const tLoyalty = useTranslations('loyalty')
+  const tProfile = useTranslations('profile')
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [editPhone, setEditPhone] = useState('')
@@ -148,8 +143,8 @@ export default function ProfilePage() {
                 >
                   <Award className="w-4 h-4" />
                   <span>
-                    {TIER_LABELS[loyalty.tier] ?? 'Đồng'} · {loyalty.points.toLocaleString('vi-VN')}{' '}
-                    điểm
+                    {tLoyalty(loyalty.tier as any)} · {loyalty.points.toLocaleString('vi-VN')}{' '}
+                    {tProfile('pointsSuffix')}
                   </span>
                   <ChevronRight className="w-4 h-4" />
                 </Link>
@@ -343,19 +338,13 @@ export default function ProfilePage() {
           {activeTab === 'size' && (
             <div className="bg-card rounded-sm border border-border p-6 md:p-8">
               <h2 className="text-2xl uppercase tracking-wide mb-6">{t('profile.size')}</h2>
-              <p className="text-muted-foreground">
-                Tính năng này sẽ được triển khai sớm. Vui lòng xem bảng kích thước trên trang từng
-                sản phẩm.
-              </p>
+              <p className="text-muted-foreground">{tProfile('sizeComingSoon')}</p>
             </div>
           )}
           {activeTab === 'vto' && (
             <div className="bg-card rounded-sm border border-border p-6 md:p-8">
               <h2 className="text-2xl uppercase tracking-wide mb-6">{t('profile.vto')}</h2>
-              <p className="text-muted-foreground">
-                Tính năng Virtual Try-On sẽ được triển khai sớm. Tính năng này cho phép bạn thử đồ
-                ảo bằng công nghệ AI.
-              </p>
+              <p className="text-muted-foreground">{tProfile('vtoComingSoon')}</p>
             </div>
           )}
           {activeTab === 'shipping' && (
@@ -491,7 +480,7 @@ export default function ProfilePage() {
                     href="/orders"
                     className="text-sm text-muted-foreground hover:text-foreground underline uppercase tracking-wide"
                   >
-                    Xem tất cả
+                    {tProfile('viewAll')}
                   </Link>
                 )}
               </div>
@@ -509,7 +498,7 @@ export default function ProfilePage() {
                           {new Date(order.createdAt).toLocaleDateString('vi-VN')}
                         </p>
                         <p className="text-sm text-muted-foreground">
-                          {order.items?.length || 0} sản phẩm
+                          {tProfile('itemCount', { n: order.items?.length || 0 })}
                         </p>
                       </div>
                       <div className="text-right">
@@ -524,12 +513,12 @@ export default function ProfilePage() {
               ) : (
                 <div className="text-center py-12">
                   <Package className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                  <p className="text-muted-foreground mb-4">Bạn chưa có đơn hàng nào</p>
+                  <p className="text-muted-foreground mb-4">{tProfile('noOrders')}</p>
                   <Link
                     href="/products"
                     className="inline-block bg-primary text-primary-foreground px-6 py-3 rounded-sm hover:bg-primary/90 transition-colors uppercase tracking-wide"
                   >
-                    Khám Phá Sản Phẩm
+                    {tProfile('exploreProducts')}
                   </Link>
                 </div>
               )}
