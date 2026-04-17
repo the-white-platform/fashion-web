@@ -196,7 +196,15 @@
       "bank": "Chuyển khoản / QR",
       "cod": "Thanh toán khi nhận hàng",
       "momo": "Ví MoMo"
-    }
+    },
+    "loyaltyPoints": "Điểm Thưởng",
+    "loyaltyAvailable": "Điểm khả dụng: {n}",
+    "loyaltyRate": "100 điểm = 10,000₫",
+    "loyaltyPoints_unit": "điểm",
+    "loyaltyClear": "Bỏ dùng điểm",
+    "orderFailed": "Đặt hàng thất bại. Vui lòng thử lại.",
+    "recommendationsTitle": "Có Thể Bạn Cũng Thích",
+    "loyaltyPointsDiscount": "Điểm thưởng ({n} điểm)"
   },
   "profile": {
     "title": "Hồ Sơ Của Tôi",

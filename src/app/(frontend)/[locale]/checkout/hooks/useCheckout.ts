@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
+import { useTranslations } from 'next-intl'
 import {
   CheckoutStep,
   ShippingAddress,
@@ -41,6 +42,7 @@ const POINTS_VALUE = 100 // 1 pt = 100 VND
 export function useCheckout(): UseCheckoutReturn {
   const { items: cartItems, getTotalPrice, clearCart } = useCart()
   const { user } = useUser()
+  const t = useTranslations('checkout')
 
   const [step, setStep] = useState<CheckoutStep>('shipping')
   const [selectedAddress, setSelectedAddress] = useState<ShippingAddress | null>(null)
@@ -215,7 +217,7 @@ export function useCheckout(): UseCheckoutReturn {
       setStep('confirmation')
     } catch (err) {
       console.error('Error submitting order:', err)
-      setOrderError(err instanceof Error ? err.message : 'Đặt hàng thất bại. Vui lòng thử lại.')
+      setOrderError(err instanceof Error ? err.message : t('orderFailed'))
     } finally {
       setIsSubmitting(false)
     }

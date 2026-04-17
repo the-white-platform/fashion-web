@@ -126,7 +126,7 @@ export function ConfirmationStep({
 
       {/* Post-checkout recommendations */}
       <div className="text-left">
-        <Recommendations type="popular" title="Có Thể Bạn Cũng Thích" limit={8} />
+        <Recommendations type="popular" title={t('recommendationsTitle')} limit={8} />
       </div>
     </motion.div>
   )

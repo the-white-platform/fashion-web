@@ -196,7 +196,15 @@
       "bank": "Bank Transfer / QR",
       "cod": "Cash on Delivery",
       "momo": "MoMo Wallet"
-    }
+    },
+    "loyaltyPoints": "Loyalty Points",
+    "loyaltyAvailable": "Available: {n} points",
+    "loyaltyRate": "100 points = 10,000₫",
+    "loyaltyPoints_unit": "points",
+    "loyaltyClear": "Remove points",
+    "orderFailed": "Order failed. Please try again.",
+    "recommendationsTitle": "You Might Also Like",
+    "loyaltyPointsDiscount": "Loyalty points ({n} pts)"
   },
   "profile": {
     "title": "My Profile",
