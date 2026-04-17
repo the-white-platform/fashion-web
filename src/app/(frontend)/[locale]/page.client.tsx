@@ -11,7 +11,6 @@ import { VirtualTryOnDemo } from '@/components/ecommerce/VirtualTryOnDemo'
 import { BrandStory } from '@/components/ecommerce/BrandStory'
 import { Newsletter } from '@/components/ecommerce/Newsletter'
 import { RecentlyViewed } from '@/components/ecommerce/RecentlyViewed'
-import { Recommendations } from '@/components/ecommerce/Recommendations'
 import dynamic from 'next/dynamic'
 
 const ProductModal = dynamic(
@@ -96,16 +95,19 @@ export default function HomePageClient({
 
       <AlternatingSection index={5}>
         <BrandStory />
-      </AlternatingSection>
-
-      <AlternatingSection index={6}>
-        <div className="container mx-auto px-6">
+        {/* RecentlyViewed lives in the BrandStory section so it inherits
+            that section's background instead of opening a contrasting
+            band of its own (the AlternatingSection between BrandStory
+            and Newsletter used to be a single light strip on dark
+            mode and vice-versa, which read as a layout gap). The
+            previous "Popular Products" carousel has been removed per
+            product direction. */}
+        <div className="container mx-auto px-6 pb-20">
           <RecentlyViewed />
-          <Recommendations type="popular" className="mt-8" />
         </div>
       </AlternatingSection>
 
-      <AlternatingSection index={7}>
+      <AlternatingSection index={6}>
         <Newsletter />
       </AlternatingSection>
 
