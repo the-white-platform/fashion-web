@@ -111,10 +111,10 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               this inner grid owns the overflow). The image column needs an
               explicit aspect ratio on mobile because md:grid cells have no
               intrinsic height, which would collapse Image fill to 0px. */}
-          <div className="grid md:grid-cols-[3fr_2fr] overflow-y-auto overflow-x-hidden md:overflow-hidden flex-1 min-h-0">
+          <div className="flex flex-col md:grid md:grid-cols-[3fr_2fr] overflow-y-auto overflow-x-hidden md:overflow-hidden flex-1 min-h-0">
             {/* Image Section - Left Side */}
             <div
-              className="relative bg-muted overflow-hidden aspect-[3/4] md:aspect-auto md:h-full"
+              className="relative bg-muted overflow-hidden w-full aspect-[3/4] shrink-0 md:aspect-auto md:h-full md:shrink"
               onMouseEnter={() => setIsImageHovered(true)}
               onMouseLeave={() => setIsImageHovered(false)}
             >
