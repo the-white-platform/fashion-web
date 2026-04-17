@@ -1308,7 +1308,59 @@
     "referral": "Refer a Friend",
     "referralDesc": "Share your code. Earn 200 points when a friend places their first order.",
     "copyLink": "Copy Link",
-    "copiedLink": "Link copied!"
+    "copiedLink": "Link copied!",
+    "breadcrumb": "Loyalty Rewards",
+    "pageTitle": "Loyalty Points & Membership Tier",
+    "tierLevel": "{tier} tier",
+    "availablePointsSuffix": "available points",
+    "lifetimePointsSuffix": "lifetime points",
+    "progressRemaining": "{n} more points to reach {tier}",
+    "platinumMax": "You are at the highest tier!",
+    "tierBenefitsTitle": "{tier} Tier Benefits",
+    "earnRulesTitle": "How to Earn Points",
+    "conversionRate": "100 points = 10,000₫ discount at checkout",
+    "copyReferral": "Copy",
+    "noTransactions": "No point transactions yet",
+    "shopToEarn": "Shop to earn points",
+    "balance": "Balance: {n}",
+    "copiedReferral": "Referral link copied!",
+    "tierBenefits": {
+      "bronze": ["1 point per 10,000₫ purchase", "50 points for product review", "Referral points"],
+      "silver": [
+        "1.25× points per order",
+        "Priority customer support",
+        "75 points for product review"
+      ],
+      "gold": [
+        "1.5× points per order",
+        "Free shipping on orders from 500K",
+        "100 points for product review"
+      ],
+      "platinum": [
+        "2× points per order",
+        "Free shipping on all orders",
+        "Access to exclusive deals",
+        "100 points for product review"
+      ]
+    },
+    "earnRulesList": [
+      {
+        "action": "Purchase",
+        "reward": "1 point per 10,000₫"
+      },
+      {
+        "action": "Product review",
+        "reward": "50 points"
+      },
+      {
+        "action": "Verified review",
+        "reward": "100 points"
+      },
+      {
+        "action": "Refer a friend",
+        "reward": "200 points"
+      }
+    ]
   },
   "recommendations": {
     "forYou": "For You",

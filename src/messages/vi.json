@@ -1342,7 +1342,63 @@
     "referral": "Giới thiệu bạn bè",
     "referralDesc": "Chia sẻ mã giới thiệu. Nhận 200 điểm khi bạn bè đặt đơn đầu tiên.",
     "copyLink": "Sao chép link",
-    "copiedLink": "Đã sao chép!"
+    "copiedLink": "Đã sao chép!",
+    "breadcrumb": "Điểm Thưởng",
+    "pageTitle": "Điểm Thưởng & Hạng Thành Viên",
+    "tierLevel": "Hạng {tier}",
+    "availablePointsSuffix": "điểm khả dụng",
+    "lifetimePointsSuffix": "điểm tích lũy",
+    "progressRemaining": "Còn {n} điểm để lên {tier}",
+    "platinumMax": "Bạn đang ở hạng cao nhất!",
+    "tierBenefitsTitle": "Quyền Lợi Hạng {tier}",
+    "earnRulesTitle": "Cách Tích Điểm",
+    "conversionRate": "100 điểm = 10,000₫ giảm giá khi thanh toán",
+    "copyReferral": "Sao chép",
+    "noTransactions": "Chưa có giao dịch điểm nào",
+    "shopToEarn": "Mua hàng để tích điểm",
+    "balance": "Số dư: {n}",
+    "copiedReferral": "Đã sao chép link giới thiệu!",
+    "earnRulesList": [
+      {
+        "action": "Mua hàng",
+        "reward": "1 điểm / 10,000₫"
+      },
+      {
+        "action": "Đánh giá sản phẩm",
+        "reward": "50 điểm"
+      },
+      {
+        "action": "Đánh giá đã xác nhận",
+        "reward": "100 điểm"
+      },
+      {
+        "action": "Giới thiệu bạn mua hàng",
+        "reward": "200 điểm"
+      }
+    ],
+    "tierBenefits": {
+      "bronze": [
+        "1 điểm / 10,000₫ mua hàng",
+        "50 điểm khi đánh giá sản phẩm",
+        "Tích điểm giới thiệu"
+      ],
+      "silver": [
+        "1.25× điểm mỗi đơn hàng",
+        "Ưu tiên hỗ trợ khách hàng",
+        "75 điểm khi đánh giá sản phẩm"
+      ],
+      "gold": [
+        "1.5× điểm mỗi đơn hàng",
+        "Miễn phí vận chuyển đơn từ 500K",
+        "100 điểm khi đánh giá sản phẩm"
+      ],
+      "platinum": [
+        "2× điểm mỗi đơn hàng",
+        "Miễn phí vận chuyển mọi đơn hàng",
+        "Truy cập ưu đãi độc quyền",
+        "100 điểm khi đánh giá sản phẩm"
+      ]
+    }
   },
   "recommendations": {
     "forYou": "Gợi Ý Cho Bạn",
