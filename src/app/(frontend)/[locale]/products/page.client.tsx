@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react'
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
@@ -62,7 +62,6 @@ function ProductsPageContent({
   colors: { name: string; hex: string }[]
 }) {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const pathname = usePathname()
 
   // Initialize state from URL params
@@ -136,34 +135,33 @@ function ProductsPageContent({
   // Pending updates buffer + commit-after-microtask scheduler.
   //
   // Multiple handlers may call `updateURL` in the same tick (e.g.
-  // `clearFilters` calls four of them in a row). The previous
-  // implementation read `searchParams.toString()` at call time, so each
-  // call computed its newParams from the SAME stale URL — the four
-  // resulting `router.push`es collided and only the last write
-  // (or worse, none) actually stuck.
+  // `clearFilters` touches ~9 keys). Without batching each call would
+  // compute newParams from the SAME stale `searchParams` closure and the
+  // resulting URL writes would collide. We merge into a ref bucket and
+  // flush once at microtask time.
   //
-  // The fix: collect updates in a ref-backed object across the tick, and
-  // schedule a single `router.push` at microtask time that merges all of
-  // them. The sequential calls within `clearFilters` now compose into one
-  // navigation. Updaters that need to reset pagination still implicitly
-  // do so because we delete `page` whenever any non-page key is touched.
+  // Equally important: we use `window.history.replaceState` directly,
+  // NOT `router.push`. Filter/sort is entirely client-side — the server
+  // component at `page.tsx` fetches all 100 products once and hands them
+  // to this client page, which filters+sorts in `useMemo`. Calling
+  // `router.push` re-invokes the server component round-trip and the
+  // user sees a visible "products re-rendering" delay after every sort
+  // click. `history.replaceState` updates the browser URL bar and
+  // history stack without triggering Next.js routing, so reload / share
+  // / deep-link still work but interaction feels instant.
   const pendingUpdatesRef = useRef<Record<string, string | null> | null>(null)
   const updateURL = useCallback(
     (updates: Record<string, string | null>) => {
-      // Merge into the pending bucket. A second call that touches the
-      // same key wins (last write wins inside the tick).
       pendingUpdatesRef.current = { ...(pendingUpdatesRef.current ?? {}), ...updates }
 
-      // First update of the tick — schedule the flush. Subsequent
-      // updates land in the same bucket and the already-queued microtask
-      // commits them all together.
       if (Object.keys(pendingUpdatesRef.current).length === Object.keys(updates).length) {
         queueMicrotask(() => {
           const merged = pendingUpdatesRef.current
           pendingUpdatesRef.current = null
           if (!merged) return
+          if (typeof window === 'undefined') return
 
-          const newParams = new URLSearchParams(searchParams.toString())
+          const newParams = new URLSearchParams(window.location.search)
           for (const [key, value] of Object.entries(merged)) {
             if (value === null || value === '' || value === 'all') {
               newParams.delete(key)
@@ -173,18 +171,20 @@ function ProductsPageContent({
           }
 
           // Always reset to page 1 when any filter changes — the only
-          // call that explicitly opts out is `handlePageChange` itself,
-          // which always passes `page` so this branch leaves it alone.
+          // caller that opts out is `handlePageChange` which always
+          // passes `page`, so this branch leaves it alone.
           if (!('page' in merged)) {
             newParams.delete('page')
           }
 
           const queryString = newParams.toString()
-          router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
+          const nextUrl =
+            (window.location.pathname || pathname) + (queryString ? `?${queryString}` : '')
+          window.history.replaceState(window.history.state, '', nextUrl)
         })
       }
     },
-    [searchParams, router, pathname],
+    [pathname],
   )
 
   // Handle category selection - updates both state and URL
@@ -254,15 +254,16 @@ function ProductsPageContent({
     [updateURL],
   )
 
-  // Debounced URL sync as the user types. Uses router.replace (via
-  // updateURL is push, so we mirror it here directly with replace) so
-  // every keystroke doesn't pile up in history. 400ms keeps the URL
-  // close-to-live without thrashing.
+  // Debounced URL sync as the user types. history.replaceState keeps
+  // every keystroke out of the browser history stack and — critically —
+  // avoids a Next.js navigation that would re-render the server
+  // component. 400ms keeps the URL close-to-live without thrashing.
   const initialQueryRef = useRef(searchQuery)
   useEffect(() => {
     if (searchQuery === initialQueryRef.current) return
     const t = setTimeout(() => {
-      const newParams = new URLSearchParams(searchParams.toString())
+      if (typeof window === 'undefined') return
+      const newParams = new URLSearchParams(window.location.search)
       if (searchQuery) {
         newParams.set('q', searchQuery)
       } else {
@@ -270,14 +271,13 @@ function ProductsPageContent({
       }
       newParams.delete('page')
       const qs = newParams.toString()
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+      const nextUrl = (window.location.pathname || pathname) + (qs ? `?${qs}` : '')
+      // history.replaceState (not router.replace) so the URL updates
+      // without kicking off a server re-render of the products page.
+      window.history.replaceState(window.history.state, '', nextUrl)
     }, 400)
     return () => clearTimeout(t)
-    // searchParams is intentionally omitted — including it would re-run
-    // this effect every time we touch any other filter, which would
-    // double-write the q param.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, router, pathname])
+  }, [searchQuery, pathname])
 
   // Handle price range change
   const handlePriceRangeChange = useCallback(
