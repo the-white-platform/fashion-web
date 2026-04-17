@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import { Link } from '@/i18n/Link'
-import { motion } from 'motion/react'
 import { Heart, ArrowRightLeft, Star } from 'lucide-react'
 import { cn } from '@/utilities/cn'
 import { useTranslations } from 'next-intl'
@@ -39,13 +38,16 @@ export function ProductCard({
   const productInCompare = isInCompare(product.id)
   const compareIsFull = compareItems.length >= 4 && !productInCompare
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className={cn('group', className)}
-    >
+    // No fade-in / slide animation here on purpose — framer-motion's
+    // `whileInView` + `delay: index * 0.1` cascaded over ~800ms for a
+    // 9-card grid, which the user perceived as "products take time to
+    // render" after every sort/filter change (React reorders the DOM,
+    // each card re-enters the viewport intersection, animation replays).
+    // Drop the wrapper entirely; cards now paint in one React tick.
+    <div className={cn('group', className)}>
+      {/* keep `index` referenced so TS stays happy without changing the
+          public API of this component */}
+      <span hidden aria-hidden data-index={index} />
       <Link href={`/products/${product.id}`} className="block">
         <div className="relative overflow-hidden bg-muted mb-4 aspect-[3/4] rounded-sm">
           <Image
@@ -168,6 +170,6 @@ export function ProductCard({
           <div className="font-bold text-foreground">{product.price}</div>
         </div>
       </Link>
-    </motion.div>
+    </div>
   )
 }
