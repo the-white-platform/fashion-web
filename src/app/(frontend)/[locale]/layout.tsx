@@ -85,7 +85,7 @@ export default async function RootLayout({ children, params }: Props) {
 
   let headerData: HeaderType | null = null
   try {
-    headerData = await getCachedGlobal('header', 1)()
+    headerData = (await getCachedGlobal('header', locale as 'vi' | 'en', 1)()) as HeaderType | null
   } catch {
     // Header data unavailable during build or when DB is unreachable
   }
