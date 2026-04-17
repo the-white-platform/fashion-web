@@ -104,7 +104,11 @@ function ProductsPageContent({
     return page ? parseInt(page, 10) : 1
   })
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
-  const itemsPerPage = 9
+  // 6 per page is the LCM of the grid columns (sm=2, lg=3) so every
+  // page — except possibly the last — fills complete rows. With the
+  // current catalog (8 products) this yields 2 pages (6 + 2); as the
+  // catalogue grows the math stays clean.
+  const itemsPerPage = 6
 
   const t = useTranslations('products')
   const tFilter = useTranslations('filter')
