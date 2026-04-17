@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.44.7](https://github.com/the-white-platform/fashion-web/compare/v0.44.6...v0.44.7) (2026-04-17)
+
+
+### Bug Fixes
+
+* **checkout:** mobile overflow + save-address visibility + payment label wrap ([946cdb8](https://github.com/the-white-platform/fashion-web/commit/946cdb8c3295d4241bfab7240c29a23a0c7ebee9))
+
 ### [0.44.6](https://github.com/the-white-platform/fashion-web/compare/v0.44.5...v0.44.6) (2026-04-17)
 
 
