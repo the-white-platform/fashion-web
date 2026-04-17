@@ -15,6 +15,7 @@ import { ChatConversations } from './collections/ChatConversations'
 import { ChatMessages } from './collections/ChatMessages'
 import { Media } from './collections/Media'
 import { Coupons } from './collections/Coupons'
+import { Faqs } from './collections/Faqs'
 import { Notifications } from './collections/Notifications'
 import { NotificationPreferences } from './collections/NotificationPreferences'
 import { PushSubscriptions } from './collections/PushSubscriptions'
@@ -156,6 +157,7 @@ export default buildConfig({
     Reviews,
     Orders,
     Coupons,
+    Faqs,
     StockMovements,
     Provinces,
     Districts,

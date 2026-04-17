@@ -60,7 +60,6 @@ export const NewsletterSubscribers: CollectionConfig = {
     {
       name: 'preferredLocale',
       type: 'select',
-      required: true,
       defaultValue: 'vi',
       label: { vi: 'Ngôn ngữ ưu tiên', en: 'Preferred language' },
       options: [

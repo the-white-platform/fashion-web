@@ -76,6 +76,7 @@ export interface Config {
     reviews: Review;
     orders: Order;
     coupons: Coupon;
+    faqs: Faq;
     'stock-movements': StockMovement;
     provinces: Province;
     districts: District;
@@ -111,6 +112,7 @@ export interface Config {
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     coupons: CouponsSelect<false> | CouponsSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
@@ -535,7 +537,7 @@ export interface User {
   /**
    * Language used for emails, notifications, and off-site communication.
    */
-  preferredLocale: 'vi' | 'en';
+  preferredLocale?: ('vi' | 'en') | null;
   sub?: string | null;
   provider?: ('local' | 'google' | 'facebook') | null;
   imageUrl?: string | null;
@@ -1154,6 +1156,28 @@ export interface Coupon {
   createdAt: string;
 }
 /**
+ * FAQ items rendered on /faq. Each row carries its own VI / EN translations.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: number;
+  question: string;
+  answer: string;
+  category: 'order' | 'payment' | 'shipping' | 'return' | 'product' | 'account';
+  /**
+   * Lower number shows first. Default 0.
+   */
+  order?: number | null;
+  /**
+   * Uncheck to hide from the FAQ page without deleting.
+   */
+  published?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "stock-movements".
  */
@@ -1254,7 +1278,7 @@ export interface NewsletterSubscriber {
   email: string;
   name?: string | null;
   status: 'active' | 'unsubscribed' | 'bounced';
-  preferredLocale: 'vi' | 'en';
+  preferredLocale?: ('vi' | 'en') | null;
   subscribedAt?: string | null;
   unsubscribedAt?: string | null;
   source?: ('footer_form' | 'checkout' | 'manual') | null;
@@ -1549,6 +1573,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'coupons';
         value: number | Coupon;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: number | Faq;
       } | null)
     | ({
         relationTo: 'stock-movements';
@@ -2214,6 +2242,19 @@ export interface CouponsSelect<T extends boolean = true> {
   validFrom?: T;
   validUntil?: T;
   active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  question?: T;
+  answer?: T;
+  category?: T;
+  order?: T;
+  published?: T;
   updatedAt?: T;
   createdAt?: T;
 }
