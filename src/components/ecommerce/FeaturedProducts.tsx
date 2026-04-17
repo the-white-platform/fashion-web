@@ -194,7 +194,7 @@ export function FeaturedProducts({
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            <p className="text-lg">Không tìm thấy sản phẩm phù hợp</p>
+            <p className="text-lg">{t('products.noResults')}</p>
           </div>
         )}
 

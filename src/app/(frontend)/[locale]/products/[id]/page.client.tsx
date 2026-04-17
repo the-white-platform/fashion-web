@@ -553,7 +553,9 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
       <Dialog open={isSizePickerOpen} onOpenChange={setIsSizePickerOpen}>
         <DialogContent className="max-w-lg p-0 sm:p-0 overflow-hidden">
           <DialogHeader className="px-6 pt-6">
-            <DialogTitle className="uppercase tracking-wide">Chọn Size Thông Minh</DialogTitle>
+            <DialogTitle className="uppercase tracking-wide">
+              {tDetail('sizePickerTitle')}
+            </DialogTitle>
           </DialogHeader>
           <div className="p-4 sm:p-6">
             <SmartSizePicker
@@ -563,10 +565,13 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                 if (currentSizes.includes(size)) {
                   setSelectedSize(size)
                   setIsSizePickerOpen(false)
-                  toast.success(`Đã chọn size ${size}`)
+                  toast.success(tDetail('sizePickedToast', { size }))
                 } else {
                   toast.info(
-                    `Sản phẩm này không còn size ${size} — gợi ý các size hiện có: ${currentSizes.join(', ') || 'hết hàng'}`,
+                    tDetail('sizeUnavailable', {
+                      size,
+                      available: currentSizes.join(', ') || tDetail('outOfStockShort'),
+                    }),
                   )
                 }
               }}

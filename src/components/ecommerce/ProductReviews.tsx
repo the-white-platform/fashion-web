@@ -362,8 +362,8 @@ function ReviewCard({ review }: { review: ReviewWithUser }) {
 
   const userName =
     typeof review.user === 'object' && review.user !== null
-      ? ((review.user as User).name ?? 'Khách hàng')
-      : 'Khách hàng'
+      ? ((review.user as User).name ?? t('anonymousUser'))
+      : t('anonymousUser')
 
   const handleHelpful = async () => {
     if (hasVoted || voting) return

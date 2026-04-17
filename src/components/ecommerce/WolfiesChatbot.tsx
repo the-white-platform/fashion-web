@@ -172,7 +172,7 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
             body: JSON.stringify({
               conversationId: conversationIdRef.current,
               senderId: 'user',
-              name: 'Khách',
+              name: t('guestName'),
             }),
           }).catch(() => {})
         }
@@ -306,7 +306,7 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
       body: JSON.stringify({
         conversationId: conversationIdRef.current,
         senderId: 'user',
-        name: 'Khách',
+        name: t('guestName'),
       }),
     }).catch(() => {})
   }
@@ -331,7 +331,9 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
                 <h3 className="uppercase tracking-widest font-bold text-sm">
                   {t('title')}
                   {isAdminTakeover && (
-                    <span className="ml-2 text-xs font-normal opacity-80">(Nhân viên hỗ trợ)</span>
+                    <span className="ml-2 text-xs font-normal opacity-80">
+                      {t('adminTakeoverLabel')}
+                    </span>
                   )}
                 </h3>
                 <p className="text-[10px] text-primary-foreground/80 uppercase tracking-tighter">
@@ -504,7 +506,7 @@ export function WolfiesChatbot({ isOpen, onClose, productContext }: WolfiesChatb
                     }}
                     onKeyDown={handleKeyDown}
                     placeholder={
-                      isAdminTakeover ? 'Nhắn tin cho nhân viên hỗ trợ...' : t('inputPlaceholder')
+                      isAdminTakeover ? t('adminInputPlaceholder') : t('inputPlaceholder')
                     }
                     disabled={isStreaming}
                     className="flex-1 px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors text-sm bg-background text-foreground placeholder:text-muted-foreground disabled:opacity-60"

@@ -94,14 +94,19 @@
       "copyError": "Could not copy link",
       "share": "Share",
       "specifications": "Specifications",
-      "related": "Related Products"
+      "related": "Related Products",
+      "sizePickerTitle": "Smart Size Picker",
+      "sizePickedToast": "Size {size} selected",
+      "sizeUnavailable": "Size {size} is no longer available — suggested sizes: {available}",
+      "outOfStockShort": "out of stock"
     },
     "allCategory": "All",
     "loading": "Loading...",
     "breadcrumbHome": "Home",
     "breadcrumbProducts": "Products",
     "heading": "Products",
-    "description": "Explore THE WHITE's premium athletic fashion collection. Minimal design, maximum performance."
+    "description": "Explore THE WHITE's premium athletic fashion collection. Minimal design, maximum performance.",
+    "noResults": "No matching products found"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -569,7 +574,8 @@
       "remove": "Remove image",
       "addMore": "Add photos"
     },
-    "storeResponse": "Store Response"
+    "storeResponse": "Store Response",
+    "anonymousUser": "Customer"
   },
   "search": {
     "placeholder": "Search products...",
@@ -585,7 +591,8 @@
     "placeholder": "Enter your email",
     "button": "SUBSCRIBE NOW",
     "buttonSuccess": "✓ SUBSCRIBED",
-    "note": "Get a 10% discount code for your first order"
+    "note": "Get a 10% discount code for your first order",
+    "errorGeneric": "An error occurred. Please try again."
   },
   "exploreMore": {
     "title": "Explore More",
@@ -1294,7 +1301,10 @@
     "errorAuth": "Please log in to use the AI assistant.",
     "loginLink": "Log in now",
     "errorRateLimit": "You're sending too many messages. Please wait a moment.",
-    "errorGeneric": "Something went wrong. Please try again later."
+    "errorGeneric": "Something went wrong. Please try again later.",
+    "guestName": "Guest",
+    "adminTakeoverLabel": "(Support staff)",
+    "adminInputPlaceholder": "Message support staff..."
   },
   "recentlyViewed": {
     "title": "Recently Viewed"
@@ -1426,5 +1436,29 @@
     "backHome": "Back to home",
     "errorTitle": "Invalid link",
     "errorDesc": "This unsubscribe link is invalid or has expired."
+  },
+  "site": {
+    "titleDefault": "TheWhite — Modern Athletic Fashion",
+    "titleTemplate": "%s | TheWhite",
+    "description": "TheWhite — Modern, minimalist, durable athletic fashion. Explore our latest collection for an active lifestyle.",
+    "twitterTitle": "TheWhite — Take Action",
+    "twitterDescription": "Modern, minimalist, durable athletic fashion."
+  },
+  "meta": {
+    "rootLayout": {
+      "titleDefault": "TheWhite — Modern Activewear",
+      "titleTemplate": "%s | TheWhite",
+      "description": "TheWhite — modern, minimalist, durable activewear. Discover our latest collection for an active lifestyle.",
+      "orgDescription": "TheWhite — modern, minimalist, durable activewear for an active lifestyle.",
+      "twitterTitle": "TheWhite — Take Action",
+      "twitterDescription": "Modern, minimalist, durable activewear."
+    },
+    "home": {
+      "title": "TheWhite — Modern Activewear",
+      "description": "Discover TheWhite's premium activewear collection. Minimalist design, durable materials, made for the gym, running, and an active lifestyle."
+    }
+  },
+  "imageZoom": {
+    "hoverHint": "Hover to zoom"
   }
 }

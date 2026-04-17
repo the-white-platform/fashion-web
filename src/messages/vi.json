@@ -94,14 +94,19 @@
       "copyError": "Không thể sao chép link",
       "share": "Chia Sẻ",
       "specifications": "Đặc Điểm Kỹ Thuật",
-      "related": "Sản Phẩm Liên Quan"
+      "related": "Sản Phẩm Liên Quan",
+      "sizePickerTitle": "Chọn Size Thông Minh",
+      "sizePickedToast": "Đã chọn size {size}",
+      "sizeUnavailable": "Sản phẩm này không còn size {size} — gợi ý các size hiện có: {available}",
+      "outOfStockShort": "hết hàng"
     },
     "allCategory": "Tất Cả",
     "loading": "Đang tải...",
     "breadcrumbHome": "Trang chủ",
     "breadcrumbProducts": "Sản phẩm",
     "heading": "Sản Phẩm",
-    "description": "Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite. Thiết kế tối giản, hiệu năng tối đa."
+    "description": "Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite. Thiết kế tối giản, hiệu năng tối đa.",
+    "noResults": "Không tìm thấy sản phẩm phù hợp"
   },
   "cart": {
     "title": "Giỏ Hàng",
@@ -569,7 +574,8 @@
       "remove": "Xóa ảnh",
       "addMore": "Thêm ảnh"
     },
-    "storeResponse": "Phản Hồi Từ Cửa Hàng"
+    "storeResponse": "Phản Hồi Từ Cửa Hàng",
+    "anonymousUser": "Khách hàng"
   },
   "search": {
     "placeholder": "Tìm kiếm sản phẩm...",
@@ -585,7 +591,8 @@
     "placeholder": "Nhập email của bạn",
     "button": "ĐĂNG KÝ NGAY",
     "buttonSuccess": "✓ ĐÃ ĐĂNG KÝ",
-    "note": "Nhận ngay mã giảm giá 10% cho đơn hàng đầu tiên"
+    "note": "Nhận ngay mã giảm giá 10% cho đơn hàng đầu tiên",
+    "errorGeneric": "Có lỗi xảy ra. Vui lòng thử lại."
   },
   "exploreMore": {
     "title": "Khám Phá Thêm",
@@ -1328,7 +1335,10 @@
     "errorAuth": "Vui lòng đăng nhập để sử dụng trợ lý AI.",
     "loginLink": "Đăng nhập ngay",
     "errorRateLimit": "Bạn đang gửi quá nhiều tin nhắn. Vui lòng chờ một chút.",
-    "errorGeneric": "Đã có lỗi xảy ra. Vui lòng thử lại sau."
+    "errorGeneric": "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
+    "guestName": "Khách",
+    "adminTakeoverLabel": "(Nhân viên hỗ trợ)",
+    "adminInputPlaceholder": "Nhắn tin cho nhân viên hỗ trợ..."
   },
   "recentlyViewed": {
     "title": "Đã Xem Gần Đây"
@@ -1464,5 +1474,29 @@
     "backHome": "Về trang chủ",
     "errorTitle": "Liên kết không hợp lệ",
     "errorDesc": "Liên kết hủy đăng ký này không hợp lệ hoặc đã hết hạn."
+  },
+  "site": {
+    "titleDefault": "TheWhite — Thời Trang Thể Thao Hiện Đại",
+    "titleTemplate": "%s | TheWhite",
+    "description": "TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ. Khám phá bộ sưu tập mới nhất cho phong cách năng động.",
+    "twitterTitle": "TheWhite — Take Action",
+    "twitterDescription": "Thời trang thể thao hiện đại, tối giản, bền bỉ."
+  },
+  "meta": {
+    "rootLayout": {
+      "titleDefault": "TheWhite — Thời Trang Thể Thao Hiện Đại",
+      "titleTemplate": "%s | TheWhite",
+      "description": "TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ. Khám phá bộ sưu tập mới nhất cho phong cách năng động.",
+      "orgDescription": "TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ cho phong cách năng động.",
+      "twitterTitle": "TheWhite — Take Action",
+      "twitterDescription": "Thời trang thể thao hiện đại, tối giản, bền bỉ."
+    },
+    "home": {
+      "title": "TheWhite — Thời Trang Thể Thao Hiện Đại",
+      "description": "Khám phá bộ sưu tập thời trang thể thao cao cấp của TheWhite. Thiết kế tối giản, chất liệu bền bỉ, phù hợp cho gym, chạy bộ và lối sống năng động."
+    }
+  },
+  "imageZoom": {
+    "hoverHint": "Di chuột để phóng to"
   }
 }
