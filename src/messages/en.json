@@ -421,7 +421,8 @@
     "verifyingEmail": "Verifying your email…",
     "verificationFailed": "Email verification failed",
     "invalidVerificationLink": "This verification link is invalid or has expired.",
-    "goToProfile": "Go to profile"
+    "goToProfile": "Go to profile",
+    "referralBanner": "You were referred by a The White member. Sign up now and both of you earn bonus points!"
   },
   "common": {
     "all": "All",
@@ -573,7 +574,10 @@
   "search": {
     "placeholder": "Search products...",
     "popular": "Popular Searches",
-    "recent": "Recently Viewed"
+    "recent": "Recently Viewed",
+    "noResults": "No results found for \"{query}\"",
+    "pageTitle": "Search - TheWhite",
+    "pageDescription": "Search athletic fashion products"
   },
   "newsletter": {
     "title": "Get Exclusive Offers",
@@ -762,7 +766,8 @@
       "title": "10. Contact - Data Protection Officer",
       "description": "If you have any questions about the privacy policy or wish to exercise your rights, please contact our Data Protection Officer (DPO):",
       "complaint": "You also have the right to lodge a complaint with the competent Data Protection Authority if you believe your rights have been violated."
-    }
+    },
+    "companyLabel": "Company"
   },
   "termsOfUse": {
     "breadcrumb": "Terms of Use",
@@ -818,7 +823,8 @@
     "agreement": {
       "label": "Important:",
       "content": "By using TheWhite website, you confirm that you have read, understood and agree to comply with all terms and conditions stated above."
-    }
+    },
+    "companyLabel": "Company"
   },
   "wishlist": {
     "breadcrumb": "Wishlist",
@@ -1207,7 +1213,9 @@
     "security": {
       "title": "Secure Payment",
       "desc": "All transactions are encrypted and secured with SSL technology. We never store your card information."
-    }
+    },
+    "fastDelivery": "Fast Delivery",
+    "standardDelivery": "Standard Delivery"
   },
   "returnRequest": {
     "breadcrumb": "Return / Exchange Request",

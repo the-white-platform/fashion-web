@@ -7,14 +7,17 @@ import React from 'react'
 import { Post } from '@/payload-types'
 import { Search } from '@/search/Component'
 import PageClient from './page.client'
+import { getTranslations } from 'next-intl/server'
 
 type Args = {
   searchParams: Promise<{
     q: string
   }>
+  params?: Promise<{ locale: string }>
 }
 export default async function Page({ searchParams: searchParamsPromise }: Args) {
   const { q: query } = await searchParamsPromise
+  const t = await getTranslations('search')
   const payload = await getPayload({ config: configPromise })
 
   const posts = await payload.find({
@@ -69,18 +72,22 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
         </div>
       ) : query ? (
         <div className="container mx-auto px-6">
-          <p className="text-gray-600 text-center py-12">
-            Không tìm thấy kết quả cho &quot;{query}&quot;
-          </p>
+          <p className="text-gray-600 text-center py-12">{t('noResults', { query })}</p>
         </div>
       ) : null}
     </div>
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({
+  params,
+}: {
+  params?: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const locale = params ? (await params).locale : 'vi'
+  const t = await getTranslations({ locale, namespace: 'search' })
   return {
-    title: `Tìm Kiếm - TheWhite`,
-    description: 'Tìm kiếm sản phẩm thời trang thể thao',
+    title: t('pageTitle'),
+    description: t('pageDescription'),
   }
 }

@@ -11,7 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { BoldText } from '@/components/shared/BoldText'
 import type { CompanyInfo } from '@/payload-types'
@@ -23,8 +23,6 @@ interface PrivacyPolicyClientProps {
 export default function PrivacyPolicyClient({ companyInfo }: PrivacyPolicyClientProps) {
   const t = useTranslations('privacyPolicy')
   const tNav = useTranslations('nav')
-  const locale = useLocale()
-  const isEn = locale === 'en'
 
   const sections = [
     {
@@ -187,7 +185,7 @@ export default function PrivacyPolicyClient({ companyInfo }: PrivacyPolicyClient
           <div className="space-y-2 bg-background/10 p-4 rounded-sm border border-primary-foreground/10">
             {companyInfo.companyName && (
               <p>
-                <strong>{isEn ? 'Company' : 'Công ty'}:</strong> {companyInfo.companyName}
+                <strong>{t('companyLabel')}:</strong> {companyInfo.companyName}
               </p>
             )}
             {companyInfo.email && (

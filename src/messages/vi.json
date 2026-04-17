@@ -421,7 +421,8 @@
     "verifyingEmail": "Đang xác minh email…",
     "verificationFailed": "Xác minh email thất bại",
     "invalidVerificationLink": "Liên kết xác minh không hợp lệ hoặc đã hết hạn.",
-    "goToProfile": "Đến trang cá nhân"
+    "goToProfile": "Đến trang cá nhân",
+    "referralBanner": "Bạn được giới thiệu bởi một thành viên The White. Đăng ký ngay để cả hai nhận điểm thưởng!"
   },
   "common": {
     "all": "Tất Cả",
@@ -573,7 +574,10 @@
   "search": {
     "placeholder": "Tìm kiếm sản phẩm...",
     "popular": "Tìm Kiếm Phổ Biến",
-    "recent": "Sản Phẩm Xem Gần Đây"
+    "recent": "Sản Phẩm Xem Gần Đây",
+    "noResults": "Không tìm thấy kết quả cho \"{query}\"",
+    "pageTitle": "Tìm Kiếm - TheWhite",
+    "pageDescription": "Tìm kiếm sản phẩm thời trang thể thao"
   },
   "newsletter": {
     "title": "Nhận Ưu Đãi Độc Quyền",
@@ -762,7 +766,8 @@
       "title": "10. Liên Hệ - Data Protection Officer",
       "description": "Nếu bạn có bất kỳ câu hỏi nào về chính sách bảo mật hoặc muốn thực hiện quyền của mình, vui lòng liên hệ Data Protection Officer (DPO) của chúng tôi:",
       "complaint": "Bạn cũng có quyền khiếu nại với Cơ quan Bảo vệ Dữ liệu có thẩm quyền nếu cho rằng quyền của bạn bị vi phạm."
-    }
+    },
+    "companyLabel": "Công ty"
   },
   "termsOfUse": {
     "breadcrumb": "Điều Khoản Sử Dụng",
@@ -818,7 +823,8 @@
     "agreement": {
       "label": "Quan Trọng:",
       "content": "Bằng việc sử dụng website TheWhite, bạn xác nhận đã đọc, hiểu và đồng ý tuân thủ toàn bộ các điều khoản và điều kiện nêu trên."
-    }
+    },
+    "companyLabel": "Công ty"
   },
   "wishlist": {
     "breadcrumb": "Danh Sách Yêu Thích",
@@ -1198,7 +1204,9 @@
     "security": {
       "title": "An Toàn & Bảo Mật",
       "desc": "Mọi giao dịch được mã hóa SSL, không lưu thông tin thẻ."
-    }
+    },
+    "fastDelivery": "Giao Hàng Nhanh",
+    "standardDelivery": "Giao Hàng Tiết Kiệm"
   },
   "returnRequest": {
     "breadcrumbHome": "Trang chủ",

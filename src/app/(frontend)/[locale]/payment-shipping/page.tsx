@@ -262,10 +262,10 @@ export default function PaymentShippingPage() {
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center p-4 bg-muted rounded-sm">
-                <p className="uppercase tracking-wide text-sm">Giao Hàng Nhanh</p>
+                <p className="uppercase tracking-wide text-sm">{t('fastDelivery')}</p>
               </div>
               <div className="text-center p-4 bg-muted rounded-sm">
-                <p className="uppercase tracking-wide text-sm">Giao Hàng Tiết Kiệm</p>
+                <p className="uppercase tracking-wide text-sm">{t('standardDelivery')}</p>
               </div>
               <div className="text-center p-4 bg-muted rounded-sm">
                 <p className="uppercase tracking-wide text-sm">J&T Express</p>
