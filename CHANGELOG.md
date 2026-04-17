@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.45.0](https://github.com/the-white-platform/fashion-web/compare/v0.44.7...v0.45.0) (2026-04-17)
+
+
+### Features
+
+* **seo:** fix OG image 500 + enrich link-preview metadata ([0ed9d8a](https://github.com/the-white-platform/fashion-web/commit/0ed9d8a0c8201e3209a75a4dc62bea9ecff56e98))
+
 ### [0.44.7](https://github.com/the-white-platform/fashion-web/compare/v0.44.6...v0.44.7) (2026-04-17)
 
 
