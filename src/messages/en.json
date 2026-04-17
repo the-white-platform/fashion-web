@@ -23,7 +23,11 @@
     "logout": "Logout",
     "profile": "Profile",
     "backToHome": "Back to Home",
-    "hot": "Hot"
+    "hot": "Hot",
+    "profileAction": "My profile",
+    "loginRegister": "Login / Register",
+    "shipping": "Shipping",
+    "trackOrder": "Track order"
   },
   "hero": {
     "title": "WINTER COLLECTION 2026",
@@ -72,7 +76,37 @@
     "color": "Color",
     "price": "Price",
     "category": "Category",
-    "viewSizeChart": "View size chart"
+    "viewSizeChart": "View size chart",
+    "detail": {
+      "selectSize": "Please select a size",
+      "back": "Back",
+      "vatIncluded": "VAT included",
+      "colorLabel": "Color",
+      "colorChoose": "Choose color",
+      "colorOutOfStock": "This color is out of stock",
+      "sizeLabel": "Select Size",
+      "sizeFinder": "✨ Find your size",
+      "quantityLabel": "Quantity",
+      "tryOn": "Virtual Try-On",
+      "wishlistSaved": "Saved",
+      "wishlistAdd": "Wishlist",
+      "copySuccess": "Product link copied",
+      "copyError": "Could not copy link",
+      "share": "Share",
+      "specifications": "Specifications",
+      "related": "Related Products",
+      "sizePickerTitle": "Smart Size Picker",
+      "sizePickedToast": "Size {size} selected",
+      "sizeUnavailable": "Size {size} is no longer available — suggested sizes: {available}",
+      "outOfStockShort": "out of stock"
+    },
+    "allCategory": "All",
+    "loading": "Loading...",
+    "breadcrumbHome": "Home",
+    "breadcrumbProducts": "Products",
+    "heading": "Products",
+    "description": "Explore THE WHITE's premium athletic fashion collection. Minimal design, maximum performance.",
+    "noResults": "No matching products found"
   },
   "cart": {
     "title": "Shopping Cart",
@@ -173,7 +207,15 @@
       "bank": "Bank Transfer / QR",
       "cod": "Cash on Delivery",
       "momo": "MoMo Wallet"
-    }
+    },
+    "loyaltyPoints": "Loyalty Points",
+    "loyaltyAvailable": "Available: {n} points",
+    "loyaltyRate": "100 points = 10,000₫",
+    "loyaltyPoints_unit": "points",
+    "loyaltyClear": "Remove points",
+    "orderFailed": "Order failed. Please try again.",
+    "recommendationsTitle": "You Might Also Like",
+    "loyaltyPointsDiscount": "Loyalty points ({n} pts)"
   },
   "profile": {
     "title": "My Profile",
@@ -197,7 +239,14 @@
     "paymentDeleted": "Payment method deleted",
     "emailReadOnly": "Email cannot be changed",
     "updateSuccess": "Profile updated successfully",
-    "updateError": "Failed to update profile. Please try again."
+    "updateError": "Failed to update profile. Please try again.",
+    "pointsSuffix": "points",
+    "viewAll": "View all",
+    "itemCount": "{n} items",
+    "noOrders": "You have no orders yet",
+    "exploreProducts": "Explore Products",
+    "sizeComingSoon": "This feature is coming soon. Please check the size chart on each product page.",
+    "vtoComingSoon": "Virtual Try-On is coming soon. This feature lets you try on clothes virtually using AI technology."
   },
   "orders": {
     "title": "My Orders",
@@ -252,7 +301,16 @@
       "confirmed": "Order confirmed",
       "shipping": "Order shipped",
       "delivered": "Order delivered"
-    }
+    },
+    "processing": "Processing...",
+    "addedWithSkipped": "Added {added} item(s) ({skipped} out of stock)",
+    "addedToCart": "Added {added} item(s) to cart",
+    "allOutOfStock": "All items are out of stock",
+    "cannotAdd": "Could not add items to cart",
+    "reorder": "Reorder",
+    "cannotReorder": "Could not reorder",
+    "addedItem": "Added to cart",
+    "itemOutOfStock": "Item is out of stock"
   },
   "footer": {
     "about": "About TheWhite",
@@ -368,7 +426,8 @@
     "verifyingEmail": "Verifying your email…",
     "verificationFailed": "Email verification failed",
     "invalidVerificationLink": "This verification link is invalid or has expired.",
-    "goToProfile": "Go to profile"
+    "goToProfile": "Go to profile",
+    "referralBanner": "You were referred by a The White member. Sign up now and both of you earn bonus points!"
   },
   "common": {
     "all": "All",
@@ -515,12 +574,16 @@
       "remove": "Remove image",
       "addMore": "Add photos"
     },
-    "storeResponse": "Store Response"
+    "storeResponse": "Store Response",
+    "anonymousUser": "Customer"
   },
   "search": {
     "placeholder": "Search products...",
     "popular": "Popular Searches",
-    "recent": "Recently Viewed"
+    "recent": "Recently Viewed",
+    "noResults": "No results found for \"{query}\"",
+    "pageTitle": "Search - TheWhite",
+    "pageDescription": "Search athletic fashion products"
   },
   "newsletter": {
     "title": "Get Exclusive Offers",
@@ -528,7 +591,8 @@
     "placeholder": "Enter your email",
     "button": "SUBSCRIBE NOW",
     "buttonSuccess": "✓ SUBSCRIBED",
-    "note": "Get a 10% discount code for your first order"
+    "note": "Get a 10% discount code for your first order",
+    "errorGeneric": "An error occurred. Please try again."
   },
   "exploreMore": {
     "title": "Explore More",
@@ -656,6 +720,7 @@
     },
     "sort": {
       "title": "Sort by",
+      "default": "Recommended",
       "newest": "Newest",
       "priceAsc": "Price: Low to High",
       "priceDesc": "Price: High to Low",
@@ -709,7 +774,8 @@
       "title": "10. Contact - Data Protection Officer",
       "description": "If you have any questions about the privacy policy or wish to exercise your rights, please contact our Data Protection Officer (DPO):",
       "complaint": "You also have the right to lodge a complaint with the competent Data Protection Authority if you believe your rights have been violated."
-    }
+    },
+    "companyLabel": "Company"
   },
   "termsOfUse": {
     "breadcrumb": "Terms of Use",
@@ -765,7 +831,8 @@
     "agreement": {
       "label": "Important:",
       "content": "By using TheWhite website, you confirm that you have read, understood and agree to comply with all terms and conditions stated above."
-    }
+    },
+    "companyLabel": "Company"
   },
   "wishlist": {
     "breadcrumb": "Wishlist",
@@ -864,79 +931,14 @@
       "account": "Account",
       "payment": "Payment"
     },
-    "questions": {
-      "q1": {
-        "question": "How do I place an order?",
-        "answer": "Select your desired product, choose size and quantity, then click \"Add to Cart\". Go to your cart, click \"Checkout\", fill in your shipping information and select a payment method to complete the order."
-      },
-      "q2": {
-        "question": "What payment methods does TheWhite accept?",
-        "answer": "We accept: Cash on Delivery (COD), Bank Transfer, Credit/Debit Card (Visa, Mastercard), E-wallets (MoMo, ZaloPay, VNPay), and 0% installment payment."
-      },
-      "q3": {
-        "question": "Can I cancel or change my order?",
-        "answer": "You can cancel or change your order within 2 hours of placing it, as long as the order hasn't been packed and handed to the carrier. Please contact us immediately via hotline or live chat."
-      },
-      "q4": {
-        "question": "How can I track my order?",
-        "answer": "After the order is shipped, you'll receive an email with a tracking code. You can also track your order in the \"Order History\" section of your account on our website."
-      },
-      "q5": {
-        "question": "How long does delivery take?",
-        "answer": "Ho Chi Minh City & Hanoi: 1–2 business days. Other provinces/cities: 2–4 business days. Remote areas: 4–7 business days. Delivery times may vary during peak seasons."
-      },
-      "q6": {
-        "question": "What are the shipping fees?",
-        "answer": "Free shipping on orders over 500,000₫. For orders under 500,000₫: Ho Chi Minh City/Hanoi: 25,000₫, other provinces: 35,000₫. Express shipping (same-day): 50,000–80,000₫."
-      },
-      "q7": {
-        "question": "Does TheWhite ship internationally?",
-        "answer": "Currently TheWhite only ships within Vietnam. We plan to expand international shipping in the future. Stay tuned for updates!"
-      },
-      "q8": {
-        "question": "What is the return and exchange policy?",
-        "answer": "TheWhite accepts returns and exchanges within 30 days of receipt. Products must be unworn, unwashed, with all original tags attached. Defective products are returned free of charge. Size/color exchanges are free for the first time."
-      },
-      "q9": {
-        "question": "How do I request a return?",
-        "answer": "Log in to your account, go to \"Order History\", select the order and click \"Request Return/Exchange\". Or visit our Return Request page and fill in the form. We'll process within 24–48 hours."
-      },
-      "q10": {
-        "question": "How long does a refund take?",
-        "answer": "After receiving and inspecting the returned item: Bank transfer/e-wallet: 3–5 business days. Credit/debit card: 5–7 business days. Store credit: Immediate."
-      },
-      "q11": {
-        "question": "How do I find the right size?",
-        "answer": "Visit our Size Guide page for detailed measurement instructions and size charts. You can also use our AI Size Finder tool — enter your height and weight and we'll recommend the best size for you."
-      },
-      "q12": {
-        "question": "Is the product on the website exactly what I'll receive?",
-        "answer": "Yes, product images on TheWhite are shot directly on the actual product. However, slight color variations may occur due to screen display differences. If you receive a product that doesn't match the description, please contact us immediately."
-      },
-      "q13": {
-        "question": "How do I care for TheWhite products?",
-        "answer": "Each product has a care label inside. General guidelines: machine or hand wash in cold water (under 30°C), do not bleach, dry flat to avoid stretching, low-heat iron if needed. Detailed instructions are on each product page."
-      },
-      "q14": {
-        "question": "How do I create an account?",
-        "answer": "Click \"Sign Up\" at the top right of the website. Fill in your full name, email and password. Verify your email to activate your account. You can also sign in with Google or Facebook for convenience."
-      },
-      "q15": {
-        "question": "I forgot my password. What should I do?",
-        "answer": "Click \"Forgot Password\" on the login page. Enter your registered email address. Check your inbox for a password reset email. Follow the instructions to create a new password. The link is valid for 24 hours."
-      },
-      "q16": {
-        "question": "How do I update my account information?",
-        "answer": "Log in to your account, go to \"Profile\" or \"Account Settings\". You can update your full name, phone number, address, and profile picture. Email cannot be changed — please contact us if needed."
-      },
-      "q17": {
-        "question": "Does TheWhite have a loyalty program?",
-        "answer": "Yes! TheWhite Members program: Silver (0–4,999,000₫ spent): 1% cashback. Gold (5,000,000–19,999,000₫ spent): 2% cashback + free express shipping. Platinum (20,000,000₫+ spent): 3% cashback + dedicated support + exclusive events."
-      },
-      "q18": {
-        "question": "How can I contact TheWhite?",
-        "answer": "Hotline: 1900 xxxx (8:00–22:00 daily). Email: hello@thewhite.vn (reply within 24h). Live chat on website (8:00–22:00). Facebook/Instagram: @thewhite.vn. In-store: 123 Fashion Street, District 1, HCMC."
-      }
+    "breadcrumbHome": "Home",
+    "breadcrumbPage": "FAQ",
+    "clearFilter": "Clear filter",
+    "support": {
+      "title": "Didn't find your answer?",
+      "subtitle": "TheWhite's support team is here to help 24/7",
+      "chat": "Chat With Us",
+      "hotline": "Call hotline: 1900-xxxx"
     }
   },
   "returnPolicy": {
@@ -1145,7 +1147,9 @@
     "security": {
       "title": "Secure Payment",
       "desc": "All transactions are encrypted and secured with SSL technology. We never store your card information."
-    }
+    },
+    "fastDelivery": "Fast Delivery",
+    "standardDelivery": "Standard Delivery"
   },
   "returnRequest": {
     "breadcrumb": "Return / Exchange Request",
@@ -1224,7 +1228,10 @@
     "errorAuth": "Please log in to use the AI assistant.",
     "loginLink": "Log in now",
     "errorRateLimit": "You're sending too many messages. Please wait a moment.",
-    "errorGeneric": "Something went wrong. Please try again later."
+    "errorGeneric": "Something went wrong. Please try again later.",
+    "guestName": "Guest",
+    "adminTakeoverLabel": "(Support staff)",
+    "adminInputPlaceholder": "Message support staff..."
   },
   "recentlyViewed": {
     "title": "Recently Viewed"
@@ -1276,12 +1283,109 @@
     "referral": "Refer a Friend",
     "referralDesc": "Share your code. Earn 200 points when a friend places their first order.",
     "copyLink": "Copy Link",
-    "copiedLink": "Link copied!"
+    "copiedLink": "Link copied!",
+    "breadcrumb": "Loyalty Rewards",
+    "pageTitle": "Loyalty Points & Membership Tier",
+    "tierLevel": "{tier} tier",
+    "availablePointsSuffix": "available points",
+    "lifetimePointsSuffix": "lifetime points",
+    "progressRemaining": "{n} more points to reach {tier}",
+    "platinumMax": "You are at the highest tier!",
+    "tierBenefitsTitle": "{tier} Tier Benefits",
+    "earnRulesTitle": "How to Earn Points",
+    "conversionRate": "100 points = 10,000₫ discount at checkout",
+    "copyReferral": "Copy",
+    "noTransactions": "No point transactions yet",
+    "shopToEarn": "Shop to earn points",
+    "balance": "Balance: {n}",
+    "copiedReferral": "Referral link copied!",
+    "tierBenefits": {
+      "bronze": ["1 point per 10,000₫ purchase", "50 points for product review", "Referral points"],
+      "silver": [
+        "1.25× points per order",
+        "Priority customer support",
+        "75 points for product review"
+      ],
+      "gold": [
+        "1.5× points per order",
+        "Free shipping on orders from 500K",
+        "100 points for product review"
+      ],
+      "platinum": [
+        "2× points per order",
+        "Free shipping on all orders",
+        "Access to exclusive deals",
+        "100 points for product review"
+      ]
+    },
+    "earnRulesList": [
+      {
+        "action": "Purchase",
+        "reward": "1 point per 10,000₫"
+      },
+      {
+        "action": "Product review",
+        "reward": "50 points"
+      },
+      {
+        "action": "Verified review",
+        "reward": "100 points"
+      },
+      {
+        "action": "Refer a friend",
+        "reward": "200 points"
+      }
+    ]
   },
   "recommendations": {
     "forYou": "For You",
     "similar": "Similar Products",
     "cartBased": "You May Also Like",
     "popular": "Popular Products"
+  },
+  "cookieSettings": {
+    "privacy": "Privacy",
+    "title": "Cookie Settings",
+    "description": "We use cookies to improve your experience. You can choose which types of cookies you allow.",
+    "necessary": "Necessary cookies",
+    "necessaryDesc": "Required for the website to function",
+    "analytics": "Analytics cookies",
+    "analyticsDesc": "Help us improve our website",
+    "marketing": "Marketing cookies",
+    "marketingDesc": "Personalize ads for you",
+    "save": "Save preferences",
+    "acceptAll": "Accept all"
+  },
+  "unsubscribe": {
+    "processing": "Processing...",
+    "successTitle": "Unsubscribed",
+    "successDesc": "You have successfully unsubscribed from our newsletter. We will no longer send you emails.",
+    "backHome": "Back to home",
+    "errorTitle": "Invalid link",
+    "errorDesc": "This unsubscribe link is invalid or has expired."
+  },
+  "site": {
+    "titleDefault": "TheWhite — Modern Athletic Fashion",
+    "titleTemplate": "%s | TheWhite",
+    "description": "TheWhite — Modern, minimalist, durable athletic fashion. Explore our latest collection for an active lifestyle.",
+    "twitterTitle": "TheWhite — Take Action",
+    "twitterDescription": "Modern, minimalist, durable athletic fashion."
+  },
+  "meta": {
+    "rootLayout": {
+      "titleDefault": "TheWhite — Modern Activewear",
+      "titleTemplate": "%s | TheWhite",
+      "description": "TheWhite — modern, minimalist, durable activewear. Discover our latest collection for an active lifestyle.",
+      "orgDescription": "TheWhite — modern, minimalist, durable activewear for an active lifestyle.",
+      "twitterTitle": "TheWhite — Take Action",
+      "twitterDescription": "Modern, minimalist, durable activewear."
+    },
+    "home": {
+      "title": "TheWhite — Modern Activewear",
+      "description": "Discover TheWhite's premium activewear collection. Minimalist design, durable materials, made for the gym, running, and an active lifestyle."
+    }
+  },
+  "imageZoom": {
+    "hoverHint": "Hover to zoom"
   }
 }

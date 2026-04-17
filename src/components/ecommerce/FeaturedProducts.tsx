@@ -1,6 +1,5 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
 import { ProductCard } from '@/components/shared/ProductCard'
 import { motion } from 'motion/react'
 import { useState, useMemo } from 'react'
@@ -32,7 +31,6 @@ export function FeaturedProducts({
   const t = useTranslations()
   const { isWishlisted, toggleWishlist } = useWishlist()
   const [activeFilterId, setActiveFilterId] = useState<string>('')
-  const [activeSort, setActiveSort] = useState('newest')
 
   // CMS-only: if the admin hasn't flagged any product as `featured` or
   // configured quick filters, the whole section hides. No Unsplash
@@ -52,7 +50,9 @@ export function FeaturedProducts({
   // Get the current active filter
   const activeFilter = filters.find((f) => f.id === activeFilterId) || filters[0]
 
-  // Apply filtering and sorting
+  // Apply filtering. Ordering comes from the server (product id desc, i.e.
+  // newest first) and is intentional — no client-side sort UI: the featured
+  // block is a curated hero, not a shoppable index.
   const displayProducts = useMemo(() => {
     let filtered = [...baseProducts]
 
@@ -69,19 +69,19 @@ export function FeaturedProducts({
                 : product.category === activeFilter.label)
             )
           case 'tag':
-            // Filter by tag
-            const tagLower = product.tag.toLowerCase()
+            // Filter by tag code. Tag is now a relation to `product-tags`
+            // whose stable identifier is the `code` field (e.g. 'new',
+            // 'bestseller', 'sale-20', 'hot'). Sale matches any code
+            // starting with 'sale-'.
             switch (activeFilter.tagFilter) {
               case 'sale':
-                return (
-                  tagLower.includes('giảm') || tagLower.includes('sale') || tagLower.includes('%')
-                )
+                return product.tag.startsWith('sale-')
               case 'new':
-                return tagLower.includes('mới') || tagLower.includes('new')
+                return product.tag === 'new'
               case 'bestseller':
-                return tagLower.includes('bán chạy') || tagLower.includes('best')
+                return product.tag === 'bestseller'
               case 'hot':
-                return tagLower.includes('hot')
+                return product.tag === 'hot'
               default:
                 return true
             }
@@ -91,37 +91,21 @@ export function FeaturedProducts({
       })
     }
 
-    // Apply sorting
-    switch (activeSort) {
-      case 'priceAsc':
-        filtered.sort((a, b) => a.priceNumber - b.priceNumber)
-        break
-      case 'priceDesc':
-        filtered.sort((a, b) => b.priceNumber - a.priceNumber)
-        break
-      case 'popular':
-        filtered.sort((a, b) => {
-          const tagOrder: { [key: string]: number } = { 'BÁN CHẠY': 0, MỚI: 1 }
-          const aOrder = tagOrder[a.tag] ?? 2
-          const bOrder = tagOrder[b.tag] ?? 2
-          return aOrder - bOrder
-        })
-        break
-      case 'newest':
-      default:
-        filtered.sort((a, b) => b.id - a.id)
-        break
+    // Trim to the largest multiple of 4 (desktop) / 2 (mobile) so the
+    // last row is always complete. An orphan row with 1-2 cards next to
+    // empty columns looks broken. On lg the grid is 4 cols, so we floor
+    // to a multiple of 4; below lg it's 2 cols and any multiple of 4 is
+    // also a multiple of 2, so this single cap works for both. If fewer
+    // than 4 products are featured, show whatever is there rather than
+    // zero.
+    const GRID_COLS_DESKTOP = 4
+    if (filtered.length >= GRID_COLS_DESKTOP) {
+      const complete = Math.floor(filtered.length / GRID_COLS_DESKTOP) * GRID_COLS_DESKTOP
+      return filtered.slice(0, complete)
     }
 
     return filtered
-  }, [baseProducts, activeFilter, activeSort])
-
-  const sorts = [
-    { key: 'newest', label: t('filter.sort.newest') },
-    { key: 'priceAsc', label: t('filter.sort.priceAsc') },
-    { key: 'priceDesc', label: t('filter.sort.priceDesc') },
-    { key: 'popular', label: t('filter.sort.popular') },
-  ]
+  }, [baseProducts, activeFilter])
 
   return (
     <section className="py-20 bg-transparent text-foreground">
@@ -143,8 +127,8 @@ export function FeaturedProducts({
         </div>
 
         {/* Filters - CMS Configurable */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-10 justify-between items-start sm:items-center">
-          <div className="flex gap-2 flex-wrap">
+        {filters.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-10">
             {filters.map((filter) => (
               <button
                 key={filter.id}
@@ -159,22 +143,7 @@ export function FeaturedProducts({
               </button>
             ))}
           </div>
-
-          <div className="relative">
-            <select
-              value={activeSort}
-              onChange={(e) => setActiveSort(e.target.value)}
-              className="px-4 py-2 pr-10 border border-border rounded-sm bg-background text-sm font-medium uppercase tracking-wider focus:outline-none focus:border-primary appearance-none cursor-pointer"
-            >
-              {sorts.map((sort) => (
-                <option key={sort.key} value={sort.key}>
-                  {sort.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" />
-          </div>
-        </div>
+        )}
 
         {/* Products Grid */}
         {displayProducts.length > 0 ? (
@@ -194,7 +163,7 @@ export function FeaturedProducts({
           </div>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            <p className="text-lg">Không tìm thấy sản phẩm phù hợp</p>
+            <p className="text-lg">{t('products.noResults')}</p>
           </div>
         )}
 

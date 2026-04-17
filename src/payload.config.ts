@@ -15,6 +15,7 @@ import { ChatConversations } from './collections/ChatConversations'
 import { ChatMessages } from './collections/ChatMessages'
 import { Media } from './collections/Media'
 import { Coupons } from './collections/Coupons'
+import { Faqs } from './collections/Faqs'
 import { Notifications } from './collections/Notifications'
 import { NotificationPreferences } from './collections/NotificationPreferences'
 import { PushSubscriptions } from './collections/PushSubscriptions'
@@ -24,6 +25,7 @@ import { Orders } from './collections/Orders'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Products } from './collections/Products'
+import { ProductTags } from './collections/ProductTags'
 import { Reviews } from './collections/Reviews'
 import { StockMovements } from './collections/StockMovements'
 import { Users } from './collections/Users'
@@ -153,9 +155,11 @@ export default buildConfig({
     Categories,
     Users,
     Products,
+    ProductTags,
     Reviews,
     Orders,
     Coupons,
+    Faqs,
     StockMovements,
     Provinces,
     Districts,

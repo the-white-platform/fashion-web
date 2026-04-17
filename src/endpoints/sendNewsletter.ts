@@ -120,7 +120,9 @@ export const sendNewsletterHandler: PayloadHandler = async (req) => {
       batch.map(async (subscriber) => {
         const email = subscriber.email
         const token = subscriber.unsubscribeToken
-        const unsubscribeUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}/vi/unsubscribe?token=${token}`
+        const locale: 'vi' | 'en' =
+          (subscriber as { preferredLocale?: 'vi' | 'en' }).preferredLocale === 'en' ? 'en' : 'vi'
+        const unsubscribeUrl = `${process.env.NEXT_PUBLIC_SERVER_URL}/${locale}/unsubscribe?token=${token}`
 
         try {
           const subject = campaign.subject ?? ''
@@ -133,6 +135,7 @@ export const sendNewsletterHandler: PayloadHandler = async (req) => {
               content: htmlContent,
               unsubscribeUrl,
               subscriberName: (subscriber.name as string) ?? '',
+              locale,
             }),
           })
           sent++
@@ -158,19 +161,35 @@ export const sendNewsletterHandler: PayloadHandler = async (req) => {
   return Response.json({ sent, failed, total: subscribers.length }, { status: 200 })
 }
 
+const NEWSLETTER_COPY = {
+  vi: {
+    greeting: (name: string) => `Xin chào ${name},`,
+    disclaimer: 'Bạn nhận được email này vì đã đăng ký nhận tin từ The White.',
+    unsubscribe: 'Hủy đăng ký',
+  },
+  en: {
+    greeting: (name: string) => `Hi ${name},`,
+    disclaimer: 'You received this email because you subscribed to updates from The White.',
+    unsubscribe: 'Unsubscribe',
+  },
+} as const
+
 function buildEmailHtml({
   subject,
   content,
   unsubscribeUrl,
   subscriberName,
+  locale,
 }: {
   subject: string
   content: string
   unsubscribeUrl: string
   subscriberName: string
+  locale: 'vi' | 'en'
 }): string {
+  const copy = NEWSLETTER_COPY[locale] ?? NEWSLETTER_COPY.vi
   return `<!DOCTYPE html>
-<html lang="vi">
+<html lang="${locale}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -180,12 +199,12 @@ function buildEmailHtml({
   <header style="text-align: center; margin-bottom: 32px;">
     <h1 style="font-size: 24px; font-weight: bold; letter-spacing: 0.1em;">THE WHITE</h1>
   </header>
-  ${subscriberName ? `<p>Xin chào ${subscriberName},</p>` : ''}
+  ${subscriberName ? `<p>${copy.greeting(subscriberName)}</p>` : ''}
   <div>${content}</div>
   <footer style="margin-top: 40px; text-align: center; font-size: 12px; color: #666;">
-    <p>Bạn nhận được email này vì đã đăng ký nhận tin từ The White.</p>
+    <p>${copy.disclaimer}</p>
     <p>
-      <a href="${unsubscribeUrl}" style="color: #666;">Hủy đăng ký</a>
+      <a href="${unsubscribeUrl}" style="color: #666;">${copy.unsubscribe}</a>
     </p>
   </footer>
 </body>

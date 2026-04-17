@@ -6,6 +6,7 @@ export interface GetRecommendationsOptions {
   productId?: number | null
   categoryIds?: string[]
   limit?: number
+  locale?: 'vi' | 'en'
 }
 
 /**
@@ -15,7 +16,7 @@ export interface GetRecommendationsOptions {
 export async function getRecommendations(
   options: GetRecommendationsOptions,
 ): Promise<ProductForFrontend[]> {
-  const { userId, productId, categoryIds, limit = 8 } = options
+  const { userId, productId, categoryIds, limit = 8, locale = 'vi' } = options
 
   // Import payload lazily to avoid server/client boundary issues
   const { default: configPromise } = await import('@payload-config')
@@ -75,9 +76,12 @@ export async function getRecommendations(
             sort: '-averageRating',
             limit: limit * 2,
             depth: 1,
+            locale,
           })
 
-          const result = recommended.docs.map((p) => transformProduct(p as any)).slice(0, limit)
+          const result = recommended.docs
+            .map((p) => transformProduct(p as any, locale))
+            .slice(0, limit)
 
           if (result.length >= Math.min(limit, 4)) return result
         }
@@ -96,6 +100,7 @@ export async function getRecommendations(
         collection: 'products',
         id: productId,
         depth: 1,
+        locale,
       })
 
       const allProducts = await payload.find({
@@ -103,10 +108,11 @@ export async function getRecommendations(
         where: { inStock: { equals: true } },
         limit: 100,
         depth: 1,
+        locale,
       })
 
-      const allTransformed = allProducts.docs.map((p) => transformProduct(p as any))
-      const currentTransformed = transformProduct(currentProduct as any)
+      const allTransformed = allProducts.docs.map((p) => transformProduct(p as any, locale))
+      const currentTransformed = transformProduct(currentProduct as any, locale)
 
       const related = getRelatedProducts(currentTransformed, allTransformed, limit)
       if (related.length > 0) return related
@@ -128,9 +134,10 @@ export async function getRecommendations(
         sort: '-averageRating',
         limit: limit,
         depth: 1,
+        locale,
       })
 
-      return catProducts.docs.map((p) => transformProduct(p as any)).slice(0, limit)
+      return catProducts.docs.map((p) => transformProduct(p as any, locale)).slice(0, limit)
     } catch {
       // Fall through to popular
     }
@@ -146,9 +153,10 @@ export async function getRecommendations(
       sort: '-averageRating',
       limit,
       depth: 1,
+      locale,
     })
 
-    return popular.docs.map((p) => transformProduct(p as any))
+    return popular.docs.map((p) => transformProduct(p as any, locale))
   } catch {
     return []
   }

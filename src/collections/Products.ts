@@ -23,7 +23,11 @@ export const Products: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'category', 'price', 'stockStatus', 'tag', 'inStock'],
+    defaultColumns: ['name', 'category', 'price', 'stockStatus', 'tag', 'displayOrder', 'inStock'],
+    // `displayOrder` is shown as a sortable column so editors can click
+    // the header to see the list in storefront order. Payload v3's
+    // CollectionAdminOptions doesn't expose a `defaultSort` key; the
+    // per-user list sort preference persists automatically in the admin.
   },
   labels: {
     singular: { vi: 'Sản Phẩm', en: 'Product' },
@@ -209,6 +213,7 @@ export const Products: CollectionConfig = {
           name: 'name',
           type: 'text',
           required: true,
+          localized: true,
           label: { vi: 'Tên Màu', en: 'Color Name' },
         },
         {
@@ -320,18 +325,15 @@ export const Products: CollectionConfig = {
     },
     {
       name: 'tag',
-      type: 'select',
+      type: 'relationship',
+      relationTo: 'product-tags',
       label: { vi: 'Nhãn', en: 'Tag' },
-      options: [
-        { label: { vi: 'Mới', en: 'New' }, value: 'MỚI' },
-        { label: { vi: 'Bán Chạy', en: 'Bestseller' }, value: 'BÁN CHẠY' },
-        { label: { vi: 'Giảm 20%', en: '20% Off' }, value: 'GIẢM 20%' },
-        { label: { vi: 'Giảm 30%', en: '30% Off' }, value: 'GIẢM 30%' },
-        { label: { vi: 'Giảm 50%', en: '50% Off' }, value: 'GIẢM 50%' },
-        { label: 'Hot', value: 'HOT' },
-      ],
       admin: {
         position: 'sidebar',
+        description: {
+          vi: 'Quản lý danh sách nhãn ở "Product Tags". Chọn một nhãn (hoặc bỏ trống) để hiện huy hiệu trên thẻ sản phẩm.',
+          en: 'Manage the tag list under "Product Tags". Pick one (or leave empty) to show a badge on the product card.',
+        },
       },
     },
     {
@@ -366,6 +368,20 @@ export const Products: CollectionConfig = {
       admin: {
         position: 'sidebar',
         description: { vi: 'Hiển thị ở trang chủ', en: 'Display on homepage' },
+      },
+    },
+    {
+      name: 'displayOrder',
+      type: 'number',
+      defaultValue: 0,
+      index: true,
+      label: { vi: 'Thứ tự hiển thị', en: 'Display Order' },
+      admin: {
+        position: 'sidebar',
+        description: {
+          vi: 'Nhỏ hơn hiện trước trên trang /products. Nhiều sản phẩm có cùng số thì cái mới nhất (id cao hơn) lên trước. Mặc định 0.',
+          en: 'Smaller numbers show first on /products. Ties are broken by id desc (newer first). Default 0.',
+        },
       },
     },
     {

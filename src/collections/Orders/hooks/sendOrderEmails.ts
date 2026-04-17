@@ -6,10 +6,26 @@ import { sendZaloNotification } from '@/utilities/sendZaloNotification'
 const DEFAULT_LOCALE: 'vi' | 'en' = 'vi'
 
 /**
- * Infer locale from the order (or fall back to default).
- * Currently there is no locale field on Order; we default to 'vi'.
+ * Resolve the locale to send the email in: prefer the linked user's
+ * `preferredLocale`, else fall back to 'vi'. If the user is only a
+ * reference ID (not a depth-populated object) we fetch it.
  */
-const getLocale = (_order: Order): 'vi' | 'en' => DEFAULT_LOCALE
+const resolveLocale = async (req: PayloadRequest, order: Order): Promise<'vi' | 'en'> => {
+  const userRef = order.customerInfo?.user
+  if (!userRef) return DEFAULT_LOCALE
+  try {
+    if (typeof userRef === 'object' && userRef !== null) {
+      const pref = (userRef as { preferredLocale?: 'vi' | 'en' }).preferredLocale
+      if (pref === 'en' || pref === 'vi') return pref
+    }
+    const userId = typeof userRef === 'object' ? (userRef as { id: number | string }).id : userRef
+    const user = await req.payload.findByID({ collection: 'users', id: userId, depth: 0 })
+    const pref = (user as { preferredLocale?: 'vi' | 'en' }).preferredLocale
+    return pref === 'en' || pref === 'vi' ? pref : DEFAULT_LOCALE
+  } catch {
+    return DEFAULT_LOCALE
+  }
+}
 
 /**
  * Try to send a Zalo ZNS notification if the customer has a Zalo user ID
@@ -52,7 +68,7 @@ export const sendOrderEmails: CollectionAfterChangeHook<Order> = async ({
     return doc
   }
 
-  const locale = getLocale(doc)
+  const locale = await resolveLocale(req, doc)
 
   try {
     // ── Order created ──────────────────────────────────────────────

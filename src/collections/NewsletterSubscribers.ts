@@ -58,6 +58,16 @@ export const NewsletterSubscribers: CollectionConfig = {
       ],
     },
     {
+      name: 'preferredLocale',
+      type: 'select',
+      defaultValue: 'vi',
+      label: { vi: 'Ngôn ngữ ưu tiên', en: 'Preferred language' },
+      options: [
+        { label: { vi: 'Tiếng Việt', en: 'Vietnamese' }, value: 'vi' },
+        { label: { vi: 'Tiếng Anh', en: 'English' }, value: 'en' },
+      ],
+    },
+    {
       name: 'subscribedAt',
       type: 'date',
       label: { vi: 'Ngày đăng ký', en: 'Subscribed At' },

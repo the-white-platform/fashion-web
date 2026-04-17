@@ -14,7 +14,7 @@ export const revalidate = 600
 export default async function ProductsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
   const t = await getTranslations('products')
-  const allLabel = locale === 'en' ? 'All' : 'Tất Cả'
+  const allLabel = t('allCategory')
 
   let transformedProducts: ProductForFrontend[] = []
   let outCategories: CategoryForFrontend[] = [{ name: allLabel, slug: 'all', count: 0 }]
@@ -23,12 +23,17 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
   try {
     const payload = await getPayload({ config: configPromise })
 
-    // Fetch all products with locale
+    // Fetch all products with locale. Sort by `displayOrder` (admin-
+    // controlled from the Payload product edit page) ascending, then by
+    // id descending so ties fall to "newer first" — matching the
+    // implicit "newest" assumption the client-side `sortBy='newest'`
+    // path uses.
     const productsResult = await payload.find({
       collection: 'products',
       depth: 2,
       limit: 100,
       locale: locale as 'vi' | 'en',
+      sort: ['displayOrder', '-id'],
     })
 
     // Fetch categories with locale
@@ -40,7 +45,7 @@ export default async function ProductsPage({ params }: { params: Promise<{ local
     })
 
     // Transform products
-    const products = productsResult.docs.map(transformProduct)
+    const products = productsResult.docs.map((p) => transformProduct(p, locale as 'vi' | 'en'))
     transformedProducts = products
 
     // Get unique colors from all products

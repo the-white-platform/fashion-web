@@ -41,11 +41,11 @@ export function Newsletter() {
             setEmail('')
           }, 3000)
         } else {
-          setError(data?.message ?? 'Có lỗi xảy ra. Vui lòng thử lại.')
+          setError(data?.message ?? t('errorGeneric'))
         }
       }
     } catch {
-      setError('Có lỗi xảy ra. Vui lòng thử lại.')
+      setError(t('errorGeneric'))
     }
   }
 

@@ -18,10 +18,19 @@ const absolute = (path: string): string => {
   return base ? `${base}${path}` : path
 }
 
-const defaultOpenGraph: Metadata['openGraph'] = {
+const DESCRIPTIONS: Record<string, string> = {
+  vi: 'TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ. Khám phá bộ sưu tập mới nhất.',
+  en: 'TheWhite — modern, minimalist, durable activewear. Discover our latest collection.',
+}
+
+const OG_LOCALES: Record<string, string> = {
+  vi: 'vi_VN',
+  en: 'en_US',
+}
+
+const buildDefaultOpenGraph = (locale: string = 'vi'): Metadata['openGraph'] => ({
   type: 'website',
-  description:
-    'TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ. Khám phá bộ sưu tập mới nhất.',
+  description: DESCRIPTIONS[locale] ?? DESCRIPTIONS.vi,
   images: [
     {
       url: absolute(DEFAULT_OG_IMAGE),
@@ -33,14 +42,21 @@ const defaultOpenGraph: Metadata['openGraph'] = {
   ],
   siteName: 'TheWhite',
   title: 'TheWhite — Take Action',
-  locale: 'vi_VN',
-  alternateLocale: ['en_US'],
-}
+  locale: OG_LOCALES[locale] ?? OG_LOCALES.vi,
+  alternateLocale: locale === 'vi' ? ['en_US'] : ['vi_VN'],
+})
 
-export const mergeOpenGraph = (og?: Metadata['openGraph']): Metadata['openGraph'] => {
+type MergeOpenGraphInput = Metadata['openGraph'] & { locale?: string }
+
+export const mergeOpenGraph = (
+  input?: MergeOpenGraphInput | { locale?: string },
+): Metadata['openGraph'] => {
+  const locale = (input as { locale?: string } | undefined)?.locale ?? 'vi'
+  const { locale: _omit, ...og } = (input ?? {}) as MergeOpenGraphInput
+  const base = buildDefaultOpenGraph(locale)
   return {
-    ...defaultOpenGraph,
+    ...base,
     ...og,
-    images: og?.images ? og.images : defaultOpenGraph.images,
+    images: og?.images ? og.images : base!.images,
   }
 }

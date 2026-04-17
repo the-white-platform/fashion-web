@@ -41,8 +41,6 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   const [addedToCart, setAddedToCart] = useState(false)
   const { isWishlisted, toggleWishlist } = useWishlist()
   const [isImageHovered, setIsImageHovered] = useState(false)
-  const [descExpanded, setDescExpanded] = useState(false)
-  const tCommon = useTranslations('common')
   const { addToCart, setIsCartOpen } = useCart()
 
   // Get current variant or use default
@@ -94,7 +92,12 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="!max-w-[95vw] !w-[95vw] md:!max-w-6xl md:!w-auto !max-h-[90vh] p-0 gap-0 bg-background overflow-hidden border-0 shadow-2xl rounded-sm flex flex-col">
+        {/* Fixed modal size so every product opens with identical
+            dimensions — description used to push the content column
+            taller for long products. Image column is aspect-[3/4] on
+            mobile and fills the md:grid cell (inherits h-full) on
+            desktop. Content column scrolls internally if overflow. */}
+        <DialogContent className="!max-w-[95vw] !w-[95vw] md:!max-w-5xl md:!w-[1024px] !h-[90vh] md:!h-[680px] p-0 gap-0 bg-background overflow-hidden border-0 shadow-2xl rounded-sm flex flex-col">
           {/* Close Button */}
           <motion.button
             initial={{ opacity: 0, rotate: -90 }}
@@ -193,7 +196,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   <div className="bg-primary text-primary-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
                     <span className="flex items-center gap-1.5">
                       <Zap className="w-3 h-3" />
-                      {product.tag}
+                      {product.tagLabel || product.tag}
                     </span>
                   </div>
                 </motion.div>
@@ -289,38 +292,10 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                       </span>
                     )}
                 </div>
-                {(() => {
-                  const raw = product.description ?? ''
-                  if (!raw) {
-                    return (
-                      <p className="text-muted-foreground text-xs leading-relaxed">
-                        {t('products.noDescription')}
-                      </p>
-                    )
-                  }
-                  const paragraphs = raw.split(/\n{2,}/).filter(Boolean)
-                  // Same threshold as the product detail page so both
-                  // surfaces collapse/expand at the same point.
-                  const isLong = paragraphs.length > 2 || (paragraphs[0]?.length ?? 0) > 260
-                  const visible = descExpanded || !isLong ? paragraphs : [paragraphs[0]]
-                  return (
-                    <div className="space-y-2 text-muted-foreground text-xs leading-relaxed">
-                      {visible.map((para, i) => (
-                        <p key={i}>{para}</p>
-                      ))}
-                      {isLong && (
-                        <button
-                          type="button"
-                          onClick={() => setDescExpanded((v) => !v)}
-                          className="inline-flex items-center text-[10px] uppercase tracking-wide text-foreground hover:underline font-bold"
-                        >
-                          {descExpanded ? tCommon('showLess') : tCommon('showMore')}
-                          <span className="ml-1">{descExpanded ? '↑' : '↓'}</span>
-                        </button>
-                      )}
-                    </div>
-                  )
-                })()}
+                {/* Description intentionally omitted — Quick View is meant to
+                    be a fast preview with a stable height regardless of the
+                    product. Long descriptions on the detail page `/products/
+                    [id]` were making this modal grow/shrink per product. */}
               </motion.div>
 
               {/* Color Selection */}

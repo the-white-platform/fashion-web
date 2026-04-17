@@ -154,14 +154,14 @@ export default function OrderDetailPage() {
         setIsCartOpen(true)
         toast.success(
           skipped > 0
-            ? `Đã thêm ${added} sản phẩm (${skipped} hết hàng)`
-            : `Đã thêm ${added} sản phẩm vào giỏ hàng`,
+            ? t('orders.addedWithSkipped', { added, skipped })
+            : t('orders.addedToCart', { added }),
         )
       } else {
-        toast.error('Tất cả sản phẩm đã hết hàng')
+        toast.error(t('orders.allOutOfStock'))
       }
     } catch {
-      toast.error('Không thể đặt lại đơn hàng')
+      toast.error(t('orders.cannotReorder'))
     } finally {
       setIsReordering(false)
     }
@@ -290,7 +290,7 @@ export default function OrderDetailPage() {
                   className="flex items-center gap-2 px-4 py-2 bg-foreground text-background rounded-sm hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  {isReordering ? 'Đang xử lý...' : 'Đặt lại'}
+                  {isReordering ? t('orders.processing') : t('orders.reorder')}
                 </button>
               )}
             </div>
@@ -381,9 +381,9 @@ export default function OrderDetailPage() {
                             const { added } = await reorderItems([item], addToCart)
                             if (added > 0) {
                               setIsCartOpen(true)
-                              toast.success('Đã thêm vào giỏ hàng')
+                              toast.success(t('orders.addedItem'))
                             } else {
-                              toast.error('Sản phẩm đã hết hàng')
+                              toast.error(t('orders.itemOutOfStock'))
                             }
                           }}
                           className="mt-2 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"

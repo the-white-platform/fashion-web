@@ -199,10 +199,7 @@ export default function RegisterPage() {
             className="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-sm text-sm flex items-center gap-2 mb-4"
           >
             <Gift className="w-5 h-5 shrink-0" />
-            <span>
-              Bạn được giới thiệu bởi một thành viên The White. Đăng ký ngay để cả hai nhận điểm
-              thưởng!
-            </span>
+            <span>{t('auth.referralBanner')}</span>
           </motion.div>
         )}
 

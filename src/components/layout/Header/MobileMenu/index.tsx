@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { motion, AnimatePresence } from 'motion/react'
 import { X, User, ShoppingBag, ChevronRight, Search } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/Link'
 import { cn } from '@/utilities/cn'
 import { CMSLink } from '@/components/shared/Link'
@@ -20,6 +21,7 @@ interface MobileMenuProps {
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header, user }) => {
+  const t = useTranslations('nav')
   const navItems = header?.navItems || []
   const [mounted, setMounted] = useState(false)
 
@@ -101,10 +103,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header,
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                        Tài khoản
+                        {t('account')}
                       </p>
                       <p className="font-bold uppercase tracking-tight">
-                        {user ? 'Hồ sơ cá nhân' : 'Đăng nhập / Đăng ký'}
+                        {user ? t('profileAction') : t('loginRegister')}
                       </p>
                     </div>
                   </Link>
@@ -125,9 +127,9 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header,
                     </div>
                     <div>
                       <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-                        Vận chuyển
+                        {t('shipping')}
                       </p>
-                      <p className="font-bold uppercase tracking-tight">Theo dõi đơn hàng</p>
+                      <p className="font-bold uppercase tracking-tight">{t('trackOrder')}</p>
                     </div>
                   </Link>
                 </motion.div>

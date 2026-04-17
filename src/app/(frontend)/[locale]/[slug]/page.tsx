@@ -50,18 +50,20 @@ export async function generateStaticParams() {
 
 type Args = {
   params: Promise<{
+    locale?: string
     slug?: string
   }>
 }
 
 export default async function Page({ params: paramsPromise }: Args) {
-  const { slug = 'home' } = await paramsPromise
+  const { slug = 'home', locale = 'vi' } = await paramsPromise
   const url = '/' + slug
 
   let page: PageType | null
 
   page = await queryPageBySlug({
     slug,
+    locale: locale as 'vi' | 'en',
   })
 
   // Remove this code once your website is seeded
@@ -87,11 +89,12 @@ export default async function Page({ params: paramsPromise }: Args) {
   )
 }
 
-export async function generateMetadata({ params: paramsPromise }): Promise<Metadata> {
+export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
   try {
-    const { slug = 'home' } = await paramsPromise
+    const { slug = 'home', locale = 'vi' } = await paramsPromise
     const page = await queryPageBySlug({
       slug,
+      locale: locale as 'vi' | 'en',
     })
 
     if (!page) {
@@ -110,7 +113,7 @@ export async function generateMetadata({ params: paramsPromise }): Promise<Metad
   }
 }
 
-const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
+const queryPageBySlug = cache(async ({ slug, locale }: { slug: string; locale?: 'vi' | 'en' }) => {
   try {
     const { isEnabled: draft } = await draftMode()
 
@@ -121,6 +124,7 @@ const queryPageBySlug = cache(async ({ slug }: { slug: string }) => {
       draft,
       limit: 1,
       overrideAccess: draft,
+      ...(locale ? { locale } : {}),
       where: {
         slug: {
           equals: slug,

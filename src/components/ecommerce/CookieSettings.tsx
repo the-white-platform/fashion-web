@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Cookie, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { Switch } from '@/components/ui/switch'
+import { useTranslations } from 'next-intl'
 
 interface CookieSettingsProps {
   variant?: 'fab' | 'menu'
@@ -11,6 +12,7 @@ interface CookieSettingsProps {
 }
 
 export function CookieSettings({ variant = 'fab', onClose }: CookieSettingsProps) {
+  const t = useTranslations('cookieSettings')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [preferences, setPreferences] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -70,6 +72,7 @@ export function CookieSettings({ variant = 'fab', onClose }: CookieSettingsProps
           setPreferences={setPreferences}
           savePreferences={savePreferences}
           acceptAll={acceptAll}
+          t={t}
         />
       </>
     )
@@ -87,9 +90,9 @@ export function CookieSettings({ variant = 'fab', onClose }: CookieSettingsProps
         </div>
         <div className="text-left">
           <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
-            Quyền riêng tư
+            {t('privacy')}
           </p>
-          <p className="font-bold uppercase tracking-tight text-foreground">Cài đặt Cookie</p>
+          <p className="font-bold uppercase tracking-tight text-foreground">{t('title')}</p>
         </div>
       </button>
 
@@ -101,6 +104,7 @@ export function CookieSettings({ variant = 'fab', onClose }: CookieSettingsProps
         setPreferences={setPreferences}
         savePreferences={savePreferences}
         acceptAll={acceptAll}
+        t={t}
       />
     </>
   )
@@ -115,6 +119,7 @@ interface CookieModalProps {
   >
   savePreferences: () => void
   acceptAll: () => void
+  t: ReturnType<typeof useTranslations<'cookieSettings'>>
 }
 
 function CookieModal({
@@ -124,6 +129,7 @@ function CookieModal({
   setPreferences,
   savePreferences,
   acceptAll,
+  t,
 }: CookieModalProps) {
   return (
     <AnimatePresence>
@@ -156,7 +162,7 @@ function CookieModal({
               <div className="flex items-center justify-between p-6 border-b border-border">
                 <div className="flex items-center gap-3">
                   <Cookie className="w-6 h-6" />
-                  <h2 className="text-lg font-black uppercase tracking-tight">Cài đặt Cookie</h2>
+                  <h2 className="text-lg font-black uppercase tracking-tight">{t('title')}</h2>
                 </div>
                 <button
                   onClick={onClose}
@@ -168,10 +174,7 @@ function CookieModal({
 
               {/* Content */}
               <div className="p-6 space-y-4">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Chúng tôi sử dụng cookie để cải thiện trải nghiệm của bạn. Bạn có thể chọn loại
-                  cookie mà bạn cho phép.
-                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{t('description')}</p>
 
                 {/* Cookie Options */}
                 <div className="space-y-3">
@@ -179,11 +182,9 @@ function CookieModal({
                   <div className="flex items-center justify-between p-4 bg-muted/20 border border-border">
                     <div className="pr-4">
                       <p className="font-bold text-sm uppercase tracking-tight text-foreground">
-                        Cookie cần thiết
+                        {t('necessary')}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Bắt buộc để website hoạt động
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('necessaryDesc')}</p>
                     </div>
                     <Switch checked={true} disabled={true} />
                   </div>
@@ -192,11 +193,9 @@ function CookieModal({
                   <div className="flex items-center justify-between p-4 bg-muted/20 border border-border">
                     <div className="pr-4">
                       <p className="font-bold text-sm uppercase tracking-tight text-foreground">
-                        Cookie phân tích
+                        {t('analytics')}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Giúp chúng tôi cải thiện website
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('analyticsDesc')}</p>
                     </div>
                     <Switch
                       checked={preferences.analytics}
@@ -210,11 +209,9 @@ function CookieModal({
                   <div className="flex items-center justify-between p-4 bg-muted/20 border border-border">
                     <div className="pr-4">
                       <p className="font-bold text-sm uppercase tracking-tight text-foreground">
-                        Cookie tiếp thị
+                        {t('marketing')}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Cá nhân hóa quảng cáo cho bạn
-                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">{t('marketingDesc')}</p>
                     </div>
                     <Switch
                       checked={preferences.marketing}
@@ -232,13 +229,13 @@ function CookieModal({
                   onClick={savePreferences}
                   className="flex-1 py-3 bg-muted hover:bg-muted/80 font-bold uppercase text-sm tracking-tight transition-colors text-foreground"
                 >
-                  Lưu tùy chọn
+                  {t('save')}
                 </button>
                 <button
                   onClick={acceptAll}
                   className="flex-1 py-3 bg-primary text-primary-foreground hover:bg-primary/90 font-bold uppercase text-sm tracking-tight transition-colors"
                 >
-                  Chấp nhận tất cả
+                  {t('acceptAll')}
                 </button>
               </div>
             </motion.div>

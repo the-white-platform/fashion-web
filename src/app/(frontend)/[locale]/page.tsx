@@ -2,6 +2,7 @@ import HomePageClient from './page.client'
 import type { Metadata } from 'next'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { getTranslations } from 'next-intl/server'
 import type { Product, Category } from '@/payload-types'
 import { slugify } from '@/utilities/slugify'
 import { transformProduct, type ProductForFrontend } from '@/utilities/getProducts'
@@ -67,7 +68,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     if (result?.docs) {
       featuredProducts = result.docs
         .filter((product): product is Product => Boolean(product))
-        .map((product: Product) => transformProduct(product))
+        .map((product: Product) => transformProduct(product, locale as 'vi' | 'en'))
     }
 
     // Fetch carousel slides, activity categories, and quick filters from homepage global
@@ -177,11 +178,18 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   )
 }
 
-export const metadata: Metadata = {
-  title: 'TheWhite — Thời Trang Thể Thao Hiện Đại',
-  description:
-    'Khám phá bộ sưu tập thời trang thể thao cao cấp của TheWhite. Thiết kế tối giản, chất liệu bền bỉ, phù hợp cho gym, chạy bộ và lối sống năng động.',
-  alternates: {
-    canonical: '/',
-  },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'meta.home' })
+  return {
+    title: t('title'),
+    description: t('description'),
+    alternates: {
+      canonical: '/',
+    },
+  }
 }

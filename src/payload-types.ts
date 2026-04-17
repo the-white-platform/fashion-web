@@ -73,9 +73,11 @@ export interface Config {
     categories: Category;
     users: User;
     products: Product;
+    'product-tags': ProductTag;
     reviews: Review;
     orders: Order;
     coupons: Coupon;
+    faqs: Faq;
     'stock-movements': StockMovement;
     provinces: Province;
     districts: District;
@@ -108,9 +110,11 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-tags': ProductTagsSelect<false> | ProductTagsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     coupons: CouponsSelect<false> | CouponsSelect<true>;
+    faqs: FaqsSelect<false> | FaqsSelect<true>;
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     provinces: ProvincesSelect<false> | ProvincesSelect<true>;
     districts: DistrictsSelect<false> | DistrictsSelect<true>;
@@ -532,6 +536,10 @@ export interface User {
   role: 'admin' | 'editor' | 'staff' | 'customer';
   name?: string | null;
   phone?: string | null;
+  /**
+   * Language used for emails, notifications, and off-site communication.
+   */
+  preferredLocale?: ('vi' | 'en') | null;
   sub?: string | null;
   provider?: ('local' | 'google' | 'facebook') | null;
   imageUrl?: string | null;
@@ -697,13 +705,20 @@ export interface Product {
      */
     note?: string | null;
   };
-  tag?: ('MỚI' | 'BÁN CHẠY' | 'GIẢM 20%' | 'GIẢM 30%' | 'GIẢM 50%' | 'HOT') | null;
+  /**
+   * Manage the tag list under "Product Tags". Pick one (or leave empty) to show a badge on the product card.
+   */
+  tag?: (number | null) | ProductTag;
   inStock?: boolean | null;
   stockStatus?: ('in_stock' | 'low_stock' | 'out_of_stock') | null;
   /**
    * Display on homepage
    */
   featured?: boolean | null;
+  /**
+   * Smaller numbers show first on /products. Ties are broken by id desc (newer first). Default 0.
+   */
+  displayOrder?: number | null;
   description?: {
     root: {
       type: string;
@@ -733,6 +748,29 @@ export interface Product {
    * Count of approved reviews
    */
   reviewCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Badges shown on product cards (New, Bestseller, Sale, Hot, …). Create here and assign from the product page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-tags".
+ */
+export interface ProductTag {
+  id: number;
+  /**
+   * Stable identifier (e.g. new, bestseller, sale-20). Used in filter / sort logic. Do not change once assigned to products.
+   */
+  code: string;
+  /**
+   * Text rendered on the product badge. Has its own VI / EN copy.
+   */
+  label: string;
+  /**
+   * Lower numbers rank first when a product has multiple tags or when sorting.
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1150,6 +1188,28 @@ export interface Coupon {
   createdAt: string;
 }
 /**
+ * FAQ items rendered on /faq. Each row carries its own VI / EN translations.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs".
+ */
+export interface Faq {
+  id: number;
+  question: string;
+  answer: string;
+  category: 'order' | 'payment' | 'shipping' | 'return' | 'product' | 'account';
+  /**
+   * Lower number shows first. Default 0.
+   */
+  order?: number | null;
+  /**
+   * Uncheck to hide from the FAQ page without deleting.
+   */
+  published?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "stock-movements".
  */
@@ -1250,6 +1310,7 @@ export interface NewsletterSubscriber {
   email: string;
   name?: string | null;
   status: 'active' | 'unsubscribed' | 'bounced';
+  preferredLocale?: ('vi' | 'en') | null;
   subscribedAt?: string | null;
   unsubscribedAt?: string | null;
   source?: ('footer_form' | 'checkout' | 'manual') | null;
@@ -1534,6 +1595,10 @@ export interface PayloadLockedDocument {
         value: number | Product;
       } | null)
     | ({
+        relationTo: 'product-tags';
+        value: number | ProductTag;
+      } | null)
+    | ({
         relationTo: 'reviews';
         value: number | Review;
       } | null)
@@ -1544,6 +1609,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'coupons';
         value: number | Coupon;
+      } | null)
+    | ({
+        relationTo: 'faqs';
+        value: number | Faq;
       } | null)
     | ({
         relationTo: 'stock-movements';
@@ -1938,6 +2007,7 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   name?: T;
   phone?: T;
+  preferredLocale?: T;
   sub?: T;
   provider?: T;
   imageUrl?: T;
@@ -2058,6 +2128,7 @@ export interface ProductsSelect<T extends boolean = true> {
   inStock?: T;
   stockStatus?: T;
   featured?: T;
+  displayOrder?: T;
   description?: T;
   features?:
     | T
@@ -2067,6 +2138,17 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   averageRating?: T;
   reviewCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-tags_select".
+ */
+export interface ProductTagsSelect<T extends boolean = true> {
+  code?: T;
+  label?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2213,6 +2295,19 @@ export interface CouponsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "faqs_select".
+ */
+export interface FaqsSelect<T extends boolean = true> {
+  question?: T;
+  answer?: T;
+  category?: T;
+  order?: T;
+  published?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "stock-movements_select".
  */
 export interface StockMovementsSelect<T extends boolean = true> {
@@ -2327,6 +2422,7 @@ export interface NewsletterSubscribersSelect<T extends boolean = true> {
   email?: T;
   name?: T;
   status?: T;
+  preferredLocale?: T;
   subscribedAt?: T;
   unsubscribedAt?: T;
   source?: T;

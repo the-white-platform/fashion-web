@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google'
 import localFont from 'next/font/local'
 import React from 'react'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
+import { getMessages, getTranslations } from 'next-intl/server'
 
 import { AdminBar } from '@/components/AdminBar'
 import { Footer } from '@/components/layout/Footer/Component'
@@ -20,7 +20,8 @@ import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
 import { ProgressBar } from '@/components/shared/ProgressBar'
-import { getCachedGlobal } from '@/utilities/getGlobals'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 import type { Header as HeaderType } from '@/payload-types'
 
 import '../globals.css'
@@ -80,10 +81,19 @@ export default async function RootLayout({ children, params }: Props) {
   const { isEnabled } = await draftMode()
   const { locale } = await params
   const messages = await getMessages()
+  const tMeta = await getTranslations({ locale, namespace: 'meta.rootLayout' })
+  const orgDescription = tMeta('orgDescription')
 
   let headerData: HeaderType | null = null
   try {
-    headerData = await getCachedGlobal('header', 1)()
+    // Direct Payload call — see note in Header/Component.tsx for why we
+    // bypass `getCachedGlobal` (unstable_cache poisoning across locales).
+    const payload = await getPayload({ config: configPromise })
+    headerData = (await payload.findGlobal({
+      slug: 'header',
+      locale: locale as 'vi' | 'en',
+      depth: 1,
+    })) as HeaderType
   } catch {
     // Header data unavailable during build or when DB is unreachable
   }
@@ -111,8 +121,7 @@ export default async function RootLayout({ children, params }: Props) {
               alternateName: 'The White',
               url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool',
               logo: `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/logo/W.svg`,
-              description:
-                'TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ cho phong cách năng động.',
+              description: orgDescription,
               sameAs: ['https://www.facebook.com/thewhite', 'https://www.instagram.com/thewhite'],
             }),
           }}
@@ -172,47 +181,57 @@ export default async function RootLayout({ children, params }: Props) {
   )
 }
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'),
-  title: {
-    default: 'TheWhite — Thời Trang Thể Thao Hiện Đại',
-    template: '%s | TheWhite',
-  },
-  description:
-    'TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ. Khám phá bộ sưu tập mới nhất cho phong cách năng động.',
-  applicationName: 'TheWhite',
-  keywords: [
-    'thời trang thể thao',
-    'activewear',
-    'gym',
-    'training',
-    'sportswear',
-    'The White',
-    'thời trang nam',
-    'thời trang Việt',
-  ],
-  openGraph: mergeOpenGraph(),
-  twitter: {
-    card: 'summary_large_image',
-    creator: '@thewhite',
-    site: '@thewhite',
-    title: 'TheWhite — Take Action',
-    description: 'Thời trang thể thao hiện đại, tối giản, bền bỉ.',
-    images: ['/demo/carousel-1.jpg'],
-  },
-  icons: {
-    icon: [
-      { url: '/logo/W-dark.ico', media: '(prefers-color-scheme: light)' },
-      { url: '/logo/W-light.ico', media: '(prefers-color-scheme: dark)' },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const tMeta = await getTranslations({ locale, namespace: 'meta.rootLayout' })
+
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'),
+    title: {
+      default: tMeta('titleDefault'),
+      template: tMeta('titleTemplate'),
+    },
+    description: tMeta('description'),
+    applicationName: 'TheWhite',
+    keywords: [
+      // Vietnamese keywords help SEO on both locales — search engines
+      // match original terms regardless of the browsing language.
+      'thời trang thể thao',
+      'activewear',
+      'gym',
+      'training',
+      'sportswear',
+      'The White',
+      'thời trang nam',
+      'thời trang Việt',
     ],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    openGraph: mergeOpenGraph({ locale }),
+    twitter: {
+      card: 'summary_large_image',
+      creator: '@thewhite',
+      site: '@thewhite',
+      title: tMeta('twitterTitle'),
+      description: tMeta('twitterDescription'),
+      images: ['/demo/carousel-1.jpg'],
+    },
+    icons: {
+      icon: [
+        { url: '/logo/W-dark.ico', media: '(prefers-color-scheme: light)' },
+        { url: '/logo/W-light.ico', media: '(prefers-color-scheme: dark)' },
+      ],
+    },
+    robots: {
       index: true,
       follow: true,
-      'max-image-preview': 'large',
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+      },
     },
-  },
+  }
 }

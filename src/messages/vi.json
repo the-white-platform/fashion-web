@@ -23,7 +23,11 @@
     "logout": "Đăng Xuất",
     "profile": "Hồ Sơ",
     "backToHome": "Về Trang Chủ",
-    "hot": "Hot"
+    "hot": "Hot",
+    "profileAction": "Hồ sơ cá nhân",
+    "loginRegister": "Đăng nhập / Đăng ký",
+    "shipping": "Vận chuyển",
+    "trackOrder": "Theo dõi đơn hàng"
   },
   "hero": {
     "title": "BỘ SƯU TẬP MÙA ĐÔNG 2026",
@@ -72,7 +76,37 @@
     "color": "Màu Sắc",
     "price": "Giá",
     "category": "Danh Mục",
-    "viewSizeChart": "Xem bảng kích thước"
+    "viewSizeChart": "Xem bảng kích thước",
+    "detail": {
+      "selectSize": "Vui lòng chọn size",
+      "back": "Quay lại",
+      "vatIncluded": "Đã bao gồm VAT",
+      "colorLabel": "Màu Sắc",
+      "colorChoose": "Chọn màu",
+      "colorOutOfStock": "Màu này hiện đang hết hàng",
+      "sizeLabel": "Chọn Size",
+      "sizeFinder": "✨ Tìm size phù hợp",
+      "quantityLabel": "Số Lượng",
+      "tryOn": "Thử Đồ Ảo",
+      "wishlistSaved": "Đã Lưu",
+      "wishlistAdd": "Yêu Thích",
+      "copySuccess": "Đã sao chép link sản phẩm",
+      "copyError": "Không thể sao chép link",
+      "share": "Chia Sẻ",
+      "specifications": "Đặc Điểm Kỹ Thuật",
+      "related": "Sản Phẩm Liên Quan",
+      "sizePickerTitle": "Chọn Size Thông Minh",
+      "sizePickedToast": "Đã chọn size {size}",
+      "sizeUnavailable": "Sản phẩm này không còn size {size} — gợi ý các size hiện có: {available}",
+      "outOfStockShort": "hết hàng"
+    },
+    "allCategory": "Tất Cả",
+    "loading": "Đang tải...",
+    "breadcrumbHome": "Trang chủ",
+    "breadcrumbProducts": "Sản phẩm",
+    "heading": "Sản Phẩm",
+    "description": "Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite. Thiết kế tối giản, hiệu năng tối đa.",
+    "noResults": "Không tìm thấy sản phẩm phù hợp"
   },
   "cart": {
     "title": "Giỏ Hàng",
@@ -173,7 +207,15 @@
       "bank": "Chuyển khoản / QR",
       "cod": "Thanh toán khi nhận hàng",
       "momo": "Ví MoMo"
-    }
+    },
+    "loyaltyPoints": "Điểm Thưởng",
+    "loyaltyAvailable": "Điểm khả dụng: {n}",
+    "loyaltyRate": "100 điểm = 10,000₫",
+    "loyaltyPoints_unit": "điểm",
+    "loyaltyClear": "Bỏ dùng điểm",
+    "orderFailed": "Đặt hàng thất bại. Vui lòng thử lại.",
+    "recommendationsTitle": "Có Thể Bạn Cũng Thích",
+    "loyaltyPointsDiscount": "Điểm thưởng ({n} điểm)"
   },
   "profile": {
     "title": "Hồ Sơ Của Tôi",
@@ -197,7 +239,14 @@
     "paymentDeleted": "Đã xóa phương thức thanh toán",
     "emailReadOnly": "Email không thể thay đổi",
     "updateSuccess": "Cập nhật thành công",
-    "updateError": "Cập nhật thất bại. Vui lòng thử lại."
+    "updateError": "Cập nhật thất bại. Vui lòng thử lại.",
+    "pointsSuffix": "điểm",
+    "viewAll": "Xem tất cả",
+    "itemCount": "{n} sản phẩm",
+    "noOrders": "Bạn chưa có đơn hàng nào",
+    "exploreProducts": "Khám Phá Sản Phẩm",
+    "sizeComingSoon": "Tính năng này sẽ được triển khai sớm. Vui lòng xem bảng kích thước trên trang từng sản phẩm.",
+    "vtoComingSoon": "Tính năng Virtual Try-On sẽ được triển khai sớm. Tính năng này cho phép bạn thử đồ ảo bằng công nghệ AI."
   },
   "orders": {
     "title": "Đơn Hàng Của Tôi",
@@ -252,7 +301,16 @@
       "confirmed": "Đơn hàng đã được xác nhận",
       "shipping": "Đơn hàng đang được giao",
       "delivered": "Đã giao hàng thành công"
-    }
+    },
+    "processing": "Đang xử lý...",
+    "addedWithSkipped": "Đã thêm {added} sản phẩm ({skipped} hết hàng)",
+    "addedToCart": "Đã thêm {added} sản phẩm vào giỏ hàng",
+    "allOutOfStock": "Tất cả sản phẩm đã hết hàng",
+    "cannotAdd": "Không thể thêm sản phẩm vào giỏ hàng",
+    "reorder": "Đặt lại",
+    "cannotReorder": "Không thể đặt lại đơn hàng",
+    "addedItem": "Đã thêm vào giỏ hàng",
+    "itemOutOfStock": "Sản phẩm đã hết hàng"
   },
   "footer": {
     "about": "Về TheWhite",
@@ -368,7 +426,8 @@
     "verifyingEmail": "Đang xác minh email…",
     "verificationFailed": "Xác minh email thất bại",
     "invalidVerificationLink": "Liên kết xác minh không hợp lệ hoặc đã hết hạn.",
-    "goToProfile": "Đến trang cá nhân"
+    "goToProfile": "Đến trang cá nhân",
+    "referralBanner": "Bạn được giới thiệu bởi một thành viên The White. Đăng ký ngay để cả hai nhận điểm thưởng!"
   },
   "common": {
     "all": "Tất Cả",
@@ -515,12 +574,16 @@
       "remove": "Xóa ảnh",
       "addMore": "Thêm ảnh"
     },
-    "storeResponse": "Phản Hồi Từ Cửa Hàng"
+    "storeResponse": "Phản Hồi Từ Cửa Hàng",
+    "anonymousUser": "Khách hàng"
   },
   "search": {
     "placeholder": "Tìm kiếm sản phẩm...",
     "popular": "Tìm Kiếm Phổ Biến",
-    "recent": "Sản Phẩm Xem Gần Đây"
+    "recent": "Sản Phẩm Xem Gần Đây",
+    "noResults": "Không tìm thấy kết quả cho \"{query}\"",
+    "pageTitle": "Tìm Kiếm - TheWhite",
+    "pageDescription": "Tìm kiếm sản phẩm thời trang thể thao"
   },
   "newsletter": {
     "title": "Nhận Ưu Đãi Độc Quyền",
@@ -528,7 +591,8 @@
     "placeholder": "Nhập email của bạn",
     "button": "ĐĂNG KÝ NGAY",
     "buttonSuccess": "✓ ĐÃ ĐĂNG KÝ",
-    "note": "Nhận ngay mã giảm giá 10% cho đơn hàng đầu tiên"
+    "note": "Nhận ngay mã giảm giá 10% cho đơn hàng đầu tiên",
+    "errorGeneric": "Có lỗi xảy ra. Vui lòng thử lại."
   },
   "exploreMore": {
     "title": "Khám Phá Thêm",
@@ -656,6 +720,7 @@
     },
     "sort": {
       "title": "Sắp xếp",
+      "default": "Đề Xuất",
       "newest": "Mới Nhất",
       "priceAsc": "Giá: Thấp → Cao",
       "priceDesc": "Giá: Cao → Thấp",
@@ -709,7 +774,8 @@
       "title": "10. Liên Hệ - Data Protection Officer",
       "description": "Nếu bạn có bất kỳ câu hỏi nào về chính sách bảo mật hoặc muốn thực hiện quyền của mình, vui lòng liên hệ Data Protection Officer (DPO) của chúng tôi:",
       "complaint": "Bạn cũng có quyền khiếu nại với Cơ quan Bảo vệ Dữ liệu có thẩm quyền nếu cho rằng quyền của bạn bị vi phạm."
-    }
+    },
+    "companyLabel": "Công ty"
   },
   "termsOfUse": {
     "breadcrumb": "Điều Khoản Sử Dụng",
@@ -765,7 +831,8 @@
     "agreement": {
       "label": "Quan Trọng:",
       "content": "Bằng việc sử dụng website TheWhite, bạn xác nhận đã đọc, hiểu và đồng ý tuân thủ toàn bộ các điều khoản và điều kiện nêu trên."
-    }
+    },
+    "companyLabel": "Công ty"
   },
   "wishlist": {
     "breadcrumb": "Danh Sách Yêu Thích",
@@ -851,7 +918,9 @@
       "order": "Đặt Hàng",
       "payment": "Thanh Toán",
       "shipping": "Vận Chuyển",
-      "return": "Đổi Trả"
+      "return": "Đổi Trả",
+      "product": "Sản Phẩm",
+      "account": "Tài Khoản"
     },
     "noResults": "Không tìm thấy câu hỏi phù hợp",
     "clearFilter": "Xóa bộ lọc",
@@ -860,80 +929,6 @@
       "subtitle": "Đội ngũ hỗ trợ của TheWhite sẵn sàng giúp đỡ bạn 24/7",
       "chat": "Chat Với Chúng Tôi",
       "hotline": "Gọi Hotline: 1900-xxxx"
-    },
-    "questions": {
-      "q1": {
-        "question": "Làm thế nào để đặt hàng trên TheWhite?",
-        "answer": "Bạn có thể đặt hàng dễ dàng bằng cách: 1) Chọn sản phẩm và thêm vào giỏ hàng 2) Điền thông tin giao hàng 3) Chọn phương thức thanh toán 4) Xác nhận đơn hàng. Bạn sẽ nhận được email xác nhận ngay sau khi đặt hàng thành công."
-      },
-      "q2": {
-        "question": "Tôi có thể thay đổi hoặc hủy đơn hàng không?",
-        "answer": "Bạn có thể hủy đơn hàng trong vòng 24h sau khi đặt hàng nếu đơn hàng chưa được xác nhận. Để thay đổi hoặc hủy đơn, vui lòng liên hệ hotline 1900-xxxx hoặc qua trang \"Đơn Hàng Của Tôi\" trong tài khoản."
-      },
-      "q3": {
-        "question": "Tôi có cần tạo tài khoản để mua hàng không?",
-        "answer": "Không bắt buộc. Bạn có thể mua hàng với tư cách khách (Guest Checkout). Tuy nhiên, tạo tài khoản giúp bạn theo dõi đơn hàng dễ dàng hơn, lưu địa chỉ giao hàng và nhận ưu đãi đặc biệt."
-      },
-      "q4": {
-        "question": "TheWhite chấp nhận những phương thức thanh toán nào?",
-        "answer": "Chúng tôi chấp nhận: 1) Thẻ tín dụng/ghi nợ (Visa, Mastercard, JCB) 2) Chuyển khoản ngân hàng 3) Ví điện tử MoMo 4) Thanh toán khi nhận hàng (COD). Tất cả giao dịch đều được mã hóa và bảo mật."
-      },
-      "q5": {
-        "question": "Thanh toán khi nhận hàng (COD) có phí không?",
-        "answer": "Phí COD là 20.000₫ cho đơn hàng dưới 500.000₫. Miễn phí COD cho đơn hàng từ 500.000₫ trở lên."
-      },
-      "q6": {
-        "question": "Thông tin thẻ của tôi có an toàn không?",
-        "answer": "Hoàn toàn an toàn. Chúng tôi sử dụng công nghệ mã hóa SSL và không lưu trữ thông tin thẻ trên hệ thống. Mọi giao dịch đều được xử lý qua cổng thanh toán bảo mật quốc tế."
-      },
-      "q7": {
-        "question": "Thời gian giao hàng là bao lâu?",
-        "answer": "Nội thành TP.HCM/Hà Nội: 1-2 ngày làm việc. Các tỉnh thành khác: 2-5 ngày làm việc. Vùng sâu vùng xa: 5-7 ngày làm việc. Thời gian có thể thay đổi tùy tình hình thực tế."
-      },
-      "q8": {
-        "question": "Phí vận chuyển là bao nhiêu?",
-        "answer": "Miễn phí vận chuyển cho đơn hàng từ 500.000₫. Đơn hàng dưới 500.000₫: phí vận chuyển 30.000₫ (nội thành) hoặc 50.000₫ (ngoại thành/tỉnh)."
-      },
-      "q9": {
-        "question": "Tôi có thể theo dõi đơn hàng như thế nào?",
-        "answer": "Sau khi đơn hàng được xác nhận, bạn sẽ nhận được mã vận đơn qua email/SMS. Bạn có thể theo dõi đơn hàng trong mục \"Đơn Hàng Của Tôi\" hoặc qua mã vận đơn trên website đơn vị vận chuyển."
-      },
-      "q10": {
-        "question": "Tôi có thể chỉ định thời gian giao hàng không?",
-        "answer": "Hiện tại chúng tôi chưa hỗ trợ chỉ định giờ giao cụ thể, nhưng bạn có thể ghi chú thời gian mong muốn trong phần \"Ghi chú đơn hàng\". Chúng tôi sẽ cố gắng đáp ứng."
-      },
-      "q11": {
-        "question": "Chính sách đổi trả của TheWhite như thế nào?",
-        "answer": "Bạn có thể đổi/trả hàng trong vòng 30 ngày kể từ ngày nhận hàng. Sản phẩm phải còn nguyên tem mác, chưa qua sử dụng. Chúng tôi hỗ trợ đổi size miễn phí và hoàn tiền 100% cho sản phẩm lỗi."
-      },
-      "q12": {
-        "question": "Làm thế nào để yêu cầu đổi/trả hàng?",
-        "answer": "Truy cập \"Đơn Hàng Của Tôi\" > Chọn đơn hàng cần đổi/trả > Nhấn \"Yêu Cầu Đổi/Trả\". Điền thông tin và lý do, chụp ảnh sản phẩm nếu có lỗi. Chúng tôi sẽ xử lý trong vòng 24-48h."
-      },
-      "q13": {
-        "question": "Phí đổi trả là bao nhiêu?",
-        "answer": "Miễn phí đổi size lần đầu. Miễn phí trả hàng nếu sản phẩm lỗi/nhầm hàng. Đổi trả do lỗi chủ quan (đổi ý): phí vận chuyển 2 chiều do khách hàng chi trả."
-      },
-      "q14": {
-        "question": "Khi nào tôi nhận được hoàn tiền?",
-        "answer": "Sau khi chúng tôi nhận và kiểm tra sản phẩm trả lại (2-3 ngày), tiền sẽ được hoàn về tài khoản/thẻ trong vòng 5-7 ngày làm việc tùy ngân hàng."
-      },
-      "q15": {
-        "question": "Làm sao để biết size nào phù hợp với tôi?",
-        "answer": "Sử dụng \"Hướng Dẫn Chọn Size\" trên mỗi trang sản phẩm. Chúng tôi cũng có tính năng \"AI Smart Size Selection\" giúp gợi ý size dựa trên số đo cơ thể của bạn. Nếu vẫn không chắc chắn, hãy liên hệ tư vấn viên qua chat."
-      },
-      "q16": {
-        "question": "Sản phẩm tôi muốn đã hết hàng, khi nào có lại?",
-        "answer": "Nhấn nút \"Thông Báo Khi Có Hàng\" trên trang sản phẩm. Chúng tôi sẽ gửi email/SMS ngay khi sản phẩm về hàng. Thời gian nhập hàng thường từ 1-2 tuần."
-      },
-      "q17": {
-        "question": "Tôi có thể sử dụng nhiều mã giảm giá cùng lúc không?",
-        "answer": "Mỗi đơn hàng chỉ áp dụng được 1 mã giảm giá. Hệ thống sẽ tự động chọn mã có lợi nhất cho bạn."
-      },
-      "q18": {
-        "question": "TheWhite có cửa hàng offline không?",
-        "answer": "Có, chúng tôi có cửa hàng tại TP.HCM và Hà Nội. Xem địa chỉ chi tiết tại mục \"Cửa Hàng\" hoặc liên hệ hotline để được hướng dẫn."
-      }
     },
     "breadcrumb": "Câu Hỏi Thường Gặp"
   },
@@ -1143,7 +1138,9 @@
     "security": {
       "title": "An Toàn & Bảo Mật",
       "desc": "Mọi giao dịch được mã hóa SSL, không lưu thông tin thẻ."
-    }
+    },
+    "fastDelivery": "Giao Hàng Nhanh",
+    "standardDelivery": "Giao Hàng Tiết Kiệm"
   },
   "returnRequest": {
     "breadcrumbHome": "Trang chủ",
@@ -1166,7 +1163,17 @@
     "returnRefundDesc": "Sản phẩm sẽ được hoàn tiền 100%",
     "exchange": "Đổi Sản Phẩm",
     "exchangeDesc": "Đổi size hoặc màu khác",
-    "reason": "4. Lý Do",
+    "reason": {
+      "selectDefault": "-- Chọn lý do --",
+      "r1": "Sản phẩm không đúng size",
+      "r2": "Sản phẩm bị lỗi/hỏng",
+      "r3": "Sản phẩm không đúng mô tả",
+      "r4": "Nhầm sản phẩm",
+      "r5": "Đổi ý",
+      "r6": "Khác",
+      "descLabel": "Mô Tả Chi Tiết",
+      "descPlaceholder": "Mô tả chi tiết vấn đề với sản phẩm..."
+    },
     "reasonPlaceholder": "-- Chọn lý do --",
     "reasonWrongSize": "Sản phẩm không đúng size",
     "reasonDefective": "Sản phẩm bị lỗi/hỏng",
@@ -1176,7 +1183,10 @@
     "reasonOther": "Khác",
     "descriptionLabel": "Mô Tả Chi Tiết",
     "descriptionPlaceholder": "Mô tả chi tiết vấn đề với sản phẩm...",
-    "images": "5. Hình Ảnh (Tùy Chọn)",
+    "images": {
+      "dragDrop": "Kéo thả hoặc click để tải ảnh lên",
+      "format": "PNG, JPG tối đa 5MB"
+    },
     "imagesDesc": "Đính kèm hình ảnh sản phẩm nếu có lỗi",
     "uploadDrop": "Kéo thả hoặc click để tải ảnh lên",
     "uploadLimit": "PNG, JPG tối đa 5MB",
@@ -1189,7 +1199,42 @@
       "p3": "• Miễn phí đổi size lần đầu và trả hàng nếu sản phẩm lỗi",
       "p4": "• Hoàn tiền trong vòng 5-7 ngày sau khi nhận hàng trả",
       "p5prefix": "• Xem chi tiết tại ",
-      "p5link": "Chính Sách Đổi Trả"
+      "p5link": "Chính Sách Đổi Trả",
+      "p5": "• Xem chi tiết tại ",
+      "policyLink": "Chính Sách Đổi Trả"
+    },
+    "breadcrumb": "Yêu Cầu Đổi/Trả Hàng",
+    "success": {
+      "title": "Yêu Cầu Đã Được Gửi!",
+      "descReturn": "Chúng tôi sẽ xử lý yêu cầu trả hàng của bạn trong vòng 24-48h. Bạn sẽ nhận được email xác nhận sớm nhất.",
+      "descExchange": "Chúng tôi sẽ xử lý yêu cầu đổi hàng của bạn trong vòng 24-48h. Bạn sẽ nhận được email xác nhận sớm nhất.",
+      "home": "Về Trang Chủ",
+      "another": "Gửi Yêu Cầu Khác"
+    },
+    "steps": {
+      "s1": "1. Chọn Đơn Hàng",
+      "s2": "2. Chọn Sản Phẩm",
+      "s3": "3. Loại Yêu Cầu",
+      "s4": "4. Lý Do",
+      "s5": "5. Hình Ảnh (Tùy Chọn)"
+    },
+    "order": {
+      "selectDefault": "-- Chọn đơn hàng --",
+      "noOrders": "Bạn chưa có đơn hàng nào đã giao"
+    },
+    "items": {
+      "size": "Size",
+      "qty": "Số lượng"
+    },
+    "type": {
+      "return": "Trả Hàng & Hoàn Tiền",
+      "returnDesc": "Sản phẩm sẽ được hoàn tiền 100%",
+      "exchange": "Đổi Sản Phẩm",
+      "exchangeDesc": "Đổi size hoặc màu khác"
+    },
+    "buttons": {
+      "cancel": "Hủy",
+      "submit": "Gửi Yêu Cầu"
     }
   },
   "coupon": {
@@ -1217,7 +1262,10 @@
     "errorAuth": "Vui lòng đăng nhập để sử dụng trợ lý AI.",
     "loginLink": "Đăng nhập ngay",
     "errorRateLimit": "Bạn đang gửi quá nhiều tin nhắn. Vui lòng chờ một chút.",
-    "errorGeneric": "Đã có lỗi xảy ra. Vui lòng thử lại sau."
+    "errorGeneric": "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
+    "guestName": "Khách",
+    "adminTakeoverLabel": "(Nhân viên hỗ trợ)",
+    "adminInputPlaceholder": "Nhắn tin cho nhân viên hỗ trợ..."
   },
   "recentlyViewed": {
     "title": "Đã Xem Gần Đây"
@@ -1269,12 +1317,113 @@
     "referral": "Giới thiệu bạn bè",
     "referralDesc": "Chia sẻ mã giới thiệu. Nhận 200 điểm khi bạn bè đặt đơn đầu tiên.",
     "copyLink": "Sao chép link",
-    "copiedLink": "Đã sao chép!"
+    "copiedLink": "Đã sao chép!",
+    "breadcrumb": "Điểm Thưởng",
+    "pageTitle": "Điểm Thưởng & Hạng Thành Viên",
+    "tierLevel": "Hạng {tier}",
+    "availablePointsSuffix": "điểm khả dụng",
+    "lifetimePointsSuffix": "điểm tích lũy",
+    "progressRemaining": "Còn {n} điểm để lên {tier}",
+    "platinumMax": "Bạn đang ở hạng cao nhất!",
+    "tierBenefitsTitle": "Quyền Lợi Hạng {tier}",
+    "earnRulesTitle": "Cách Tích Điểm",
+    "conversionRate": "100 điểm = 10,000₫ giảm giá khi thanh toán",
+    "copyReferral": "Sao chép",
+    "noTransactions": "Chưa có giao dịch điểm nào",
+    "shopToEarn": "Mua hàng để tích điểm",
+    "balance": "Số dư: {n}",
+    "copiedReferral": "Đã sao chép link giới thiệu!",
+    "earnRulesList": [
+      {
+        "action": "Mua hàng",
+        "reward": "1 điểm / 10,000₫"
+      },
+      {
+        "action": "Đánh giá sản phẩm",
+        "reward": "50 điểm"
+      },
+      {
+        "action": "Đánh giá đã xác nhận",
+        "reward": "100 điểm"
+      },
+      {
+        "action": "Giới thiệu bạn mua hàng",
+        "reward": "200 điểm"
+      }
+    ],
+    "tierBenefits": {
+      "bronze": [
+        "1 điểm / 10,000₫ mua hàng",
+        "50 điểm khi đánh giá sản phẩm",
+        "Tích điểm giới thiệu"
+      ],
+      "silver": [
+        "1.25× điểm mỗi đơn hàng",
+        "Ưu tiên hỗ trợ khách hàng",
+        "75 điểm khi đánh giá sản phẩm"
+      ],
+      "gold": [
+        "1.5× điểm mỗi đơn hàng",
+        "Miễn phí vận chuyển đơn từ 500K",
+        "100 điểm khi đánh giá sản phẩm"
+      ],
+      "platinum": [
+        "2× điểm mỗi đơn hàng",
+        "Miễn phí vận chuyển mọi đơn hàng",
+        "Truy cập ưu đãi độc quyền",
+        "100 điểm khi đánh giá sản phẩm"
+      ]
+    }
   },
   "recommendations": {
     "forYou": "Gợi Ý Cho Bạn",
     "similar": "Sản Phẩm Tương Tự",
     "cartBased": "Có Thể Bạn Cũng Thích",
     "popular": "Sản Phẩm Phổ Biến"
+  },
+  "cookieSettings": {
+    "privacy": "Quyền riêng tư",
+    "title": "Cài đặt Cookie",
+    "description": "Chúng tôi sử dụng cookie để cải thiện trải nghiệm của bạn. Bạn có thể chọn loại cookie mà bạn cho phép.",
+    "necessary": "Cookie cần thiết",
+    "necessaryDesc": "Bắt buộc để website hoạt động",
+    "analytics": "Cookie phân tích",
+    "analyticsDesc": "Giúp chúng tôi cải thiện website",
+    "marketing": "Cookie tiếp thị",
+    "marketingDesc": "Cá nhân hóa quảng cáo cho bạn",
+    "save": "Lưu tùy chọn",
+    "acceptAll": "Chấp nhận tất cả"
+  },
+  "unsubscribe": {
+    "processing": "Đang xử lý...",
+    "successTitle": "Đã hủy đăng ký",
+    "successDesc": "Bạn đã hủy đăng ký nhận bản tin thành công. Chúng tôi sẽ không gửi email cho bạn nữa.",
+    "backHome": "Về trang chủ",
+    "errorTitle": "Liên kết không hợp lệ",
+    "errorDesc": "Liên kết hủy đăng ký này không hợp lệ hoặc đã hết hạn."
+  },
+  "site": {
+    "titleDefault": "TheWhite — Thời Trang Thể Thao Hiện Đại",
+    "titleTemplate": "%s | TheWhite",
+    "description": "TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ. Khám phá bộ sưu tập mới nhất cho phong cách năng động.",
+    "twitterTitle": "TheWhite — Take Action",
+    "twitterDescription": "Thời trang thể thao hiện đại, tối giản, bền bỉ."
+  },
+  "meta": {
+    "rootLayout": {
+      "titleDefault": "TheWhite — Thời Trang Thể Thao Hiện Đại",
+      "titleTemplate": "%s | TheWhite",
+      "description": "TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ. Khám phá bộ sưu tập mới nhất cho phong cách năng động.",
+      "orgDescription": "TheWhite — Thời trang thể thao hiện đại, tối giản, bền bỉ cho phong cách năng động.",
+      "twitterTitle": "TheWhite — Take Action",
+      "twitterDescription": "Thời trang thể thao hiện đại, tối giản, bền bỉ."
+    },
+    "home": {
+      "title": "TheWhite — Thời Trang Thể Thao Hiện Đại",
+      "description": "Khám phá bộ sưu tập thời trang thể thao cao cấp của TheWhite. Thiết kế tối giản, chất liệu bền bỉ, phù hợp cho gym, chạy bộ và lối sống năng động."
+    }
+  },
+  "imageZoom": {
+    "hoverHint": "Di chuột để phóng to"
   }
 }

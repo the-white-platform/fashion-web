@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useEffect, useCallback, useRef, Suspense } from 'react'
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useSearchParams, usePathname } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { ChevronDown, Search, SlidersHorizontal } from 'lucide-react'
@@ -62,17 +62,17 @@ function ProductsPageContent({
   colors: { name: string; hex: string }[]
 }) {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const pathname = usePathname()
 
   // Initialize state from URL params
   const getInitialCategory = () => {
+    const allName = categories[0]?.name ?? t('allCategory')
     const slug = searchParams.get('category')
     if (slug) {
       const matched = categories.find((cat) => cat.slug === slug)
-      return matched?.name || 'Tất Cả'
+      return matched?.name || allName
     }
-    return 'Tất Cả'
+    return allName
   }
 
   const [selectedSizes, setSelectedSizes] = useState<string[]>(() => {
@@ -98,15 +98,24 @@ function ProductsPageContent({
   // chip for it yet.
   const tagFilter = (searchParams.get('tag') || '').toLowerCase()
 
-  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'newest')
+  // Default sort is the server order (the Payload admin's
+  // `displayOrder` field, tied by id desc). Explicit user picks like
+  // `newest` / `price-low` / `price-high` / `popular` override it.
+  const [sortBy, setSortBy] = useState(() => searchParams.get('sort') || 'default')
   const [currentPage, setCurrentPage] = useState(() => {
     const page = searchParams.get('page')
     return page ? parseInt(page, 10) : 1
   })
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
+  // 9 per page → 3 clean rows on desktop (lg:grid-cols-3), 4.5 on
+  // tablet (sm:grid-cols-2). Pagination UI only renders when
+  // totalPages > 1, so with the current 8-product catalogue the bar
+  // stays hidden and appears automatically once catalogue crosses 10+.
   const itemsPerPage = 9
 
+  const t = useTranslations('products')
   const tFilter = useTranslations('filter')
+  const allCategoryName = categories[0]?.name ?? t('allCategory')
 
   // Auto-close the mobile filter drawer when the viewport crosses into
   // desktop (lg = 1024px). Without this the drawer stays mounted behind
@@ -130,28 +139,59 @@ function ProductsPageContent({
     price: true,
   })
 
-  // Helper to update URL with new params
+  // Pending updates buffer + commit-after-microtask scheduler.
+  //
+  // Multiple handlers may call `updateURL` in the same tick (e.g.
+  // `clearFilters` touches ~9 keys). Without batching each call would
+  // compute newParams from the SAME stale `searchParams` closure and the
+  // resulting URL writes would collide. We merge into a ref bucket and
+  // flush once at microtask time.
+  //
+  // Equally important: we use `window.history.replaceState` directly,
+  // NOT `router.push`. Filter/sort is entirely client-side — the server
+  // component at `page.tsx` fetches all 100 products once and hands them
+  // to this client page, which filters+sorts in `useMemo`. Calling
+  // `router.push` re-invokes the server component round-trip and the
+  // user sees a visible "products re-rendering" delay after every sort
+  // click. `history.replaceState` updates the browser URL bar and
+  // history stack without triggering Next.js routing, so reload / share
+  // / deep-link still work but interaction feels instant.
+  const pendingUpdatesRef = useRef<Record<string, string | null> | null>(null)
   const updateURL = useCallback(
     (updates: Record<string, string | null>) => {
-      const newParams = new URLSearchParams(searchParams.toString())
+      pendingUpdatesRef.current = { ...(pendingUpdatesRef.current ?? {}), ...updates }
 
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || value === '' || value === 'all') {
-          newParams.delete(key)
-        } else {
-          newParams.set(key, value)
-        }
-      })
+      if (Object.keys(pendingUpdatesRef.current).length === Object.keys(updates).length) {
+        queueMicrotask(() => {
+          const merged = pendingUpdatesRef.current
+          pendingUpdatesRef.current = null
+          if (!merged) return
+          if (typeof window === 'undefined') return
 
-      // Always reset to page 1 when filters change (except for page changes)
-      if (!('page' in updates)) {
-        newParams.delete('page')
+          const newParams = new URLSearchParams(window.location.search)
+          for (const [key, value] of Object.entries(merged)) {
+            if (value === null || value === '' || value === 'all') {
+              newParams.delete(key)
+            } else {
+              newParams.set(key, value)
+            }
+          }
+
+          // Always reset to page 1 when any filter changes — the only
+          // caller that opts out is `handlePageChange` which always
+          // passes `page`, so this branch leaves it alone.
+          if (!('page' in merged)) {
+            newParams.delete('page')
+          }
+
+          const queryString = newParams.toString()
+          const nextUrl =
+            (window.location.pathname || pathname) + (queryString ? `?${queryString}` : '')
+          window.history.replaceState(window.history.state, '', nextUrl)
+        })
       }
-
-      const queryString = newParams.toString()
-      router.push(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false })
     },
-    [searchParams, router, pathname],
+    [pathname],
   )
 
   // Handle category selection - updates both state and URL
@@ -162,10 +202,10 @@ function ProductsPageContent({
 
       const matchedCategory = categories.find((cat) => cat.name === categoryName)
       updateURL({
-        category: categoryName === 'Tất Cả' ? null : matchedCategory?.slug || null,
+        category: categoryName === allCategoryName ? null : matchedCategory?.slug || null,
       })
     },
-    [categories, updateURL],
+    [categories, updateURL, allCategoryName],
   )
 
   // Handle sort change
@@ -173,7 +213,9 @@ function ProductsPageContent({
     (value: string) => {
       setSortBy(value)
       setCurrentPage(1)
-      updateURL({ sort: value === 'newest' ? null : value })
+      // `default` (admin's displayOrder) is the implicit state — keep
+      // it out of the URL so deep links stay tidy.
+      updateURL({ sort: value === 'default' ? null : value })
     },
     [updateURL],
   )
@@ -201,15 +243,36 @@ function ProductsPageContent({
     [updateURL],
   )
 
-  // Debounced URL sync as the user types. Uses router.replace (via
-  // updateURL is push, so we mirror it here directly with replace) so
-  // every keystroke doesn't pile up in history. 400ms keeps the URL
-  // close-to-live without thrashing.
+  // Stock filters — keep them in the URL so /products?inStock=false is
+  // shareable. `inStock=true` and `outOfStock=false` are the defaults so
+  // we omit them to keep URLs tidy.
+  const handleInStockChange = useCallback(
+    (checked: boolean) => {
+      setShowInStock(checked)
+      setCurrentPage(1)
+      updateURL({ inStock: checked ? null : 'false' })
+    },
+    [updateURL],
+  )
+  const handleOutOfStockChange = useCallback(
+    (checked: boolean) => {
+      setShowOutOfStock(checked)
+      setCurrentPage(1)
+      updateURL({ outOfStock: checked ? 'true' : null })
+    },
+    [updateURL],
+  )
+
+  // Debounced URL sync as the user types. history.replaceState keeps
+  // every keystroke out of the browser history stack and — critically —
+  // avoids a Next.js navigation that would re-render the server
+  // component. 400ms keeps the URL close-to-live without thrashing.
   const initialQueryRef = useRef(searchQuery)
   useEffect(() => {
     if (searchQuery === initialQueryRef.current) return
     const t = setTimeout(() => {
-      const newParams = new URLSearchParams(searchParams.toString())
+      if (typeof window === 'undefined') return
+      const newParams = new URLSearchParams(window.location.search)
       if (searchQuery) {
         newParams.set('q', searchQuery)
       } else {
@@ -217,14 +280,13 @@ function ProductsPageContent({
       }
       newParams.delete('page')
       const qs = newParams.toString()
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+      const nextUrl = (window.location.pathname || pathname) + (qs ? `?${qs}` : '')
+      // history.replaceState (not router.replace) so the URL updates
+      // without kicking off a server re-render of the products page.
+      window.history.replaceState(window.history.state, '', nextUrl)
     }, 400)
     return () => clearTimeout(t)
-    // searchParams is intentionally omitted — including it would re-run
-    // this effect every time we touch any other filter, which would
-    // double-write the q param.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, router, pathname])
+  }, [searchQuery, pathname])
 
   // Handle price range change
   const handlePriceRangeChange = useCallback(
@@ -264,7 +326,7 @@ function ProductsPageContent({
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = allProducts.filter((product) => {
       // Filter by category (check if product belongs to selected category)
-      if (selectedCategory !== 'Tất Cả') {
+      if (selectedCategory !== allCategoryName) {
         if (product.categories && product.categories.length > 0) {
           if (!product.categories.includes(selectedCategory)) return false
         } else if (product.category !== selectedCategory) {
@@ -295,16 +357,26 @@ function ProductsPageContent({
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false
       }
-      // ?tag=hot / ?tag=mới / ?tag=sale — substring match on the
-      // product's tag string. Lower-case both sides; supports the
-      // header nav link for "HOT" and similar one-off entry points.
-      if (tagFilter && !(product.tag || '').toLowerCase().includes(tagFilter)) {
-        return false
+      // ?tag=hot / ?tag=new / ?tag=sale — exact match on tag code.
+      // `sale` is special-cased to match any of sale-20 / sale-30 /
+      // sale-50 so one URL covers the whole sale funnel.
+      if (tagFilter) {
+        const code = (product.tag || '').toLowerCase()
+        if (tagFilter === 'sale') {
+          if (!code.startsWith('sale-')) return false
+        } else if (code !== tagFilter) {
+          return false
+        }
       }
       return true
     })
 
-    // Sort products
+    // Sort products. `default` keeps whatever order the server gave us
+    // (sorted by the admin-controlled `displayOrder` in the Payload
+    // collection, tie-break by id desc). Explicit sorts replace it.
+    if (sortBy === 'default' || !sortBy) {
+      return filtered
+    }
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
@@ -312,15 +384,19 @@ function ProductsPageContent({
         case 'price-high':
           return b.priceNumber - a.priceNumber
         case 'popular':
-          // Sort by tag (BÁN CHẠY first, then MỚI, then others)
-          const tagOrder: { [key: string]: number } = { 'BÁN CHẠY': 0, MỚI: 1 }
-          const aOrder = tagOrder[a.tag] ?? 2
-          const bOrder = tagOrder[b.tag] ?? 2
-          return aOrder - bOrder
+          // Rating-driven, tag-independent. Higher average rating first,
+          // ties broken by review count so genuinely popular items beat
+          // lightly-reviewed 5-star listings.
+          const ratingDiff = (b.averageRating ?? 0) - (a.averageRating ?? 0)
+          if (ratingDiff !== 0) return ratingDiff
+          return (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
         case 'newest':
-        default:
-          // Newest first (by ID, assuming higher ID = newer)
+          // Explicit "newest" = id desc. Different from default because
+          // default respects admin-chosen display order, which may put
+          // older items at the front when displayOrder says so.
           return b.id - a.id
+        default:
+          return 0
       }
     })
 
@@ -352,11 +428,26 @@ function ProductsPageContent({
   const clearFilters = () => {
     setSelectedSizes([])
     setSelectedColors([])
-    handleCategoryChange('Tất Cả')
-    handlePriceRangeChange(null)
+    setSelectedCategory(allCategoryName)
+    setSelectedPriceRange(null)
     setShowInStock(true)
     setShowOutOfStock(false)
-    handleSearchChange('')
+    setSearchQuery('')
+    setSortBy('newest')
+    setCurrentPage(1)
+    // Single URL write — the microtask-batched updateURL collapses these
+    // into one navigation. Setting every filter key to null clears them.
+    updateURL({
+      sizes: null,
+      colors: null,
+      category: null,
+      price: null,
+      inStock: null,
+      outOfStock: null,
+      q: null,
+      sort: null,
+      tag: null,
+    })
   }
 
   return (
@@ -383,14 +474,14 @@ function ProductsPageContent({
                       href="/"
                       className="hover:text-foreground transition-colors uppercase tracking-widest text-[10px]"
                     >
-                      Trang chủ
+                      {t('breadcrumbHome')}
                     </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage className="text-foreground uppercase tracking-widest text-[10px] font-bold">
-                    Sản phẩm
+                    {t('breadcrumbProducts')}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
@@ -406,12 +497,9 @@ function ProductsPageContent({
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <h1 className="text-5xl mb-4 uppercase tracking-tighter font-bold italic">
-                  Sản Phẩm
+                  {t('heading')}
                 </h1>
-                <p className="text-muted-foreground max-w-md">
-                  Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite. Thiết kế tối giản,
-                  hiệu năng tối đa.
-                </p>
+                <p className="text-muted-foreground max-w-md">{t('description')}</p>
               </div>
             </div>
           </motion.div>
@@ -456,6 +544,7 @@ function ProductsPageContent({
                     onChange={(e) => handleSortChange(e.target.value)}
                     className="w-full bg-muted border border-border px-4 py-3 pr-10 rounded-sm outline-none focus:border-primary transition-colors appearance-none cursor-pointer uppercase text-xs tracking-wide text-foreground h-full"
                   >
+                    <option value="default">{tFilter('sort.default')}</option>
                     <option value="newest">{tFilter('sort.newest')}</option>
                     <option value="price-low">{tFilter('sort.priceAsc')}</option>
                     <option value="price-high">{tFilter('sort.priceDesc')}</option>
@@ -552,7 +641,7 @@ function ProductsPageContent({
                             <input
                               type="checkbox"
                               checked={showInStock}
-                              onChange={(e) => setShowInStock(e.target.checked)}
+                              onChange={(e) => handleInStockChange(e.target.checked)}
                               className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                             />
                             <span className="group-hover:text-muted-foreground transition-colors">
@@ -564,7 +653,7 @@ function ProductsPageContent({
                             <input
                               type="checkbox"
                               checked={showOutOfStock}
-                              onChange={(e) => setShowOutOfStock(e.target.checked)}
+                              onChange={(e) => handleOutOfStockChange(e.target.checked)}
                               className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                             />
                             <span className="group-hover:text-muted-foreground transition-colors">
@@ -759,7 +848,7 @@ function ProductsPageContent({
                           <input
                             type="checkbox"
                             checked={showInStock}
-                            onChange={(e) => setShowInStock(e.target.checked)}
+                            onChange={(e) => handleInStockChange(e.target.checked)}
                             className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                           />
                           <span className="group-hover:text-muted-foreground transition-colors">
@@ -771,7 +860,7 @@ function ProductsPageContent({
                           <input
                             type="checkbox"
                             checked={showOutOfStock}
-                            onChange={(e) => setShowOutOfStock(e.target.checked)}
+                            onChange={(e) => handleOutOfStockChange(e.target.checked)}
                             className="w-4 h-4 rounded-sm border-2 border-border text-foreground focus:ring-2 focus:ring-ring focus:ring-offset-0 cursor-pointer accent-foreground"
                           />
                           <span className="group-hover:text-muted-foreground transition-colors">
@@ -1005,19 +1094,22 @@ function ProductsPageContent({
   )
 }
 
+function ProductsLoadingFallback() {
+  const t = useTranslations('products')
+  return (
+    <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
+      {t('loading')}
+    </div>
+  )
+}
+
 export default function ProductsPageClient({
   initialProducts,
   categories,
   colors,
 }: ProductsPageClientProps) {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-white pt-32 flex items-center justify-center">
-          Đang tải...
-        </div>
-      }
-    >
+    <Suspense fallback={<ProductsLoadingFallback />}>
       <ProductsPageContent allProducts={initialProducts} categories={categories} colors={colors} />
     </Suspense>
   )

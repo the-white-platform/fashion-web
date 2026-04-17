@@ -6,8 +6,10 @@ import { motion } from 'motion/react'
 import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { Link } from '@/i18n/Link'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { useTranslations } from 'next-intl'
 
 export default function UnsubscribePage() {
+  const t = useTranslations('unsubscribe')
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'idle'>('idle')
@@ -51,23 +53,20 @@ export default function UnsubscribePage() {
           {status === 'loading' && (
             <>
               <Loader2 className="w-16 h-16 mx-auto mb-4 animate-spin text-muted-foreground" />
-              <h1 className="text-2xl uppercase tracking-wide mb-2">Đang xử lý...</h1>
+              <h1 className="text-2xl uppercase tracking-wide mb-2">{t('processing')}</h1>
             </>
           )}
 
           {status === 'success' && (
             <>
               <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
-              <h1 className="text-2xl uppercase tracking-wide mb-2">Đã hủy đăng ký</h1>
-              <p className="text-muted-foreground mb-6">
-                Bạn đã hủy đăng ký nhận bản tin thành công. Chúng tôi sẽ không gửi email cho bạn
-                nữa.
-              </p>
+              <h1 className="text-2xl uppercase tracking-wide mb-2">{t('successTitle')}</h1>
+              <p className="text-muted-foreground mb-6">{t('successDesc')}</p>
               <Link
                 href="/"
                 className="inline-block bg-foreground text-background px-6 py-3 rounded-sm uppercase tracking-wide text-sm"
               >
-                Về trang chủ
+                {t('backHome')}
               </Link>
             </>
           )}
@@ -75,15 +74,13 @@ export default function UnsubscribePage() {
           {status === 'error' && (
             <>
               <XCircle className="w-16 h-16 mx-auto mb-4 text-destructive" />
-              <h1 className="text-2xl uppercase tracking-wide mb-2">Liên kết không hợp lệ</h1>
-              <p className="text-muted-foreground mb-6">
-                Liên kết hủy đăng ký này không hợp lệ hoặc đã hết hạn.
-              </p>
+              <h1 className="text-2xl uppercase tracking-wide mb-2">{t('errorTitle')}</h1>
+              <p className="text-muted-foreground mb-6">{t('errorDesc')}</p>
               <Link
                 href="/"
                 className="inline-block bg-foreground text-background px-6 py-3 rounded-sm uppercase tracking-wide text-sm"
               >
-                Về trang chủ
+                {t('backHome')}
               </Link>
             </>
           )}

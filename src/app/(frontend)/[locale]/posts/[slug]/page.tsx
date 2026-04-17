@@ -43,14 +43,15 @@ export async function generateStaticParams() {
 
 type Args = {
   params: Promise<{
+    locale?: string
     slug?: string
   }>
 }
 
 export default async function Post({ params: paramsPromise }: Args) {
-  const { slug = '' } = await paramsPromise
+  const { slug = '', locale = 'vi' } = await paramsPromise
   const url = '/posts/' + slug
-  const post = await queryPostBySlug({ slug })
+  const post = await queryPostBySlug({ slug, locale: locale as 'vi' | 'en' })
 
   if (!post) return <PayloadRedirects url={url} />
 
@@ -84,13 +85,13 @@ export default async function Post({ params: paramsPromise }: Args) {
 }
 
 export async function generateMetadata({ params: paramsPromise }: Args): Promise<Metadata> {
-  const { slug = '' } = await paramsPromise
-  const post = await queryPostBySlug({ slug })
+  const { slug = '', locale = 'vi' } = await paramsPromise
+  const post = await queryPostBySlug({ slug, locale: locale as 'vi' | 'en' })
 
   return generateMeta({ doc: post })
 }
 
-const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
+const queryPostBySlug = cache(async ({ slug, locale }: { slug: string; locale?: 'vi' | 'en' }) => {
   const { isEnabled: draft } = await draftMode()
 
   const payload = await getPayload({ config: configPromise })
@@ -100,6 +101,7 @@ const queryPostBySlug = cache(async ({ slug }: { slug: string }) => {
     draft,
     limit: 1,
     overrideAccess: draft,
+    ...(locale ? { locale } : {}),
     where: {
       slug: {
         equals: slug,

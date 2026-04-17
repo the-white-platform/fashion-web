@@ -11,7 +11,6 @@ import { VirtualTryOnDemo } from '@/components/ecommerce/VirtualTryOnDemo'
 import { BrandStory } from '@/components/ecommerce/BrandStory'
 import { Newsletter } from '@/components/ecommerce/Newsletter'
 import { RecentlyViewed } from '@/components/ecommerce/RecentlyViewed'
-import { Recommendations } from '@/components/ecommerce/Recommendations'
 import dynamic from 'next/dynamic'
 
 const ProductModal = dynamic(
@@ -82,6 +81,10 @@ export default function HomePageClient({
         />
       </AlternatingSection>
 
+      {/* Shop-by-activity. Renders nothing (zero height) until the
+          Homepage global has activity categories configured, which
+          temporarily collapses the dark/light rhythm — that's expected
+          and goes away once the admin adds data. */}
       <AlternatingSection index={2}>
         <Categories categories={activityCategories} />
       </AlternatingSection>
@@ -98,11 +101,15 @@ export default function HomePageClient({
         <BrandStory />
       </AlternatingSection>
 
+      {/* RecentlyViewed alternates naturally with its index. The old
+          "Popular Products" carousel has been dropped per product
+          direction. */}
       <AlternatingSection index={6}>
-        <div className="container mx-auto px-6">
-          <RecentlyViewed />
-          <Recommendations type="popular" className="mt-8" />
-        </div>
+        <section className="py-20 bg-transparent text-foreground">
+          <div className="container mx-auto px-6">
+            <RecentlyViewed />
+          </div>
+        </section>
       </AlternatingSection>
 
       <AlternatingSection index={7}>

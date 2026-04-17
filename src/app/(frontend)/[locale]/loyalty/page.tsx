@@ -19,6 +19,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 import { useUser } from '@/contexts/UserContext'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -47,7 +48,6 @@ interface LoyaltyTransaction {
 
 const TIER_CONFIG = {
   bronze: {
-    label: 'Đồng',
     color: 'text-amber-700',
     bg: 'bg-amber-100',
     border: 'border-amber-300',
@@ -57,7 +57,6 @@ const TIER_CONFIG = {
     nextTier: 'silver',
   },
   silver: {
-    label: 'Bạc',
     color: 'text-slate-500',
     bg: 'bg-slate-100',
     border: 'border-slate-300',
@@ -67,7 +66,6 @@ const TIER_CONFIG = {
     nextTier: 'gold',
   },
   gold: {
-    label: 'Vàng',
     color: 'text-yellow-600',
     bg: 'bg-yellow-50',
     border: 'border-yellow-300',
@@ -77,7 +75,6 @@ const TIER_CONFIG = {
     nextTier: 'platinum',
   },
   platinum: {
-    label: 'Bạch Kim',
     color: 'text-purple-600',
     bg: 'bg-purple-50',
     border: 'border-purple-300',
@@ -88,23 +85,9 @@ const TIER_CONFIG = {
   },
 }
 
-const TIER_BENEFITS = {
-  bronze: ['1 điểm / 10,000₫ mua hàng', '50 điểm khi đánh giá sản phẩm', 'Tích điểm giới thiệu'],
-  silver: ['1.25× điểm mỗi đơn hàng', 'Ưu tiên hỗ trợ khách hàng', '75 điểm khi đánh giá sản phẩm'],
-  gold: [
-    '1.5× điểm mỗi đơn hàng',
-    'Miễn phí vận chuyển đơn từ 500K',
-    '100 điểm khi đánh giá sản phẩm',
-  ],
-  platinum: [
-    '2× điểm mỗi đơn hàng',
-    'Miễn phí vận chuyển mọi đơn hàng',
-    'Truy cập ưu đãi độc quyền',
-    '100 điểm khi đánh giá sản phẩm',
-  ],
-}
-
 export default function LoyaltyPage() {
+  const t = useTranslations('loyalty')
+  const tNav = useTranslations('nav')
   const router = useRouter()
   const { user, isLoading: isAuthLoading } = useUser()
   const [account, setAccount] = useState<LoyaltyAccount | null>(null)
@@ -164,7 +147,7 @@ export default function LoyaltyPage() {
   const copyReferral = () => {
     if (referralUrl) {
       navigator.clipboard.writeText(referralUrl)
-      toast.success('Đã sao chép link giới thiệu!')
+      toast.success(t('copiedReferral'))
     }
   }
 
@@ -182,18 +165,18 @@ export default function LoyaltyPage() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="/">Trang chủ</Link>
+                  <Link href="/">{tNav('home')}</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Điểm Thưởng</BreadcrumbPage>
+                <BreadcrumbPage>{t('breadcrumb')}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
 
-        <h1 className="text-4xl uppercase tracking-wide mb-8">Điểm Thưởng & Hạng Thành Viên</h1>
+        <h1 className="text-4xl uppercase tracking-wide mb-8">{t('pageTitle')}</h1>
 
         {isLoading ? (
           <div className="space-y-4">
@@ -216,18 +199,18 @@ export default function LoyaltyPage() {
                     <span
                       className={`text-2xl font-bold uppercase tracking-wide ${tierInfo.color}`}
                     >
-                      Hạng {tierInfo.label}
+                      {t('tierLevel', { tier: t(tier as any) })}
                     </span>
                   </div>
                   <p className="text-muted-foreground">
-                    {user.fullName} · {account?.points ?? 0} điểm khả dụng
+                    {user.fullName} · {account?.points ?? 0} {t('availablePointsSuffix')}
                   </p>
                 </div>
                 <div className="text-right">
                   <p className="text-4xl font-bold text-foreground">
                     {(account?.points ?? 0).toLocaleString('vi-VN')}
                   </p>
-                  <p className="text-sm text-muted-foreground">điểm khả dụng</p>
+                  <p className="text-sm text-muted-foreground">{t('availablePointsSuffix')}</p>
                 </div>
               </div>
 
@@ -235,10 +218,14 @@ export default function LoyaltyPage() {
               {tier !== 'platinum' && (
                 <div>
                   <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                    <span>{lifetimePoints.toLocaleString('vi-VN')} điểm tích lũy</span>
                     <span>
-                      Còn {pointsToNext.toLocaleString('vi-VN')} điểm để lên{' '}
-                      {TIER_CONFIG[tierInfo.nextTier as keyof typeof TIER_CONFIG]?.label}
+                      {lifetimePoints.toLocaleString('vi-VN')} {t('lifetimePointsSuffix')}
+                    </span>
+                    <span>
+                      {t('progressRemaining', {
+                        n: pointsToNext.toLocaleString('vi-VN'),
+                        tier: tierInfo.nextTier ? t(tierInfo.nextTier as any) : '',
+                      })}
                     </span>
                   </div>
                   <div className="h-3 bg-white/60 rounded-full overflow-hidden border border-white/40">
@@ -255,7 +242,7 @@ export default function LoyaltyPage() {
                 </div>
               )}
               {tier === 'platinum' && (
-                <p className="text-sm text-purple-700 font-medium">Bạn đang ở hạng cao nhất!</p>
+                <p className="text-sm text-purple-700 font-medium">{t('platinumMax')}</p>
               )}
             </motion.div>
 
@@ -269,10 +256,10 @@ export default function LoyaltyPage() {
               >
                 <h2 className="text-xl uppercase tracking-wide mb-4 flex items-center gap-2">
                   <Gift className="w-5 h-5 text-primary" />
-                  Quyền Lợi Hạng {tierInfo.label}
+                  {t('tierBenefitsTitle', { tier: t(tier as any) })}
                 </h2>
                 <ul className="space-y-3">
-                  {TIER_BENEFITS[tier].map((benefit, i) => (
+                  {(t.raw(`tierBenefits.${tier}`) as string[]).map((benefit: string, i: number) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
                       <Star className="w-4 h-4 text-primary mt-0.5 shrink-0" />
                       <span>{benefit}</span>
@@ -290,27 +277,22 @@ export default function LoyaltyPage() {
               >
                 <h2 className="text-xl uppercase tracking-wide mb-4 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-primary" />
-                  Cách Tích Điểm
+                  {t('earnRulesTitle')}
                 </h2>
                 <div className="space-y-3">
-                  {[
-                    { action: 'Mua hàng', reward: '1 điểm / 10,000₫' },
-                    { action: 'Đánh giá sản phẩm', reward: '50 điểm' },
-                    { action: 'Đánh giá đã xác nhận', reward: '100 điểm' },
-                    { action: 'Giới thiệu bạn mua hàng', reward: '200 điểm' },
-                  ].map((rule, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between text-sm py-2 border-b border-border last:border-0"
-                    >
-                      <span className="text-muted-foreground">{rule.action}</span>
-                      <Badge variant="secondary">{rule.reward}</Badge>
-                    </div>
-                  ))}
+                  {(t.raw('earnRulesList') as Array<{ action: string; reward: string }>).map(
+                    (rule, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between text-sm py-2 border-b border-border last:border-0"
+                      >
+                        <span className="text-muted-foreground">{rule.action}</span>
+                        <Badge variant="secondary">{rule.reward}</Badge>
+                      </div>
+                    ),
+                  )}
                 </div>
-                <p className="text-xs text-muted-foreground mt-3">
-                  100 điểm = 10,000₫ giảm giá khi thanh toán
-                </p>
+                <p className="text-xs text-muted-foreground mt-3">{t('conversionRate')}</p>
               </motion.div>
             </div>
 
@@ -324,12 +306,9 @@ export default function LoyaltyPage() {
               >
                 <h2 className="text-xl uppercase tracking-wide mb-4 flex items-center gap-2">
                   <Share2 className="w-5 h-5 text-primary" />
-                  Giới Thiệu Bạn Bè
+                  {t('referral')}
                 </h2>
-                <p className="text-muted-foreground text-sm mb-4">
-                  Chia sẻ mã giới thiệu của bạn. Khi bạn bè đặt đơn hàng đầu tiên, bạn nhận{' '}
-                  <strong>200 điểm</strong> thưởng!
-                </p>
+                <p className="text-muted-foreground text-sm mb-4">{t('referralDesc')}</p>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 px-4 py-3 bg-muted rounded-sm font-mono text-sm truncate">
                     {referralCode}
@@ -339,7 +318,7 @@ export default function LoyaltyPage() {
                     className="flex items-center gap-2 px-4 py-3 border-2 border-foreground text-foreground rounded-sm hover:bg-muted transition-colors text-sm uppercase tracking-wide shrink-0"
                   >
                     <Copy className="w-4 h-4" />
-                    Sao chép
+                    {t('copyReferral')}
                   </button>
                 </div>
               </motion.div>
@@ -353,7 +332,7 @@ export default function LoyaltyPage() {
               className="bg-card border border-border rounded-sm p-6"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl uppercase tracking-wide">Lịch Sử Điểm</h2>
+                <h2 className="text-xl uppercase tracking-wide">{t('history')}</h2>
               </div>
 
               {transactions.length > 0 ? (
@@ -384,7 +363,7 @@ export default function LoyaltyPage() {
                           {tx.points}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Số dư: {tx.balance.toLocaleString('vi-VN')}
+                          {t('balance', { n: tx.balance.toLocaleString('vi-VN') })}
                         </p>
                       </div>
                     </div>
@@ -393,12 +372,12 @@ export default function LoyaltyPage() {
               ) : (
                 <div className="text-center py-12">
                   <Award className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                  <p className="text-muted-foreground">Chưa có giao dịch điểm nào</p>
+                  <p className="text-muted-foreground">{t('noTransactions')}</p>
                   <Link
                     href="/products"
                     className="inline-flex items-center gap-2 mt-4 text-sm text-foreground underline uppercase tracking-wide"
                   >
-                    Mua hàng để tích điểm
+                    {t('shopToEarn')}
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>

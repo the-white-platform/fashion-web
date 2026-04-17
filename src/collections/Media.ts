@@ -37,6 +37,7 @@ export const Media: CollectionConfig = {
     {
       name: 'caption',
       type: 'richText',
+      localized: true,
       label: { vi: 'Chú thích', en: 'Caption' },
       editor: lexicalEditor({
         features: ({ rootFeatures }) => {

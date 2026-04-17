@@ -209,7 +209,7 @@ export default function CheckoutPage() {
                     )}
                     {pointsDiscount > 0 && (
                       <div className="flex justify-between text-sm text-success">
-                        <span>Điểm thưởng ({checkout.pointsToRedeem} điểm)</span>
+                        <span>{t('loyaltyPointsDiscount', { n: checkout.pointsToRedeem })}</span>
                         <span>-{pointsDiscount.toLocaleString('vi-VN')}₫</span>
                       </div>
                     )}

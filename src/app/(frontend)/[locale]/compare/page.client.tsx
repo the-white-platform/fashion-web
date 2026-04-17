@@ -164,7 +164,7 @@ export default function ComparePageClient() {
                         />
                         {product.tag && (
                           <div className="absolute top-0 left-0 bg-primary text-primary-foreground px-2 py-0.5 text-[10px] font-bold uppercase">
-                            {product.tag}
+                            {product.tagLabel || product.tag}
                           </div>
                         )}
                       </div>

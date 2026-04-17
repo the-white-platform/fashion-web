@@ -14,9 +14,11 @@ export async function GET(req: NextRequest) {
   const userId = searchParams.get('userId') ?? null
   const productId = searchParams.get('productId') ? Number(searchParams.get('productId')) : null
   const limit = Math.min(Number(searchParams.get('limit') ?? 8), 24)
+  const localeParam = searchParams.get('locale')
+  const locale: 'vi' | 'en' = localeParam === 'en' ? 'en' : 'vi'
 
-  // Build cache key
-  const cacheKey = `${type}:${userId ?? ''}:${productId ?? ''}:${limit}`
+  // Build cache key (include locale so VI and EN don't collide)
+  const cacheKey = `${type}:${userId ?? ''}:${productId ?? ''}:${limit}:${locale}`
   const cached = cache.get(cacheKey)
   if (cached && Date.now() < cached.expiresAt) {
     return NextResponse.json(cached.data, {
@@ -29,6 +31,7 @@ export async function GET(req: NextRequest) {
       userId,
       productId,
       limit,
+      locale,
     })
 
     const result = { products }

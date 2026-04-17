@@ -2,6 +2,7 @@
 
 import { useState, useRef, MouseEvent } from 'react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 
 interface ImageZoomProps {
   src: string
@@ -20,6 +21,7 @@ export function ImageZoom({
   width,
   height,
 }: ImageZoomProps) {
+  const t = useTranslations('imageZoom')
   const [isZooming, setIsZooming] = useState(false)
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
   const imageRef = useRef<HTMLDivElement>(null)
@@ -100,7 +102,7 @@ export function ImageZoom({
 
       {/* Hover Hint */}
       <div className="absolute bottom-4 left-4 bg-primary/80 text-primary-foreground px-3 py-1 rounded-sm text-xs uppercase tracking-wide opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
-        Di chuột để phóng to
+        {t('hoverHint')}
       </div>
     </div>
   )
