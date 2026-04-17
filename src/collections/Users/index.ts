@@ -72,6 +72,23 @@ export const Users: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'preferredLocale',
+      type: 'select',
+      required: true,
+      defaultValue: 'vi',
+      label: { vi: 'Ngôn ngữ ưu tiên', en: 'Preferred language' },
+      options: [
+        { label: { vi: 'Tiếng Việt', en: 'Vietnamese' }, value: 'vi' },
+        { label: { vi: 'Tiếng Anh', en: 'English' }, value: 'en' },
+      ],
+      admin: {
+        description: {
+          vi: 'Ngôn ngữ mà khách hàng sẽ nhận email, thông báo và giao tiếp ngoài trang web.',
+          en: 'Language used for emails, notifications, and off-site communication.',
+        },
+      },
+    },
+    {
       name: 'sub',
       type: 'text',
       admin: {
