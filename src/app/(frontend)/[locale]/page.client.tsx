@@ -95,19 +95,24 @@ export default function HomePageClient({
 
       <AlternatingSection index={5}>
         <BrandStory />
-        {/* RecentlyViewed lives in the BrandStory section so it inherits
-            that section's background instead of opening a contrasting
-            band of its own (the AlternatingSection between BrandStory
-            and Newsletter used to be a single light strip on dark
-            mode and vice-versa, which read as a layout gap). The
-            previous "Popular Products" carousel has been removed per
-            product direction. */}
-        <div className="container mx-auto px-6 pb-20">
-          <RecentlyViewed />
-        </div>
       </AlternatingSection>
 
-      <AlternatingSection index={6}>
+      {/* RecentlyViewed gets its own section but `forceTheme="match-odd"`
+          anchors it to the same surface as BrandStory (dark in light
+          mode, light in dark mode). This avoids the old "light strip
+          between two dark sections" look while still letting
+          RecentlyViewed own its own vertical padding instead of
+          hanging off the end of BrandStory. The old "Popular Products"
+          carousel has been dropped per product direction. */}
+      <AlternatingSection index={6} forceTheme="match-odd">
+        <section className="py-20 bg-transparent text-foreground">
+          <div className="container mx-auto px-6">
+            <RecentlyViewed />
+          </div>
+        </section>
+      </AlternatingSection>
+
+      <AlternatingSection index={7}>
         <Newsletter />
       </AlternatingSection>
 

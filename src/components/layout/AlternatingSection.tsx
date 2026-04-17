@@ -7,6 +7,13 @@ interface AlternatingSectionProps {
   children: ReactNode
   index: number
   className?: string
+  /**
+   * Force this section into a specific theme regardless of the index-
+   * based alternation. Used when two consecutive sections need to share
+   * the same surface (e.g. BrandStory + RecentlyViewed should both look
+   * dark in light mode) without renumbering every other section.
+   */
+  forceTheme?: 'match-odd' | 'match-even'
 }
 
 /**
@@ -26,7 +33,12 @@ interface AlternatingSectionProps {
  * - index 3 (FeaturedProducts): light
  * - etc.
  */
-export function AlternatingSection({ children, index, className = '' }: AlternatingSectionProps) {
+export function AlternatingSection({
+  children,
+  index,
+  className = '',
+  forceTheme,
+}: AlternatingSectionProps) {
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -37,12 +49,18 @@ export function AlternatingSection({ children, index, className = '' }: Alternat
 
   // Default to light theme during SSR
   const isGlobalDarkMode = mounted ? theme === 'dark' : false
-  const isOdd = index % 2 === 1
+
+  // `forceTheme` asks the section to pretend its index has a specific
+  // parity, which flips through the normal logic and yields the same
+  // theme as whatever actually-odd or actually-even neighbour we're
+  // trying to match — even after global theme inversion.
+  const effectiveIsOdd =
+    forceTheme === 'match-odd' ? true : forceTheme === 'match-even' ? false : index % 2 === 1
 
   // In light mode: odd sections are dark
   // In dark mode: odd sections are light (inverted)
   let sectionTheme: 'light' | 'dark'
-  if (isOdd) {
+  if (effectiveIsOdd) {
     sectionTheme = isGlobalDarkMode ? 'light' : 'dark'
   } else {
     sectionTheme = isGlobalDarkMode ? 'dark' : 'light'

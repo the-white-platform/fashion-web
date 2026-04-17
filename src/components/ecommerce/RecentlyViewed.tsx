@@ -19,7 +19,7 @@ export function RecentlyViewed({ excludeId, maxItems = 10 }: RecentlyViewedProps
   if (displayItems.length === 0) return null
 
   return (
-    <section className="mt-20">
+    <section>
       <h2 className="text-2xl mb-8 uppercase tracking-wide flex items-center gap-2">
         <History className="w-5 h-5 text-primary" />
         {t('title')}
