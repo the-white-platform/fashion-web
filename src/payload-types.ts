@@ -532,6 +532,10 @@ export interface User {
   role: 'admin' | 'editor' | 'staff' | 'customer';
   name?: string | null;
   phone?: string | null;
+  /**
+   * Language used for emails, notifications, and off-site communication.
+   */
+  preferredLocale: 'vi' | 'en';
   sub?: string | null;
   provider?: ('local' | 'google' | 'facebook') | null;
   imageUrl?: string | null;
@@ -1250,6 +1254,7 @@ export interface NewsletterSubscriber {
   email: string;
   name?: string | null;
   status: 'active' | 'unsubscribed' | 'bounced';
+  preferredLocale: 'vi' | 'en';
   subscribedAt?: string | null;
   unsubscribedAt?: string | null;
   source?: ('footer_form' | 'checkout' | 'manual') | null;
@@ -1938,6 +1943,7 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   name?: T;
   phone?: T;
+  preferredLocale?: T;
   sub?: T;
   provider?: T;
   imageUrl?: T;
@@ -2327,6 +2333,7 @@ export interface NewsletterSubscribersSelect<T extends boolean = true> {
   email?: T;
   name?: T;
   status?: T;
+  preferredLocale?: T;
   subscribedAt?: T;
   unsubscribedAt?: T;
   source?: T;

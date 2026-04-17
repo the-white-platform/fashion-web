@@ -932,76 +932,76 @@
     },
     "questions": {
       "q1": {
-        "question": "How do I place an order?",
-        "answer": "Select your desired product, choose size and quantity, then click \"Add to Cart\". Go to your cart, click \"Checkout\", fill in your shipping information and select a payment method to complete the order."
+        "question": "How do I order on TheWhite?",
+        "answer": "Pick a product, choose size and colour, hit 'Add to Cart'. Open the cart, click 'Checkout', fill in your shipping details and pick a payment method. You'll get an order confirmation email the moment checkout completes."
       },
       "q2": {
-        "question": "What payment methods does TheWhite accept?",
-        "answer": "We accept: Cash on Delivery (COD), Bank Transfer, Credit/Debit Card (Visa, Mastercard), E-wallets (MoMo, ZaloPay, VNPay), and 0% installment payment."
+        "question": "Can I modify or cancel my order?",
+        "answer": "Yes — within 24 hours of placing the order and before it's packed. Go to 'My Orders', pick the order, and message us through the Wolfies chat on-site. Once the order has been handed to the courier, cancellation is no longer possible — but you can still request an exchange or return after delivery."
       },
       "q3": {
-        "question": "Can I cancel or change my order?",
-        "answer": "You can cancel or change your order within 2 hours of placing it, as long as the order hasn't been packed and handed to the carrier. Please contact us immediately via hotline or live chat."
+        "question": "Do I need an account to shop?",
+        "answer": "No. You can check out as a guest. An account helps with order tracking, saved addresses, member-only offers, the loyalty programme, and the referral programme — so if you expect to buy more than once, signing up once pays off."
       },
       "q4": {
-        "question": "How can I track my order?",
-        "answer": "After the order is shipped, you'll receive an email with a tracking code. You can also track your order in the \"Order History\" section of your account on our website."
+        "question": "What payment methods does TheWhite accept?",
+        "answer": "Credit/debit cards (Visa, Mastercard, JCB) via Stripe, bank transfer, MoMo wallet, VNPay, QR Code, and cash on delivery (COD). Every transaction goes through a secure payment gateway — TheWhite never stores card data on our servers."
       },
       "q5": {
-        "question": "How long does delivery take?",
-        "answer": "Ho Chi Minh City & Hanoi: 1–2 business days. Other provinces/cities: 2–4 business days. Remote areas: 4–7 business days. Delivery times may vary during peak seasons."
+        "question": "Is there a fee for cash on delivery (COD)?",
+        "answer": "COD is free on orders of 500,000₫ or more. Under 500,000₫: a 20,000₫ COD surcharge applies (already included in your order total at checkout)."
       },
       "q6": {
-        "question": "What are the shipping fees?",
-        "answer": "Free shipping on orders over 500,000₫. For orders under 500,000₫: Ho Chi Minh City/Hanoi: 25,000₫, other provinces: 35,000₫. Express shipping (same-day): 50,000–80,000₫."
+        "question": "Is my card information secure?",
+        "answer": "Completely. End-to-end SSL encryption and payments processed through Stripe, VNPay or MoMo. TheWhite never stores card numbers, CVVs, or OTPs on our system."
       },
       "q7": {
-        "question": "Does TheWhite ship internationally?",
-        "answer": "Currently TheWhite only ships within Vietnam. We plan to expand international shipping in the future. Stay tuned for updates!"
+        "question": "How long does delivery take?",
+        "answer": "HCMC / Hanoi inner city: 1-2 business days. Neighbouring provinces: 2-3 days. Further provinces and remote areas: 3-5 days. Orders placed after 4pm count from the next business day. Lunar New Year and major holidays may add 1-2 days — we'll email you in advance."
       },
       "q8": {
-        "question": "What is the return and exchange policy?",
-        "answer": "TheWhite accepts returns and exchanges within 30 days of receipt. Products must be unworn, unwashed, with all original tags attached. Defective products are returned free of charge. Size/color exchanges are free for the first time."
+        "question": "What's the shipping fee?",
+        "answer": "Free shipping on orders of 500,000₫ or more. Under 500,000₫: 30,000₫ inside HCMC / Hanoi, 50,000₫ to other provinces. Gold and Platinum loyalty tiers get free shipping on every order, regardless of amount."
       },
       "q9": {
-        "question": "How do I request a return?",
-        "answer": "Log in to your account, go to \"Order History\", select the order and click \"Request Return/Exchange\". Or visit our Return Request page and fill in the form. We'll process within 24–48 hours."
+        "question": "How do I track my order?",
+        "answer": "Once your order ships, you get a tracking code via email and SMS. Check 'My Orders' in your account, or paste the tracking code into the carrier's website. Wolfies (our AI assistant) can also pull order status live inside the chat."
       },
       "q10": {
-        "question": "How long does a refund take?",
-        "answer": "After receiving and inspecting the returned item: Bank transfer/e-wallet: 3–5 business days. Credit/debit card: 5–7 business days. Store credit: Immediate."
+        "question": "Can I request a specific delivery time slot?",
+        "answer": "We don't commit to hard time windows, but you can leave a preferred window in 'Order notes' at checkout — the courier will do their best. If your plans change on the day, calling the driver directly via the tracking code is the fastest way to adjust."
       },
       "q11": {
-        "question": "How do I find the right size?",
-        "answer": "Visit our Size Guide page for detailed measurement instructions and size charts. You can also use our AI Size Finder tool — enter your height and weight and we'll recommend the best size for you."
+        "question": "What's TheWhite's return policy?",
+        "answer": "Exchange or return within 30 days of delivery. Items must have tags attached, unwashed and unworn. First size exchange is free, and we refund 100% for any defective item. Items discounted 50% or more are final sale."
       },
       "q12": {
-        "question": "Is the product on the website exactly what I'll receive?",
-        "answer": "Yes, product images on TheWhite are shot directly on the actual product. However, slight color variations may occur due to screen display differences. If you receive a product that doesn't match the description, please contact us immediately."
+        "question": "How do I request an exchange or return?",
+        "answer": "Go to 'My Orders' → pick the order → hit 'Request Exchange / Return'. Choose a reason, attach photos if the item is defective, and add any detail. The TheWhite team responds within 24-48 hours with packing and shipping instructions."
       },
       "q13": {
-        "question": "How do I care for TheWhite products?",
-        "answer": "Each product has a care label inside. General guidelines: machine or hand wash in cold water (under 30°C), do not bleach, dry flat to avoid stretching, low-heat iron if needed. Detailed instructions are on each product page."
+        "question": "Who pays the return shipping?",
+        "answer": "TheWhite covers both legs when the item is defective, wrong, or not as described. First size exchange: free. Change of mind or wrong purchase: customer covers round-trip shipping (from 60,000₫ depending on province). Second size exchange onward: treated as change of mind."
       },
       "q14": {
-        "question": "How do I create an account?",
-        "answer": "Click \"Sign Up\" at the top right of the website. Fill in your full name, email and password. Verify your email to activate your account. You can also sign in with Google or Facebook for convenience."
+        "question": "When will I receive my refund?",
+        "answer": "After TheWhite receives and inspects the returned item (2-3 business days), refunds land: bank transfer / e-wallet in 3-5 days, credit card in 5-7 days depending on the bank. You'll get an email the moment we kick off the refund."
       },
       "q15": {
-        "question": "I forgot my password. What should I do?",
-        "answer": "Click \"Forgot Password\" on the login page. Enter your registered email address. Check your inbox for a password reset email. Follow the instructions to create a new password. The link is valid for 24 hours."
+        "question": "How do I pick the right size?",
+        "answer": "Every product page has its own size chart (measured flat, in centimetres). Our polyester + spandex 4-way stretch means: between two sizes, size down for a closer fit, size up for relaxed. You can also use 'AI Smart Size' (enter height + weight) or 'Virtual Try-On' to preview the fit on an AI model before you buy."
       },
       "q16": {
-        "question": "How do I update my account information?",
-        "answer": "Log in to your account, go to \"Profile\" or \"Account Settings\". You can update your full name, phone number, address, and profile picture. Email cannot be changed — please contact us if needed."
+        "question": "The item I want is out of stock — when will it restock?",
+        "answer": "TheWhite produces in small batches, so popular items can be out of stock for 1-3 weeks between drops. Click 'Notify When Available' on the product page — we'll email you the moment your size / colour is back in the warehouse, before it goes public again."
       },
       "q17": {
-        "question": "Does TheWhite have a loyalty program?",
-        "answer": "Yes! TheWhite Members program: Silver (0–4,999,000₫ spent): 1% cashback. Gold (5,000,000–19,999,000₫ spent): 2% cashback + free express shipping. Platinum (20,000,000₫+ spent): 3% cashback + dedicated support + exclusive events."
+        "question": "Can I stack multiple promo codes?",
+        "answer": "One promo code per order. The checkout automatically suggests the best code for your cart. Loyalty points (1 point = 100₫) can be used on top of a promo code."
       },
       "q18": {
-        "question": "How can I contact TheWhite?",
-        "answer": "Hotline: 1900 xxxx (8:00–22:00 daily). Email: hello@thewhite.vn (reply within 24h). Live chat on website (8:00–22:00). Facebook/Instagram: @thewhite.vn. In-store: 123 Fashion Street, District 1, HCMC."
+        "question": "Does TheWhite have a physical store?",
+        "answer": "TheWhite operates mainly online. We run a by-appointment fitting studio in HCMC — book a slot through the 'Contact' page. Occasional pop-ups in Hanoi; follow @thewhite on Instagram so you don't miss the next one."
       }
     },
     "breadcrumbHome": "Home",

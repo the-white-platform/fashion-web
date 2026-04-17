@@ -10,6 +10,7 @@ import * as migration_20260416_122610_chat_context_site_features from './2026041
 import * as migration_20260416_133436_drop_footer_nav_items from './20260416_133436_drop_footer_nav_items'
 import * as migration_20260416_213253 from './20260416_213253'
 import * as migration_20260416_231504 from './20260416_231504'
+import * as migration_20260417_145410 from './20260417_145410'
 
 export const migrations = [
   {
@@ -71,5 +72,10 @@ export const migrations = [
     up: migration_20260416_231504.up,
     down: migration_20260416_231504.down,
     name: '20260416_231504',
+  },
+  {
+    up: migration_20260417_145410.up,
+    down: migration_20260417_145410.down,
+    name: '20260417_145410',
   },
 ]
