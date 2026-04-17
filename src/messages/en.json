@@ -106,7 +106,15 @@
     "breadcrumbProducts": "Products",
     "heading": "Products",
     "description": "Explore THE WHITE's premium athletic fashion collection. Minimal design, maximum performance.",
-    "noResults": "No matching products found"
+    "noResults": "No matching products found",
+    "tags": {
+      "MỚI": "NEW",
+      "BÁN CHẠY": "BESTSELLER",
+      "GIẢM 20%": "20% OFF",
+      "GIẢM 30%": "30% OFF",
+      "GIẢM 50%": "50% OFF",
+      "HOT": "HOT"
+    }
   },
   "cart": {
     "title": "Shopping Cart",

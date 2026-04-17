@@ -106,7 +106,15 @@
     "breadcrumbProducts": "Sản phẩm",
     "heading": "Sản Phẩm",
     "description": "Khám phá bộ sưu tập thời trang thể thao cao cấp từ TheWhite. Thiết kế tối giản, hiệu năng tối đa.",
-    "noResults": "Không tìm thấy sản phẩm phù hợp"
+    "noResults": "Không tìm thấy sản phẩm phù hợp",
+    "tags": {
+      "MỚI": "MỚI",
+      "BÁN CHẠY": "BÁN CHẠY",
+      "GIẢM 20%": "GIẢM 20%",
+      "GIẢM 30%": "GIẢM 30%",
+      "GIẢM 50%": "GIẢM 50%",
+      "HOT": "HOT"
+    }
   },
   "cart": {
     "title": "Giỏ Hàng",

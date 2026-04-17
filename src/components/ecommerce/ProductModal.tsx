@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
+import { localizeProductTag } from '@/utilities/productTag'
 import { VirtualTryOnModal } from './VirtualTryOnModal'
 import Image from 'next/image'
 import { SizeChartModal } from '@/components/ecommerce/SizeChartModal'
@@ -193,7 +194,7 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
                   <div className="bg-primary text-primary-foreground px-4 py-2 text-[10px] font-bold uppercase tracking-[0.2em] shadow-xl rounded-sm">
                     <span className="flex items-center gap-1.5">
                       <Zap className="w-3 h-3" />
-                      {product.tag}
+                      {localizeProductTag(product.tag, t)}
                     </span>
                   </div>
                 </motion.div>

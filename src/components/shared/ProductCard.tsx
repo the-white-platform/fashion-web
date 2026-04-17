@@ -8,6 +8,7 @@ import { cn } from '@/utilities/cn'
 import { useTranslations } from 'next-intl'
 import type { ProductForFrontend } from '@/utilities/getProducts'
 import { useCompare } from '@/contexts/CompareContext'
+import { localizeProductTag } from '@/utilities/productTag'
 
 interface ProductCardProps {
   product: ProductForFrontend
@@ -59,7 +60,7 @@ export function ProductCard({
 
           {product.tag && (
             <div className="absolute top-0 left-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-bold uppercase tracking-wider">
-              {product.tag}
+              {localizeProductTag(product.tag, t)}
             </div>
           )}
 
