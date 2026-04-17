@@ -81,6 +81,10 @@ export default function HomePageClient({
         />
       </AlternatingSection>
 
+      {/* Shop-by-activity. Renders nothing (zero height) until the
+          Homepage global has activity categories configured, which
+          temporarily collapses the dark/light rhythm — that's expected
+          and goes away once the admin adds data. */}
       <AlternatingSection index={2}>
         <Categories categories={activityCategories} />
       </AlternatingSection>
@@ -99,10 +103,7 @@ export default function HomePageClient({
 
       {/* RecentlyViewed gets its own section but `forceTheme="match-odd"`
           anchors it to the same surface as BrandStory (dark in light
-          mode, light in dark mode). This avoids the old "light strip
-          between two dark sections" look while still letting
-          RecentlyViewed own its own vertical padding instead of
-          hanging off the end of BrandStory. The old "Popular Products"
+          mode, light in dark mode). The old "Popular Products"
           carousel has been dropped per product direction. */}
       <AlternatingSection index={6} forceTheme="match-odd">
         <section className="py-20 bg-transparent text-foreground">
