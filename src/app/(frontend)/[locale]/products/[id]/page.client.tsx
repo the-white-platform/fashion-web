@@ -84,6 +84,9 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
   }, [product.categories, product.category])
   const [descExpanded, setDescExpanded] = useState(false)
   const tCommon = useTranslations('common')
+  const tNav = useTranslations('nav')
+  const tProducts = useTranslations('products')
+  const tDetail = useTranslations('products.detail')
 
   // Get current variant
   const selectedVariant = product.colorVariants[selectedVariantIndex]
@@ -112,7 +115,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
 
   const handleAddToCart = () => {
     if (!actualSelectedSize) {
-      alert('Vui lòng chọn size')
+      alert(tDetail('selectSize'))
       return
     }
 
@@ -157,7 +160,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
                     <Link href="/" className="hover:text-foreground transition-colors">
-                      Trang chủ
+                      {tNav('home')}
                     </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -165,7 +168,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                 <BreadcrumbItem>
                   <BreadcrumbLink asChild>
                     <Link href="/products" className="hover:text-foreground transition-colors">
-                      Sản phẩm
+                      {tNav('products')}
                     </Link>
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -187,7 +190,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
             className="flex items-center gap-2 mb-6 hover:text-muted-foreground transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
-            Quay lại
+            {tDetail('back')}
           </motion.button>
 
           <div className="grid lg:grid-cols-2 gap-12">
@@ -281,7 +284,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                     </p>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">Đã bao gồm VAT</p>
+                <p className="text-sm text-muted-foreground mt-1">{tDetail('vatIncluded')}</p>
               </div>
 
               {product.description &&
@@ -317,7 +320,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
               {product.colorVariants.length > 0 && (
                 <div>
                   <label className="block mb-3 text-sm uppercase tracking-wide">
-                    Màu Sắc - {selectedVariant?.color || 'Chọn màu'}
+                    {tDetail('colorLabel')} - {selectedVariant?.color || tDetail('colorChoose')}
                   </label>
                   <div className="flex gap-2">
                     {product.colorVariants.map((variant, index) => (
@@ -336,7 +339,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                     ))}
                   </div>
                   {selectedVariant && !selectedVariant.inStock && (
-                    <p className="text-sm text-red-500 mt-2">Màu này hiện đang hết hàng</p>
+                    <p className="text-sm text-red-500 mt-2">{tDetail('colorOutOfStock')}</p>
                   )}
                 </div>
               )}
@@ -345,7 +348,9 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
               {currentSizes.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <label className="text-sm uppercase tracking-wide">Chọn Size</label>
+                    <label className="text-sm uppercase tracking-wide">
+                      {tDetail('sizeLabel')}
+                    </label>
                     <div className="flex items-center gap-3">
                       <SizeChartModal sizeChart={product.sizeChart} productName={product.name} />
                       <button
@@ -353,7 +358,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                         onClick={() => setIsSizePickerOpen(true)}
                         className="text-xs text-muted-foreground hover:text-foreground underline"
                       >
-                        ✨ Tìm size phù hợp
+                        {tDetail('sizeFinder')}
                       </button>
                     </div>
                   </div>
@@ -377,7 +382,9 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
 
               {/* Quantity */}
               <div>
-                <label className="block mb-3 text-sm uppercase tracking-wide">Số Lượng</label>
+                <label className="block mb-3 text-sm uppercase tracking-wide">
+                  {tDetail('quantityLabel')}
+                </label>
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -402,7 +409,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                   className="w-full bg-primary text-primary-foreground py-6 rounded-sm hover:bg-background hover:text-foreground border-2 border-primary hover:border-foreground transition-all hover:scale-[1.02] uppercase tracking-[0.2em] font-bold text-xs flex items-center justify-center gap-3 group shadow-2xl"
                 >
                   <Sparkles className="w-5 h-5 group-hover:animate-pulse text-yellow-500" />
-                  Thử Đồ Ảo
+                  {tDetail('tryOn')}
                 </button>
 
                 <button
@@ -411,7 +418,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                   className="w-full bg-background text-foreground py-6 rounded-sm border-2 border-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all hover:scale-[1.02] uppercase tracking-[0.2em] font-bold text-xs flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  {selectedVariant?.inStock ? 'Thêm Vào Giỏ Hàng' : 'Hết Hàng'}
+                  {selectedVariant?.inStock ? tProducts('addToCart') : tProducts('outOfStock')}
                 </button>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -426,7 +433,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                     <Heart
                       className={`w-4 h-4 ${isWishlisted(product.id) ? 'fill-current' : ''}`}
                     />
-                    {isWishlisted(product.id) ? 'Đã Lưu' : 'Yêu Thích'}
+                    {isWishlisted(product.id) ? tDetail('wishlistSaved') : tDetail('wishlistAdd')}
                   </button>
                   <button
                     type="button"
@@ -452,15 +459,15 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                       }
                       try {
                         await navigator.clipboard.writeText(url)
-                        toast.success('Đã sao chép link sản phẩm')
+                        toast.success(tDetail('copySuccess'))
                       } catch {
-                        toast.error('Không thể sao chép link')
+                        toast.error(tDetail('copyError'))
                       }
                     }}
                     className="border-2 border-border py-4 rounded-sm hover:border-foreground transition-all hover:scale-[1.02] flex items-center justify-center gap-2 uppercase tracking-[0.1em] font-bold text-[10px]"
                   >
                     <Share2 className="w-4 h-4" />
-                    Chia Sẻ
+                    {tDetail('share')}
                   </button>
                 </div>
               </div>
@@ -472,7 +479,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
               {product.features.length > 0 && (
                 <div className="pt-8 border-t border-border">
                   <h3 className="text-sm font-black uppercase tracking-[0.3em] mb-6 italic">
-                    Đặc Điểm Kỹ Thuật
+                    {tDetail('specifications')}
                   </h3>
                   <ul className="grid grid-cols-1 gap-4">
                     {product.features.map((feature, index) => (
@@ -498,7 +505,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
             viewport={{ once: true }}
             className="mt-20"
           >
-            <h2 className="text-2xl mb-8 uppercase">Sản Phẩm Liên Quan</h2>
+            <h2 className="text-2xl mb-8 uppercase">{tDetail('related')}</h2>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((item, index) => (
                 <ProductCard

@@ -23,7 +23,11 @@
     "logout": "Logout",
     "profile": "Profile",
     "backToHome": "Back to Home",
-    "hot": "Hot"
+    "hot": "Hot",
+    "profileAction": "My profile",
+    "loginRegister": "Login / Register",
+    "shipping": "Shipping",
+    "trackOrder": "Track order"
   },
   "hero": {
     "title": "WINTER COLLECTION 2026",
@@ -72,7 +76,26 @@
     "color": "Color",
     "price": "Price",
     "category": "Category",
-    "viewSizeChart": "View size chart"
+    "viewSizeChart": "View size chart",
+    "detail": {
+      "selectSize": "Please select a size",
+      "back": "Back",
+      "vatIncluded": "VAT included",
+      "colorLabel": "Color",
+      "colorChoose": "Choose color",
+      "colorOutOfStock": "This color is out of stock",
+      "sizeLabel": "Select Size",
+      "sizeFinder": "✨ Find your size",
+      "quantityLabel": "Quantity",
+      "tryOn": "Virtual Try-On",
+      "wishlistSaved": "Saved",
+      "wishlistAdd": "Wishlist",
+      "copySuccess": "Product link copied",
+      "copyError": "Could not copy link",
+      "share": "Share",
+      "specifications": "Specifications",
+      "related": "Related Products"
+    }
   },
   "cart": {
     "title": "Shopping Cart",

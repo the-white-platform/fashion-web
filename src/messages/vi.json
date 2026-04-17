@@ -23,7 +23,11 @@
     "logout": "Đăng Xuất",
     "profile": "Hồ Sơ",
     "backToHome": "Về Trang Chủ",
-    "hot": "Hot"
+    "hot": "Hot",
+    "profileAction": "Hồ sơ cá nhân",
+    "loginRegister": "Đăng nhập / Đăng ký",
+    "shipping": "Vận chuyển",
+    "trackOrder": "Theo dõi đơn hàng"
   },
   "hero": {
     "title": "BỘ SƯU TẬP MÙA ĐÔNG 2026",
@@ -72,7 +76,26 @@
     "color": "Màu Sắc",
     "price": "Giá",
     "category": "Danh Mục",
-    "viewSizeChart": "Xem bảng kích thước"
+    "viewSizeChart": "Xem bảng kích thước",
+    "detail": {
+      "selectSize": "Vui lòng chọn size",
+      "back": "Quay lại",
+      "vatIncluded": "Đã bao gồm VAT",
+      "colorLabel": "Màu Sắc",
+      "colorChoose": "Chọn màu",
+      "colorOutOfStock": "Màu này hiện đang hết hàng",
+      "sizeLabel": "Chọn Size",
+      "sizeFinder": "✨ Tìm size phù hợp",
+      "quantityLabel": "Số Lượng",
+      "tryOn": "Thử Đồ Ảo",
+      "wishlistSaved": "Đã Lưu",
+      "wishlistAdd": "Yêu Thích",
+      "copySuccess": "Đã sao chép link sản phẩm",
+      "copyError": "Không thể sao chép link",
+      "share": "Chia Sẻ",
+      "specifications": "Đặc Điểm Kỹ Thuật",
+      "related": "Sản Phẩm Liên Quan"
+    }
   },
   "cart": {
     "title": "Giỏ Hàng",
