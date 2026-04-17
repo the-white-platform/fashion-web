@@ -146,8 +146,32 @@ export function ShippingStep({
       alert(t('addressInfo'))
       return
     }
+    // Saved addresses predating the current required-field set can be missing
+    // name/phone/address/district — selecting one would POST null and trip
+    // Payload's 400. Require shipping identity (name + phone + street + district).
+    if (selectedAddress && !showNewAddress) {
+      const savedDistrictId =
+        typeof selectedAddress.district === 'object'
+          ? selectedAddress.district?.id
+          : selectedAddress.district
+      if (
+        !selectedAddress.name ||
+        !selectedAddress.phone ||
+        !selectedAddress.address ||
+        !savedDistrictId
+      ) {
+        alert(t('addressInfo'))
+        return
+      }
+    }
     if (showNewAddress) {
-      if (!newAddress.name || !newAddress.phone || !newAddress.address || !newAddress.province.id) {
+      if (
+        !newAddress.name ||
+        !newAddress.phone ||
+        !newAddress.address ||
+        !newAddress.province.id ||
+        !newAddress.district.id
+      ) {
         alert(t('addressInfo'))
         return
       }

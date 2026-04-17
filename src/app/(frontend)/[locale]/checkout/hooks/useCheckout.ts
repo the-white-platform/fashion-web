@@ -105,31 +105,67 @@ export function useCheckout(): UseCheckoutReturn {
       const uiPaymentType = (selectedPayment?.type as string | undefined) ?? 'cod'
       const paymentMethod = uiPaymentType === 'bank' ? 'bank_transfer' : uiPaymentType
 
+      // Relationships come back as {id,name} at depth≥1 and as raw IDs at
+      // depth 0; normalize both shapes so we don't submit null when the
+      // value is actually present in the other form.
+      const relId = (v: unknown): string | number | null => {
+        if (v == null) return null
+        if (typeof v === 'object') {
+          const id = (v as { id?: string | number }).id
+          return id ?? null
+        }
+        return v as string | number
+      }
+
+      // The shipping address owns the recipient identity (could be a gift,
+      // or sent to someone other than the buyer), so it takes precedence over
+      // the account profile. Fall back to the user profile only when the
+      // address itself lacks a name/phone.
+      const customerName = (selectedAddress?.name || user?.fullName || '').trim()
+      const customerPhone = (selectedAddress?.phone || user?.phone || '').trim()
+      const shippingAddressLine = (selectedAddress?.address ?? '').trim()
+      const cityId = relId(selectedAddress?.province ?? (selectedAddress as any)?.city)
+      const districtId = relId(selectedAddress?.district)
+      const wardId = relId(selectedAddress?.ward)
+
+      // Guard Payload's `required` fields before POST so the user sees a clear
+      // error instead of a raw 400 from the server. Mirrors Orders.ts schema.
+      const missing: string[] = []
+      if (!customerName) missing.push('customerName')
+      if (!customerPhone) missing.push('customerPhone')
+      if (!shippingAddressLine) missing.push('shippingAddress.address')
+      if (!cityId) missing.push('shippingAddress.city')
+      if (!districtId) missing.push('shippingAddress.district')
+      if (!cartItems.length) missing.push('items')
+      for (const [i, item] of cartItems.entries()) {
+        if (!item.size) missing.push(`items[${i}].size`)
+      }
+      if (missing.length) {
+        throw new Error(`Missing required fields: ${missing.join(', ')}`)
+      }
+
       const orderData = {
         // Pre-generated on the page so the VietQR memo on PaymentStep
         // and the confirmation screen reference the same identifier.
         // Server hook only auto-generates when this is missing.
         ...(orderNumber ? { orderNumber } : {}),
         customerInfo: (() => {
-          // Strip empty-string fields — Payload's email validator
-          // rejects "" as "not a valid email", which blew up every
-          // anonymous order before we made email optional. Name and
-          // phone are still required by the schema; falling back to
-          // the shipping-address values mirrors the old behaviour.
           const info: Record<string, unknown> = {
-            customerName: user?.fullName || selectedAddress?.name || '',
-            customerPhone: user?.phone || selectedAddress?.phone || '',
+            customerName,
+            customerPhone,
           }
+          // Payload's email validator rejects "" as "not a valid email",
+          // so only include the field when we actually have one.
           const email = user?.email?.trim()
           if (email) info.customerEmail = email
           if (user?.id) info.user = user.id
           return info
         })(),
         shippingAddress: {
-          address: selectedAddress?.address ?? '',
-          city: selectedAddress?.province?.id ?? null,
-          district: selectedAddress?.district?.id ?? null,
-          ward: selectedAddress?.ward?.id ?? null,
+          address: shippingAddressLine,
+          city: cityId,
+          district: districtId,
+          ward: wardId,
         },
         items: cartItems.map((item) => ({
           product: item.id,
