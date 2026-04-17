@@ -298,11 +298,16 @@ function ProductsPageContent({
       if (searchQuery && !product.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false
       }
-      // ?tag=hot / ?tag=mới / ?tag=sale — substring match on the
-      // product's tag string. Lower-case both sides; supports the
-      // header nav link for "HOT" and similar one-off entry points.
-      if (tagFilter && !(product.tag || '').toLowerCase().includes(tagFilter)) {
-        return false
+      // ?tag=hot / ?tag=new / ?tag=sale — exact match on tag code.
+      // `sale` is special-cased to match any of sale-20 / sale-30 /
+      // sale-50 so one URL covers the whole sale funnel.
+      if (tagFilter) {
+        const code = (product.tag || '').toLowerCase()
+        if (tagFilter === 'sale') {
+          if (!code.startsWith('sale-')) return false
+        } else if (code !== tagFilter) {
+          return false
+        }
       }
       return true
     })
@@ -315,11 +320,12 @@ function ProductsPageContent({
         case 'price-high':
           return b.priceNumber - a.priceNumber
         case 'popular':
-          // Sort by tag (BÁN CHẠY first, then MỚI, then others)
-          const tagOrder: { [key: string]: number } = { 'BÁN CHẠY': 0, MỚI: 1 }
-          const aOrder = tagOrder[a.tag] ?? 2
-          const bOrder = tagOrder[b.tag] ?? 2
-          return aOrder - bOrder
+          // Rating-driven, tag-independent. Higher average rating first,
+          // ties broken by review count so genuinely popular items beat
+          // lightly-reviewed 5-star listings.
+          const ratingDiff = (b.averageRating ?? 0) - (a.averageRating ?? 0)
+          if (ratingDiff !== 0) return ratingDiff
+          return (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
         case 'newest':
         default:
           // Newest first (by ID, assuming higher ID = newer)

@@ -1,47 +1,27 @@
-import type { Product, Category, Media } from '@/payload-types'
+import type { Product, Category, Media, ProductTag } from '@/payload-types'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { unstable_cache } from 'next/cache'
 import { slugify } from '@/utilities/slugify'
 import { formatPrice } from '@/utilities/formatPrice'
-import { Products as ProductsCollection } from '@/collections/Products'
 import type { SizeChartData } from '@/components/ecommerce/SizeChartModal'
 
 type Locale = 'vi' | 'en'
 
 /**
- * Read the `label: { vi, en }` map off the Products collection's `tag`
- * select field so adding a new option in `Products.ts` ripples to the
- * storefront without any messages-JSON edit. Falls back to the raw value
- * if an option is missing a label (e.g. the HOT entry) or if the tag
- * doesn't match any option.
+ * Resolve the tag display info for a product.
+ *
+ * `product.tag` is a relationship to the `product-tags` collection. At
+ * depth >= 1 Payload populates it as a full ProductTag document whose
+ * `label` field is already localized to the requested locale. At depth 0
+ * it comes back as just an integer id — in that case we emit empty
+ * strings (the caller normally passes depth >= 1).
  */
-const tagLabelByValue: Map<string, { vi: string; en: string }> = (() => {
-  const m = new Map<string, { vi: string; en: string }>()
-  const tagField = (ProductsCollection.fields as any[]).find((f) => f.name === 'tag')
-  const options = (tagField?.options ?? []) as Array<{
-    value: string
-    label: string | { vi?: string; en?: string }
-  }>
-  for (const opt of options) {
-    const label = opt.label
-    if (typeof label === 'string') {
-      m.set(opt.value, { vi: label, en: label })
-    } else {
-      m.set(opt.value, {
-        vi: label?.vi ?? opt.value,
-        en: label?.en ?? label?.vi ?? opt.value,
-      })
-    }
-  }
-  return m
-})()
-
-function resolveTagLabel(tag: string | null | undefined, locale: Locale): string {
-  if (!tag) return ''
-  const entry = tagLabelByValue.get(tag)
-  if (!entry) return tag
-  return entry[locale] ?? tag
+function resolveTag(raw: Product['tag']): { code: string; label: string } {
+  if (!raw || typeof raw !== 'object') return { code: '', label: '' }
+  const tag = raw as ProductTag
+  const label = typeof tag.label === 'string' ? tag.label : ''
+  return { code: tag.code ?? '', label: label || (tag.code ?? '') }
 }
 
 /**
@@ -249,8 +229,10 @@ export function transformProduct(product: Product, locale: Locale = 'vi'): Produ
     colorVariants,
     colors,
     sizes,
-    tag: product.tag || '',
-    tagLabel: resolveTagLabel(product.tag, locale),
+    ...(() => {
+      const { code, label } = resolveTag(product.tag)
+      return { tag: code, tagLabel: label }
+    })(),
     inStock,
     featured: product.featured ?? false,
     description,

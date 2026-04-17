@@ -204,7 +204,7 @@ export const productSeedData: ProductSeedData[] = [
     categoryTitle: 'Quần Dài',
     additionalCategories: ['Nam', 'Yoga', 'Gym', 'Mới Nhất'],
     price: 455_000,
-    tag: 'HOT',
+    tag: 'hot',
     featured: true,
     colorVariants: [
       {
@@ -247,7 +247,7 @@ export const productSeedData: ProductSeedData[] = [
     categoryTitle: 'Quần Short',
     additionalCategories: ['Nam', 'Chạy Bộ', 'Gym'],
     price: 415_000,
-    tag: 'BÁN CHẠY',
+    tag: 'bestseller',
     featured: true,
     colorVariants: [
       {
@@ -349,7 +349,7 @@ export const productSeedData: ProductSeedData[] = [
     categoryTitle: 'Áo Thể Thao',
     additionalCategories: ['Nam', 'Mới Nhất'],
     price: 259_000,
-    tag: 'MỚI',
+    tag: 'new',
     featured: true,
     colorVariants: [
       {
@@ -445,7 +445,7 @@ export const productSeedData: ProductSeedData[] = [
     categoryTitle: 'Áo Thể Thao',
     additionalCategories: ['Nam', 'Gym'],
     price: 200_000,
-    tag: 'HOT',
+    tag: 'hot',
     featured: true,
     colorVariants: [
       {

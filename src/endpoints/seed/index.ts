@@ -24,6 +24,7 @@ const collections: CollectionSlug[] = [
   'pages',
   'posts',
   'products',
+  'product-tags',
   'orders',
   'coupons',
   'forms',
@@ -221,6 +222,45 @@ export const seed = async ({
     })
 
     payload.logger.info(`  ✓ Created category: ${cat.title} / ${cat.titleEn}`)
+  }
+
+  // 2.5 Create product tags (localized label) and build a code → id map
+  payload.logger.info('— Ensuring product tags exist...')
+  const TAG_SEEDS = [
+    { code: 'new', order: 20, vi: 'Mới', en: 'New' },
+    { code: 'bestseller', order: 10, vi: 'Bán Chạy', en: 'Bestseller' },
+    { code: 'sale-20', order: 30, vi: 'Giảm 20%', en: '20% Off' },
+    { code: 'sale-30', order: 40, vi: 'Giảm 30%', en: '30% Off' },
+    { code: 'sale-50', order: 50, vi: 'Giảm 50%', en: '50% Off' },
+    { code: 'hot', order: 0, vi: 'Hot', en: 'Hot' },
+  ] as const
+  const tagIdByCode: Record<string, number> = {}
+  for (const t of TAG_SEEDS) {
+    const existing = await payload.find({
+      collection: 'product-tags',
+      where: { code: { equals: t.code } },
+      limit: 1,
+      depth: 0,
+    })
+    let tagId: number
+    if (existing.totalDocs > 0) {
+      tagId = existing.docs[0].id
+    } else {
+      const created = await payload.create({
+        collection: 'product-tags',
+        data: { code: t.code, order: t.order, label: t.vi },
+        locale: 'vi',
+      })
+      tagId = created.id
+      await payload.update({
+        collection: 'product-tags',
+        id: tagId,
+        data: { label: t.en },
+        locale: 'en',
+      })
+    }
+    tagIdByCode[t.code] = tagId
+    payload.logger.info(`  ✓ tag ${t.code} → id ${tagId}`)
   }
 
   // 3. Create products with color variants (PARALLEL PROCESSING)
@@ -455,7 +495,7 @@ export const seed = async ({
           price: productData.price,
           originalPrice: productData.originalPrice,
           colorVariants: colorVariants,
-          tag: productData.tag as any,
+          tag: productData.tag ? (tagIdByCode[productData.tag] ?? null) : null,
           featured: productData.featured,
           description: toRichText(viDescription) as any,
           features: productData.features.map((f) => ({ feature: f })),

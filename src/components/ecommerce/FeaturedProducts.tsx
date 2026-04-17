@@ -69,19 +69,19 @@ export function FeaturedProducts({
                 : product.category === activeFilter.label)
             )
           case 'tag':
-            // Filter by tag
-            const tagLower = product.tag.toLowerCase()
+            // Filter by tag code. Tag is now a relation to `product-tags`
+            // whose stable identifier is the `code` field (e.g. 'new',
+            // 'bestseller', 'sale-20', 'hot'). Sale matches any code
+            // starting with 'sale-'.
             switch (activeFilter.tagFilter) {
               case 'sale':
-                return (
-                  tagLower.includes('giảm') || tagLower.includes('sale') || tagLower.includes('%')
-                )
+                return product.tag.startsWith('sale-')
               case 'new':
-                return tagLower.includes('mới') || tagLower.includes('new')
+                return product.tag === 'new'
               case 'bestseller':
-                return tagLower.includes('bán chạy') || tagLower.includes('best')
+                return product.tag === 'bestseller'
               case 'hot':
-                return tagLower.includes('hot')
+                return product.tag === 'hot'
               default:
                 return true
             }
@@ -100,17 +100,32 @@ export function FeaturedProducts({
         filtered.sort((a, b) => b.priceNumber - a.priceNumber)
         break
       case 'popular':
+        // Rating-driven, tag-independent. Higher average rating first;
+        // ties broken by review count so genuinely popular items beat
+        // lightly-reviewed 5-star listings.
         filtered.sort((a, b) => {
-          const tagOrder: { [key: string]: number } = { 'BÁN CHẠY': 0, MỚI: 1 }
-          const aOrder = tagOrder[a.tag] ?? 2
-          const bOrder = tagOrder[b.tag] ?? 2
-          return aOrder - bOrder
+          const ratingDiff = (b.averageRating ?? 0) - (a.averageRating ?? 0)
+          if (ratingDiff !== 0) return ratingDiff
+          return (b.reviewCount ?? 0) - (a.reviewCount ?? 0)
         })
         break
       case 'newest':
       default:
         filtered.sort((a, b) => b.id - a.id)
         break
+    }
+
+    // Trim to the largest multiple of 4 (desktop) / 2 (mobile) so the
+    // last row is always complete. An orphan row with 1-2 cards next to
+    // empty columns looks broken. On lg the grid is 4 cols, so we floor
+    // to a multiple of 4; below lg it's 2 cols and any multiple of 4 is
+    // also a multiple of 2, so this single cap works for both. If fewer
+    // than 4 products are featured, show whatever is there rather than
+    // zero.
+    const GRID_COLS_DESKTOP = 4
+    if (filtered.length >= GRID_COLS_DESKTOP) {
+      const complete = Math.floor(filtered.length / GRID_COLS_DESKTOP) * GRID_COLS_DESKTOP
+      return filtered.slice(0, complete)
     }
 
     return filtered

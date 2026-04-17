@@ -73,6 +73,7 @@ export interface Config {
     categories: Category;
     users: User;
     products: Product;
+    'product-tags': ProductTag;
     reviews: Review;
     orders: Order;
     coupons: Coupon;
@@ -109,6 +110,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'product-tags': ProductTagsSelect<false> | ProductTagsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     coupons: CouponsSelect<false> | CouponsSelect<true>;
@@ -703,7 +705,10 @@ export interface Product {
      */
     note?: string | null;
   };
-  tag?: ('MỚI' | 'BÁN CHẠY' | 'GIẢM 20%' | 'GIẢM 30%' | 'GIẢM 50%' | 'HOT') | null;
+  /**
+   * Manage the tag list under "Product Tags". Pick one (or leave empty) to show a badge on the product card.
+   */
+  tag?: (number | null) | ProductTag;
   inStock?: boolean | null;
   stockStatus?: ('in_stock' | 'low_stock' | 'out_of_stock') | null;
   /**
@@ -739,6 +744,29 @@ export interface Product {
    * Count of approved reviews
    */
   reviewCount?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Badges shown on product cards (New, Bestseller, Sale, Hot, …). Create here and assign from the product page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-tags".
+ */
+export interface ProductTag {
+  id: number;
+  /**
+   * Stable identifier (e.g. new, bestseller, sale-20). Used in filter / sort logic. Do not change once assigned to products.
+   */
+  code: string;
+  /**
+   * Text rendered on the product badge. Has its own VI / EN copy.
+   */
+  label: string;
+  /**
+   * Lower numbers rank first when a product has multiple tags or when sorting.
+   */
+  order?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1563,6 +1591,10 @@ export interface PayloadLockedDocument {
         value: number | Product;
       } | null)
     | ({
+        relationTo: 'product-tags';
+        value: number | ProductTag;
+      } | null)
+    | ({
         relationTo: 'reviews';
         value: number | Review;
       } | null)
@@ -2101,6 +2133,17 @@ export interface ProductsSelect<T extends boolean = true> {
       };
   averageRating?: T;
   reviewCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "product-tags_select".
+ */
+export interface ProductTagsSelect<T extends boolean = true> {
+  code?: T;
+  label?: T;
+  order?: T;
   updatedAt?: T;
   createdAt?: T;
 }
