@@ -20,7 +20,8 @@ import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
 import { ProgressBar } from '@/components/shared/ProgressBar'
-import { getCachedGlobal } from '@/utilities/getGlobals'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 import type { Header as HeaderType } from '@/payload-types'
 
 import '../globals.css'
@@ -85,7 +86,14 @@ export default async function RootLayout({ children, params }: Props) {
 
   let headerData: HeaderType | null = null
   try {
-    headerData = (await getCachedGlobal('header', locale as 'vi' | 'en', 1)()) as HeaderType | null
+    // Direct Payload call — see note in Header/Component.tsx for why we
+    // bypass `getCachedGlobal` (unstable_cache poisoning across locales).
+    const payload = await getPayload({ config: configPromise })
+    headerData = (await payload.findGlobal({
+      slug: 'header',
+      locale: locale as 'vi' | 'en',
+      depth: 1,
+    })) as HeaderType
   } catch {
     // Header data unavailable during build or when DB is unreachable
   }

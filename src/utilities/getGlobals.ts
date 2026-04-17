@@ -29,13 +29,15 @@ async function getGlobal(slug: Global, locale?: Locale, depth = 0) {
 }
 
 /**
- * Returns a unstable_cache function mapped with the cache tag for the slug.
- * The cache key includes the locale so VI and EN render from different
- * cache entries; the revalidation tag is also locale-scoped.
+ * @deprecated Use `payload.findGlobal({ slug, locale, depth })` directly.
  *
- * Overloads keep the legacy 2-arg signature (`slug, depth`) working for
- * callers that have not been updated yet — they resolve to the default
- * locale cache entry.
+ * The `unstable_cache` wrapper here was keying by the wrapper function
+ * identity, which caused cross-locale cache poisoning: the first locale
+ * that rendered populated the cache, and every subsequent render — even
+ * for the other locale — got the cached response. Callers should call
+ * Payload directly and rely on route-level `revalidate` for caching.
+ *
+ * Kept here for any external import until the next major refactor.
  */
 export function getCachedGlobal(slug: Global, depth?: number): () => Promise<unknown>
 export function getCachedGlobal(
