@@ -101,11 +101,10 @@ export default function HomePageClient({
         <BrandStory />
       </AlternatingSection>
 
-      {/* RecentlyViewed gets its own section but `forceTheme="match-odd"`
-          anchors it to the same surface as BrandStory (dark in light
-          mode, light in dark mode). The old "Popular Products"
-          carousel has been dropped per product direction. */}
-      <AlternatingSection index={6} forceTheme="match-odd">
+      {/* RecentlyViewed alternates naturally with its index. The old
+          "Popular Products" carousel has been dropped per product
+          direction. */}
+      <AlternatingSection index={6}>
         <section className="py-20 bg-transparent text-foreground">
           <div className="container mx-auto px-6">
             <RecentlyViewed />
