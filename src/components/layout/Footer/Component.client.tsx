@@ -5,7 +5,6 @@ import { Facebook, Instagram, Phone, Mail } from 'lucide-react'
 import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/shared/Logo/Logo'
-import type { FooterCategoryLink } from './Component'
 
 // Shopee icon, outlined to match the lucide-react style used for the
 // Facebook/Instagram icons next to it (fill="none", stroke="currentColor",
@@ -32,13 +31,57 @@ function ShopeeIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
-interface FooterClientProps {
-  categories?: FooterCategoryLink[]
+// Zalo icon — redrawn in outlined-stroke style to match the lucide-react
+// Facebook/Instagram/Shopee siblings. Rounded-square speech bubble with
+// bottom-left tail (Zalo brand silhouette) and a stylized "Z" glyph.
+function ZaloIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      {/* Rounded speech bubble with tail pointing down-left */}
+      <path d="M5 3h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-8.5l-4 4v-4H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+      {/* Stylized "Z" glyph */}
+      <path d="M9 8h6l-6 6h6" />
+    </svg>
+  )
 }
 
-export function FooterClient({ categories = [] }: FooterClientProps) {
+interface FooterClientProps {
+  address?: string
+  legalEntityName?: string
+  taxCode?: string
+  registrationAuthority?: string
+  registrationDate?: string
+}
+
+function formatDate(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ''
+  const dd = String(d.getUTCDate()).padStart(2, '0')
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const yyyy = d.getUTCFullYear()
+  return `${dd}/${mm}/${yyyy}`
+}
+
+export function FooterClient({
+  address = '',
+  legalEntityName = '',
+  taxCode = '',
+  registrationAuthority = '',
+  registrationDate = '',
+}: FooterClientProps) {
   const t = useTranslations()
-  const tCommon = useTranslations('common')
+  const tContact = useTranslations('contact.info')
+  const formattedDate = formatDate(registrationDate)
 
   return (
     <footer className="bg-background text-foreground py-12 lg:py-16 border-t border-border">
@@ -80,37 +123,17 @@ export function FooterClient({ categories = [] }: FooterClientProps) {
               >
                 <ShopeeIcon className="w-5 h-5" />
               </a>
+              <a
+                href="https://zalo.me/3576162475657778031"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-background text-foreground flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-all rounded-md border border-border"
+                aria-label="Zalo"
+              >
+                <ZaloIcon className="w-5 h-5" />
+              </a>
             </div>
           </div>
-
-          {/* Products — driven from real categories with at least one product */}
-          {categories.length > 0 && (
-            <div className="col-span-1">
-              <h3 className="text-lg font-semibold mb-4 uppercase tracking-wide">
-                {t('nav.products')}
-              </h3>
-              <ul className="space-y-2 text-muted-foreground font-normal">
-                <li>
-                  <Link
-                    href="/products"
-                    className="hover:text-foreground transition-colors text-left text-sm block"
-                  >
-                    {tCommon('all')}
-                  </Link>
-                </li>
-                {categories.map((cat) => (
-                  <li key={cat.slug}>
-                    <Link
-                      href={`/products?category=${cat.slug}`}
-                      className="hover:text-foreground transition-colors text-left text-sm block"
-                    >
-                      {cat.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
 
           {/* Support */}
           <div className="col-span-1">
@@ -167,28 +190,36 @@ export function FooterClient({ categories = [] }: FooterClientProps) {
                 <Mail className="w-4 h-4" />
                 <a href="mailto:contact@thewhite.cool">contact@thewhite.cool</a>
               </li>
-              <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
-                <Instagram className="w-4 h-4" />
-                <a
-                  href="https://www.instagram.com/thewhite.cool"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  @thewhite.cool
-                </a>
-              </li>
-              <li className="flex items-center gap-2 hover:text-foreground transition-colors cursor-pointer text-sm">
-                <Phone className="w-4 h-4" />
-                <a href="https://zalo.me/84886402616" target="_blank" rel="noopener noreferrer">
-                  Zalo: +84 886 402 616
-                </a>
-              </li>
               <li className="pt-2">
                 <p className="text-foreground text-sm font-semibold">{t('footer.contact.hours')}</p>
               </li>
             </ul>
           </div>
         </div>
+
+        {/* Legal disclosure (Bộ Công Thương / tax authority) */}
+        {(legalEntityName || taxCode || registrationAuthority || address) && (
+          <div className="border-t border-border pt-6 pb-4 text-xs text-muted-foreground font-normal space-y-1">
+            {legalEntityName && (
+              <p className="text-foreground font-semibold uppercase tracking-wide">
+                {legalEntityName}
+              </p>
+            )}
+            {address && <p>{address}</p>}
+            {taxCode && (
+              <p>
+                <span className="font-medium">{tContact('taxCodeLabel')}:</span> {taxCode}
+              </p>
+            )}
+            {registrationAuthority && (
+              <p>
+                <span className="font-medium">{tContact('registrationLabel')}:</span>{' '}
+                {registrationAuthority}
+                {formattedDate && ` — ${tContact('issuedOn')} ${formattedDate}`}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Bottom */}
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
