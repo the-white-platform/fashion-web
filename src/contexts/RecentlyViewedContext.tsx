@@ -25,15 +25,22 @@ function loadFromStorage(): ProductForFrontend[] {
 }
 
 export function RecentlyViewedProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<ProductForFrontend[]>(loadFromStorage)
+  const [items, setItems] = useState<ProductForFrontend[]>([])
+  const [hydrated, setHydrated] = useState(false)
 
   useEffect(() => {
+    setItems(loadFromStorage())
+    setHydrated(true)
+  }, [])
+
+  useEffect(() => {
+    if (!hydrated) return
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
     } catch {
       // localStorage might be unavailable
     }
-  }, [items])
+  }, [items, hydrated])
 
   const trackProduct = useCallback((product: ProductForFrontend) => {
     setItems((prev) => {
