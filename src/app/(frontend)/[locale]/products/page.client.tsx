@@ -1079,7 +1079,6 @@ function ProductsPageContent({
             </div>
           </div>
         </div>
-        ```
       </div>
 
       {/* Product Modal */}
