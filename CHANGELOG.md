@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.47.0](https://github.com/the-white-platform/fashion-web/compare/v0.46.1...v0.47.0) (2026-04-18)
+
+
+### Features
+
+* **company-info:** add legal entity, tax, address, authority fields for MoIT disclosure ([b506721](https://github.com/the-white-platform/fashion-web/commit/b50672100ebb61f3ae9abc8abbdfd408769fc86a))
+* **footer,contact:** MoIT legal disclosure, Zalo OA icon, drop Products column ([4a4a467](https://github.com/the-white-platform/fashion-web/commit/4a4a4672d3ac79daf3b74fb4e108579cacbd2d2d))
+
+
+### Bug Fixes
+
+* **recently-viewed:** prevent hydration mismatch by deferring localStorage read ([8323585](https://github.com/the-white-platform/fashion-web/commit/8323585aef4448b55821db51229f6e23ca5f5023))
+
 ### [0.46.1](https://github.com/the-white-platform/fashion-web/compare/v0.46.0...v0.46.1) (2026-04-17)
 
 
