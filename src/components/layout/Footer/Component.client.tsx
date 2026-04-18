@@ -5,6 +5,7 @@ import { Facebook, Instagram, Phone, Mail } from 'lucide-react'
 import { Link } from '@/i18n/Link'
 import { useTranslations } from 'next-intl'
 import { Logo } from '@/components/shared/Logo/Logo'
+import { ZaloIcon } from '@/components/shared/icons/ZaloIcon'
 
 // Shopee icon, outlined to match the lucide-react style used for the
 // Facebook/Instagram icons next to it (fill="none", stroke="currentColor",
@@ -27,29 +28,6 @@ function ShopeeIcon(props: SVGProps<SVGSVGElement>) {
       <path d="M7.5 7V5.75a4.5 4.5 0 0 1 9 0V7" />
       {/* S curve inside the bag */}
       <path d="M14.5 11.4c-.9-.5-2.1-.7-3.1-.3-1 .5-1.1 1.8-.1 2.3l2.6 1.1c1 .4 1 1.8 0 2.3-1 .5-2.2.2-3.1-.3" />
-    </svg>
-  )
-}
-
-// Zalo icon — redrawn in outlined-stroke style to match the lucide-react
-// Facebook/Instagram/Shopee siblings. Rounded-square speech bubble with
-// bottom-left tail (Zalo brand silhouette) and a stylized "Z" glyph.
-function ZaloIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    >
-      {/* Rounded speech bubble with tail pointing down-left */}
-      <path d="M5 3h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-8.5l-4 4v-4H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
-      {/* Stylized "Z" glyph */}
-      <path d="M9 8h6l-6 6h6" />
     </svg>
   )
 }

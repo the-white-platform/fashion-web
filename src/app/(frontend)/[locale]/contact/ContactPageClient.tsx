@@ -3,17 +3,8 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { motion } from 'motion/react'
-import {
-  Mail,
-  Phone,
-  Clock,
-  Send,
-  Facebook,
-  Instagram,
-  MessageCircle,
-  MapPin,
-  Building2,
-} from 'lucide-react'
+import { Mail, Phone, Clock, Send, Facebook, Instagram, MapPin, Building2 } from 'lucide-react'
+import { ZaloIcon } from '@/components/shared/icons/ZaloIcon'
 import { PageContainer } from '@/components/layout/PageContainer'
 import {
   Breadcrumb,
@@ -328,15 +319,15 @@ export default function ContactPageClient({
                 </a>
 
                 <a
-                  href="https://zalo.me/84886402616"
+                  href="https://zalo.me/3576162475657778031"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-4 p-4 bg-background/10 rounded-sm hover:bg-background/20 transition-colors"
                 >
-                  <MessageCircle className="w-6 h-6" />
+                  <ZaloIcon className="w-6 h-6" />
                   <div>
                     <p className="uppercase tracking-wide">Zalo Official</p>
-                    <p className="text-sm opacity-60">+84 886 402 616</p>
+                    <p className="text-sm opacity-60">The White Active</p>
                   </div>
                 </a>
               </div>
