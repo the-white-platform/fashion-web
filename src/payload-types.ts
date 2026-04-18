@@ -2991,6 +2991,20 @@ export interface CompanyInfo {
   email?: string | null;
   phone?: string | null;
   /**
+   * Legal address shown in footer and Contact page. Must match business verification documents (Google/Meta).
+   */
+  address?: string | null;
+  /**
+   * Full legal entity name from business license (e.g. CÔNG TY TNHH FASTECH ASIA). Used for MoIT disclosure.
+   */
+  legalEntityName?: string | null;
+  taxCode?: string | null;
+  /**
+   * Authority that issued the business registration certificate.
+   */
+  registrationAuthority?: string | null;
+  registrationDate?: string | null;
+  /**
    * No protocol — e.g. thewhite.cool
    */
   websiteUrl?: string | null;
@@ -3159,6 +3173,11 @@ export interface CompanyInfoSelect<T extends boolean = true> {
   companyName?: T;
   email?: T;
   phone?: T;
+  address?: T;
+  legalEntityName?: T;
+  taxCode?: T;
+  registrationAuthority?: T;
+  registrationDate?: T;
   websiteUrl?: T;
   updatedAt?: T;
   createdAt?: T;

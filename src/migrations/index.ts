@@ -12,6 +12,7 @@ import * as migration_20260416_213253 from './20260416_213253'
 import * as migration_20260416_231504 from './20260416_231504'
 import * as migration_20260417_145410 from './20260417_145410'
 import * as migration_20260418_001413_tags_faqs_display_order from './20260418_001413_tags_faqs_display_order'
+import * as migration_20260418_133103_company_info_legal_fields from './20260418_133103_company_info_legal_fields'
 
 export const migrations = [
   {
@@ -83,5 +84,10 @@ export const migrations = [
     up: migration_20260418_001413_tags_faqs_display_order.up,
     down: migration_20260418_001413_tags_faqs_display_order.down,
     name: '20260418_001413_tags_faqs_display_order',
+  },
+  {
+    up: migration_20260418_133103_company_info_legal_fields.up,
+    down: migration_20260418_133103_company_info_legal_fields.down,
+    name: '20260418_133103_company_info_legal_fields',
   },
 ]

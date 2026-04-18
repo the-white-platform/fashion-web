@@ -888,14 +888,19 @@
     },
     "info": {
       "title": "Thông Tin Liên Hệ",
+      "legalNameLabel": "Tên Pháp Lý",
+      "legalNameValue": "THE WHITE ACTIVE",
       "addressLabel": "Địa Chỉ",
-      "addressValue": "",
+      "addressValue": "Đường Hai Bà Trưng, Đà Lạt, Lâm Đồng, 67000, VN",
       "phoneLabel": "Điện Thoại",
       "phoneValue": "+84 886 402 616",
       "emailLabel": "Email",
       "emailValue": "contact@thewhite.cool",
       "hoursLabel": "Giờ Làm Việc",
-      "hoursValue": "T2–CN: 9:00 – 21:00"
+      "hoursValue": "T2–CN: 9:00 – 21:00",
+      "taxCodeLabel": "Mã số hộ kinh doanh",
+      "registrationLabel": "GCN ĐKHKD do",
+      "issuedOn": "cấp ngày"
     },
     "social": {
       "title": "Theo Dõi Chúng Tôi"
