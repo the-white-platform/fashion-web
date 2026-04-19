@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.48.0](https://github.com/the-white-platform/fashion-web/compare/v0.47.2...v0.48.0) (2026-04-19)
+
+
+### Features
+
+* add Google Analytics 4 via @next/third-parties ([a486e05](https://github.com/the-white-platform/fashion-web/commit/a486e051944ec8800ba021cf1a46febe547a0692))
+
 ### [0.47.2](https://github.com/the-white-platform/fashion-web/compare/v0.47.1...v0.47.2) (2026-04-18)
 
 
