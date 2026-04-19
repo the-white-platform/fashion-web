@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { cn } from 'src/utilities/cn'
 import { Inter } from 'next/font/google'
 import localFont from 'next/font/local'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import React from 'react'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations } from 'next-intl/server'
@@ -176,6 +177,7 @@ export default async function RootLayout({ children, params }: Props) {
             </Providers>
           </NextIntlClientProvider>
         </div>
+        {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
       </body>
     </html>
   )
