@@ -191,8 +191,10 @@ export async function generateMetadata({
   const { locale } = await params
   const tMeta = await getTranslations({ locale, namespace: 'meta.rootLayout' })
 
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'
+
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'),
+    metadataBase: new URL(baseUrl),
     title: {
       default: tMeta('titleDefault'),
       template: tMeta('titleTemplate'),
@@ -200,17 +202,41 @@ export async function generateMetadata({
     description: tMeta('description'),
     applicationName: 'TheWhite',
     keywords: [
-      // Vietnamese keywords help SEO on both locales — search engines
-      // match original terms regardless of the browsing language.
+      // Vietnamese long-tail terms — these are what 18–45 VN shoppers
+      // actually type. English mirrors stay for the EN locale + ad copy.
       'thời trang thể thao',
-      'activewear',
-      'gym',
-      'training',
-      'sportswear',
+      'đồ thể thao nam nữ',
+      'đồ tập gym',
+      'quần legging gym',
+      'quần legging nữ',
+      'áo croptop tập gym',
+      'áo thun gym nam',
+      'set đồ tập gym nữ',
+      'đồ tập yoga',
+      'activewear Việt Nam',
+      'gymwear Việt Nam',
+      'thời trang gym Hà Nội',
+      'thời trang gym TP HCM',
+      'thời trang gym Đà Nẵng',
+      'thương hiệu thời trang Việt',
+      'TheWhite',
       'The White',
-      'thời trang nam',
-      'thời trang Việt',
+      // English mirrors
+      'activewear',
+      'gymwear',
+      'sportswear',
+      'training apparel',
+      'leggings',
+      'workout clothes Vietnam',
     ],
+    alternates: {
+      canonical: `${baseUrl}/${locale}`,
+      languages: {
+        'vi-VN': `${baseUrl}/vi`,
+        'en-US': `${baseUrl}/en`,
+        'x-default': `${baseUrl}/vi`,
+      },
+    },
     openGraph: mergeOpenGraph({ locale }),
     twitter: {
       card: 'summary_large_image',
@@ -233,7 +259,16 @@ export async function generateMetadata({
         index: true,
         follow: true,
         'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
       },
+    },
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION,
+    },
+    other: {
+      'geo.region': 'VN',
+      'geo.placename': 'Vietnam',
     },
   }
 }
