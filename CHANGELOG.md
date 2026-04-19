@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.49.0](https://github.com/the-white-platform/fashion-web/compare/v0.48.0...v0.49.0) (2026-04-19)
+
+
+### Features
+
+* **seo:** sitemap, robots, hreflang, expanded VN keywords ([62a9af7](https://github.com/the-white-platform/fashion-web/commit/62a9af777e8349cfd17103da7c411d48cc9e29eb))
+
 ## [0.48.0](https://github.com/the-white-platform/fashion-web/compare/v0.47.2...v0.48.0) (2026-04-19)
 
 
