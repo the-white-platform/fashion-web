@@ -81,7 +81,11 @@ export function Carousel({ slides: cmsSlides }: CarouselProps = {}) {
                   <div className="absolute inset-0">
                     <Image
                       src={slideImage}
-                      alt="Slider Image"
+                      alt={
+                        slideTitle ||
+                        slideSubtitle ||
+                        'TheWhite — bộ sưu tập thời trang thể thao mới'
+                      }
                       fill
                       className="object-cover"
                       priority={index === 0}

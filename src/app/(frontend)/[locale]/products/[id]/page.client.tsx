@@ -19,6 +19,7 @@ import { useCart } from '@/contexts/CartContext'
 import { useWishlist } from '@/contexts/WishlistContext'
 import { useRecentlyViewed } from '@/contexts/RecentlyViewedContext'
 import { useCompare } from '@/contexts/CompareContext'
+import { trackViewItem } from '@/utilities/analytics'
 import { FeaturesBadges } from '@/components/shared/FeaturesBadges'
 import { ProductCard } from '@/components/shared/ProductCard'
 import { ImageZoom } from '@/components/ecommerce/ImageZoom'
@@ -64,6 +65,12 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
   // Track this product as recently viewed on mount
   useEffect(() => {
     trackProduct(product)
+    trackViewItem({
+      id: product.id,
+      name: product.name,
+      price: product.priceNumber,
+      category: product.category,
+    })
   }, [product.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // State
@@ -255,7 +262,7 @@ export default function ProductDetailClient({ product, allProducts }: ProductDet
                       <div className="relative w-full h-full">
                         <Image
                           src={img}
-                          alt={`View ${index + 1}`}
+                          alt={`${product.name} - ảnh ${index + 1}`}
                           fill
                           className="object-cover opacity-60 hover:opacity-100 transition-opacity"
                           sizes="80px"

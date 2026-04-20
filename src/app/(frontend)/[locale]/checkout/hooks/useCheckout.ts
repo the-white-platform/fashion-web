@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
 import { useTranslations } from 'next-intl'
+import { trackBeginCheckout, trackPurchase } from '@/utilities/analytics'
 import {
   CheckoutStep,
   ShippingAddress,
@@ -45,6 +46,7 @@ export function useCheckout(): UseCheckoutReturn {
   const t = useTranslations('checkout')
 
   const [step, setStep] = useState<CheckoutStep>('shipping')
+  const beginCheckoutFiredRef = useRef(false)
   const [selectedAddress, setSelectedAddress] = useState<ShippingAddress | null>(null)
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null)
   const [orderNotes, setOrderNotes] = useState('')
@@ -83,6 +85,26 @@ export function useCheckout(): UseCheckoutReturn {
       total: Math.max(0, subtotal + shipping - discount - pointsDiscount),
     }
   }, [getTotalPrice, pointsToRedeem])
+
+  // Fire begin_checkout once per checkout session — checkout page mount
+  // with a non-empty cart marks the funnel entry. Skip empty-cart mounts
+  // (those render the empty state and never reach payment/review).
+  useEffect(() => {
+    if (beginCheckoutFiredRef.current) return
+    if (cartItems.length === 0) return
+    beginCheckoutFiredRef.current = true
+    trackBeginCheckout(
+      cartItems.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.price,
+        size: i.size,
+        color: i.color,
+        quantity: i.quantity,
+      })),
+      totals.total,
+    )
+  }, [cartItems, totals.total])
 
   const completeOrder = async (
     appliedCoupon: AppliedCoupon | null,
@@ -213,6 +235,21 @@ export function useCheckout(): UseCheckoutReturn {
 
       const result = await res.json()
       setOrderResult(result)
+      const finalOrderNumber: string = result?.doc?.orderNumber ?? orderNumber ?? `TW-${Date.now()}`
+      trackPurchase({
+        orderId: finalOrderNumber,
+        total,
+        shipping: shippingFee,
+        coupon: appliedCoupon?.code,
+        items: cartItems.map((i) => ({
+          id: i.id,
+          name: i.name,
+          price: i.price,
+          size: i.size,
+          color: i.color,
+          quantity: i.quantity,
+        })),
+      })
       clearCart()
       setStep('confirmation')
     } catch (err) {

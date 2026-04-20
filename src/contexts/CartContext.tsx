@@ -10,6 +10,7 @@ import {
   ReactNode,
 } from 'react'
 import { useUser } from './UserContext'
+import { trackAddToCart } from '@/utilities/analytics'
 
 interface CartItem {
   id: number
@@ -201,6 +202,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         : [...prev, { ...item, quantity: 1 }]
       debouncedSync(next)
       return next
+    })
+    trackAddToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      size: item.size,
+      color: item.color,
+      quantity: 1,
     })
   }
 
