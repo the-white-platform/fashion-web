@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.50.1](https://github.com/the-white-platform/fashion-web/compare/v0.50.0...v0.50.1) (2026-04-21)
+
+
+### Bug Fixes
+
+* **i18n:** force default vi locale on root requests ([0ec7119](https://github.com/the-white-platform/fashion-web/commit/0ec71190c2d4b8031acfb4ed597aeca5346d2028))
+
 ## [0.50.0](https://github.com/the-white-platform/fashion-web/compare/v0.49.1...v0.50.0) (2026-04-20)
 
 
