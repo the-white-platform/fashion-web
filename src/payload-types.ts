@@ -1469,6 +1469,7 @@ export interface VtoGeneration {
    * data: URL of the generated image (used for retry caching)
    */
   resultData?: string | null;
+  cacheHit?: boolean | null;
   provider?: ('vertex' | 'gemini') | null;
   updatedAt: string;
   createdAt: string;
@@ -2535,6 +2536,7 @@ export interface VtoGenerationsSelect<T extends boolean = true> {
   product?: T;
   inputHash?: T;
   resultData?: T;
+  cacheHit?: T;
   provider?: T;
   updatedAt?: T;
   createdAt?: T;

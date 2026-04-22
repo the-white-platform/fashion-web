@@ -15,7 +15,7 @@ export const VtoGenerations: CollectionConfig = {
     plural: { vi: 'Lần thử đồ ảo', en: 'Virtual Try-On Logs' },
   },
   admin: {
-    defaultColumns: ['user', 'product', 'createdAt'],
+    defaultColumns: ['user', 'product', 'cacheHit', 'provider', 'createdAt'],
     useAsTitle: 'id',
     description: {
       vi: 'Nhật ký các lần thử đồ ảo. Dùng để giới hạn số lần thử mỗi ngày trên mỗi tài khoản.',
@@ -58,18 +58,33 @@ export const VtoGenerations: CollectionConfig = {
     },
     {
       // The data: URL of the generated image. Stored in DB to keep the
-      // cache lookup atomic with the quota row. ~250KB per row at
-      // current compression — fine at launch volume; if it grows, move
-      // to GCS keyed by inputHash. Default Payload textarea maxLength
-      // is 40,000 chars which is too small for a base64 image, so
-      // bump it explicitly to ~1MB.
+      // cache lookup atomic with the quota row. The route downscales the
+      // Gemini output to 800px JPEG before storing, so rows typically
+      // sit at ~250KB. No maxLength: the default textarea cap (40k) was
+      // silently rejecting oversized outputs from nano-banana-pro, and
+      // even the previous 1.5M ceiling bounced some PNG results —
+      // Postgres varchar (no length) has no ceiling in practice.
       name: 'resultData',
       type: 'textarea',
-      maxLength: 1_500_000,
       label: { vi: 'Ảnh kết quả', en: 'Result Image' },
       admin: {
         description: 'data: URL of the generated image (used for retry caching)',
         rows: 2,
+      },
+    },
+    {
+      // Marks rows that record a cache-hit retry (same user, same
+      // inputHash as a prior row). Cache-hit rows don't store the
+      // image (the original row already has it) and don't count
+      // toward the daily quota. Logged so every successful try-on —
+      // first or retry — is visible in the admin.
+      name: 'cacheHit',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      label: { vi: 'Lần thử lại (cache)', en: 'Cache Hit' },
+      admin: {
+        position: 'sidebar',
       },
     },
     {

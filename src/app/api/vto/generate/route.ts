@@ -289,11 +289,17 @@ export async function POST(request: Request) {
   const { personImage, productImage, productName, productColor, productId } = body
 
   // --- Daily quota count (used by both cache + miss paths) ---
+  // Cache-hit rows are logged (so the admin can see every retry) but
+  // excluded from the quota count — users keep the free-retry perk.
   const since = new Date(Date.now() - ONE_DAY_MS).toISOString()
   const { totalDocs: usedToday } = await payload.count({
     collection: 'vto-generations',
     where: {
-      and: [{ user: { equals: userId } }, { createdAt: { greater_than: since } }],
+      and: [
+        { user: { equals: userId } },
+        { createdAt: { greater_than: since } },
+        { cacheHit: { not_equals: true } },
+      ],
     },
   })
 
@@ -303,17 +309,42 @@ export async function POST(request: Request) {
   // this turns those into free repeats. ---
   if (personImage && productImage) {
     const hash = inputHashFor({ personImage, productImage, productName, productColor })
+    // Only consider fresh-generation rows as cache sources; cache-hit
+    // rows don't carry resultData.
     const prior = await payload.find({
       collection: 'vto-generations',
       depth: 0,
       limit: 1,
       sort: '-createdAt',
       where: {
-        and: [{ user: { equals: userId } }, { inputHash: { equals: hash } }],
+        and: [
+          { user: { equals: userId } },
+          { inputHash: { equals: hash } },
+          { cacheHit: { not_equals: true } },
+        ],
       },
     })
-    const cached = prior.docs[0] as { resultData?: string } | undefined
+    const cached = prior.docs[0] as { resultData?: string; product?: number } | undefined
     if (cached?.resultData) {
+      // Log the cache-hit as its own row so every successful try-on
+      // (first-time or retry) is visible in the admin. Failures are
+      // non-fatal — the user still gets their image either way.
+      try {
+        await payload.create({
+          collection: 'vto-generations',
+          data: {
+            user: userId,
+            ...(productId != null ? { product: Number(productId) } : {}),
+            inputHash: hash,
+            cacheHit: true,
+          },
+        })
+      } catch (logErr) {
+        console.error(
+          '[VTO] failed to log cache-hit row:',
+          logErr instanceof Error ? logErr.message : logErr,
+        )
+      }
       return NextResponse.json({
         image: cached.resultData,
         cached: true,
@@ -401,12 +432,21 @@ export async function POST(request: Request) {
 
     console.log(`[VTO] served by ${usedProvider} (tried: ${tried.join(',')})`)
 
-    const resultDataUrl = `data:${imageReply.mimeType};base64,${imageReply.data}`
+    // Downscale the Gemini output before we store OR return it. Raw
+    // nano-banana-pro results can top 2-3MB of base64, which both
+    // bloats DB rows and slows initial paint on the client. Re-using
+    // `compressForGemini` (800px JPEG q75) produces consistent ~250KB
+    // outputs and gives retries the same image the first view got.
+    const rawResultBuffer = Buffer.from(imageReply.data, 'base64')
+    const { buffer: compressedBuffer, mimetype: compressedMime } =
+      await compressForGemini(rawResultBuffer)
+    const resultDataUrl = `data:${compressedMime};base64,${compressedBuffer.toString('base64')}`
 
     // Log this successful generation so the daily-quota counter
     // reflects it on the next request, and so a re-try with the same
-    // inputs hits the cache. Failures are non-fatal — we'd rather
-    // under-count than block the response.
+    // inputs hits the cache. Failures are non-fatal for the client,
+    // but we log at ERROR level so silently-dropped rows surface in
+    // Cloud Run logs instead of hiding behind a warning.
     try {
       const hash =
         personImage && productImage
@@ -420,6 +460,7 @@ export async function POST(request: Request) {
           ...(hash ? { inputHash: hash } : {}),
           resultData: resultDataUrl,
           provider: usedProvider,
+          cacheHit: false,
         },
       })
     } catch (logErr) {
@@ -431,7 +472,10 @@ export async function POST(request: Request) {
               2,
             )
           : String(logErr)
-      console.warn('[VTO] failed to log generation:', detail)
+      console.error(
+        `[VTO] failed to log generation (resultDataUrl ${resultDataUrl.length} chars):`,
+        detail,
+      )
     }
 
     return NextResponse.json({
