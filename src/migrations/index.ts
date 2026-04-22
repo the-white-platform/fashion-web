@@ -16,6 +16,7 @@ import * as migration_20260418_133103_company_info_legal_fields from './20260418
 import * as migration_20260422_101419_vto_cache_hit_field from './20260422_101419_vto_cache_hit_field'
 import * as migration_20260422_110925_users_provider_zalo_phone_index from './20260422_110925_users_provider_zalo_phone_index'
 import * as migration_20260422_170456_users_otp_fields from './20260422_170456_users_otp_fields'
+import * as migration_20260422_213840_zalo_credentials_global from './20260422_213840_zalo_credentials_global'
 
 export const migrations = [
   {
@@ -107,5 +108,10 @@ export const migrations = [
     up: migration_20260422_170456_users_otp_fields.up,
     down: migration_20260422_170456_users_otp_fields.down,
     name: '20260422_170456_users_otp_fields',
+  },
+  {
+    up: migration_20260422_213840_zalo_credentials_global.up,
+    down: migration_20260422_213840_zalo_credentials_global.down,
+    name: '20260422_213840_zalo_credentials_global',
   },
 ]

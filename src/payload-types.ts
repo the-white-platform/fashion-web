@@ -150,6 +150,7 @@ export interface Config {
     'payment-methods': PaymentMethod;
     'chat-context': ChatContext;
     'company-info': CompanyInfo;
+    'zalo-credentials': ZaloCredential;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
@@ -158,6 +159,7 @@ export interface Config {
     'payment-methods': PaymentMethodsSelect<false> | PaymentMethodsSelect<true>;
     'chat-context': ChatContextSelect<false> | ChatContextSelect<true>;
     'company-info': CompanyInfoSelect<false> | CompanyInfoSelect<true>;
+    'zalo-credentials': ZaloCredentialsSelect<false> | ZaloCredentialsSelect<true>;
   };
   locale: 'vi' | 'en';
   user: User;
@@ -3020,6 +3022,28 @@ export interface CompanyInfo {
   createdAt?: string | null;
 }
 /**
+ * OA tokens auto-renew every ~3 months. Use the Dashboard "Renew token" button when near expiry.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "zalo-credentials".
+ */
+export interface ZaloCredential {
+  id: number;
+  /**
+   * Auto-written after the admin completes /api/auth/zalo/oa-connect.
+   */
+  refreshToken?: string | null;
+  refreshTokenIssuedAt?: string | null;
+  /**
+   * Zalo OA refresh tokens live ~3 months. The dashboard warns 14 days before expiry.
+   */
+  refreshTokenExpiresAt?: string | null;
+  accessToken?: string | null;
+  accessTokenExpiresAt?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -3187,6 +3211,20 @@ export interface CompanyInfoSelect<T extends boolean = true> {
   registrationAuthority?: T;
   registrationDate?: T;
   websiteUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "zalo-credentials_select".
+ */
+export interface ZaloCredentialsSelect<T extends boolean = true> {
+  refreshToken?: T;
+  refreshTokenIssuedAt?: T;
+  refreshTokenExpiresAt?: T;
+  accessToken?: T;
+  accessTokenExpiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

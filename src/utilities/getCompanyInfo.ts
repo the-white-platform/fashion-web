@@ -1,4 +1,8 @@
-import 'server-only'
+// Intentionally not `import 'server-only'` — Payload's
+// `generate:types` evaluates the full config graph with tsx (no
+// server-only resolver), so that import would break type gen.
+// All callers hit `getPayload` which already requires a server
+// context, so the client-safety guarantee is preserved de facto.
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { unstable_cache } from 'next/cache'

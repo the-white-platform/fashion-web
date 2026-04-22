@@ -78,22 +78,44 @@ export async function GET(request: Request) {
     )
   }
 
+  // Persist directly to the `zalo-credentials` Payload global.
+  // Refresh tokens live ~90 days per Zalo's docs; record the
+  // issue + expiry timestamp so the admin dashboard can warn
+  // before it lapses.
+  const now = new Date()
+  const REFRESH_TOKEN_TTL_DAYS = 90
+  const expiresAt = new Date(now.getTime() + REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000)
+  const accessExpiresSec = Number(data.expires_in ?? 3600)
+  const accessExpiresAt = new Date(now.getTime() + accessExpiresSec * 1000)
+
+  try {
+    await payload.updateGlobal({
+      slug: 'zalo-credentials',
+      data: {
+        refreshToken: data.refresh_token,
+        refreshTokenIssuedAt: now.toISOString(),
+        refreshTokenExpiresAt: expiresAt.toISOString(),
+        accessToken: data.access_token,
+        accessTokenExpiresAt: accessExpiresAt.toISOString(),
+      },
+    })
+  } catch (err) {
+    payload.logger.error({ err, msg: 'oa-callback: failed to persist token' })
+    return htmlPage(
+      'Saved Zalo response but could not persist',
+      `<p>Token exchange succeeded but writing to the <code>zalo-credentials</code> global failed — admin can paste the value manually:</p>
+       <pre style="background:#f3f3f3;padding:12px;border-radius:4px;overflow:auto;white-space:pre-wrap;word-break:break-all;">ZALO_REFRESH_TOKEN=${escapeHtml(data.refresh_token)}</pre>`,
+    )
+  }
+
   const body = `
-    <p>Copy this into Secret Manager (prod) and <code>.env.local</code> (local):</p>
-    <pre style="background:#f3f3f3;padding:12px;border-radius:4px;overflow:auto;white-space:pre-wrap;word-break:break-all;">ZALO_REFRESH_TOKEN=${escapeHtml(data.refresh_token)}</pre>
-    <details>
-      <summary style="cursor:pointer;">Full response</summary>
-      <pre style="background:#f9f9f9;padding:12px;border-radius:4px;overflow:auto;">${escapeHtml(JSON.stringify(data, null, 2))}</pre>
-    </details>
-    <h3>Next steps</h3>
-    <ol>
-      <li>Push the secret: <code>printf '%s' '&lt;token&gt;' | gcloud secrets versions add ZALO_REFRESH_TOKEN --data-file=- --project the-white-prod-481217</code> (create the secret first if it's not there).</li>
-      <li>Wire into Cloud Run: <code>gcloud run services update fashion-web --region asia-southeast1 --update-secrets=ZALO_REFRESH_TOKEN=ZALO_REFRESH_TOKEN:latest</code></li>
-      <li>Refresh tokens expire ~3 months after issue. Re-run <a href="/api/auth/zalo/oa-connect">oa-connect</a> before then.</li>
-    </ol>
+    <p style="color:#15803d;">✓ Saved to the <code>zalo-credentials</code> global. ZNS + OA message hooks now have a valid token.</p>
+    <p>Refresh token expires on <strong>${expiresAt.toLocaleString('en-US', { dateStyle: 'full' })}</strong> (~90 days from now). The admin dashboard will warn starting 14 days before.</p>
+    <p><a href="/admin/globals/zalo-credentials">Open the Zalo credentials global →</a></p>
+    <p><a href="/admin">Back to admin</a></p>
   `
 
-  return htmlPage('Zalo OA Refresh Token', body)
+  return htmlPage('Zalo OA Refresh Token saved', body)
 }
 
 function htmlPage(title: string, body: string): Response {
