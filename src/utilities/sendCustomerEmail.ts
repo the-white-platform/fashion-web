@@ -52,7 +52,9 @@ type OtpParams = {
 
 type SendCustomerEmailParams = OrderEmailParams | PasswordResetParams | OtpParams
 
-const resolveTemplate = (params: SendCustomerEmailParams): { subject: string; html: string } => {
+const resolveTemplate = async (
+  params: SendCustomerEmailParams,
+): Promise<{ subject: string; html: string }> => {
   if (params.template === 'passwordReset') {
     return passwordReset({
       resetLink: params.data.resetLink,
@@ -61,7 +63,7 @@ const resolveTemplate = (params: SendCustomerEmailParams): { subject: string; ht
   }
 
   if (params.template === 'otp') {
-    return otp({
+    return await otp({
       code: params.data.code,
       locale: params.data.locale,
       purpose: params.data.purpose,
@@ -98,7 +100,7 @@ export const sendCustomerEmail = async (params: SendCustomerEmailParams): Promis
   }
 
   try {
-    const { subject, html } = resolveTemplate(params)
+    const { subject, html } = await resolveTemplate(params)
 
     // Cap the send at 10s so a dead upstream can't hang the checkout.
     await Promise.race([

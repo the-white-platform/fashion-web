@@ -1,3 +1,6 @@
+import { getCompanyInfo } from '@/utilities/getCompanyInfo'
+import { brandFooter, brandHeader, resolveServerUrl } from './_shared'
+
 type OtpPurpose = 'login' | 'signup' | 'reset_password' | 'verify_email' | 'two_factor'
 
 type Params = {
@@ -16,14 +19,20 @@ type Params = {
  * copy keyed off `locale`; the bundle of purposes covers login,
  * signup, password reset, email verification, and 2FA so the same
  * template serves every OTP surface.
+ *
+ * Pulls logo + contact details from the `company-info` Payload
+ * global so marketing can edit the registered address / hotline /
+ * support email without a deploy.
  */
-export const otp = ({
+export const otp = async ({
   code,
   purpose = 'login',
   locale,
   expiresInMinutes = 10,
-}: Params): { subject: string; html: string } => {
+}: Params): Promise<{ subject: string; html: string }> => {
   const isVi = locale === 'vi'
+  const serverUrl = resolveServerUrl()
+  const company = await getCompanyInfo(locale).catch(() => null)
 
   const headings: Record<OtpPurpose, { vi: string; en: string }> = {
     login: { vi: 'Mã đăng nhập', en: 'Login code' },
@@ -34,7 +43,7 @@ export const otp = ({
   }
 
   const heading = headings[purpose][isVi ? 'vi' : 'en']
-  const subject = isVi ? `${heading} - The White` : `${heading} - The White`
+  const subject = `${heading} - The White`
 
   const intro = isVi
     ? 'Nhập mã dưới đây để tiếp tục. Đừng chia sẻ mã này với bất kỳ ai.'
@@ -47,10 +56,6 @@ export const otp = ({
   const notYouNote = isVi
     ? 'Nếu bạn không yêu cầu mã này, có thể bỏ qua email này.'
     : "If you didn't request this code, you can ignore this email."
-
-  const supportLine = isVi
-    ? 'Cần hỗ trợ? Liên hệ <a href="mailto:support@thewhite.cool" style="color:#1a1a1a;">support@thewhite.cool</a>.'
-    : 'Need help? Contact <a href="mailto:support@thewhite.cool" style="color:#1a1a1a;">support@thewhite.cool</a>.'
 
   const html = `<!DOCTYPE html>
 <html lang="${locale}">
@@ -65,12 +70,7 @@ export const otp = ({
       <td align="center">
         <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
 
-          <!-- Header -->
-          <tr>
-            <td style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;color:#fff;font-size:28px;font-weight:300;letter-spacing:4px;">THE WHITE</h1>
-            </td>
-          </tr>
+          ${brandHeader(serverUrl)}
 
           <!-- Body -->
           <tr>
@@ -90,13 +90,7 @@ export const otp = ({
             </td>
           </tr>
 
-          <!-- Footer -->
-          <tr>
-            <td style="padding:16px 40px 40px;text-align:center;border-top:1px solid #eee;">
-              <p style="margin:16px 0 0;font-size:12px;color:#888;">${supportLine}</p>
-              <p style="margin:8px 0 0;font-size:11px;color:#aaa;">© ${new Date().getFullYear()} The White</p>
-            </td>
-          </tr>
+          ${brandFooter({ locale, serverUrl, company })}
 
         </table>
       </td>
