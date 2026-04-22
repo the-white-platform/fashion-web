@@ -115,38 +115,19 @@ export default function RegisterPage() {
         formData.phone,
       )
       if (success) {
-        // If we have a referral code, create a referral record
+        // If we have a referral code, create a referral record via
+        // the server route (the `referrals` collection is admin-only
+        // on write, so customers can't hit POST /api/referrals
+        // directly). Non-blocking — a referral failure must never
+        // block account creation.
         if (referralCode) {
           try {
-            // Find the referrer by their referral code
-            const refRes = await fetch(
-              `/api/users?where[referralCode][equals]=${encodeURIComponent(referralCode)}&limit=1`,
-              { credentials: 'include' },
-            )
-            const refData = await refRes.json()
-            const referrer = refData.docs?.[0]
-
-            if (referrer) {
-              // Get current user ID
-              const meRes = await fetch('/api/users/me', { credentials: 'include' })
-              const meData = await meRes.json()
-              const newUserId = meData?.user?.id
-
-              if (newUserId) {
-                await fetch('/api/referrals', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  credentials: 'include',
-                  body: JSON.stringify({
-                    referrer: referrer.id,
-                    referee: newUserId,
-                    referralCode,
-                    status: 'pending',
-                  }),
-                })
-              }
-            }
-            // Clear the stored referral code
+            await fetch('/api/referrals/create', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ referralCode }),
+            })
             try {
               localStorage.removeItem('referralCode')
             } catch {

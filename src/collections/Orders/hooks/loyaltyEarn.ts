@@ -1,26 +1,14 @@
-import type { CollectionAfterChangeHook } from 'payload'
+import type { CollectionAfterChangeHook, Payload } from 'payload'
+import { creditPoints, tierForLifetime, REFERRAL_REWARD_POINTS } from '@/lib/loyalty'
 
-// Tier multipliers for point calculation
+// Tier multipliers for the purchase-earn path. Kept here (not in
+// @/lib/loyalty) because only purchase earnings are multiplied by
+// tier; referral payouts are flat.
 const TIER_MULTIPLIERS: Record<string, number> = {
   bronze: 1,
   silver: 1.25,
   gold: 1.5,
   platinum: 2,
-}
-
-// Tier thresholds based on lifetime points
-const TIER_THRESHOLDS = {
-  platinum: 50000,
-  gold: 20000,
-  silver: 5000,
-  bronze: 0,
-}
-
-function calculateTier(lifetimePoints: number): string {
-  if (lifetimePoints >= TIER_THRESHOLDS.platinum) return 'platinum'
-  if (lifetimePoints >= TIER_THRESHOLDS.gold) return 'gold'
-  if (lifetimePoints >= TIER_THRESHOLDS.silver) return 'silver'
-  return 'bronze'
 }
 
 export const loyaltyEarn: CollectionAfterChangeHook = async ({
@@ -31,15 +19,12 @@ export const loyaltyEarn: CollectionAfterChangeHook = async ({
 }) => {
   const payload = req.payload
 
-  // Handle points redemption deduction on order creation
+  // --- On create: burn redeemed points immediately so the user can't
+  // double-spend them on another tab. ---
   if (operation === 'create') {
     const redeemPoints = doc.totals?.pointsRedeemed ?? 0
     if (redeemPoints > 0) {
-      const userId =
-        typeof doc.customerInfo?.user === 'object'
-          ? doc.customerInfo.user?.id
-          : doc.customerInfo?.user
-
+      const userId = extractUserId(doc)
       if (userId) {
         try {
           const existing = await payload.find({
@@ -58,7 +43,7 @@ export const loyaltyEarn: CollectionAfterChangeHook = async ({
             await payload.create({
               collection: 'loyalty-transactions',
               data: {
-                user: userId,
+                user: userId as number,
                 type: 'redeem',
                 points: -redeemPoints,
                 balance: newPoints,
@@ -75,19 +60,32 @@ export const loyaltyEarn: CollectionAfterChangeHook = async ({
     return doc
   }
 
-  // Only trigger when status changes to 'delivered'
+  // --- Referral payout fires on the referee's first transition to
+  // `confirmed` — pays both sides 200 pts. Runs before the delivered
+  // branch so a single status bump that somehow jumps past `confirmed`
+  // still tries the payout (harmless: the referral-status guard
+  // prevents double credit). ---
+  const justConfirmed = previousDoc?.status !== 'confirmed' && doc.status === 'confirmed'
+  if (justConfirmed) {
+    try {
+      await awardReferralRewards(doc, payload)
+    } catch (err) {
+      payload.logger.error({ err, msg: 'loyaltyEarn: referral payout failed' })
+    }
+  }
+
+  // --- Purchase-earn fires on delivered (tier multiplier, 1 pt per
+  // 10,000 VND). Separate trigger keeps the final payout gated on
+  // completed delivery. ---
   const wasDelivered = previousDoc?.status !== 'delivered' && doc.status === 'delivered'
   if (!wasDelivered) return doc
 
-  const userId =
-    typeof doc.customerInfo?.user === 'object' ? doc.customerInfo.user?.id : doc.customerInfo?.user
-
+  const userId = extractUserId(doc)
   if (!userId) return doc
 
   const total = doc.totals?.total ?? 0
 
   try {
-    // Look up existing loyalty account
     const existing = await payload.find({
       collection: 'loyalty-accounts',
       where: { user: { equals: userId } },
@@ -97,62 +95,17 @@ export const loyaltyEarn: CollectionAfterChangeHook = async ({
     const currentAccount = existing.docs[0] ?? null
     const currentTier = (currentAccount?.tier as string) ?? 'bronze'
     const multiplier = TIER_MULTIPLIERS[currentTier] ?? 1
-
-    // Calculate earned points: 1 point per 10,000 VND × tier multiplier
     const earnedPoints = Math.floor((total / 10000) * multiplier)
     if (earnedPoints <= 0) return doc
 
-    let newPoints: number
-    let newLifetimePoints: number
-    let newTier: string
-
-    if (currentAccount) {
-      newPoints = (currentAccount.points ?? 0) + earnedPoints
-      newLifetimePoints = (currentAccount.lifetimePoints ?? 0) + earnedPoints
-      newTier = calculateTier(newLifetimePoints)
-
-      await payload.update({
-        collection: 'loyalty-accounts',
-        id: currentAccount.id,
-        data: {
-          points: newPoints,
-          lifetimePoints: newLifetimePoints,
-          tier: newTier as any,
-          ...(newTier !== currentTier ? { tierUpdatedAt: new Date().toISOString() } : {}),
-        },
-      })
-    } else {
-      newPoints = earnedPoints
-      newLifetimePoints = earnedPoints
-      newTier = calculateTier(newLifetimePoints)
-
-      await payload.create({
-        collection: 'loyalty-accounts',
-        data: {
-          user: userId,
-          points: newPoints,
-          lifetimePoints: newLifetimePoints,
-          tier: newTier as any,
-          tierUpdatedAt: new Date().toISOString(),
-        },
-      })
-    }
-
-    // Create loyalty transaction
-    await payload.create({
-      collection: 'loyalty-transactions',
-      data: {
-        user: userId,
-        type: 'earn_purchase',
-        points: earnedPoints,
-        balance: newPoints,
-        description: `Mua hàng đơn ${doc.orderNumber} (+${earnedPoints} điểm)`,
-        order: doc.id,
-      },
+    await creditPoints({
+      payload,
+      userId,
+      points: earnedPoints,
+      type: 'earn_purchase',
+      description: `Mua hàng đơn ${doc.orderNumber} (+${earnedPoints} điểm)`,
+      orderId: doc.id,
     })
-
-    // Check referral: award referrer 200 points on referee's first delivered order
-    await awardReferrerIfFirstOrder(userId, doc.id, payload)
   } catch (err) {
     req.payload.logger.error({ err, msg: 'loyaltyEarn hook failed' })
   }
@@ -160,102 +113,86 @@ export const loyaltyEarn: CollectionAfterChangeHook = async ({
   return doc
 }
 
-async function awardReferrerIfFirstOrder(
-  userId: string | number,
-  orderId: string | number,
-  payload: any,
-) {
-  // Find a pending referral where this user is the referee
+function extractUserId(doc: any): number | string | null {
+  const u = doc.customerInfo?.user
+  if (u == null) return null
+  return typeof u === 'object' ? u.id : u
+}
+
+/**
+ * Pay both parties of a pending referral 200 pts each. Idempotent via
+ * the referral row's status — a second call sees `status: completed`
+ * and no-ops. Also checks the referee has no prior confirmed orders
+ * so a back-dated status edit on an old order can't re-fire it.
+ */
+async function awardReferralRewards(doc: any, payload: Payload): Promise<void> {
+  const refereeId = extractUserId(doc)
+  if (!refereeId) return
+
   const referrals = await payload.find({
     collection: 'referrals',
     where: {
-      and: [{ referee: { equals: userId } }, { status: { equals: 'pending' } }],
+      and: [{ referee: { equals: refereeId } }, { status: { equals: 'pending' } }],
     },
     limit: 1,
   })
-
   const referral = referrals.docs[0]
   if (!referral) return
 
-  // Check that this is the referee's first delivered order
-  const previousOrders = await payload.find({
+  // Only pay on the referee's first confirmed order. Without this
+  // guard a subsequent order could re-trigger payout before the
+  // status-update lands (unlikely, but cheap to guard).
+  const priorConfirmed = await payload.find({
     collection: 'orders',
     where: {
       and: [
-        { 'customerInfo.user': { equals: userId } },
-        { status: { equals: 'delivered' } },
-        { id: { not_equals: orderId } },
+        { 'customerInfo.user': { equals: refereeId } },
+        { status: { equals: 'confirmed' } },
+        { id: { not_equals: doc.id } },
       ],
     },
     limit: 1,
   })
-
-  if (previousOrders.docs.length > 0) return // Not their first delivered order
+  if (priorConfirmed.docs.length > 0) return
 
   const referrerId =
     typeof referral.referrer === 'object' ? referral.referrer?.id : referral.referrer
-
   if (!referrerId) return
+  if (referrerId === refereeId) return // defence-in-depth against self-referral
 
-  // Credit 200 points to referrer
-  const referrerAccount = await payload.find({
-    collection: 'loyalty-accounts',
-    where: { user: { equals: referrerId } },
-    limit: 1,
+  const refereeLabel = doc.customerInfo?.email || doc.customerInfo?.name || `#${refereeId}`
+
+  await creditPoints({
+    payload,
+    userId: referrerId,
+    points: REFERRAL_REWARD_POINTS,
+    type: 'earn_referral',
+    description: `Thưởng giới thiệu bạn: ${refereeLabel} (+${REFERRAL_REWARD_POINTS} điểm)`,
+    orderId: doc.id,
   })
 
-  const refAcct = referrerAccount.docs[0]
-  const currentPoints = refAcct?.points ?? 0
-  const currentLifetime = refAcct?.lifetimePoints ?? 0
-  const newPoints = currentPoints + 200
-  const newLifetime = currentLifetime + 200
-  const newTier = calculateTier(newLifetime)
-
-  if (refAcct) {
-    await payload.update({
-      collection: 'loyalty-accounts',
-      id: refAcct.id,
-      data: {
-        points: newPoints,
-        lifetimePoints: newLifetime,
-        tier: newTier as any,
-        ...(newTier !== (refAcct.tier as string)
-          ? { tierUpdatedAt: new Date().toISOString() }
-          : {}),
-      },
-    })
-  } else {
-    await payload.create({
-      collection: 'loyalty-accounts',
-      data: {
-        user: referrerId,
-        points: newPoints,
-        lifetimePoints: newLifetime,
-        tier: newTier as any,
-        tierUpdatedAt: new Date().toISOString(),
-      },
-    })
-  }
-
-  await payload.create({
-    collection: 'loyalty-transactions',
-    data: {
-      user: referrerId,
-      type: 'earn_referral',
-      points: 200,
-      balance: newPoints,
-      description: 'Thưởng giới thiệu bạn bè (+200 điểm)',
-    },
+  await creditPoints({
+    payload,
+    userId: refereeId,
+    points: REFERRAL_REWARD_POINTS,
+    type: 'earn_referral',
+    description: `Thưởng đăng ký qua mã giới thiệu (+${REFERRAL_REWARD_POINTS} điểm)`,
+    orderId: doc.id,
   })
 
-  // Mark referral as completed
   await payload.update({
     collection: 'referrals',
     id: referral.id,
     data: {
       status: 'completed',
       referrerReward: 'credited',
+      refereeReward: 'credited',
       completedAt: new Date().toISOString(),
     },
   })
 }
+
+// Re-export for backwards compatibility with any caller that previously
+// imported the tier helper from this file. Today there are none, but
+// keep the symbol exported to avoid a silent gotcha during refactors.
+export { tierForLifetime }
