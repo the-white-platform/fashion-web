@@ -9,12 +9,8 @@ import {
 } from './Orders/hooks/stockManagement'
 import { logOrderActivity } from './Orders/hooks/activityLog'
 import { handleReturn } from './Orders/hooks/returnManagement'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// Kept imported (unused) so re-enabling is a one-line uncomment in
-// the afterChange list once ZNS templates + refresh token are live.
-import { sendZaloOrderNotifications as _sendZaloOrderNotifications } from './Orders/hooks/sendZaloOrderNotifications'
-void _sendZaloOrderNotifications
-import { sendOrderEmails as _sendOrderEmails } from './Orders/hooks/sendOrderEmails'
+import { sendZaloOrderNotifications } from './Orders/hooks/sendZaloOrderNotifications'
+import { sendOrderEmails } from './Orders/hooks/sendOrderEmails'
 import { notifyOnOrder } from './Orders/hooks/notifyOnOrder'
 import { notifyOnStockChange } from './Orders/hooks/notifyOnStockChange'
 import { loyaltyEarn } from './Orders/hooks/loyaltyEarn'
@@ -695,13 +691,22 @@ export const Orders: CollectionConfig = {
       decrementStockAfterOrder,
       restoreStockOnCancel,
       incrementCouponUsageAfterOrder,
-      // sendOrderEmails disabled (no email provider yet — see notes on
-      // the previous commit). Zalo ZNS is what will deliver the
-      // "your order is confirmed / shipping" pings to the customer
-      // — but the OA still needs ZNS templates approved + the
-      // refresh token registered before it can send anything, so
-      // keep the hook off the chain until those are in place.
-      // sendZaloOrderNotifications,
+      // Email side of status notifications (orderConfirmation on
+      // create, confirmed / shipping / delivered / cancelled /
+      // refunded on status transitions). Resend is now wired +
+      // thewhite.cool domain verified, so the hook is safe to
+      // enable. `sendCustomerEmail` silently skips sends when
+      // RESEND_API_KEY isn't set (local dev, preview), so it
+      // degrades cleanly in non-prod environments.
+      sendOrderEmails,
+      // Zalo ZNS side — same status transitions, pushed to the
+      // customer's phone via a pre-approved template. `sendZaloNotification`
+      // silently no-ops when the per-template env var (e.g.
+      // ZALO_ZNS_ORDER_CONFIRMATION) or ZALO_REFRESH_TOKEN is
+      // missing, so enabling the hook doesn't require every
+      // template to be live immediately — they can light up one
+      // at a time as they get Zalo approval.
+      sendZaloOrderNotifications,
       notifyOnOrder,
       notifyOnStockChange,
       loyaltyEarn,
