@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.54.4](https://github.com/the-white-platform/fashion-web/compare/v0.54.3...v0.54.4) (2026-04-22)
+
+
+### Bug Fixes
+
+* **auth:** fall back to id-only Zalo /me when personal info is geo-blocked ([a28f684](https://github.com/the-white-platform/fashion-web/commit/a28f684396e770b131bf3492085736ff91a7666d))
+
 ### [0.54.3](https://github.com/the-white-platform/fashion-web/compare/v0.54.2...v0.54.3) (2026-04-22)
 
 
