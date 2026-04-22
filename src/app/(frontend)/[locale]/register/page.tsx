@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/Link'
 import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, Gift } from 'lucide-react'
 import { looksLikeEmail, looksLikeVnPhone } from '@/lib/identity'
+import { describeError } from '@/utilities/errorMessage'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { useTranslations } from 'next-intl'
@@ -150,8 +151,11 @@ export default function RegisterPage() {
       } else {
         setError(t('auth.registerFailed'))
       }
-    } catch {
-      setError(t('auth.registerFailed'))
+    } catch (err) {
+      // Surface the upstream reason alongside the localized fallback
+      // so the user sees e.g. "Đăng ký thất bại. This phone number is
+      // already registered." rather than the bare retry prompt.
+      setError(describeError(err, t('auth.registerFailed')))
     } finally {
       setIsLoading(false)
     }

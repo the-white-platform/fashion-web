@@ -7,6 +7,7 @@ import { motion } from 'motion/react'
 import { Logo } from '@/components/shared/Logo/Logo'
 import { useTranslations } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { describeError } from '@/utilities/errorMessage'
 
 export default function ForgotPasswordPage() {
   const t = useTranslations()
@@ -31,7 +32,11 @@ export default function ForgotPasswordPage() {
         body: JSON.stringify({ email }),
       })
       if (!res.ok) {
-        throw new Error('Failed to send reset email')
+        // Parse Payload's `{ errors: [{ message }] }` shape so the
+        // banner carries the real reason (invalid email, rate
+        // limited, SMTP down, …) instead of a generic retry prompt.
+        const body = await res.json().catch(() => ({}))
+        throw body
       }
       setSent(true)
       setCooldown(60)
@@ -44,8 +49,13 @@ export default function ForgotPasswordPage() {
           return prev - 1
         })
       }, 1000)
-    } catch {
-      setError(t('auth.resetEmailError') || 'Failed to send reset email. Please try again.')
+    } catch (err) {
+      setError(
+        describeError(
+          err,
+          t('auth.resetEmailError') || 'Failed to send reset email. Please try again.',
+        ),
+      )
     } finally {
       setIsLoading(false)
     }

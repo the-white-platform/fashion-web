@@ -13,6 +13,7 @@ export default function VerifyEmailPage() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [errorDetail, setErrorDetail] = useState<string>('')
 
   useEffect(() => {
     if (!token) {
@@ -30,9 +31,20 @@ export default function VerifyEmailPage() {
         if (res.ok) {
           setStatus('success')
         } else {
+          // Try to surface the real reason (expired token, mismatched
+          // hash, etc.) for the staff debugging the link. Falls back
+          // to a plain "error" state if parsing fails.
+          const body = await res.json().catch(() => null)
+          const msg =
+            (body?.errors?.[0]?.message as string | undefined) ||
+            (body?.error as string | undefined) ||
+            (body?.message as string | undefined) ||
+            ''
+          if (msg) setErrorDetail(msg)
           setStatus('error')
         }
-      } catch {
+      } catch (err) {
+        if (err instanceof Error) setErrorDetail(err.message)
         setStatus('error')
       }
     }
@@ -83,6 +95,9 @@ export default function VerifyEmailPage() {
                 {t('auth.invalidVerificationLink') ||
                   'This verification link is invalid or has expired.'}
               </p>
+              {errorDetail && (
+                <p className="text-xs text-destructive/80 mb-6 break-words">{errorDetail}</p>
+              )}
               <Link
                 href="/profile"
                 className="inline-block bg-foreground text-background px-6 py-3 rounded-sm uppercase tracking-wide"

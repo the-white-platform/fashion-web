@@ -9,6 +9,7 @@ import { motion } from 'motion/react'
 import { Logo } from '@/components/shared/Logo/Logo'
 import { useTranslations } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { describeError } from '@/utilities/errorMessage'
 
 export default function ResetPasswordPage() {
   const t = useTranslations()
@@ -46,12 +47,16 @@ export default function ResetPasswordPage() {
         body: JSON.stringify({ token, password }),
       })
       if (!res.ok) {
-        throw new Error('Reset failed')
+        // Payload returns `{ errors: [{ message }] }` — forward the
+        // detail so the user sees "…token expired" or the real
+        // validation reason rather than a generic retry line.
+        const body = await res.json().catch(() => ({}))
+        throw body
       }
       setSuccess(true)
       setTimeout(() => router.push('/login'), 3000)
-    } catch {
-      setError(t('auth.resetFailed') || 'Invalid or expired reset link')
+    } catch (err) {
+      setError(describeError(err, t('auth.resetFailed') || 'Invalid or expired reset link'))
     } finally {
       setIsLoading(false)
     }

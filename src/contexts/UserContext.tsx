@@ -214,8 +214,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      if (res.status === 409) return false
-      throw new Error(err.error ?? 'Registration failed')
+      // Re-throw with the server's real reason. 409 used to silently
+      // collapse to a generic "registration failed" banner; now the
+      // caller's catch block surfaces "This phone number is already
+      // registered" / "This account is already registered" via
+      // `describeError`.
+      throw new Error(
+        err.error ?? (res.status === 409 ? 'Already registered' : 'Registration failed'),
+      )
     }
     const data = await res.json()
     // register-identity sets the payload-token cookie directly, so
