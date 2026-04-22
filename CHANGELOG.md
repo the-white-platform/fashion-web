@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.54.0](https://github.com/the-white-platform/fashion-web/compare/v0.53.0...v0.54.0) (2026-04-22)
+
+
+### Features
+
+* **auth:** email-or-phone signup + Zalo OAuth login ([b21113a](https://github.com/the-white-platform/fashion-web/commit/b21113a6c2975c0f5239f8d56649081157eefcd7))
+* **auth:** polish Zalo/email-or-phone UI on login + register ([32f73da](https://github.com/the-white-platform/fashion-web/commit/32f73da2219d8e592f3b0c99a7cec48a42e07a19))
+
 ## [0.53.0](https://github.com/the-white-platform/fashion-web/compare/v0.52.1...v0.53.0) (2026-04-22)
 
 
