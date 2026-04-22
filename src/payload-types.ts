@@ -544,6 +544,9 @@ export interface User {
   provider?: ('local' | 'google' | 'facebook') | null;
   imageUrl?: string | null;
   emailVerified?: boolean | null;
+  otpHash?: string | null;
+  otpExpiresAt?: string | null;
+  otpRequestedAt?: string | null;
   emailVerifyToken?: string | null;
   cart?:
     | {
@@ -2013,6 +2016,9 @@ export interface UsersSelect<T extends boolean = true> {
   provider?: T;
   imageUrl?: T;
   emailVerified?: T;
+  otpHash?: T;
+  otpExpiresAt?: T;
+  otpRequestedAt?: T;
   emailVerifyToken?: T;
   cart?:
     | T

@@ -7,6 +7,7 @@ import { shippingNotification } from '@/emails/shippingNotification'
 import { deliveryConfirmation } from '@/emails/deliveryConfirmation'
 import { refundNotification } from '@/emails/refundNotification'
 import { passwordReset } from '@/emails/passwordReset'
+import { otp } from '@/emails/otp'
 
 type Locale = 'vi' | 'en'
 
@@ -18,6 +19,10 @@ type OrderEmailTemplate =
   | 'refundNotification'
 
 type PasswordResetTemplate = 'passwordReset'
+
+type OtpTemplate = 'otp'
+
+type OtpPurpose = 'login' | 'signup' | 'reset_password' | 'verify_email' | 'two_factor'
 
 type OrderEmailParams = {
   payload: Payload
@@ -33,13 +38,34 @@ type PasswordResetParams = {
   data: { resetLink: string; locale: Locale }
 }
 
-type SendCustomerEmailParams = OrderEmailParams | PasswordResetParams
+type OtpParams = {
+  payload: Payload
+  to: string
+  template: OtpTemplate
+  data: {
+    code: string
+    locale: Locale
+    purpose?: OtpPurpose
+    expiresInMinutes?: number
+  }
+}
+
+type SendCustomerEmailParams = OrderEmailParams | PasswordResetParams | OtpParams
 
 const resolveTemplate = (params: SendCustomerEmailParams): { subject: string; html: string } => {
   if (params.template === 'passwordReset') {
     return passwordReset({
       resetLink: params.data.resetLink,
       locale: params.data.locale,
+    })
+  }
+
+  if (params.template === 'otp') {
+    return otp({
+      code: params.data.code,
+      locale: params.data.locale,
+      purpose: params.data.purpose,
+      expiresInMinutes: params.data.expiresInMinutes,
     })
   }
 

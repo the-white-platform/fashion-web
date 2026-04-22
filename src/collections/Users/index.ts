@@ -147,6 +147,31 @@ export const Users: CollectionConfig = {
       },
     },
     {
+      // Bcrypt-hashed one-time code issued by /api/auth/otp/request.
+      // Never plaintext. Cleared on successful verify or expiry.
+      name: 'otpHash',
+      type: 'text',
+      admin: { hidden: true },
+      access: {
+        read: () => false,
+        update: () => false, // server-only via OTP routes
+      },
+    },
+    {
+      name: 'otpExpiresAt',
+      type: 'date',
+      admin: { hidden: true },
+      access: { read: () => false, update: () => false },
+    },
+    {
+      // Wall-clock rate-limit guard: reject a new OTP request if
+      // this is within the last 60 seconds.
+      name: 'otpRequestedAt',
+      type: 'date',
+      admin: { hidden: true },
+      access: { read: () => false, update: () => false },
+    },
+    {
       name: 'emailVerifyToken',
       type: 'text',
       admin: {

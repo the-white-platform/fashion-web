@@ -14,6 +14,7 @@ import * as migration_20260417_145410 from './20260417_145410'
 import * as migration_20260418_001413_tags_faqs_display_order from './20260418_001413_tags_faqs_display_order'
 import * as migration_20260418_133103_company_info_legal_fields from './20260418_133103_company_info_legal_fields'
 import * as migration_20260422_101419_vto_cache_hit_field from './20260422_101419_vto_cache_hit_field'
+import * as migration_20260422_170456_users_otp_fields from './20260422_170456_users_otp_fields'
 
 export const migrations = [
   {
@@ -95,5 +96,10 @@ export const migrations = [
     up: migration_20260422_101419_vto_cache_hit_field.up,
     down: migration_20260422_101419_vto_cache_hit_field.down,
     name: '20260422_101419_vto_cache_hit_field',
+  },
+  {
+    up: migration_20260422_170456_users_otp_fields.up,
+    down: migration_20260422_170456_users_otp_fields.down,
+    name: '20260422_170456_users_otp_fields',
   },
 ]
