@@ -5,6 +5,7 @@ import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
 import { useTranslations } from 'next-intl'
 import { trackBeginCheckout, trackPurchase } from '@/utilities/analytics'
+import { describeError } from '@/utilities/errorMessage'
 import {
   CheckoutStep,
   ShippingAddress,
@@ -230,7 +231,11 @@ export function useCheckout(): UseCheckoutReturn {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null)
-        throw new Error(errData?.message ?? `Order submission failed (${res.status})`)
+        // Throw the raw body so the downstream `describeError`
+        // handles Payload's `{ errors: [{ message }] }` shape,
+        // a plain `{ message }` / `{ error }`, or a string — same
+        // pattern auth forms use to surface upstream detail.
+        throw errData ?? new Error(`Order submission failed (${res.status})`)
       }
 
       const result = await res.json()
@@ -254,7 +259,10 @@ export function useCheckout(): UseCheckoutReturn {
       setStep('confirmation')
     } catch (err) {
       console.error('Error submitting order:', err)
-      setOrderError(err instanceof Error ? err.message : t('orderFailed'))
+      // Carry the upstream reason onto the banner so the customer
+      // sees "Đơn hàng thất bại. <payload validation message>"
+      // instead of a generic retry prompt.
+      setOrderError(describeError(err, t('orderFailed')))
     } finally {
       setIsSubmitting(false)
     }
