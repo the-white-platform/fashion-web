@@ -23,13 +23,44 @@ interface SendZaloNotificationOptions {
 }
 
 function formatOrderData(order: Order): Record<string, string> {
-  const total = order.totals?.total?.toLocaleString('vi-VN') ?? '0'
+  // Keys must match the parameter names in the Zalo ZNS template
+  // exactly (Zalo rejects the send on unknown keys). Current
+  // template schema (ID 569406, orderConfirmation):
+  //   order_code, date, price, name, phone_number,
+  //   product_info, status
+  const total = order.totals?.total ?? 0
+  const createdAt = order.createdAt ? new Date(order.createdAt) : new Date()
+  const items = (order.items ?? []) as Array<{
+    productName?: string | null
+    variant?: string | null
+    size?: string | null
+    quantity?: number | null
+  }>
+  const productInfo =
+    items.length > 0
+      ? items
+          .map((i) => {
+            const name = i.productName || ''
+            const variant =
+              i.variant || i.size ? ` (${[i.variant, i.size].filter(Boolean).join(' / ')})` : ''
+            const qty = i.quantity ? ` x${i.quantity}` : ''
+            return `${name}${variant}${qty}`
+          })
+          .filter(Boolean)
+          .join(', ')
+      : ''
+
   return {
-    order_number: order.orderNumber ?? String(order.id),
-    customer_name: order.customerInfo?.customerName ?? '',
-    total: `${total}₫`,
+    order_code: order.orderNumber ?? String(order.id),
+    date: createdAt.toLocaleDateString('vi-VN'),
+    // ZNS template `price` is a number type in Zalo's test JSON;
+    // send as string but without currency symbol so the template
+    // can format it.
+    price: String(total),
+    name: order.customerInfo?.customerName ?? '',
+    phone_number: order.customerInfo?.customerPhone ?? '',
+    product_info: productInfo,
     status: order.status ?? '',
-    created_at: new Date(order.createdAt).toLocaleDateString('vi-VN'),
   }
 }
 

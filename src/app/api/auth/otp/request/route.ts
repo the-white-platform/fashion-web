@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { sendCustomerEmail } from '@/utilities/sendCustomerEmail'
+import { sendZaloOtp } from '@/utilities/sendZaloOtp'
 import {
   looksLikeEmail,
   looksLikeVnPhone,
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
   const payload = await getPayload({ config: configPromise })
 
   let userEmail: string | null = null
+  let userPhone: string | null = null
   let userId: number | string | null = null
 
   if (looksLikeEmail(rawIdentifier)) {
@@ -61,6 +63,7 @@ export async function POST(request: Request) {
     const user = res.docs[0]
     if (user) {
       userEmail = user.email
+      userPhone = (user as { phone?: string | null }).phone ?? null
       userId = user.id
     }
   } else if (looksLikeVnPhone(rawIdentifier)) {
@@ -76,6 +79,7 @@ export async function POST(request: Request) {
     const user = res.docs[0]
     if (user) {
       userEmail = user.email
+      userPhone = (user as { phone?: string | null }).phone ?? null
       userId = user.id
     }
   } else {
@@ -90,12 +94,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ sent: true })
   }
 
-  // Synthetic email users (phone-only / Zalo) — we can't deliver
-  // a real email, so surface the reason explicitly instead of
-  // silently succeeding.
-  if (isSyntheticEmail(userEmail)) {
+  // Delivery channel: real email preferred (cheapest, bilingual
+  // templates). Synthetic-email accounts (phone-only / Zalo)
+  // fall back to Zalo ZNS OTP via phone. No phone either →
+  // user has to sign in with password.
+  const useZaloZns = isSyntheticEmail(userEmail)
+  if (useZaloZns && !userPhone) {
     return NextResponse.json(
-      { error: 'No email on file for this account. Sign in with your password.' },
+      { error: 'No email or phone on file for this account. Sign in with your password.' },
       { status: 400 },
     )
   }
@@ -134,22 +140,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to issue code' }, { status: 500 })
   }
 
-  try {
-    await sendCustomerEmail({
-      payload,
-      to: userEmail,
-      template: 'otp',
-      data: {
-        code,
-        locale,
-        purpose,
-        expiresInMinutes: OTP_EXPIRY_MINUTES,
-      },
-    })
-  } catch (err) {
-    payload.logger.error({ err, msg: 'otp/request: email send failed' })
-    // Non-fatal to the caller's flow; the code is already stored,
-    // and sendCustomerEmail itself already swallows Resend errors.
+  if (useZaloZns && userPhone) {
+    const zaloResult = await sendZaloOtp({ phone: userPhone, code })
+    if (!zaloResult.delivered) {
+      payload.logger.error({ msg: 'otp/request: zalo zns send failed', reason: zaloResult.reason })
+      return NextResponse.json(
+        { error: `Failed to send OTP via Zalo: ${zaloResult.reason}` },
+        { status: 502 },
+      )
+    }
+  } else {
+    try {
+      await sendCustomerEmail({
+        payload,
+        to: userEmail,
+        template: 'otp',
+        data: {
+          code,
+          locale,
+          purpose,
+          expiresInMinutes: OTP_EXPIRY_MINUTES,
+        },
+      })
+    } catch (err) {
+      payload.logger.error({ err, msg: 'otp/request: email send failed' })
+      // Non-fatal to the caller's flow; the code is already stored,
+      // and sendCustomerEmail itself already swallows Resend errors.
+    }
   }
 
   // Dev-only shortcut: log the plaintext code so developers can
