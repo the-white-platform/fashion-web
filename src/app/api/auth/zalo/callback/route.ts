@@ -74,12 +74,29 @@ export async function GET(request: Request) {
   const accessToken = tokenData.access_token as string
 
   // --- Fetch user profile ---
-  const profileRes = await fetch('https://graph.zalo.me/v2.0/me?fields=id,name,picture', {
-    headers: { access_token: accessToken },
-  })
-  const profile = await profileRes.json().catch(() => ({}))
+  // Start with the richest field set. Zalo's `-501` IP gate applies
+  // to "personal information" (name, picture); the `id` field alone
+  // is not personal info and is returned even from non-VN IPs, so
+  // fall back to id-only on geo rejection. That gets us a stable
+  // Zalo user id for find-or-create; the user can set name + avatar
+  // later from the profile page.
+  async function fetchProfile(fields: string) {
+    const r = await fetch(`https://graph.zalo.me/v2.0/me?fields=${fields}`, {
+      headers: { access_token: accessToken },
+    })
+    return { ok: r.ok, body: (await r.json().catch(() => ({}))) as any }
+  }
 
-  if (!profileRes.ok || !profile?.id) {
+  let { ok: profileOk, body: profile } = await fetchProfile('id,name,picture')
+
+  if ((!profileOk || !profile?.id) && profile?.error === -501) {
+    // Geo-restricted on personal info — retry with id only.
+    const retry = await fetchProfile('id')
+    profileOk = retry.ok
+    profile = retry.body
+  }
+
+  if (!profileOk || !profile?.id) {
     console.warn('[auth/zalo] /me fetch failed', profile)
     // Zalo returns a specific error code + human-readable message
     // when personal info is blocked (e.g. error -501 for
