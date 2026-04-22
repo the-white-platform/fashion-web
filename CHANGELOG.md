@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.56.0](https://github.com/the-white-platform/fashion-web/compare/v0.55.0...v0.56.0) (2026-04-22)
+
+
+### Features
+
+* **orders:** enable email + Zalo ZNS notifications on status transitions ([a52c670](https://github.com/the-white-platform/fashion-web/commit/a52c6709b2d87febb4c8b1664467bd35f9f2da66))
+* **zalo:** one-shot OA OAuth flow for capturing refresh token ([f1dfa6f](https://github.com/the-white-platform/fashion-web/commit/f1dfa6f43dbefa8d16b42ce65b6800c2fe58d482))
+
 ## [0.55.0](https://github.com/the-white-platform/fashion-web/compare/v0.54.4...v0.55.0) (2026-04-22)
 
 
