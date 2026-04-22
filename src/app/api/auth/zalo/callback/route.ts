@@ -81,7 +81,20 @@ export async function GET(request: Request) {
 
   if (!profileRes.ok || !profile?.id) {
     console.warn('[auth/zalo] /me fetch failed', profile)
-    return NextResponse.redirect(`${serverUrl}/login?error=zalo_profile_failed`)
+    // Zalo returns a specific error code + human-readable message
+    // when personal info is blocked (e.g. error -501 for
+    // IP-not-inside-Vietnam). Pass both back to the login page so
+    // the user sees the actual reason instead of a generic retry
+    // prompt.
+    const zaloCode =
+      typeof profile?.error === 'number' || typeof profile?.error === 'string'
+        ? String(profile.error)
+        : ''
+    const zaloMessage = typeof profile?.message === 'string' ? profile.message : ''
+    const params = new URLSearchParams({ error: 'zalo_profile_failed' })
+    if (zaloCode) params.set('zalo_code', zaloCode)
+    if (zaloMessage) params.set('zalo_message', zaloMessage)
+    return NextResponse.redirect(`${serverUrl}/login?${params.toString()}`)
   }
 
   const zaloUserId = String(profile.id)

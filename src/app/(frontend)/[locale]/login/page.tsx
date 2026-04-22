@@ -43,8 +43,20 @@ export default function LoginPage() {
 
   useEffect(() => {
     const code = searchParams.get('error')
-    if (code && isOAuthErrorCode(code)) {
-      setError(t(`auth.oauthError.${code}`))
+    if (!code || !isOAuthErrorCode(code)) return
+    // Zalo callback may pass the upstream code + human-readable
+    // reason as query params. When present, show them alongside
+    // the localized fallback message so the customer sees the real
+    // reason (e.g. "IP address not inside Vietnam") rather than a
+    // generic retry prompt.
+    const zaloCode = searchParams.get('zalo_code')
+    const zaloMessage = searchParams.get('zalo_message')
+    const base = t(`auth.oauthError.${code}`)
+    if (zaloMessage || zaloCode) {
+      const suffix = [zaloMessage, zaloCode ? `(code ${zaloCode})` : ''].filter(Boolean).join(' ')
+      setError(`${base} ${suffix}`.trim())
+    } else {
+      setError(base)
     }
   }, [searchParams, t])
 
