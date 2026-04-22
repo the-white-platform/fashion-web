@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.57.0](https://github.com/the-white-platform/fashion-web/compare/v0.56.0...v0.57.0) (2026-04-22)
+
+
+### Features
+
+* **zalo:** map ZNS order + OTP templates to real data ([ef8004a](https://github.com/the-white-platform/fashion-web/commit/ef8004ab44bdc12902d1e4629adaeb9811a74f3d))
+* **zalo:** self-service token renewal + dashboard expiry warning ([394885d](https://github.com/the-white-platform/fashion-web/commit/394885df3d099b9d9ed8bcb34ecb028c3afb37d1))
+
 ## [0.56.0](https://github.com/the-white-platform/fashion-web/compare/v0.55.0...v0.56.0) (2026-04-22)
 
 
