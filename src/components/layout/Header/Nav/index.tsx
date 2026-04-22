@@ -12,6 +12,7 @@ import { useCart } from '@/contexts/CartContext'
 import { useUser } from '@/contexts/UserContext'
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/ecommerce/LanguageSwitcher'
+import { LoyaltyHeaderLink } from '@/components/ecommerce/LoyaltyHeaderLink'
 import { ThemeSwitcher } from '@/components/ecommerce/ThemeSwitcher'
 
 export const HeaderNav: React.FC<{
@@ -67,6 +68,7 @@ export const HeaderNav: React.FC<{
         >
           <User className="w-5 h-5" />
         </Link>
+        <LoyaltyHeaderLink isScrolled={isScrolled} />
         <button
           onClick={() => setIsCartOpen(true)}
           className={cn(

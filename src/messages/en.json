@@ -1304,6 +1304,15 @@
     "shopToEarn": "Shop to earn points",
     "balance": "Balance: {n}",
     "copiedReferral": "Referral link copied!",
+    "earnOnDelivery": "You'll earn +{points} points once this order is delivered.",
+    "homeCtaTitleGuest": "Join TheWhite rewards",
+    "homeCtaTitleAuthed": "You have {points} points to spend",
+    "homeCtaSubtitleGuest": "Sign up free to earn points on every order, unlock tier bonuses, and get 200 points for every friend you refer.",
+    "homeCtaSubtitleAuthed": "Redeem points for checkout discounts, and share your referral code to earn 200 more points each time a friend places their first order.",
+    "homeCtaBulletEarn": "1 pt per 10,000₫ spent",
+    "homeCtaBulletReferral": "200 pts per referral",
+    "homeCtaBulletTiers": "4 tiers: Bronze → Platinum",
+    "homeCtaViewPoints": "View my points",
     "tierBenefits": {
       "bronze": ["1 point per 10,000₫ purchase", "50 points for product review", "Referral points"],
       "silver": [

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { motion, AnimatePresence } from 'motion/react'
-import { X, User, ShoppingBag, ChevronRight, Search } from 'lucide-react'
+import { X, User, ShoppingBag, ChevronRight, Search, Award } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/Link'
 import { cn } from '@/utilities/cn'
@@ -12,6 +12,7 @@ import type { Header as HeaderType } from '@/payload-types'
 import { LanguageSwitcher } from '@/components/ecommerce/LanguageSwitcher'
 import { ThemeSwitcher } from '@/components/ecommerce/ThemeSwitcher'
 import { Logo } from '@/components/shared/Logo/Logo'
+import { useLoyaltySummary } from '@/hooks/useLoyaltySummary'
 
 interface MobileMenuProps {
   isOpen: boolean
@@ -22,8 +23,10 @@ interface MobileMenuProps {
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header, user }) => {
   const t = useTranslations('nav')
+  const tLoyalty = useTranslations('loyalty')
   const navItems = header?.navItems || []
   const [mounted, setMounted] = useState(false)
+  const { summary: loyaltySummary } = useLoyaltySummary()
 
   useEffect(() => {
     setTimeout(() => setMounted(true), 0)
@@ -133,6 +136,34 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, header,
                     </div>
                   </Link>
                 </motion.div>
+
+                {user && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.55 }}
+                  >
+                    <Link
+                      href="/loyalty"
+                      onClick={onClose}
+                      className="flex items-center gap-4 p-4 bg-card border border-border hover:bg-accent transition-all rounded-none"
+                    >
+                      <div className="w-10 h-10 bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                        <Award className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                          {tLoyalty('breadcrumb')}
+                        </p>
+                        <p className="font-bold uppercase tracking-tight truncate">
+                          {loyaltySummary
+                            ? `${loyaltySummary.points.toLocaleString('vi-VN')} ${tLoyalty('points')}`
+                            : tLoyalty('pageTitle')}
+                        </p>
+                      </div>
+                    </Link>
+                  </motion.div>
+                )}
               </div>
             </nav>
 

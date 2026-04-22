@@ -1338,6 +1338,15 @@
     "shopToEarn": "Mua hàng để tích điểm",
     "balance": "Số dư: {n}",
     "copiedReferral": "Đã sao chép link giới thiệu!",
+    "earnOnDelivery": "Bạn sẽ nhận +{points} điểm khi đơn được giao thành công.",
+    "homeCtaTitleGuest": "Tham gia chương trình điểm thưởng TheWhite",
+    "homeCtaTitleAuthed": "Bạn có {points} điểm khả dụng",
+    "homeCtaSubtitleGuest": "Đăng ký miễn phí để tích điểm mỗi đơn hàng, lên hạng để nhân đôi ưu đãi và nhận 200 điểm khi giới thiệu bạn bè.",
+    "homeCtaSubtitleAuthed": "Đổi điểm thành giảm giá khi thanh toán. Chia sẻ mã giới thiệu để nhận thêm 200 điểm cho mỗi bạn đặt đơn đầu tiên.",
+    "homeCtaBulletEarn": "1 điểm / 10.000₫ mua hàng",
+    "homeCtaBulletReferral": "200 điểm mỗi lượt giới thiệu",
+    "homeCtaBulletTiers": "4 hạng: Đồng → Bạch Kim",
+    "homeCtaViewPoints": "Xem điểm của tôi",
     "earnRulesList": [
       {
         "action": "Mua hàng",

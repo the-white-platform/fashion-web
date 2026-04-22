@@ -1,12 +1,14 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { Check } from 'lucide-react'
+import { Check, Award } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
+import { Link } from '@/i18n/Link'
 import { Recommendations } from '@/components/ecommerce/Recommendations'
 import { usePaymentMethods } from '@/hooks/usePaymentMethods'
+import { useUser } from '@/contexts/UserContext'
 
 interface ConfirmationStepProps {
   orderId: string
@@ -25,7 +27,14 @@ export function ConfirmationStep({
 }: ConfirmationStepProps) {
   const t = useTranslations('checkout')
   const tNav = useTranslations('nav')
+  const tLoyalty = useTranslations('loyalty')
+  const { user } = useUser()
   const isBankTransfer = selectedPayment?.type === 'bank'
+  // Mirrors the tier-agnostic base rate in `loyaltyEarn`
+  // (1 pt / 10,000 VND). The actual payout on delivered can be
+  // higher once the tier multiplier applies — this is the guaranteed
+  // minimum, safe to promise.
+  const estimatedPoints = Math.floor(total / 10_000)
 
   // Bank details from the PaymentMethods global — no fallback. If the
   // admin hasn't configured them the QR + account block won't render.
@@ -114,6 +123,27 @@ export function ConfirmationStep({
         <p className="text-sm">📧 {t('successEmail')}</p>
         <p className="text-sm">📦 {t('successTrack')}</p>
       </div>
+
+      {user && estimatedPoints > 0 && (
+        <Link
+          href="/loyalty"
+          className="flex items-center gap-3 p-4 mb-6 bg-primary/5 border-2 border-primary/20 rounded-sm hover:border-primary/40 hover:bg-primary/10 transition-colors text-left"
+        >
+          <div className="w-10 h-10 bg-primary text-primary-foreground rounded-sm flex items-center justify-center shrink-0">
+            <Award className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
+              {tLoyalty('earnRulesTitle')}
+            </p>
+            <p className="text-sm font-bold">
+              {tLoyalty('earnOnDelivery', {
+                points: estimatedPoints.toLocaleString('vi-VN'),
+              })}
+            </p>
+          </div>
+        </Link>
+      )}
 
       <div className="flex gap-3 mb-12">
         <Button variant="outline" onClick={onContinueShopping} className="flex-1" size="lg">

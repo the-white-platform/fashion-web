@@ -9,6 +9,7 @@ import { Categories } from '@/components/ecommerce/Categories'
 import { ExploreMore } from '@/components/ecommerce/ExploreMore'
 import { VirtualTryOnDemo } from '@/components/ecommerce/VirtualTryOnDemo'
 import { BrandStory } from '@/components/ecommerce/BrandStory'
+import { LoyaltyHomeCTA } from '@/components/ecommerce/LoyaltyHomeCTA'
 import { Newsletter } from '@/components/ecommerce/Newsletter'
 import { RecentlyViewed } from '@/components/ecommerce/RecentlyViewed'
 import dynamic from 'next/dynamic'
@@ -113,6 +114,10 @@ export default function HomePageClient({
       </AlternatingSection>
 
       <AlternatingSection index={7}>
+        <LoyaltyHomeCTA />
+      </AlternatingSection>
+
+      <AlternatingSection index={8}>
         <Newsletter />
       </AlternatingSection>
 
