@@ -39,6 +39,23 @@ export const Users: CollectionConfig = {
           const random = Math.random().toString(36).substring(2, 6).toUpperCase()
           data.referralCode = `TW-${timestamp}-${random}`
         }
+
+        // Prune expired sessions on every user write. Payload's
+        // default login handler appends to `sessions` without ever
+        // expiring old rows, so the array grows unbounded. On
+        // 2026-04-22 admin login stalled 60-200s until the
+        // `users_sessions` rows were manually deleted — one
+        // malformed row was enough to hang the per-login filter
+        // step. Filtering here at write time keeps the array bounded
+        // and skips any row with a malformed `expiresAt`.
+        if (Array.isArray(data.sessions)) {
+          const nowMs = Date.now()
+          data.sessions = data.sessions.filter((session) => {
+            const exp = session?.expiresAt ? Date.parse(String(session.expiresAt)) : NaN
+            return Number.isFinite(exp) && exp > nowMs
+          })
+        }
+
         return data
       },
     ],
