@@ -6,7 +6,6 @@ import { Link } from '@/i18n/Link'
 import { LogIn, AtSign, Lock, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
-import { Logo } from '@/components/shared/Logo/Logo'
 import { useTranslations } from 'next-intl'
 import { looksLikeEmail, looksLikeVnPhone } from '@/lib/identity'
 
@@ -89,13 +88,10 @@ export default function LoginPage() {
         transition={{ duration: 0.6 }}
         className="max-w-md w-full"
       >
-        {/* Logo */}
+        {/* Header — site logo is already in the page header, so we
+            only show the context icon + title here to avoid the double
+            brand mark. */}
         <div className="text-center mb-8">
-          <div className="mb-8">
-            <Link href="/" className="inline-block">
-              <Logo showSlogan={false} className="items-center justify-center" />
-            </Link>
-          </div>
           <div className="inline-flex items-center justify-center w-16 h-16 bg-foreground text-background rounded-sm mb-6">
             <LogIn className="w-8 h-8" />
           </div>
@@ -116,7 +112,9 @@ export default function LoginPage() {
             </motion.div>
           )}
 
-          {/* Email or phone identifier */}
+          {/* Unified identifier — email OR phone in a single input.
+              Login is minimal friction; register still collects both
+              separately for data quality. */}
           <div>
             <label htmlFor="identifier" className="block text-sm uppercase tracking-wide mb-2">
               {t('auth.emailOrPhone')}
@@ -230,7 +228,7 @@ export default function LoginPage() {
                 className="flex items-center justify-center gap-2 py-3 border border-border rounded-sm hover:bg-muted transition-colors"
                 disabled={isLoading}
               >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" aria-label="Google">
                   <path
                     fill="#4285F4"
                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -248,7 +246,6 @@ export default function LoginPage() {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span className="text-sm">Google</span>
               </button>
               <button
                 type="button"
@@ -256,14 +253,20 @@ export default function LoginPage() {
                 className="flex items-center justify-center gap-2 py-3 border border-border rounded-sm hover:bg-muted transition-colors"
                 disabled={isLoading}
               >
-                <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true">
-                  <rect width="48" height="48" rx="10" fill="#0068FF" />
-                  <path
-                    fill="#fff"
-                    d="M24 12c-7.18 0-13 4.79-13 10.7 0 3.54 2.08 6.68 5.29 8.64l-.82 3.45a.8.8 0 0 0 1.22.85l3.75-2.3c1.12.26 2.3.4 3.56.4 7.18 0 13-4.79 13-10.7S31.18 12 24 12Z"
-                  />
-                </svg>
-                <span className="text-sm">Zalo</span>
+                {/* Zalo brand mark served from simple-icons CDN —
+                    renders the official wordmark in Zalo blue.
+                    Drop-in replaceable: swap the src for a locally
+                    hosted asset (e.g. `/icons/zalo.png`) if
+                    marketing ships a version with specific
+                    proportions. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://cdn.simpleicons.org/zalo/0068FF"
+                  alt="Zalo"
+                  width={20}
+                  height={20}
+                  className="w-5 h-5"
+                />
               </button>
             </div>
           </div>

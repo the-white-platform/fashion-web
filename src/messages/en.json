@@ -410,9 +410,12 @@
     "registerFailed": "Registration failed. Please check your information and try again.",
     "agreeTermsLogin": "By logging in, you agree to our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>",
     "agreeTermsRegister": "I agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of TheWhite",
+    "emailOptional": "Email (optional)",
+    "phoneOptional": "Phone (optional)",
     "emailOrPhone": "Email or phone",
     "emailOrPhonePlaceholder": "email@example.com or 0901234567",
-    "emailOrPhoneHint": "Use either an email address or a Vietnamese phone number.",
+    "emailOrPhoneHint": "Email or phone — you only need one of them.",
+    "emailOrPhoneRequired": "Please enter an email or phone number.",
     "invalidIdentifier": "Invalid email or phone number.",
     "oauthError": {
       "google_unverified": "Your Google account email has not been verified. Please verify it with Google and try again.",

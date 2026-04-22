@@ -3,11 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/Link'
-import { UserPlus, AtSign, Lock, User, Eye, EyeOff, Gift } from 'lucide-react'
+import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, Gift } from 'lucide-react'
 import { looksLikeEmail, looksLikeVnPhone } from '@/lib/identity'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
-import { Logo } from '@/components/shared/Logo/Logo'
 import { useTranslations } from 'next-intl'
 
 export default function RegisterPage() {
@@ -18,9 +17,8 @@ export default function RegisterPage() {
   const tCommon = useTranslations('common')
   const [formData, setFormData] = useState({
     fullName: '',
-    // Unified identifier — user types email OR Vietnamese phone.
-    // Server normalises + synthesises the missing half.
-    identifier: '',
+    email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
   })
@@ -59,19 +57,27 @@ export default function RegisterPage() {
   }
 
   const validateForm = (): boolean => {
-    if (
-      !formData.fullName ||
-      !formData.identifier ||
-      !formData.password ||
-      !formData.confirmPassword
-    ) {
+    if (!formData.fullName || !formData.password || !formData.confirmPassword) {
       setError(t('auth.requiredFields'))
       return false
     }
 
-    const identifier = formData.identifier.trim()
-    if (!looksLikeEmail(identifier) && !looksLikeVnPhone(identifier)) {
-      setError(t('auth.invalidIdentifier'))
+    const email = formData.email.trim()
+    const phone = formData.phone.trim()
+
+    // At least one contact method is required; both is fine.
+    if (!email && !phone) {
+      setError(t('auth.emailOrPhoneRequired'))
+      return false
+    }
+
+    if (email && !looksLikeEmail(email)) {
+      setError(t('auth.invalidEmail'))
+      return false
+    }
+
+    if (phone && !looksLikeVnPhone(phone)) {
+      setError(t('auth.invalidPhone'))
       return false
     }
 
@@ -105,10 +111,17 @@ export default function RegisterPage() {
 
     // Try to register
     try {
+      // Prefer email when both provided (it's the more robust Payload
+      // auth key). Phone goes into the optional `phone` slot — the
+      // backend stores it alongside the email account.
+      const email = formData.email.trim()
+      const phone = formData.phone.trim()
+      const identifier = email || phone
       const success = await register(
         formData.fullName,
-        formData.identifier.trim(),
+        identifier,
         formData.password,
+        email && phone ? phone : undefined,
       )
       if (success) {
         // If we have a referral code, create a referral record via
@@ -152,13 +165,9 @@ export default function RegisterPage() {
         transition={{ duration: 0.6 }}
         className="max-w-md w-full"
       >
-        {/* Logo */}
+        {/* Header — site logo is already in the page header, so skip
+            the second brand mark here. */}
         <div className="text-center mb-8">
-          <div className="mb-8">
-            <Link href="/" className="inline-block">
-              <Logo showSlogan={false} className="items-center justify-center" />
-            </Link>
-          </div>
           <div className="inline-flex items-center justify-center w-16 h-16 bg-foreground text-background rounded-sm mb-6">
             <UserPlus className="w-8 h-8" />
           </div>
@@ -213,25 +222,43 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Email or phone — one identifier field. Server
-              synthesises the missing half for phone-only signups. */}
+          {/* Email (optional if phone is provided) */}
           <div>
-            <label htmlFor="identifier" className="block text-sm uppercase tracking-wide mb-2">
-              {t('auth.emailOrPhone')}
+            <label htmlFor="email" className="block text-sm uppercase tracking-wide mb-2">
+              {t('auth.emailOptional')}
             </label>
             <div className="relative">
-              <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
-                type="text"
-                id="identifier"
-                name="identifier"
-                autoComplete="username"
-                inputMode="email"
-                value={formData.identifier}
+                type="email"
+                id="email"
+                name="email"
+                autoComplete="email"
+                value={formData.email}
                 onChange={handleChange}
                 className="w-full pl-12 pr-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
-                placeholder={t('auth.emailOrPhonePlaceholder')}
-                required
+                placeholder="your.email@example.com"
+              />
+            </div>
+          </div>
+
+          {/* Phone (optional if email is provided). One of email or
+              phone must be supplied — validation happens client + server. */}
+          <div>
+            <label htmlFor="phone" className="block text-sm uppercase tracking-wide mb-2">
+              {t('auth.phoneOptional')}
+            </label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                autoComplete="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full pl-12 pr-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
+                placeholder="0901234567"
               />
             </div>
             <p className="text-xs text-muted-foreground mt-1">{t('auth.emailOrPhoneHint')}</p>
