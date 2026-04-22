@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.55.0](https://github.com/the-white-platform/fashion-web/compare/v0.54.4...v0.55.0) (2026-04-22)
+
+
+### Features
+
+* **auth:** browser-side Zalo /me fallback when server IP geo-blocked ([32a70a6](https://github.com/the-white-platform/fashion-web/commit/32a70a63a0452297fd77b9c108bcbaa967f2e9f8))
+
 ### [0.54.4](https://github.com/the-white-platform/fashion-web/compare/v0.54.3...v0.54.4) (2026-04-22)
 
 
