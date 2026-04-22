@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.53.0](https://github.com/the-white-platform/fashion-web/compare/v0.52.1...v0.53.0) (2026-04-22)
+
+
+### Features
+
+* **admin:** password-gated VTO result-image preview ([86e7b2a](https://github.com/the-white-platform/fashion-web/commit/86e7b2ae5700574d35da3cb064846a673ea9a56d))
+* **auth:** email OTP — request + verify, bilingual template ([6d45f63](https://github.com/the-white-platform/fashion-web/commit/6d45f6333ffde622dc3d8963c1c31e3ec19ad2eb))
+* **email:** combined THE WHITE ACTIVE logo + CompanyInfo footer across all templates ([3b2e8a4](https://github.com/the-white-platform/fashion-web/commit/3b2e8a45850033f001bcea6f50aee401a46d4bbc))
+* **email:** shared brand header/footer + CompanyInfo-driven contact block ([0e04b85](https://github.com/the-white-platform/fashion-web/commit/0e04b8555b2884898169d18fedd65f546043b173))
+
+
+### Bug Fixes
+
+* **email:** switch sender + support addresses to thewhite.cool ([d23f2f3](https://github.com/the-white-platform/fashion-web/commit/d23f2f3e7b62add1d6e7b4653b390902686349ab))
+
+
+### Code Refactoring
+
+* **email:** pass CompanyInfo into OTP template, keep template sync ([ce67f92](https://github.com/the-white-platform/fashion-web/commit/ce67f92c2047f887061a1b52f6721610dda61acc))
+
 ### [0.52.1](https://github.com/the-white-platform/fashion-web/compare/v0.52.0...v0.52.1) (2026-04-22)
 
 
