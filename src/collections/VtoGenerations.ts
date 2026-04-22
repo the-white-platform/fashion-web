@@ -15,7 +15,7 @@ export const VtoGenerations: CollectionConfig = {
     plural: { vi: 'Lần thử đồ ảo', en: 'Virtual Try-On Logs' },
   },
   admin: {
-    defaultColumns: ['user', 'product', 'cacheHit', 'provider', 'createdAt'],
+    defaultColumns: ['user', 'product', 'resultData', 'cacheHit', 'provider', 'createdAt'],
     useAsTitle: 'id',
     description: {
       vi: 'Nhật ký các lần thử đồ ảo. Dùng để giới hạn số lần thử mỗi ngày trên mỗi tài khoản.',
@@ -70,6 +70,13 @@ export const VtoGenerations: CollectionConfig = {
       admin: {
         description: 'data: URL of the generated image (used for retry caching)',
         rows: 2,
+        components: {
+          // Password-gated preview: staff must enter the shared
+          // unlock code before the base64 data URL is rendered.
+          // Applies in both list + edit views.
+          Field: '@/collections/VtoGenerations/ResultImageField.client#ResultImageFieldClient',
+          Cell: '@/collections/VtoGenerations/ResultImageCell.client#ResultImageCellClient',
+        },
       },
     },
     {
