@@ -1,4 +1,4 @@
-import { getCompanyInfo } from '@/utilities/getCompanyInfo'
+import type { CompanyInfo } from '@/payload-types'
 import { brandFooter, brandHeader, resolveServerUrl } from './_shared'
 
 type OtpPurpose = 'login' | 'signup' | 'reset_password' | 'verify_email' | 'two_factor'
@@ -10,6 +10,10 @@ type Params = {
   // Minutes the code stays valid — shown in the email so the user
   // knows to hurry. Default 10 min.
   expiresInMinutes?: number
+  // Pre-resolved company context. Callers in the running app pass
+  // the result of `getCompanyInfo(locale)`; preview tooling can
+  // inject a stub to avoid server-only runtime deps.
+  company?: CompanyInfo | null
 }
 
 /**
@@ -24,15 +28,15 @@ type Params = {
  * global so marketing can edit the registered address / hotline /
  * support email without a deploy.
  */
-export const otp = async ({
+export const otp = ({
   code,
   purpose = 'login',
   locale,
   expiresInMinutes = 10,
-}: Params): Promise<{ subject: string; html: string }> => {
+  company = null,
+}: Params): { subject: string; html: string } => {
   const isVi = locale === 'vi'
   const serverUrl = resolveServerUrl()
-  const company = await getCompanyInfo(locale).catch(() => null)
 
   const headings: Record<OtpPurpose, { vi: string; en: string }> = {
     login: { vi: 'Mã đăng nhập', en: 'Login code' },

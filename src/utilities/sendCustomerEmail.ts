@@ -8,6 +8,7 @@ import { deliveryConfirmation } from '@/emails/deliveryConfirmation'
 import { refundNotification } from '@/emails/refundNotification'
 import { passwordReset } from '@/emails/passwordReset'
 import { otp } from '@/emails/otp'
+import { getCompanyInfo } from './getCompanyInfo'
 
 type Locale = 'vi' | 'en'
 
@@ -63,11 +64,15 @@ const resolveTemplate = async (
   }
 
   if (params.template === 'otp') {
-    return await otp({
+    // Fetch CompanyInfo here (server context) and inject into the
+    // template so the template itself stays a pure sync function.
+    const company = await getCompanyInfo(params.data.locale).catch(() => null)
+    return otp({
       code: params.data.code,
       locale: params.data.locale,
       purpose: params.data.purpose,
       expiresInMinutes: params.data.expiresInMinutes,
+      company,
     })
   }
 
