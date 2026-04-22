@@ -16,7 +16,7 @@ export const deliveryConfirmation = ({
     ? `Đơn hàng ${orderNumber} đã giao thành công`
     : `Order ${orderNumber} delivered successfully`
 
-  const storeUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? 'https://thewhite.vn'
+  const storeUrl = process.env.NEXT_PUBLIC_SERVER_URL ?? 'https://thewhite.cool'
   const reviewUrl = `${storeUrl}/${locale}/account/orders/${orderNumber}`
 
   const html = `<!DOCTYPE html>
@@ -74,8 +74,8 @@ export const deliveryConfirmation = ({
               <p style="margin:0;color:#666;font-size:14px;line-height:1.6;">
                 ${
                   isVi
-                    ? 'Nếu có vấn đề với đơn hàng, vui lòng liên hệ <a href="mailto:support@thewhite.vn" style="color:#1a1a1a;">support@thewhite.vn</a> trong vòng 7 ngày.'
-                    : 'If there are any issues with your order, please contact <a href="mailto:support@thewhite.vn" style="color:#1a1a1a;">support@thewhite.vn</a> within 7 days.'
+                    ? 'Nếu có vấn đề với đơn hàng, vui lòng liên hệ <a href="mailto:support@thewhite.cool" style="color:#1a1a1a;">support@thewhite.cool</a> trong vòng 7 ngày.'
+                    : 'If there are any issues with your order, please contact <a href="mailto:support@thewhite.cool" style="color:#1a1a1a;">support@thewhite.cool</a> within 7 days.'
                 }
               </p>
             </td>

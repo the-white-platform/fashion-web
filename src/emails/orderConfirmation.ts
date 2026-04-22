@@ -144,8 +144,8 @@ export const orderConfirmation = ({ order, locale }: Params): { subject: string;
               <p style="margin:0;color:#666;font-size:14px;line-height:1.6;">
                 ${
                   isVi
-                    ? 'Chúng tôi sẽ thông báo cho bạn khi đơn hàng được xác nhận và giao đi. Nếu có câu hỏi, vui lòng liên hệ <a href="mailto:support@thewhite.vn" style="color:#1a1a1a;">support@thewhite.vn</a>.'
-                    : 'We will notify you when your order is confirmed and shipped. If you have any questions, please contact <a href="mailto:support@thewhite.vn" style="color:#1a1a1a;">support@thewhite.vn</a>.'
+                    ? 'Chúng tôi sẽ thông báo cho bạn khi đơn hàng được xác nhận và giao đi. Nếu có câu hỏi, vui lòng liên hệ <a href="mailto:support@thewhite.cool" style="color:#1a1a1a;">support@thewhite.cool</a>.'
+                    : 'We will notify you when your order is confirmed and shipped. If you have any questions, please contact <a href="mailto:support@thewhite.cool" style="color:#1a1a1a;">support@thewhite.cool</a>.'
                 }
               </p>
             </td>
