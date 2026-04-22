@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/Link'
-import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, Gift } from 'lucide-react'
+import { UserPlus, AtSign, Lock, User, Eye, EyeOff, Gift } from 'lucide-react'
+import { looksLikeEmail, looksLikeVnPhone } from '@/lib/identity'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { Logo } from '@/components/shared/Logo/Logo'
@@ -17,8 +18,9 @@ export default function RegisterPage() {
   const tCommon = useTranslations('common')
   const [formData, setFormData] = useState({
     fullName: '',
-    email: '',
-    phone: '',
+    // Unified identifier — user types email OR Vietnamese phone.
+    // Server normalises + synthesises the missing half.
+    identifier: '',
     password: '',
     confirmPassword: '',
   })
@@ -59,8 +61,7 @@ export default function RegisterPage() {
   const validateForm = (): boolean => {
     if (
       !formData.fullName ||
-      !formData.email ||
-      !formData.phone ||
+      !formData.identifier ||
       !formData.password ||
       !formData.confirmPassword
     ) {
@@ -68,13 +69,9 @@ export default function RegisterPage() {
       return false
     }
 
-    if (!formData.email.includes('@')) {
-      setError(t('auth.invalidEmail'))
-      return false
-    }
-
-    if (formData.phone.length < 10) {
-      setError(t('auth.invalidPhone'))
+    const identifier = formData.identifier.trim()
+    if (!looksLikeEmail(identifier) && !looksLikeVnPhone(identifier)) {
+      setError(t('auth.invalidIdentifier'))
       return false
     }
 
@@ -110,9 +107,8 @@ export default function RegisterPage() {
     try {
       const success = await register(
         formData.fullName,
-        formData.email,
+        formData.identifier.trim(),
         formData.password,
-        formData.phone,
       )
       if (success) {
         // If we have a referral code, create a referral record via
@@ -217,44 +213,28 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Email */}
+          {/* Email or phone — one identifier field. Server
+              synthesises the missing half for phone-only signups. */}
           <div>
-            <label htmlFor="email" className="block text-sm uppercase tracking-wide mb-2">
-              Email
+            <label htmlFor="identifier" className="block text-sm uppercase tracking-wide mb-2">
+              {t('auth.emailOrPhone')}
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
+                type="text"
+                id="identifier"
+                name="identifier"
+                autoComplete="username"
+                inputMode="email"
+                value={formData.identifier}
                 onChange={handleChange}
                 className="w-full pl-12 pr-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
-                placeholder="your.email@example.com"
+                placeholder={t('auth.emailOrPhonePlaceholder')}
                 required
               />
             </div>
-          </div>
-
-          {/* Phone */}
-          <div>
-            <label htmlFor="phone" className="block text-sm uppercase tracking-wide mb-2">
-              {t('auth.phone')}
-            </label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-foreground transition-colors bg-background text-foreground"
-                placeholder="0123 456 789"
-                required
-              />
-            </div>
+            <p className="text-xs text-muted-foreground mt-1">{t('auth.emailOrPhoneHint')}</p>
           </div>
 
           {/* Password */}

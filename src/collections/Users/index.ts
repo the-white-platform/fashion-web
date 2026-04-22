@@ -87,6 +87,14 @@ export const Users: CollectionConfig = {
     {
       name: 'phone',
       type: 'text',
+      index: true,
+      // Not `unique: true` because legacy rows may have duplicate
+      // phones from back when phone was purely optional — flipping
+      // the constraint would fail migration. Uniqueness is enforced
+      // in the register-identity + Zalo-callback routes via an
+      // explicit lookup before insert; duplicates caught there
+      // surface as a proper "phone already used" error to the
+      // user instead of a raw DB constraint violation.
     },
     {
       name: 'preferredLocale',
@@ -128,6 +136,10 @@ export const Users: CollectionConfig = {
         {
           label: 'Facebook',
           value: 'facebook',
+        },
+        {
+          label: 'Zalo',
+          value: 'zalo',
         },
       ],
       access: {

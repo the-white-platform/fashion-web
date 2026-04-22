@@ -3,18 +3,25 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/Link'
-import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { LogIn, AtSign, Lock, Eye, EyeOff } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
 import { Logo } from '@/components/shared/Logo/Logo'
 import { useTranslations } from 'next-intl'
+import { looksLikeEmail, looksLikeVnPhone } from '@/lib/identity'
 
 const OAUTH_ERROR_CODES = [
   'google_unverified',
   'facebook_unverified',
   'account_linked_to_google',
   'account_linked_to_facebook',
+  'account_linked_to_zalo',
   'account_uses_password',
+  'zalo_cancelled',
+  'zalo_state_mismatch',
+  'zalo_token_exchange_failed',
+  'zalo_profile_failed',
+  'zalo_account_create_failed',
 ] as const
 
 type OAuthErrorCode = (typeof OAUTH_ERROR_CODES)[number]
@@ -29,7 +36,7 @@ export default function LoginPage() {
   const { login } = useUser()
   const t = useTranslations()
   const tCommon = useTranslations('common')
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
@@ -47,22 +54,25 @@ export default function LoginPage() {
     setError('')
     setIsLoading(true)
 
-    // Validation
-    if (!email || !password) {
+    const trimmed = identifier.trim()
+    if (!trimmed || !password) {
       setError(t('auth.requiredFields'))
       setIsLoading(false)
       return
     }
 
-    if (!email.includes('@')) {
-      setError(t('auth.invalidEmail'))
+    if (!looksLikeEmail(trimmed) && !looksLikeVnPhone(trimmed)) {
+      setError(t('auth.invalidIdentifier'))
       setIsLoading(false)
       return
     }
 
-    // Try to login
     try {
-      await login(email, password)
+      const success = await login(trimmed, password)
+      if (!success) {
+        setError(t('auth.invalidCredentials'))
+        return
+      }
       router.push('/profile')
     } catch (err: any) {
       setError(err.message || t('auth.invalidCredentials'))
@@ -106,20 +116,22 @@ export default function LoginPage() {
             </motion.div>
           )}
 
-          {/* Email */}
+          {/* Email or phone identifier */}
           <div>
-            <label htmlFor="email" className="block text-sm uppercase tracking-wide mb-2">
-              Email
+            <label htmlFor="identifier" className="block text-sm uppercase tracking-wide mb-2">
+              {t('auth.emailOrPhone')}
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                id="identifier"
+                autoComplete="username"
+                inputMode="email"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
                 className="w-full pl-12 pr-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors bg-background"
-                placeholder="your.email@example.com"
+                placeholder={t('auth.emailOrPhonePlaceholder')}
                 required
               />
             </div>
@@ -209,9 +221,9 @@ export default function LoginPage() {
             <p className="text-center text-sm text-muted-foreground uppercase tracking-wide">
               {t('auth.orLoginWith')}
             </p>
-            {/* Facebook login temporarily hidden pending app review — render
-                Google on its own, full width. */}
-            <div className="grid grid-cols-1 gap-3">
+            {/* Facebook login temporarily hidden pending app review —
+                Google + Zalo shown side by side. */}
+            <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => (window.location.href = '/api/auth/google')}
@@ -237,6 +249,21 @@ export default function LoginPage() {
                   />
                 </svg>
                 <span className="text-sm">Google</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => (window.location.href = '/api/auth/zalo')}
+                className="flex items-center justify-center gap-2 py-3 border border-border rounded-sm hover:bg-muted transition-colors"
+                disabled={isLoading}
+              >
+                <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true">
+                  <rect width="48" height="48" rx="10" fill="#0068FF" />
+                  <path
+                    fill="#fff"
+                    d="M24 12c-7.18 0-13 4.79-13 10.7 0 3.54 2.08 6.68 5.29 8.64l-.82 3.45a.8.8 0 0 0 1.22.85l3.75-2.3c1.12.26 2.3.4 3.56.4 7.18 0 13-4.79 13-10.7S31.18 12 24 12Z"
+                  />
+                </svg>
+                <span className="text-sm">Zalo</span>
               </button>
             </div>
           </div>

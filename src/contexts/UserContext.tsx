@@ -18,8 +18,23 @@ interface UserContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string, password: string) => Promise<boolean>
-  register: (fullName: string, email: string, password: string, phone?: string) => Promise<boolean>
+  /**
+   * `identifier` accepts either an email address or a Vietnamese
+   * phone number (e.g. `0901234567` or `+84 901 234 567`). Server
+   * resolves phone inputs to the stored account.
+   */
+  login: (identifier: string, password: string) => Promise<boolean>
+  /**
+   * `identifier` accepts either an email address or a Vietnamese
+   * phone number. When a phone is provided the server synthesises a
+   * placeholder email for Payload auth.
+   */
+  register: (
+    fullName: string,
+    identifier: string,
+    password: string,
+    phone?: string,
+  ) => Promise<boolean>
   logout: () => void
   updateProfile: (data: Partial<{ name: string; phone: string; email: string }>) => Promise<void>
   addShippingAddress: (address: Omit<ShippingAddress, 'id'>) => Promise<void>
@@ -133,59 +148,88 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // ------------------------------------------------------------------
 
   /**
-   * Login with Payload REST API.
+   * Login with identifier (email OR Vietnamese phone) + password.
+   * Routes through `/api/auth/login-identity` which resolves phone
+   * inputs to the stored account and delegates to Payload's built-in
+   * login endpoint.
    * Returns true on success, false on invalid credentials.
    * Throws on unexpected errors.
    */
-  async function login(email: string, password: string): Promise<boolean> {
-    const res = await fetch('/api/users/login', {
+  async function login(identifier: string, password: string): Promise<boolean> {
+    const res = await fetch('/api/auth/login-identity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
       const status = res.status
       // 401 = wrong credentials — return false (callers display their own error msg)
       if (status === 401) return false
-      throw new Error(err.errors?.[0]?.message ?? 'Invalid email or password')
+      throw new Error(err.error ?? 'Invalid credentials')
     }
     const data = await res.json()
-    setUser(mapPayloadUser(data.user))
+    if (data?.user) setUser(mapPayloadUser(data.user))
+    // login-identity forwards Payload's Set-Cookie, so the session is
+    // already live. Refresh from /api/users/me to ensure the context
+    // has the full user shape (including relationships).
+    try {
+      const meRes = await fetch('/api/users/me', { credentials: 'include' })
+      if (meRes.ok) {
+        const meData = await meRes.json()
+        if (meData?.user) setUser(mapPayloadUser(meData.user))
+      }
+    } catch {
+      /* noop */
+    }
     return true
   }
 
   /**
-   * Register, then auto-login.
-   * Signature matches callers: register(fullName, email, password, phone?)
-   * Returns true on success, false if the email is already taken (409).
+   * Register with identifier (email OR Vietnamese phone) + password.
+   * The `identifier` field accepts either — the backend synthesises
+   * a placeholder email for phone-only signups so Payload auth
+   * still gets a unique email. Optional `phone` applies when the
+   * identifier is an email but the user also wants to record a
+   * phone number up-front.
+   *
+   * Signature kept positional so existing call sites
+   * `register(name, email, password, phone?)` still compile; they
+   * just stop caring which slot the email lives in.
+   * Returns true on success, false if the identifier is already taken.
    * Throws on other errors.
    */
   async function register(
     fullName: string,
-    email: string,
+    identifier: string,
     password: string,
     phone?: string,
   ): Promise<boolean> {
-    const res = await fetch('/api/users', {
+    const res = await fetch('/api/auth/register-identity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: fullName, email, password, phone, provider: 'local' }),
+      credentials: 'include',
+      body: JSON.stringify({ name: fullName, identifier, password, phone }),
     })
     if (!res.ok) {
       const err = await res.json().catch(() => ({}))
-      const status = res.status
-      // 409 = duplicate email — return false (caller shows "email already used")
-      if (status === 409) return false
-      const msg = err.errors?.[0]?.message ?? ''
-      if (msg.toLowerCase().includes('already') || msg.toLowerCase().includes('duplicate')) {
-        return false
-      }
-      throw new Error(msg || 'Registration failed')
+      if (res.status === 409) return false
+      throw new Error(err.error ?? 'Registration failed')
     }
-    // Auto-login after successful registration
-    await login(email, password)
+    const data = await res.json()
+    // register-identity sets the payload-token cookie directly, so
+    // /api/users/me is now authenticated.
+    try {
+      const meRes = await fetch('/api/users/me', { credentials: 'include' })
+      if (meRes.ok) {
+        const meData = await meRes.json()
+        if (meData?.user) setUser(mapPayloadUser(meData.user))
+      }
+    } catch {
+      /* noop */
+    }
+    void data
     return true
   }
 

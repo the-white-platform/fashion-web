@@ -410,12 +410,22 @@
     "registerFailed": "Đăng ký thất bại. Vui lòng kiểm tra thông tin và thử lại.",
     "agreeTermsLogin": "Bằng việc đăng nhập, bạn đồng ý với <terms>Điều Khoản Sử Dụng</terms> và <privacy>Chính Sách Bảo Mật</privacy> của TheWhite",
     "agreeTermsRegister": "Tôi đồng ý với <terms>Điều Khoản Sử Dụng</terms> và <privacy>Chính Sách Bảo Mật</privacy> của TheWhite",
+    "emailOrPhone": "Email hoặc Số điện thoại",
+    "emailOrPhonePlaceholder": "email@example.com hoặc 0901234567",
+    "emailOrPhoneHint": "Dùng email hoặc số điện thoại để đăng ký.",
+    "invalidIdentifier": "Email hoặc số điện thoại không hợp lệ.",
     "oauthError": {
       "google_unverified": "Email tài khoản Google của bạn chưa được xác minh. Vui lòng xác minh với Google và thử lại.",
       "facebook_unverified": "Email tài khoản Facebook của bạn chưa được xác minh. Vui lòng xác minh với Facebook và thử lại.",
       "account_linked_to_google": "Email này đã được liên kết với tài khoản Google. Vui lòng đăng nhập bằng Google.",
       "account_linked_to_facebook": "Email này đã được liên kết với tài khoản Facebook. Vui lòng đăng nhập bằng Facebook.",
-      "account_uses_password": "Email này đã được đăng ký bằng mật khẩu. Vui lòng đăng nhập bằng email và mật khẩu của bạn."
+      "account_linked_to_zalo": "Tài khoản này đã được liên kết với Zalo. Vui lòng đăng nhập bằng Zalo.",
+      "account_uses_password": "Email này đã được đăng ký bằng mật khẩu. Vui lòng đăng nhập bằng email và mật khẩu của bạn.",
+      "zalo_cancelled": "Bạn đã hủy đăng nhập Zalo.",
+      "zalo_state_mismatch": "Phiên đăng nhập Zalo đã hết hạn. Vui lòng thử lại.",
+      "zalo_token_exchange_failed": "Không thể xác thực với Zalo. Vui lòng thử lại.",
+      "zalo_profile_failed": "Không lấy được thông tin Zalo. Vui lòng thử lại.",
+      "zalo_account_create_failed": "Không tạo được tài khoản từ Zalo. Vui lòng thử lại."
     },
     "backToLogin": "Quay về đăng nhập",
     "forgotPasswordDesc": "Nhập email của bạn, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.",

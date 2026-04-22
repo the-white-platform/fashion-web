@@ -541,7 +541,7 @@ export interface User {
    */
   preferredLocale?: ('vi' | 'en') | null;
   sub?: string | null;
-  provider?: ('local' | 'google' | 'facebook') | null;
+  provider?: ('local' | 'google' | 'facebook' | 'zalo') | null;
   imageUrl?: string | null;
   emailVerified?: boolean | null;
   otpHash?: string | null;

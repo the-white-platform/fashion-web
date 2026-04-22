@@ -2,6 +2,7 @@ import type { CollectionAfterChangeHook, PayloadRequest } from 'payload'
 import type { Order } from '@/payload-types'
 import { sendCustomerEmail } from '@/utilities/sendCustomerEmail'
 import { sendZaloNotification } from '@/utilities/sendZaloNotification'
+import { isSyntheticEmail } from '@/lib/identity'
 
 const DEFAULT_LOCALE: 'vi' | 'en' = 'vi'
 
@@ -65,6 +66,18 @@ export const sendOrderEmails: CollectionAfterChangeHook<Order> = async ({
 
   if (!to) {
     payload.logger.warn(`[sendOrderEmails] No customer email on order ${doc.orderNumber}, skipping`)
+    return doc
+  }
+
+  // Phone-only and Zalo-only accounts carry a synthetic
+  // `@phone.thewhite.cool` / `@zalo.thewhite.cool` email that isn't a
+  // real mailbox. Sending to it hard-bounces and damages sender
+  // reputation. For those users the Zalo ZNS channel
+  // (`maybeSendZalo`) is already the primary channel anyway.
+  if (isSyntheticEmail(to)) {
+    payload.logger.info(
+      `[sendOrderEmails] Synthetic email on order ${doc.orderNumber} — skipping email, relying on Zalo ZNS`,
+    )
     return doc
   }
 

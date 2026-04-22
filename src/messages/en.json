@@ -410,12 +410,22 @@
     "registerFailed": "Registration failed. Please check your information and try again.",
     "agreeTermsLogin": "By logging in, you agree to our <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy>",
     "agreeTermsRegister": "I agree to the <terms>Terms of Use</terms> and <privacy>Privacy Policy</privacy> of TheWhite",
+    "emailOrPhone": "Email or phone",
+    "emailOrPhonePlaceholder": "email@example.com or 0901234567",
+    "emailOrPhoneHint": "Use either an email address or a Vietnamese phone number.",
+    "invalidIdentifier": "Invalid email or phone number.",
     "oauthError": {
       "google_unverified": "Your Google account email has not been verified. Please verify it with Google and try again.",
       "facebook_unverified": "Your Facebook account email has not been verified. Please verify it with Facebook and try again.",
       "account_linked_to_google": "This email is already linked to a Google account. Please sign in with Google.",
       "account_linked_to_facebook": "This email is already linked to a Facebook account. Please sign in with Facebook.",
-      "account_uses_password": "This email is registered with a password. Please log in with your email and password."
+      "account_linked_to_zalo": "This account is already linked to Zalo. Please sign in with Zalo.",
+      "account_uses_password": "This email is registered with a password. Please log in with your email and password.",
+      "zalo_cancelled": "Zalo sign-in was cancelled.",
+      "zalo_state_mismatch": "Zalo sign-in session expired. Please try again.",
+      "zalo_token_exchange_failed": "Could not authenticate with Zalo. Please try again.",
+      "zalo_profile_failed": "Could not fetch your Zalo profile. Please try again.",
+      "zalo_account_create_failed": "Could not create an account from Zalo. Please try again."
     },
     "backToLogin": "Back to sign in",
     "forgotPasswordDesc": "Enter your email and we'll send you a reset link.",
