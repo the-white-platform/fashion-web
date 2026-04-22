@@ -97,21 +97,27 @@ export async function GET(request: Request) {
   }
 
   if (!profileOk || !profile?.id) {
-    console.warn('[auth/zalo] /me fetch failed', profile)
-    // Zalo returns a specific error code + human-readable message
-    // when personal info is blocked (e.g. error -501 for
-    // IP-not-inside-Vietnam). Pass both back to the login page so
-    // the user sees the actual reason instead of a generic retry
-    // prompt.
-    const zaloCode =
-      typeof profile?.error === 'number' || typeof profile?.error === 'string'
-        ? String(profile.error)
-        : ''
-    const zaloMessage = typeof profile?.message === 'string' ? profile.message : ''
-    const params = new URLSearchParams({ error: 'zalo_profile_failed' })
-    if (zaloCode) params.set('zalo_code', zaloCode)
-    if (zaloMessage) params.set('zalo_message', zaloMessage)
-    return NextResponse.redirect(`${serverUrl}/login?${params.toString()}`)
+    console.warn('[auth/zalo] /me fetch failed, falling back to client-side', profile)
+    // Server-side /me blocked by Zalo's IP gate. Fall forward to a
+    // browser-side flow: the user's VN-located browser calls /me
+    // itself, then POSTs the profile back to /api/auth/zalo/finalize.
+    //
+    // The access_token travels in the URL fragment (never sent to
+    // the server, never logged, never in Referer headers) and also
+    // in an httpOnly cookie that finalize verifies — so the POST
+    // can only come from the browser that just finished this OAuth
+    // exchange.
+    const response = NextResponse.redirect(`${serverUrl}/login/zalo/continue#t=${accessToken}`)
+    response.cookies.delete('zalo_state')
+    response.cookies.delete('zalo_verifier')
+    response.cookies.set('zalo_access_token', accessToken, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 5 * 60, // 5 min — user has to finish the browser-side flow fast
+    })
+    return response
   }
 
   const zaloUserId = String(profile.id)
