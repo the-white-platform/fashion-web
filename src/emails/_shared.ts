@@ -20,28 +20,23 @@ export function resolveServerUrl(): string {
 }
 
 /**
- * Dark header with the brand mark. Logo is served from
- * `public/logo/W.svg` — modern mail clients (Gmail, Apple Mail,
- * Outlook 2019+) render SVG inline. The wordmark stays as text so
- * the header still works if the SVG fails to load.
+ * Dark header with the brand mark. The combined logo image
+ * (`public/logo/thewhite-active.png`) already bakes the W glyph
+ * plus "THE WHITE / TAKE ACTION" wordmark, so the header renders
+ * as a single centred `<img>` on a black background. PNG for
+ * broad email-client compatibility (Outlook chokes on SVG).
  */
 export function brandHeader(serverUrl: string): string {
-  const logoUrl = `${serverUrl}/logo/W.svg`
+  const logoUrl = `${serverUrl}/logo/thewhite-active.png`
   return `
     <tr>
-      <td style="background:#1a1a1a;padding:28px 40px;text-align:center;">
-        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
-          <tr>
-            <td style="vertical-align:middle;padding-right:14px;">
-              <img src="${logoUrl}" alt="The White" width="36" height="36" style="display:block;border:0;" />
-            </td>
-            <td style="vertical-align:middle;">
-              <span style="color:#fff;font-size:22px;font-weight:300;letter-spacing:4px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-                THE WHITE
-              </span>
-            </td>
-          </tr>
-        </table>
+      <td style="background:#000;padding:28px 40px;text-align:center;">
+        <img
+          src="${logoUrl}"
+          alt="THE WHITE ACTIVE"
+          width="120"
+          style="display:block;margin:0 auto;border:0;max-width:120px;height:auto;"
+        />
       </td>
     </tr>
   `.trim()
@@ -57,7 +52,7 @@ export function brandFooter({ locale, company }: BrandContext): string {
   const supportEmail = company?.email || 'support@thewhite.cool'
   const phone = company?.phone
   const address = company?.address
-  const companyName = company?.companyName || 'The White'
+  const companyName = company?.companyName || 'THE WHITE ACTIVE'
   const website = company?.websiteUrl || 'thewhite.cool'
   const websiteUrl = website.startsWith('http') ? website : `https://${website}`
 
@@ -82,7 +77,7 @@ export function brandFooter({ locale, company }: BrandContext): string {
           <a href="${websiteUrl}" style="color:#666;text-decoration:none;">${escape(website)}</a>
         </p>
         <p style="margin:12px 0 0;font-size:11px;color:#aaa;">
-          © ${new Date().getFullYear()} The White
+          © ${new Date().getFullYear()} THE WHITE ACTIVE
         </p>
       </td>
     </tr>

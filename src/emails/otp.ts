@@ -47,7 +47,7 @@ export const otp = ({
   }
 
   const heading = headings[purpose][isVi ? 'vi' : 'en']
-  const subject = `${heading} - The White`
+  const subject = `${heading} - THE WHITE ACTIVE`
 
   const intro = isVi
     ? 'Nhập mã dưới đây để tiếp tục. Đừng chia sẻ mã này với bất kỳ ai.'

@@ -56,17 +56,20 @@ type SendCustomerEmailParams = OrderEmailParams | PasswordResetParams | OtpParam
 const resolveTemplate = async (
   params: SendCustomerEmailParams,
 ): Promise<{ subject: string; html: string }> => {
+  // Fetch CompanyInfo once here (server context) and inject into
+  // every template so the templates stay pure sync functions +
+  // preview tooling can pass null / a stub.
+  const company = await getCompanyInfo(params.data.locale).catch(() => null)
+
   if (params.template === 'passwordReset') {
     return passwordReset({
       resetLink: params.data.resetLink,
       locale: params.data.locale,
+      company,
     })
   }
 
   if (params.template === 'otp') {
-    // Fetch CompanyInfo here (server context) and inject into the
-    // template so the template itself stays a pure sync function.
-    const company = await getCompanyInfo(params.data.locale).catch(() => null)
     return otp({
       code: params.data.code,
       locale: params.data.locale,
@@ -80,15 +83,15 @@ const resolveTemplate = async (
 
   switch (params.template) {
     case 'orderConfirmation':
-      return orderConfirmation({ order, locale })
+      return orderConfirmation({ order, locale, company })
     case 'orderStatusUpdate':
-      return orderStatusUpdate({ order, locale })
+      return orderStatusUpdate({ order, locale, company })
     case 'shippingNotification':
-      return shippingNotification({ order, locale })
+      return shippingNotification({ order, locale, company })
     case 'deliveryConfirmation':
-      return deliveryConfirmation({ order, locale })
+      return deliveryConfirmation({ order, locale, company })
     case 'refundNotification':
-      return refundNotification({ order, locale })
+      return refundNotification({ order, locale, company })
   }
 }
 

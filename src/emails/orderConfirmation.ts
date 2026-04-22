@@ -1,17 +1,26 @@
+import type { CompanyInfo } from '@/payload-types'
+import { brandFooter, resolveServerUrl } from './_shared'
+
 import type { Order } from '@/payload-types'
 
 type Params = {
   order: Order
   locale: 'vi' | 'en'
+  company?: CompanyInfo | null
 }
 
-export const orderConfirmation = ({ order, locale }: Params): { subject: string; html: string } => {
+export const orderConfirmation = ({
+  order,
+  locale,
+  company = null,
+}: Params): { subject: string; html: string } => {
   const isVi = locale === 'vi'
+  const serverUrl = resolveServerUrl()
   const { orderNumber, customerInfo, items, totals, shippingAddress } = order
 
   const subject = isVi
-    ? `Xác nhận đơn hàng ${orderNumber} - The White`
-    : `Order Confirmation ${orderNumber} - The White`
+    ? `Xác nhận đơn hàng ${orderNumber} - THE WHITE ACTIVE`
+    : `Order Confirmation ${orderNumber} - THE WHITE ACTIVE`
 
   const formatPrice = (amount: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
@@ -63,7 +72,7 @@ export const orderConfirmation = ({ order, locale }: Params): { subject: string;
           <!-- Header -->
           <tr>
             <td style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;color:#fff;font-size:28px;font-weight:300;letter-spacing:4px;">THE WHITE</h1>
+              <img src="https://thewhite.cool/logo/thewhite-active.png" alt="THE WHITE ACTIVE" width="120" style="display:block;margin:0 auto;border:0;max-width:120px;height:auto;" />
             </td>
           </tr>
 
@@ -152,15 +161,8 @@ export const orderConfirmation = ({ order, locale }: Params): { subject: string;
           </tr>
 
           <!-- Footer -->
-          <tr>
-            <td style="padding:24px 40px;background:#f5f5f5;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#999;">
-                © ${new Date().getFullYear()} The White. ${isVi ? 'Tất cả quyền được bảo lưu.' : 'All rights reserved.'}
-              </p>
-            </td>
-          </tr>
-
-        </table>
+          ${brandFooter({ locale, serverUrl, company })}
+</table>
       </td>
     </tr>
   </table>

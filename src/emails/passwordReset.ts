@@ -1,12 +1,23 @@
+import type { CompanyInfo } from '@/payload-types'
+import { brandFooter, resolveServerUrl } from './_shared'
+
 type Params = {
   resetLink: string
   locale: 'vi' | 'en'
+  company?: CompanyInfo | null
 }
 
-export const passwordReset = ({ resetLink, locale }: Params): { subject: string; html: string } => {
+export const passwordReset = ({
+  resetLink,
+  locale,
+  company = null,
+}: Params): { subject: string; html: string } => {
   const isVi = locale === 'vi'
+  const serverUrl = resolveServerUrl()
 
-  const subject = isVi ? 'Đặt lại mật khẩu - The White' : 'Reset Your Password - The White'
+  const subject = isVi
+    ? 'Đặt lại mật khẩu - THE WHITE ACTIVE'
+    : 'Reset Your Password - THE WHITE ACTIVE'
 
   const html = `<!DOCTYPE html>
 <html lang="${locale}">
@@ -24,7 +35,7 @@ export const passwordReset = ({ resetLink, locale }: Params): { subject: string;
           <!-- Header -->
           <tr>
             <td style="background:#1a1a1a;padding:32px 40px;text-align:center;">
-              <h1 style="margin:0;color:#fff;font-size:28px;font-weight:300;letter-spacing:4px;">THE WHITE</h1>
+              <img src="https://thewhite.cool/logo/thewhite-active.png" alt="THE WHITE ACTIVE" width="120" style="display:block;margin:0 auto;border:0;max-width:120px;height:auto;" />
             </td>
           </tr>
 
@@ -73,14 +84,7 @@ export const passwordReset = ({ resetLink, locale }: Params): { subject: string;
             </td>
           </tr>
 
-          <!-- Footer -->
-          <tr>
-            <td style="padding:24px 40px;background:#f5f5f5;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#999;">
-                © ${new Date().getFullYear()} The White. ${isVi ? 'Tất cả quyền được bảo lưu.' : 'All rights reserved.'}
-              </p>
-            </td>
-          </tr>
+          ${brandFooter({ locale, serverUrl, company })}
 
         </table>
       </td>

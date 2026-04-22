@@ -233,7 +233,7 @@ export default buildConfig({
   email: resendAdapter({
     apiKey: process.env.RESEND_API_KEY ?? '',
     defaultFromAddress: 'noreply@thewhite.cool',
-    defaultFromName: 'The White',
+    defaultFromName: 'THE WHITE ACTIVE',
   }),
   secret: process.env.PAYLOAD_SECRET,
   sharp,
