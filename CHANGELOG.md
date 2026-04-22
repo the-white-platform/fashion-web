@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.54.2](https://github.com/the-white-platform/fashion-web/compare/v0.54.1...v0.54.2) (2026-04-22)
+
+
+### Bug Fixes
+
+* **ux:** surface upstream error detail on register / reset / verify ([b70143e](https://github.com/the-white-platform/fashion-web/commit/b70143e844eb916bc32bf40634f879a2c9baf22a))
+
 ### [0.54.1](https://github.com/the-white-platform/fashion-web/compare/v0.54.0...v0.54.1) (2026-04-22)
 
 
