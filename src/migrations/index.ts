@@ -22,6 +22,7 @@ import * as migration_20260423_140300_users_zalo_delivery_status from './2026042
 import * as migration_20260423_143632_users_referral_code_backfill from './20260423_143632_users_referral_code_backfill'
 import * as migration_20260423_215057_users_role_manager from './20260423_215057_users_role_manager'
 import * as migration_20260423_215941_zns_logs from './20260423_215941_zns_logs'
+import * as migration_20260423_221302_zns_logs_payload_rels from './20260423_221302_zns_logs_payload_rels'
 
 export const migrations = [
   {
@@ -143,5 +144,10 @@ export const migrations = [
     up: migration_20260423_215941_zns_logs.up,
     down: migration_20260423_215941_zns_logs.down,
     name: '20260423_215941_zns_logs',
+  },
+  {
+    up: migration_20260423_221302_zns_logs_payload_rels.up,
+    down: migration_20260423_221302_zns_logs_payload_rels.down,
+    name: '20260423_221302_zns_logs_payload_rels',
   },
 ]
