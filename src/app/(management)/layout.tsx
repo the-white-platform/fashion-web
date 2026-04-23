@@ -5,6 +5,14 @@ import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
+// Every route under /management does its own server-side DB work
+// (Payload auth, AccountingView's payload.find, etc). Prerender
+// fails the Docker build because there's no Postgres at image-
+// build time, so force dynamic and let Cloud Run render each
+// request on demand. Fixes the prerender "cannot connect to
+// Postgres" crash on /accounting and the other tool routes.
+export const dynamic = 'force-dynamic'
+
 const TOOLS = [
   { label: 'Accounting', href: '/management/accounting' },
   { label: 'Inventory Alerts', href: '/management/inventory-alerts' },
