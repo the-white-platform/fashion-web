@@ -2,14 +2,14 @@ import type { PayloadRequest } from 'payload'
 import type { Order, User } from '@/payload-types'
 import { sendZaloNotification } from './sendZaloNotification'
 import { sendCustomerEmail } from './sendCustomerEmail'
-import { sendSMS } from './sendSMS'
 import { isSyntheticEmail } from '@/lib/identity'
 
 /**
  * Unified order-notification event. One event, one send — Zalo
- * first (by phone), email second, SMS last. The first channel to
- * succeed wins; the others are skipped so we pay for at most one
- * delivery per transition.
+ * first (phone, any Zalo-registered number), email second. Zalo
+ * ZNS is the primary channel (doubles as our SMS — Vietnam
+ * customers almost universally have Zalo). Email is the fallback
+ * for customers whose phone isn't on Zalo.
  */
 export type OrderNotificationEvent =
   | 'created'
@@ -19,7 +19,7 @@ export type OrderNotificationEvent =
   | 'cancelled'
   | 'refunded'
 
-type Channel = 'zalo' | 'email' | 'sms' | 'none'
+type Channel = 'zalo' | 'email' | 'none'
 
 type ZnsTemplate = Parameters<typeof sendZaloNotification>[0]['template']
 type EmailTemplate =
@@ -28,7 +28,6 @@ type EmailTemplate =
   | 'shippingNotification'
   | 'deliveryConfirmation'
   | 'refundNotification'
-type SmsTemplate = Parameters<typeof sendSMS>[0]['template']
 
 const ZNS_TEMPLATE_BY_EVENT: Record<OrderNotificationEvent, ZnsTemplate> = {
   created: 'orderConfirmation',
@@ -47,15 +46,6 @@ const EMAIL_TEMPLATE_BY_EVENT: Record<OrderNotificationEvent, EmailTemplate> = {
   shipping: 'shippingNotification',
   delivered: 'deliveryConfirmation',
   cancelled: 'orderStatusUpdate',
-  refunded: 'refundNotification',
-}
-
-const SMS_TEMPLATE_BY_EVENT: Record<OrderNotificationEvent, SmsTemplate> = {
-  created: 'orderConfirmation',
-  confirmed: 'orderStatusUpdate',
-  shipping: 'shippingNotification',
-  delivered: 'deliveryConfirmation',
-  cancelled: 'orderCancelled',
   refunded: 'refundNotification',
 }
 
@@ -90,13 +80,16 @@ async function resolveUser(req: PayloadRequest, order: Order): Promise<User | nu
  * Priority:
  *   1. Zalo ZNS — if we have a phone, user hasn't opted out, and
  *      the phone is on Zalo. ZNS rejects with `error: -124` /
- *      `-129` when the phone isn't on Zalo, which `sendZaloNotification`
- *      surfaces as `false` so we fall through to email.
+ *      `-129` when the phone isn't on Zalo; `sendZaloNotification`
+ *      surfaces that as `false` so we fall through to email.
  *   2. Email — if we have a real (non-synthetic) email address.
  *      Synthetic placeholders (`@phone.thewhite.cool`,
- *      `@zalo.thewhite.cool`) hard-bounce and must be skipped.
- *   3. SMS — last resort. No provider wired yet; always returns
- *      false today and the event is logged as `none`.
+ *      `@zalo.thewhite.cool`) hard-bounce and are skipped.
+ *
+ * Zalo doubles as the SMS channel in VN — almost every mobile
+ * number is on Zalo, so a dedicated SMS provider would be pure
+ * cost with zero delivery gain. If a customer has neither Zalo
+ * nor a real email, we log `channel=none` and move on.
  *
  * Return value is the channel that actually delivered (or `none`).
  * Never throws — notification failures must not block order saves.
@@ -144,21 +137,6 @@ export async function sendOrderNotification({
     if (sent) {
       payload.logger.info(`[orderNotify] order=${orderKey} event=${event} channel=email`)
       return 'email'
-    }
-  }
-
-  // 3. SMS
-  if (phone) {
-    const sent = await sendSMS({
-      payload,
-      phone,
-      order,
-      template: SMS_TEMPLATE_BY_EVENT[event],
-      locale,
-    })
-    if (sent) {
-      payload.logger.info(`[orderNotify] order=${orderKey} event=${event} channel=sms`)
-      return 'sms'
     }
   }
 

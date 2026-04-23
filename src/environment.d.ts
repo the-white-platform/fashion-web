@@ -34,7 +34,6 @@ declare global {
       // `sendOrderNotification`. No provider is wired yet, so
       // setting this today only enables a "would have sent" log
       // line — the actual dispatcher comes later.
-      SMS_PROVIDER?: string
       // IndexNow verification key (8–128 alphanumeric chars).
       // Ownership proof is served at /indexnow-<KEY>.txt via the
       // dynamic route in src/app/(frontend)/indexnow-[key]/route.ts.

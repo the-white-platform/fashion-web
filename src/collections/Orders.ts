@@ -691,12 +691,11 @@ export const Orders: CollectionConfig = {
       restoreStockOnCancel,
       incrementCouponUsageAfterOrder,
       // Customer notifications. One send per event via the
-      // Zalo → Email → SMS priority chain in
-      // `sendOrderNotification` — cheapest available channel
-      // wins, the rest are skipped so we don't double-pay. Each
-      // underlying channel silently no-ops when its credentials
-      // are missing (e.g. local dev without RESEND_API_KEY or
-      // ZALO_ZNS_* template ids), so the chain degrades cleanly.
+      // Zalo → Email priority chain in `sendOrderNotification`.
+      // Zalo is our SMS (almost every VN mobile has it), so no
+      // separate SMS provider. Each channel silently no-ops when
+      // credentials are missing (local dev without RESEND_API_KEY
+      // or ZALO_ZNS_* template ids), so the chain degrades cleanly.
       sendOrderEmails,
       notifyOnOrder,
       notifyOnStockChange,
