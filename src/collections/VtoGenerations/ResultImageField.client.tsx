@@ -11,6 +11,40 @@ import { useField } from '@payloadcms/ui'
 // row, this is not real security, just a privacy speed bump.
 const PASSWORD = '1423'
 
+// Chrome (and most modern browsers) block top-level navigation to
+// `data:` URLs — an `<a href="data:…" target="_blank">` opens a
+// blank tab. Convert the base64 payload to a Blob + objectURL,
+// which navigates fine. Falls back to rendering the image into a
+// freshly-opened document if the blob route fails (e.g. popup
+// blocker returned null).
+function openDataUrlInNewTab(dataUrl: string) {
+  const match = dataUrl.match(/^data:(.+?);base64,(.*)$/)
+  if (!match) {
+    window.open(dataUrl, '_blank', 'noopener,noreferrer')
+    return
+  }
+  const [, mime, base64] = match
+  try {
+    const bytes = atob(base64)
+    const buf = new Uint8Array(bytes.length)
+    for (let i = 0; i < bytes.length; i++) buf[i] = bytes.charCodeAt(i)
+    const blob = new Blob([buf], { type: mime })
+    const blobUrl = URL.createObjectURL(blob)
+    const win = window.open(blobUrl, '_blank', 'noopener,noreferrer')
+    // Release the object URL once the new tab is loaded (or
+    // after a grace period if popup was blocked).
+    setTimeout(() => URL.revokeObjectURL(blobUrl), win ? 60_000 : 0)
+  } catch {
+    const win = window.open('', '_blank', 'noopener,noreferrer')
+    if (win) {
+      win.document.write(
+        `<img src="${dataUrl}" style="max-width:100%;height:auto;display:block;margin:0 auto" />`,
+      )
+      win.document.close()
+    }
+  }
+}
+
 export const ResultImageFieldClient: React.FC<{ path?: string }> = (props) => {
   const path = props.path ?? 'resultData'
   const { value } = useField<string>({ path })
@@ -78,14 +112,22 @@ export const ResultImageFieldClient: React.FC<{ path?: string }> = (props) => {
         >
           Hide
         </button>
-        <a
-          href={dataUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ marginLeft: 8, fontSize: 12 }}
+        <button
+          type="button"
+          onClick={() => openDataUrlInNewTab(dataUrl)}
+          style={{
+            marginLeft: 8,
+            fontSize: 12,
+            background: 'transparent',
+            border: 0,
+            padding: 0,
+            color: '#1a6aff',
+            cursor: 'pointer',
+            textDecoration: 'underline',
+          }}
         >
           Open full-size in new tab
-        </a>
+        </button>
       </div>
       <img
         src={dataUrl}
