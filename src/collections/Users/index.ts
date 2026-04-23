@@ -6,9 +6,10 @@ import { notifyOnNewUser } from './hooks/notifyOnNewUser'
 // Hard cap on concurrent live sessions per user. Keeps the
 // users_sessions join table bounded so login reads/writes never
 // degrade into the 100+ second stalls that took admin auth
-// offline on 2026-04-22 and 2026-04-23. Picked to cover a power
-// user on ~5 devices with headroom for refresh churn.
-const MAX_SESSIONS_PER_USER = 20
+// offline on 2026-04-22 and 2026-04-23. Five covers phone +
+// laptop + desktop + tablet + one spare; anything more is almost
+// certainly orphaned tokens from closed tabs.
+const MAX_SESSIONS_PER_USER = 5
 
 interface SessionLike {
   id?: string

@@ -23,3 +23,6 @@ src/endpoints/seed/lookbook/
 # Local-only: temp doc-export dir from gws
 /.product-docs/
 /download.txt
+
+# Local Claude Code permission overrides (not shared)
+.claude/settings.local.json
