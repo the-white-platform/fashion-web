@@ -160,7 +160,7 @@ export async function POST(request: Request) {
       let hint: string | undefined
       if (result.errorCode === 404 && /empty api/i.test(result.errorMessage)) {
         hint =
-          'Zalo OA chưa kích hoạt ZNS. Vào https://business.zalo.me → OA dashboard → Zalo Notification Service → Register + xác minh doanh nghiệp + nạp credit + duyệt template trước khi gửi.'
+          'ZNS endpoint sai host. Code phải trỏ tới business.openapi.zalo.me/message/template, không phải openapi.zalo.me/v2/oa/message/template. Nếu vẫn gặp, kiểm tra app đã bật "Gửi ZNS" trong developers.zalo.me.'
       } else if ([-124, -129].includes(result.errorCode)) {
         hint = 'Số điện thoại không đăng ký Zalo. Thử email thay thế.'
       } else if (result.errorCode === -125) {

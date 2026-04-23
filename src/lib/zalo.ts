@@ -15,6 +15,13 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 
 const ZALO_OA_API = 'https://openapi.zalo.me'
+// ZNS lives on a separate host under the Zalo Business product
+// (`business.openapi.zalo.me`). The legacy OA host still returns
+// 200/404 for ZNS calls but with `error: 404 "You currently
+// access to an empty api"` because the route no longer exists
+// there — the scope was moved when Zalo split ZNS out of the
+// OA API family.
+const ZALO_ZNS_API = 'https://business.openapi.zalo.me'
 const TOKEN_URL = 'https://oauth.zaloapp.com/v4/oa/access_token'
 
 interface ZaloTokenResponse {
@@ -193,7 +200,7 @@ export async function zaloSendZNS(payload: {
     body.tracking_id = payload.trackingId
   }
 
-  const res = await fetch(`${ZALO_OA_API}/v2/oa/message/template`, {
+  const res = await fetch(`${ZALO_ZNS_API}/message/template`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
