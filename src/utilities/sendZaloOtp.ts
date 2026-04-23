@@ -1,4 +1,5 @@
 import { zaloSendZNS } from '@/lib/zalo'
+import { statusFromZnsResult, writeZaloDeliveryStatusByPhone } from './updateZaloDeliveryStatus'
 
 /**
  * Deliver a one-time passcode via Zalo ZNS to the customer's
@@ -32,13 +33,19 @@ export async function sendZaloOtp(args: {
   const normalised = raw.startsWith('0') ? `84${raw.slice(1)}` : raw
 
   try {
-    await zaloSendZNS({
+    const result = await zaloSendZNS({
       phone: normalised,
       templateId,
       templateData: { otp: args.code },
       trackingId: `otp-${Date.now()}`,
     })
-    return { delivered: true }
+    const derived = statusFromZnsResult(result)
+    if (derived) await writeZaloDeliveryStatusByPhone(args.phone, derived)
+    if (result.ok) return { delivered: true }
+    return {
+      delivered: false,
+      reason: `Zalo rejected: ${result.errorCode} ${result.errorMessage}`,
+    }
   } catch (err) {
     return {
       delivered: false,

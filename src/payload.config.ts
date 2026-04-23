@@ -90,6 +90,7 @@ export default buildConfig({
         '@/admin/BulkOrderStatusLink',
         '@/admin/NotificationBell',
         '@/admin/ChatDashboardLink',
+        '@/admin/ZaloSenderLink',
       ],
       views: {
         Accounting: {
@@ -107,6 +108,10 @@ export default buildConfig({
         ChatDashboard: {
           Component: '@/admin/ChatDashboard',
           path: '/chat-dashboard',
+        },
+        ZaloSender: {
+          Component: '@/admin/ZaloSender',
+          path: '/zalo-sender',
         },
       },
     },

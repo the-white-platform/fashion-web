@@ -187,6 +187,7 @@ const panelStyle: React.CSSProperties = {
   borderRadius: 6,
   padding: 16,
   marginBottom: 16,
+  color: '#111827',
 }
 
 const closeStyle: React.CSSProperties = {
@@ -211,6 +212,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 4,
   fontSize: 13,
   background: '#fff',
+  color: '#111827',
 }
 
 const sendStyle: React.CSSProperties = {

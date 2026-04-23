@@ -246,7 +246,9 @@
     "noOrders": "You have no orders yet",
     "exploreProducts": "Explore Products",
     "sizeComingSoon": "This feature is coming soon. Please check the size chart on each product page.",
-    "vtoComingSoon": "Virtual Try-On is coming soon. This feature lets you try on clothes virtually using AI technology."
+    "vtoComingSoon": "Virtual Try-On is coming soon. This feature lets you try on clothes virtually using AI technology.",
+    "dateOfBirth": "Date of birth",
+    "dateOfBirthHint": "We use this only to send a birthday discount on your special day."
   },
   "orders": {
     "title": "My Orders",
@@ -1312,7 +1314,10 @@
     "tierBenefitsTitle": "{tier} Tier Benefits",
     "earnRulesTitle": "How to Earn Points",
     "conversionRate": "100 points = 10,000₫ discount at checkout",
-    "copyReferral": "Copy",
+    "copyReferral": "Copy code",
+    "copyReferralLink": "Copy link",
+    "referralCodeLabel": "Your referral code",
+    "referralLinkLabel": "Share link",
     "noTransactions": "No point transactions yet",
     "shopToEarn": "Shop to earn points",
     "balance": "Balance: {n}",
@@ -1410,6 +1415,10 @@
     "home": {
       "title": "TheWhite — Modern Activewear",
       "description": "Discover TheWhite's premium activewear collection. Minimalist design, durable materials, made for the gym, running, and an active lifestyle."
+    },
+    "posts": {
+      "title": "Journal",
+      "description": "Style guides, training tips, and brand stories from THE WHITE — modern Vietnamese activewear."
     }
   },
   "imageZoom": {

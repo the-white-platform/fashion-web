@@ -1,15 +1,16 @@
 import type { CollectionAfterChangeHook, PayloadRequest } from 'payload'
 import type { Order } from '@/payload-types'
-import { sendCustomerEmail } from '@/utilities/sendCustomerEmail'
-import { sendZaloNotification } from '@/utilities/sendZaloNotification'
-import { isSyntheticEmail } from '@/lib/identity'
+import {
+  sendOrderNotification,
+  type OrderNotificationEvent,
+} from '@/utilities/sendOrderNotification'
 
 const DEFAULT_LOCALE: 'vi' | 'en' = 'vi'
 
 /**
- * Resolve the locale to send the email in: prefer the linked user's
- * `preferredLocale`, else fall back to 'vi'. If the user is only a
- * reference ID (not a depth-populated object) we fetch it.
+ * Resolve the notification locale: prefer the linked user's
+ * `preferredLocale`, else fall back to `vi`. If the user ref is a
+ * bare ID (depth 0) we fetch it.
  */
 const resolveLocale = async (req: PayloadRequest, order: Order): Promise<'vi' | 'en'> => {
   const userRef = order.customerInfo?.user
@@ -29,32 +30,14 @@ const resolveLocale = async (req: PayloadRequest, order: Order): Promise<'vi' | 
 }
 
 /**
- * Try to send a Zalo ZNS notification if the customer has a Zalo user ID
- * and has opted in to Zalo notifications.
+ * Fire exactly one customer notification per order event via
+ * `sendOrderNotification`, which picks the cheapest available
+ * channel (Zalo → Email → SMS) and stops at the first success.
+ *
+ * Kept named `sendOrderEmails` to match the existing hook
+ * registration in `Orders.ts` — in practice it now dispatches
+ * across all three channels.
  */
-async function maybeSendZalo(
-  req: PayloadRequest,
-  doc: Order,
-  template: Parameters<typeof sendZaloNotification>[0]['template'],
-) {
-  try {
-    const userRef = doc.customerInfo?.user
-    if (!userRef) return
-
-    const userId = typeof userRef === 'object' ? userRef.id : userRef
-    const user = await req.payload.findByID({ collection: 'users', id: userId })
-
-    if (user.zaloUserId && user.zaloNotifications) {
-      const phone = doc.customerInfo?.customerPhone ?? user.phone
-      if (phone) {
-        await sendZaloNotification({ order: doc, template, phone })
-      }
-    }
-  } catch (err) {
-    req.payload.logger.error(`[sendOrderEmails/zalo] Error for order ${doc.orderNumber}: ${err}`)
-  }
-}
-
 export const sendOrderEmails: CollectionAfterChangeHook<Order> = async ({
   doc,
   previousDoc,
@@ -62,106 +45,47 @@ export const sendOrderEmails: CollectionAfterChangeHook<Order> = async ({
   req,
 }) => {
   const { payload } = req
-  const to = doc.customerInfo?.customerEmail
-
-  if (!to) {
-    payload.logger.warn(`[sendOrderEmails] No customer email on order ${doc.orderNumber}, skipping`)
-    return doc
-  }
-
-  // Phone-only and Zalo-only accounts carry a synthetic
-  // `@phone.thewhite.cool` / `@zalo.thewhite.cool` email that isn't a
-  // real mailbox. Sending to it hard-bounces and damages sender
-  // reputation. For those users the Zalo ZNS channel
-  // (`maybeSendZalo`) is already the primary channel anyway.
-  if (isSyntheticEmail(to)) {
-    payload.logger.info(
-      `[sendOrderEmails] Synthetic email on order ${doc.orderNumber} — skipping email, relying on Zalo ZNS`,
-    )
-    return doc
-  }
-
   const locale = await resolveLocale(req, doc)
 
+  const notify = (event: OrderNotificationEvent) =>
+    sendOrderNotification({ req, order: doc, event, locale })
+
   try {
-    // ── Order created ──────────────────────────────────────────────
     if (operation === 'create') {
-      await sendCustomerEmail({
-        payload,
-        to,
-        template: 'orderConfirmation',
-        data: { order: doc, locale },
-      })
-      await maybeSendZalo(req, doc, 'orderConfirmation')
+      await notify('created')
       return doc
     }
 
     const prevStatus = previousDoc?.status
     const newStatus = doc.status
 
-    // ── Order status transitions ───────────────────────────────────
     if (prevStatus !== newStatus) {
       switch (newStatus) {
         case 'confirmed':
-          await sendCustomerEmail({
-            payload,
-            to,
-            template: 'orderStatusUpdate',
-            data: { order: doc, locale },
-          })
-          await maybeSendZalo(req, doc, 'orderStatusUpdate')
+          await notify('confirmed')
           break
-
         case 'shipping':
-          await sendCustomerEmail({
-            payload,
-            to,
-            template: 'shippingNotification',
-            data: { order: doc, locale },
-          })
-          await maybeSendZalo(req, doc, 'shippingNotification')
+          await notify('shipping')
           break
-
         case 'delivered':
-          await sendCustomerEmail({
-            payload,
-            to,
-            template: 'deliveryConfirmation',
-            data: { order: doc, locale },
-          })
-          await maybeSendZalo(req, doc, 'deliveryConfirmation')
+          await notify('delivered')
           break
-
         case 'cancelled':
-          await sendCustomerEmail({
-            payload,
-            to,
-            template: 'orderStatusUpdate',
-            data: { order: doc, locale },
-          })
-          await maybeSendZalo(req, doc, 'orderCancelled')
+          await notify('cancelled')
           break
-
         default:
           break
       }
     }
 
-    // ── Payment status: refunded ───────────────────────────────────
     const prevPaymentStatus = previousDoc?.payment?.paymentStatus
     const newPaymentStatus = doc.payment?.paymentStatus
 
     if (prevPaymentStatus !== newPaymentStatus && newPaymentStatus === 'refunded') {
-      await sendCustomerEmail({
-        payload,
-        to,
-        template: 'refundNotification',
-        data: { order: doc, locale },
-      })
-      await maybeSendZalo(req, doc, 'refundNotification')
+      await notify('refunded')
     }
   } catch (err) {
-    // Non-fatal: log and continue so the order save is not blocked
+    // Non-fatal: log and continue so the order save is not blocked.
     payload.logger.error(
       `[sendOrderEmails] Unexpected error for order ${doc.orderNumber}: ${err instanceof Error ? err.message : String(err)}`,
     )

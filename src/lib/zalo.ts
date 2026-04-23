@@ -151,14 +151,37 @@ export async function zaloSendMessage(payload: {
 }
 
 /**
+ * Result of a ZNS send. `ok` mirrors `error === 0` in the Zalo
+ * response body (HTTP 200 alone is not enough — Zalo returns 200
+ * with `error != 0` for delivery failures like "phone not on
+ * Zalo"). Callers use `errorCode` to decide between hard errors
+ * and soft fallbacks.
+ *
+ * Common codes:
+ *   0    success
+ *   -124 / -129 phone number not on Zalo / not allowed
+ *   -125 user has blocked the OA
+ *   -132 template not approved or not owned
+ */
+export interface ZaloZNSResult {
+  ok: boolean
+  errorCode: number
+  errorMessage: string
+  raw: unknown
+}
+
+/**
  * Send a ZNS (Zalo Notification Service) template message.
+ * Throws only on transport errors (network, non-200). Body-level
+ * failures are surfaced via the returned `ok: false` result so
+ * callers can fall back to email / SMS.
  */
 export async function zaloSendZNS(payload: {
   phone: string
   templateId: string
   templateData: Record<string, string>
   trackingId?: string
-}): Promise<unknown> {
+}): Promise<ZaloZNSResult> {
   const token = await getZaloAccessToken()
 
   const body: Record<string, unknown> = {
@@ -183,5 +206,8 @@ export async function zaloSendZNS(payload: {
     throw new Error(`Zalo ZNS failed: ${res.status} ${await res.text()}`)
   }
 
-  return res.json()
+  const json = (await res.json()) as { error?: number; message?: string }
+  const errorCode = typeof json?.error === 'number' ? json.error : -1
+  const errorMessage = typeof json?.message === 'string' ? json.message : ''
+  return { ok: errorCode === 0, errorCode, errorMessage, raw: json }
 }

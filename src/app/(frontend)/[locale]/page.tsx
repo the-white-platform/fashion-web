@@ -185,11 +185,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: 'meta.home' })
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'
   return {
     title: t('title'),
     description: t('description'),
     alternates: {
-      canonical: '/',
+      canonical: `${baseUrl}/${locale}`,
+      languages: {
+        'vi-VN': `${baseUrl}/vi`,
+        'en-US': `${baseUrl}/en`,
+        'x-default': `${baseUrl}/vi`,
+      },
     },
   }
 }

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useUser } from '@/contexts/UserContext'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { toast } from 'sonner'
 import { isSyntheticEmail } from '@/lib/identity'
@@ -55,10 +55,12 @@ export default function ProfilePage() {
   const tCommon = useTranslations('common')
   const tLoyalty = useTranslations('loyalty')
   const tProfile = useTranslations('profile')
+  const locale = useLocale()
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [editPhone, setEditPhone] = useState('')
   const [editEmail, setEditEmail] = useState('')
+  const [editDateOfBirth, setEditDateOfBirth] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   // Synthetic emails (`@phone.thewhite.cool`, `@zalo.thewhite.cool`)
@@ -235,6 +237,7 @@ export default function ProfilePage() {
                       setEditName(user?.fullName ?? '')
                       setEditPhone(user?.phone ?? '')
                       setEditEmail(hasRealEmail ? (user?.email ?? '') : '')
+                      setEditDateOfBirth(user?.dateOfBirth ?? '')
                       setIsEditing(true)
                     }}
                     className="flex items-center gap-2 px-4 py-2 border border-border rounded-sm hover:bg-muted transition-colors text-sm uppercase tracking-wide"
@@ -254,12 +257,21 @@ export default function ProfilePage() {
                       // user is claiming a real address over a
                       // synthetic one. Real-email users can't
                       // change it from this screen.
-                      const patch: { name: string; phone: string; email?: string } = {
+                      const patch: {
+                        name: string
+                        phone: string
+                        email?: string
+                        dateOfBirth?: string | null
+                      } = {
                         name: editName,
                         phone: editPhone,
                       }
                       if (!hasRealEmail && editEmail.trim()) {
                         patch.email = editEmail.trim().toLowerCase()
+                      }
+                      // Send only when changed. Empty string clears the value.
+                      if (editDateOfBirth !== (user?.dateOfBirth ?? '')) {
+                        patch.dateOfBirth = editDateOfBirth ? editDateOfBirth : null
                       }
                       await updateProfile(patch)
                       toast.success(t('profile.updateSuccess') || 'Profile updated')
@@ -335,6 +347,21 @@ export default function ProfilePage() {
                       placeholder="0912345678"
                     />
                   </div>
+                  <div>
+                    <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
+                      {tProfile('dateOfBirth')}
+                    </label>
+                    <input
+                      type="date"
+                      value={editDateOfBirth}
+                      onChange={(e) => setEditDateOfBirth(e.target.value)}
+                      max={new Date().toISOString().slice(0, 10)}
+                      className="w-full px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors bg-background"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {tProfile('dateOfBirthHint')}
+                    </p>
+                  </div>
                   <div className="flex gap-3">
                     <button
                       type="submit"
@@ -374,6 +401,18 @@ export default function ProfilePage() {
                     </label>
                     <p className="text-foreground">
                       {user?.phone || t('profile.notUpdated') || 'Not updated'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
+                      {tProfile('dateOfBirth')}
+                    </label>
+                    <p className="text-foreground">
+                      {user?.dateOfBirth
+                        ? new Date(user.dateOfBirth).toLocaleDateString(
+                            locale === 'en' ? 'en-GB' : 'vi-VN',
+                          )
+                        : t('profile.notUpdated') || 'Not updated'}
                     </p>
                   </div>
                 </div>

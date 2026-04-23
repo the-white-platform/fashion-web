@@ -3,6 +3,10 @@ import { headers as getHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { zaloSendZNS } from '@/lib/zalo'
+import {
+  statusFromZnsResult,
+  writeZaloDeliveryStatusByPhone,
+} from '@/utilities/updateZaloDeliveryStatus'
 
 interface TestZnsBody {
   phone?: string
@@ -54,6 +58,19 @@ export async function POST(request: Request) {
       templateData,
       trackingId: `admin-test-${Date.now()}`,
     })
+    const derived = statusFromZnsResult(result)
+    if (derived) await writeZaloDeliveryStatusByPhone(phone, derived)
+    if (!result.ok) {
+      payload.logger.warn({
+        msg: 'admin/zalo/test-zns rejected',
+        errorCode: result.errorCode,
+        errorMessage: result.errorMessage,
+      })
+      return NextResponse.json(
+        { error: `Zalo rejected: ${result.errorCode} ${result.errorMessage}`, result },
+        { status: 502 },
+      )
+    }
     return NextResponse.json({ ok: true, result })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)

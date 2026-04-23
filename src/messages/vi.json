@@ -246,7 +246,9 @@
     "noOrders": "Bạn chưa có đơn hàng nào",
     "exploreProducts": "Khám Phá Sản Phẩm",
     "sizeComingSoon": "Tính năng này sẽ được triển khai sớm. Vui lòng xem bảng kích thước trên trang từng sản phẩm.",
-    "vtoComingSoon": "Tính năng Virtual Try-On sẽ được triển khai sớm. Tính năng này cho phép bạn thử đồ ảo bằng công nghệ AI."
+    "vtoComingSoon": "Tính năng Virtual Try-On sẽ được triển khai sớm. Tính năng này cho phép bạn thử đồ ảo bằng công nghệ AI.",
+    "dateOfBirth": "Ngày sinh",
+    "dateOfBirthHint": "Chúng tôi chỉ dùng để gửi mã giảm giá sinh nhật cho bạn."
   },
   "orders": {
     "title": "Đơn Hàng Của Tôi",
@@ -1346,7 +1348,10 @@
     "tierBenefitsTitle": "Quyền Lợi Hạng {tier}",
     "earnRulesTitle": "Cách Tích Điểm",
     "conversionRate": "100 điểm = 10,000₫ giảm giá khi thanh toán",
-    "copyReferral": "Sao chép",
+    "copyReferral": "Sao chép mã",
+    "copyReferralLink": "Sao chép link",
+    "referralCodeLabel": "Mã giới thiệu của bạn",
+    "referralLinkLabel": "Link chia sẻ",
     "noTransactions": "Chưa có giao dịch điểm nào",
     "shopToEarn": "Mua hàng để tích điểm",
     "balance": "Số dư: {n}",
@@ -1448,6 +1453,10 @@
     "home": {
       "title": "TheWhite — Thời Trang Thể Thao Hiện Đại",
       "description": "Khám phá bộ sưu tập thời trang thể thao cao cấp của TheWhite. Thiết kế tối giản, chất liệu bền bỉ, phù hợp cho gym, chạy bộ và lối sống năng động."
+    },
+    "posts": {
+      "title": "Blog",
+      "description": "Hướng dẫn phối đồ, mẹo tập luyện và câu chuyện thương hiệu từ THE WHITE — thời trang thể thao Việt Nam."
     }
   },
   "imageZoom": {

@@ -215,7 +215,15 @@ export const Posts: CollectionConfig = {
     ...slugField(),
   ],
   hooks: {
-    afterChange: [revalidatePost],
+    afterChange: [
+      revalidatePost,
+      ({ doc }) => {
+        if (doc?._status !== 'published' || !doc?.slug) return
+        import('@/utilities/pingSearchEnginesForDoc').then(({ pingSearchEnginesForDoc }) =>
+          pingSearchEnginesForDoc('posts', doc.slug).catch(() => undefined),
+        )
+      },
+    ],
     afterRead: [populateAuthors],
   },
   versions: {

@@ -20,6 +20,14 @@ export const Products: CollectionConfig = {
   },
   hooks: {
     beforeChange: [computeStockStatus],
+    afterChange: [
+      ({ doc }) => {
+        // Fire-and-forget: IndexNow ping must never block the save.
+        import('@/utilities/pingSearchEnginesForDoc').then(({ pingSearchEnginesForDoc }) =>
+          pingSearchEnginesForDoc('products', doc.slug || String(doc.id)).catch(() => undefined),
+        )
+      },
+    ],
   },
   admin: {
     useAsTitle: 'name',

@@ -140,15 +140,21 @@ export default function LoyaltyPage() {
       : Math.min(100, ((lifetimePoints - tierInfo.min) / (tierInfo.max - tierInfo.min)) * 100)
   const pointsToNext = tier === 'platinum' ? 0 : Math.max(0, tierInfo.max - lifetimePoints)
 
-  const referralCode = (user as any).referralCode ?? ''
+  const referralCode = user?.referralCode ?? ''
   const referralUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${referralCode}` : ''
+    referralCode && typeof window !== 'undefined'
+      ? `${window.location.origin}/register?ref=${referralCode}`
+      : ''
 
-  const copyReferral = () => {
-    if (referralUrl) {
-      navigator.clipboard.writeText(referralUrl)
-      toast.success(t('copiedReferral'))
-    }
+  const copyReferralCode = () => {
+    if (!referralCode) return
+    navigator.clipboard.writeText(referralCode)
+    toast.success(t('copiedReferral'))
+  }
+  const copyReferralLink = () => {
+    if (!referralUrl) return
+    navigator.clipboard.writeText(referralUrl)
+    toast.success(t('copiedReferral'))
   }
 
   const getTransactionIcon = (type: string, points: number) => {
@@ -309,17 +315,42 @@ export default function LoyaltyPage() {
                   {t('referral')}
                 </h2>
                 <p className="text-muted-foreground text-sm mb-4">{t('referralDesc')}</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 px-4 py-3 bg-muted rounded-sm font-mono text-sm truncate">
-                    {referralCode}
+
+                <div className="mb-3">
+                  <label className="block text-xs uppercase tracking-wide mb-2 text-muted-foreground">
+                    {t('referralCodeLabel')}
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 px-4 py-3 bg-muted rounded-sm font-mono text-sm truncate">
+                      {referralCode}
+                    </div>
+                    <button
+                      onClick={copyReferralCode}
+                      className="flex items-center gap-2 px-4 py-3 border-2 border-foreground text-foreground rounded-sm hover:bg-muted transition-colors text-sm uppercase tracking-wide shrink-0"
+                    >
+                      <Copy className="w-4 h-4" />
+                      {t('copyReferral')}
+                    </button>
                   </div>
-                  <button
-                    onClick={copyReferral}
-                    className="flex items-center gap-2 px-4 py-3 border-2 border-foreground text-foreground rounded-sm hover:bg-muted transition-colors text-sm uppercase tracking-wide shrink-0"
-                  >
-                    <Copy className="w-4 h-4" />
-                    {t('copyReferral')}
-                  </button>
+                </div>
+
+                <div>
+                  <label className="block text-xs uppercase tracking-wide mb-2 text-muted-foreground">
+                    {t('referralLinkLabel')}
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 px-4 py-3 bg-muted rounded-sm text-sm truncate">
+                      {referralUrl || '—'}
+                    </div>
+                    <button
+                      onClick={copyReferralLink}
+                      disabled={!referralUrl}
+                      className="flex items-center gap-2 px-4 py-3 bg-foreground text-background rounded-sm hover:opacity-90 transition-colors text-sm uppercase tracking-wide shrink-0 disabled:opacity-50"
+                    >
+                      <Copy className="w-4 h-4" />
+                      {t('copyReferralLink')}
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             )}

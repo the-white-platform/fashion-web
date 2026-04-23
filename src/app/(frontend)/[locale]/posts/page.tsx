@@ -1,4 +1,5 @@
 import type { Metadata } from 'next/types'
+import { getTranslations } from 'next-intl/server'
 
 import { PostsLayout, PostsEmptyLayout } from '@/components/PostsLayout'
 import configPromise from '@payload-config'
@@ -42,8 +43,32 @@ export default async function Page() {
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale: rawLocale } = await params
+  const locale = (rawLocale === 'en' ? 'en' : 'vi') as 'vi' | 'en'
+  const t = await getTranslations({ locale, namespace: 'meta.posts' }).catch(() => null)
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'
+  const path = '/posts'
+
+  const title = t ? `${t('title')} | THE WHITE` : 'Blog | THE WHITE'
+  const description = t
+    ? t('description')
+    : 'Cập nhật xu hướng, hướng dẫn phối đồ và câu chuyện thương hiệu từ THE WHITE.'
+
   return {
-    title: `Payload Website Template Posts`,
+    title,
+    description,
+    alternates: {
+      canonical: `${baseUrl}/${locale}${path}`,
+      languages: {
+        'vi-VN': `${baseUrl}/vi${path}`,
+        'en-US': `${baseUrl}/en${path}`,
+        'x-default': `${baseUrl}/vi${path}`,
+      },
+    },
   }
 }

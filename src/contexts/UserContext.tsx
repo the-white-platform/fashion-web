@@ -8,6 +8,12 @@ interface User {
   email: string
   fullName: string
   phone?: string
+  // ISO date string (YYYY-MM-DD). Used for birthday discount ZNS.
+  dateOfBirth?: string
+  // Auto-generated on create (see collections/Users/index.ts
+  // beforeChange). Shown to the user on /loyalty so they can
+  // share it to earn a referral bonus.
+  referralCode?: string
   avatar?: string
   provider?: 'local' | 'google' | 'facebook'
   shippingAddresses: ShippingAddress[]
@@ -36,7 +42,9 @@ interface UserContextType {
     phone?: string,
   ) => Promise<boolean>
   logout: () => void
-  updateProfile: (data: Partial<{ name: string; phone: string; email: string }>) => Promise<void>
+  updateProfile: (
+    data: Partial<{ name: string; phone: string; email: string; dateOfBirth: string | null }>,
+  ) => Promise<void>
   addShippingAddress: (address: Omit<ShippingAddress, 'id'>) => Promise<void>
   updateShippingAddress: (id: string, address: Partial<ShippingAddress>) => Promise<void>
   deleteShippingAddress: (id: string) => Promise<void>
@@ -73,6 +81,8 @@ type PayloadUser = {
   email: string
   name?: string
   phone?: string
+  dateOfBirth?: string | null
+  referralCode?: string | null
   imageUrl?: string
   provider?: 'local' | 'google' | 'facebook'
   shippingAddresses?: PayloadAddress[] | null
@@ -93,6 +103,10 @@ function mapPayloadUser(payloadUser: PayloadUser): User {
     email: payloadUser.email,
     fullName: payloadUser.name ?? '',
     phone: payloadUser.phone,
+    dateOfBirth: payloadUser.dateOfBirth
+      ? new Date(payloadUser.dateOfBirth).toISOString().slice(0, 10)
+      : undefined,
+    referralCode: payloadUser.referralCode ?? undefined,
     avatar: payloadUser.imageUrl,
     provider: payloadUser.provider,
     shippingAddresses: (payloadUser.shippingAddresses ?? []).map((a) => ({
@@ -250,7 +264,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   // ------------------------------------------------------------------
 
   async function updateProfile(
-    data: Partial<{ name: string; phone: string; email: string }>,
+    data: Partial<{ name: string; phone: string; email: string; dateOfBirth: string | null }>,
   ): Promise<void> {
     if (!user) return
     const res = await fetch(`/api/users/${user.id}`, {

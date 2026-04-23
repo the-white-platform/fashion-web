@@ -17,6 +17,9 @@ import * as migration_20260422_101419_vto_cache_hit_field from './20260422_10141
 import * as migration_20260422_110925_users_provider_zalo_phone_index from './20260422_110925_users_provider_zalo_phone_index'
 import * as migration_20260422_170456_users_otp_fields from './20260422_170456_users_otp_fields'
 import * as migration_20260422_213840_zalo_credentials_global from './20260422_213840_zalo_credentials_global'
+import * as migration_20260423_135608_users_date_of_birth from './20260423_135608_users_date_of_birth'
+import * as migration_20260423_140300_users_zalo_delivery_status from './20260423_140300_users_zalo_delivery_status'
+import * as migration_20260423_143632_users_referral_code_backfill from './20260423_143632_users_referral_code_backfill'
 
 export const migrations = [
   {
@@ -113,5 +116,20 @@ export const migrations = [
     up: migration_20260422_213840_zalo_credentials_global.up,
     down: migration_20260422_213840_zalo_credentials_global.down,
     name: '20260422_213840_zalo_credentials_global',
+  },
+  {
+    up: migration_20260423_135608_users_date_of_birth.up,
+    down: migration_20260423_135608_users_date_of_birth.down,
+    name: '20260423_135608_users_date_of_birth',
+  },
+  {
+    up: migration_20260423_140300_users_zalo_delivery_status.up,
+    down: migration_20260423_140300_users_zalo_delivery_status.down,
+    name: '20260423_140300_users_zalo_delivery_status',
+  },
+  {
+    up: migration_20260423_143632_users_referral_code_backfill.up,
+    down: migration_20260423_143632_users_referral_code_backfill.down,
+    name: '20260423_143632_users_referral_code_backfill',
   },
 ]

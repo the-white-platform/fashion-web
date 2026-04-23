@@ -9,7 +9,6 @@ import {
 } from './Orders/hooks/stockManagement'
 import { logOrderActivity } from './Orders/hooks/activityLog'
 import { handleReturn } from './Orders/hooks/returnManagement'
-import { sendZaloOrderNotifications } from './Orders/hooks/sendZaloOrderNotifications'
 import { sendOrderEmails } from './Orders/hooks/sendOrderEmails'
 import { notifyOnOrder } from './Orders/hooks/notifyOnOrder'
 import { notifyOnStockChange } from './Orders/hooks/notifyOnStockChange'
@@ -691,22 +690,14 @@ export const Orders: CollectionConfig = {
       decrementStockAfterOrder,
       restoreStockOnCancel,
       incrementCouponUsageAfterOrder,
-      // Email side of status notifications (orderConfirmation on
-      // create, confirmed / shipping / delivered / cancelled /
-      // refunded on status transitions). Resend is now wired +
-      // thewhite.cool domain verified, so the hook is safe to
-      // enable. `sendCustomerEmail` silently skips sends when
-      // RESEND_API_KEY isn't set (local dev, preview), so it
-      // degrades cleanly in non-prod environments.
+      // Customer notifications. One send per event via the
+      // Zalo → Email → SMS priority chain in
+      // `sendOrderNotification` — cheapest available channel
+      // wins, the rest are skipped so we don't double-pay. Each
+      // underlying channel silently no-ops when its credentials
+      // are missing (e.g. local dev without RESEND_API_KEY or
+      // ZALO_ZNS_* template ids), so the chain degrades cleanly.
       sendOrderEmails,
-      // Zalo ZNS side — same status transitions, pushed to the
-      // customer's phone via a pre-approved template. `sendZaloNotification`
-      // silently no-ops when the per-template env var (e.g.
-      // ZALO_ZNS_ORDER_CONFIRMATION) or ZALO_REFRESH_TOKEN is
-      // missing, so enabling the hook doesn't require every
-      // template to be live immediately — they can light up one
-      // at a time as they get Zalo approval.
-      sendZaloOrderNotifications,
       notifyOnOrder,
       notifyOnStockChange,
       loyaltyEarn,

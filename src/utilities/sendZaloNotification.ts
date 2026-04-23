@@ -1,17 +1,25 @@
 import { zaloSendZNS } from '@/lib/zalo'
 import type { Order } from '@/payload-types'
+import {
+  statusFromZnsResult,
+  writeZaloDeliveryStatus,
+  writeZaloDeliveryStatusByPhone,
+} from './updateZaloDeliveryStatus'
 
 /**
  * ZNS template IDs — configure via environment variables or constants.
  * These IDs are registered in the Zalo OA dashboard.
  */
+// All six logical template keys map to the single template ID that
+// exists on the Zalo dashboard (ID 569406 / ORDER_STATUS). The enum
+// key names are preserved so callers don't need to change.
 const ZNS_TEMPLATES = {
-  orderConfirmation: process.env.ZALO_ZNS_ORDER_CONFIRMATION ?? '',
+  orderConfirmation: process.env.ZALO_ZNS_ORDER_STATUS ?? '',
   orderStatusUpdate: process.env.ZALO_ZNS_ORDER_STATUS ?? '',
-  shippingNotification: process.env.ZALO_ZNS_SHIPPING ?? '',
-  deliveryConfirmation: process.env.ZALO_ZNS_DELIVERY ?? '',
-  orderCancelled: process.env.ZALO_ZNS_CANCELLED ?? '',
-  refundNotification: process.env.ZALO_ZNS_REFUND ?? '',
+  shippingNotification: process.env.ZALO_ZNS_ORDER_STATUS ?? '',
+  deliveryConfirmation: process.env.ZALO_ZNS_ORDER_STATUS ?? '',
+  orderCancelled: process.env.ZALO_ZNS_ORDER_STATUS ?? '',
+  refundNotification: process.env.ZALO_ZNS_ORDER_STATUS ?? '',
 }
 
 type ZNSTemplate = keyof typeof ZNS_TEMPLATES
@@ -66,32 +74,55 @@ function formatOrderData(order: Order): Record<string, string> {
 
 /**
  * Send a Zalo ZNS notification for an order event.
- * Silently skips if Zalo is not configured or template ID is missing.
+ * Returns `true` only if Zalo accepted the send (`error: 0`).
+ * Returns `false` for any skip/failure so callers can fall back
+ * to the next channel (email / SMS). Never throws.
  */
 export async function sendZaloNotification({
   order,
   template,
   phone,
-}: SendZaloNotificationOptions): Promise<void> {
+}: SendZaloNotificationOptions): Promise<boolean> {
   const templateId = ZNS_TEMPLATES[template]
 
   if (!templateId) {
-    // Not configured — skip silently
-    return
+    console.info(`[sendZaloNotification] Skip "${template}" — template id not configured`)
+    return false
   }
 
   // Normalize phone: remove leading 0, add +84
   const normalizedPhone = phone.startsWith('0') ? `84${phone.slice(1)}` : phone.replace(/^\+/, '')
 
   try {
-    await zaloSendZNS({
+    const result = await zaloSendZNS({
       phone: normalizedPhone,
       templateId,
       templateData: formatOrderData(order),
       trackingId: `order-${order.id}-${template}`,
     })
+    const derived = statusFromZnsResult(result)
+    if (derived) {
+      const userRef = order.customerInfo?.user
+      const userId =
+        userRef && typeof userRef === 'object' ? (userRef as { id: string | number }).id : userRef
+      if (userId !== null && userId !== undefined) {
+        await writeZaloDeliveryStatus(userId, derived)
+      } else {
+        await writeZaloDeliveryStatusByPhone(phone, derived)
+      }
+    }
+    if (result.ok) {
+      console.info(
+        `[sendZaloNotification] Sent "${template}" to ${normalizedPhone} (order ${order.orderNumber ?? order.id})`,
+      )
+      return true
+    }
+    console.warn(
+      `[sendZaloNotification] Zalo rejected "${template}" for ${normalizedPhone}: error=${result.errorCode} ${result.errorMessage}`,
+    )
+    return false
   } catch (err) {
-    // Non-fatal — log but don't throw
     console.error(`[sendZaloNotification] Failed to send ZNS (${template}):`, err)
+    return false
   }
 }

@@ -539,6 +539,14 @@ export interface User {
   name?: string | null;
   phone?: string | null;
   /**
+   * Auto-updated by ZNS send results (verified on success, not_on_zalo on Zalo error -124/-129).
+   */
+  zaloDeliveryStatus?: ('unknown' | 'verified' | 'not_on_zalo') | null;
+  /**
+   * Used to send birthday discount codes via Zalo / email.
+   */
+  dateOfBirth?: string | null;
+  /**
    * Language used for emails, notifications, and off-site communication.
    */
   preferredLocale?: ('vi' | 'en') | null;
@@ -2013,6 +2021,8 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   name?: T;
   phone?: T;
+  zaloDeliveryStatus?: T;
+  dateOfBirth?: T;
   preferredLocale?: T;
   sub?: T;
   provider?: T;

@@ -14,17 +14,32 @@ declare global {
       // (e.g. for local dev without ADC).
       VTO_PROVIDER_ORDER?: string
       // Zalo Official Account credentials for ZNS notifications.
-      // sendZaloOrderNotifications skips silently when these (and the
-      // ZNS_ORDER_CONFIRMATION / ZNS_SHIPPING template ids) are missing.
+      // `sendOrderNotification` skips the Zalo step silently when
+      // these (or the matching ZALO_ZNS_* template ids) are missing
+      // and falls through to email / SMS.
       ZALO_APP_ID?: string
       ZALO_APP_SECRET?: string
       ZALO_REFRESH_TOKEN?: string
-      ZALO_ZNS_ORDER_CONFIRMATION?: string
       ZALO_ZNS_ORDER_STATUS?: string
-      ZALO_ZNS_SHIPPING?: string
-      ZALO_ZNS_DELIVERY?: string
-      ZALO_ZNS_CANCELLED?: string
-      ZALO_ZNS_REFUND?: string
+      ZALO_ZNS_OTP?: string
+      // Birthday / promo discount code template (572054 at time of
+      // writing). Parameters expected by the template live next to
+      // `sendCustomerDiscount` in src/utilities/sendCustomerDiscount.ts.
+      ZALO_ZNS_CUSTOMER_DISCOUNT?: string
+      // Welcome ZNS fired the first time a user's phone number is
+      // known (template 572063 at time of writing). Parameter
+      // shape lives in src/utilities/sendCustomerWelcome.ts.
+      ZALO_ZNS_WELCOME?: string
+      // SMS provider selector for the last-resort channel in
+      // `sendOrderNotification`. No provider is wired yet, so
+      // setting this today only enables a "would have sent" log
+      // line — the actual dispatcher comes later.
+      SMS_PROVIDER?: string
+      // IndexNow verification key (8–128 alphanumeric chars).
+      // Ownership proof is served at /indexnow-<KEY>.txt via the
+      // dynamic route in src/app/(frontend)/indexnow-[key]/route.ts.
+      // Leave unset to disable IndexNow pings entirely.
+      INDEXNOW_KEY?: string
     }
   }
 }

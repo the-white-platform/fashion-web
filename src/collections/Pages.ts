@@ -114,6 +114,16 @@ export const Pages: CollectionConfig = {
     },
     ...slugField(),
   ],
+  hooks: {
+    afterChange: [
+      ({ doc }) => {
+        if (doc?._status !== 'published' || !doc?.slug) return
+        import('@/utilities/pingSearchEnginesForDoc').then(({ pingSearchEnginesForDoc }) =>
+          pingSearchEnginesForDoc('pages', doc.slug).catch(() => undefined),
+        )
+      },
+    ],
+  },
   versions: {
     drafts: {
       autosave: {

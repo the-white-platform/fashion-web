@@ -1,5 +1,7 @@
 import type { Metadata } from 'next/types'
 import { notFound } from 'next/navigation'
+import { getPayload } from 'payload'
+import configPromise from '@payload-config'
 import { getCachedProductBySlug, getCachedProducts } from '@/utilities/getProducts'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import ProductDetailClient from './page.client'
@@ -58,7 +60,38 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'
   const productUrl = `${baseUrl}/${locale}/products/${product.slug || product.id}`
 
-  const jsonLd = {
+  // Reviews aggregate — powers JSON-LD aggregateRating so Google
+  // can render stars in SERP snippets. Uses approved reviews only.
+  let aggregateRating: { ratingValue: number; reviewCount: number } | null = null
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const reviews = await payload.find({
+      collection: 'reviews',
+      where: {
+        product: { equals: product.id },
+        moderationStatus: { equals: 'approved' },
+      },
+      limit: 1000,
+      depth: 0,
+      pagination: false,
+    })
+    if (reviews.docs.length > 0) {
+      const ratings = reviews.docs
+        .map((r) => (r as { rating?: number }).rating)
+        .filter((n): n is number => typeof n === 'number')
+      if (ratings.length > 0) {
+        const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length
+        aggregateRating = {
+          ratingValue: Number(avg.toFixed(2)),
+          reviewCount: ratings.length,
+        }
+      }
+    }
+  } catch {
+    // Best-effort only — missing aggregate doesn't break the page.
+  }
+
+  const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
@@ -67,7 +100,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     sku: String(product.id),
     brand: {
       '@type': 'Brand',
-      name: 'TheWhite',
+      name: 'THE WHITE',
     },
     offers: {
       '@type': 'Offer',
@@ -79,6 +112,12 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       url: productUrl,
       itemCondition: 'https://schema.org/NewCondition',
     },
+  }
+  if (aggregateRating) {
+    jsonLd.aggregateRating = {
+      '@type': 'AggregateRating',
+      ...aggregateRating,
+    }
   }
 
   const homeLabel = locale === 'vi' ? 'Trang chủ' : 'Home'

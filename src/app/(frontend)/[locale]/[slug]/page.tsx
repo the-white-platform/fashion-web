@@ -97,18 +97,24 @@ export async function generateMetadata({ params: paramsPromise }: Args): Promise
       locale: locale as 'vi' | 'en',
     })
 
+    const safeLocale = (locale === 'en' ? 'en' : 'vi') as 'vi' | 'en'
+    const path = slug === 'home' ? '' : `/${slug}`
+
     if (!page) {
       return {
-        title: 'Payload Website Template',
+        title: 'THE WHITE',
+        alternates: {
+          canonical: `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/${safeLocale}${path}`,
+        },
       }
     }
 
-    return generateMeta({ doc: page })
+    return generateMeta({ doc: page, locale: safeLocale, path })
   } catch (error) {
     // During Docker build, database may not be available
     console.warn('Failed to generate metadata:', error)
     return {
-      title: 'Payload Website Template',
+      title: 'THE WHITE',
     }
   }
 }

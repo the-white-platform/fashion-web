@@ -95,7 +95,7 @@ const resolveTemplate = async (
   }
 }
 
-export const sendCustomerEmail = async (params: SendCustomerEmailParams): Promise<void> => {
+export const sendCustomerEmail = async (params: SendCustomerEmailParams): Promise<boolean> => {
   const { payload, to } = params
 
   // No email provider yet — skip silently. Without this guard the
@@ -104,7 +104,7 @@ export const sendCustomerEmail = async (params: SendCustomerEmailParams): Promis
   // because `sendOrderEmails` is an afterChange hook awaited by Payload.
   if (!process.env.RESEND_API_KEY) {
     payload.logger.info(`[email] Skipping "${params.template}" to ${to} (no RESEND_API_KEY)`)
-    return
+    return false
   }
 
   try {
@@ -119,9 +119,11 @@ export const sendCustomerEmail = async (params: SendCustomerEmailParams): Promis
     ])
 
     payload.logger.info(`[email] Sent "${params.template}" to ${to}`)
+    return true
   } catch (err) {
     payload.logger.error(
       `[email] Failed to send "${params.template}" to ${to}: ${err instanceof Error ? err.message : String(err)}`,
     )
+    return false
   }
 }

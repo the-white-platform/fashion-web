@@ -132,15 +132,42 @@ export default async function RootLayout({ children, params }: Props) {
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: 'TheWhite',
-              url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool',
-              inLanguage: ['vi-VN', 'en-US'],
-              potentialAction: {
-                '@type': 'SearchAction',
-                target: `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/search?q={search_term_string}`,
-                'query-input': 'required name=search_term_string',
-              },
+              '@graph': [
+                {
+                  '@type': 'Organization',
+                  '@id': `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/#organization`,
+                  name: 'THE WHITE',
+                  alternateName: ['TheWhite', 'The White Active'],
+                  url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool',
+                  logo: `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/logo/thewhite-active.png`,
+                  sameAs: [
+                    'https://www.facebook.com/thewhiteactive/',
+                    'https://www.instagram.com/thewhite.cool',
+                  ],
+                  contactPoint: {
+                    '@type': 'ContactPoint',
+                    contactType: 'customer support',
+                    email: 'hello@thewhite.cool',
+                    availableLanguage: ['vi', 'en'],
+                    areaServed: 'VN',
+                  },
+                },
+                {
+                  '@type': 'WebSite',
+                  '@id': `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/#website`,
+                  name: 'THE WHITE',
+                  url: process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool',
+                  inLanguage: ['vi-VN', 'en-US'],
+                  publisher: {
+                    '@id': `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/#organization`,
+                  },
+                  potentialAction: {
+                    '@type': 'SearchAction',
+                    target: `${process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'}/${locale}/products?q={search_term_string}`,
+                    'query-input': 'required name=search_term_string',
+                  },
+                },
+              ],
             }),
           }}
         />

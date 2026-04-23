@@ -92,10 +92,22 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
-  const { locale } = await params
+  const { locale: rawLocale } = await params
+  const locale = (rawLocale === 'en' ? 'en' : 'vi') as 'vi' | 'en'
   const t = await getTranslations({ locale, namespace: 'products' })
+  const baseUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool'
+  const path = '/products'
+
   return {
     title: `${t('pageTitle')} | THE WHITE`,
     description: t('pageDescription'),
+    alternates: {
+      canonical: `${baseUrl}/${locale}${path}`,
+      languages: {
+        'vi-VN': `${baseUrl}/vi${path}`,
+        'en-US': `${baseUrl}/en${path}`,
+        'x-default': `${baseUrl}/vi${path}`,
+      },
+    },
   }
 }

@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { hasRole, isAdmin, adminFieldAccess } from '../../access/roles'
 import { notifyOnNewUser } from './hooks/notifyOnNewUser'
+import { sendWelcomeOnPhoneAdd } from './hooks/sendWelcomeOnPhoneAdd'
 
 // Hard cap on concurrent live sessions per user. Keeps the
 // users_sessions join table bounded so login reads/writes never
@@ -139,7 +140,7 @@ export const Users: CollectionConfig = {
         return data
       },
     ],
-    afterChange: [notifyOnNewUser],
+    afterChange: [notifyOnNewUser, sendWelcomeOnPhoneAdd],
   },
   fields: [
     {
@@ -175,6 +176,44 @@ export const Users: CollectionConfig = {
       // explicit lookup before insert; duplicates caught there
       // surface as a proper "phone already used" error to the
       // user instead of a raw DB constraint violation.
+    },
+    {
+      name: 'zaloDeliveryStatus',
+      type: 'select',
+      defaultValue: 'unknown',
+      label: { vi: 'Trạng thái Zalo', en: 'Zalo delivery status' },
+      options: [
+        { label: { vi: 'Chưa xác định', en: 'Unknown' }, value: 'unknown' },
+        { label: { vi: 'Đã xác minh có Zalo', en: 'Verified on Zalo' }, value: 'verified' },
+        { label: { vi: 'Không có Zalo', en: 'Not on Zalo' }, value: 'not_on_zalo' },
+      ],
+      admin: {
+        description: {
+          vi: 'Tự động cập nhật sau mỗi lần gửi ZNS thành công hoặc bị Zalo từ chối.',
+          en: 'Auto-updated by ZNS send results (verified on success, not_on_zalo on Zalo error -124/-129).',
+        },
+        position: 'sidebar',
+        readOnly: true,
+      },
+      access: {
+        // Only server-side code (ZNS senders) may write this.
+        update: () => false,
+      },
+    },
+    {
+      name: 'dateOfBirth',
+      type: 'date',
+      label: { vi: 'Ngày sinh', en: 'Date of birth' },
+      admin: {
+        description: {
+          vi: 'Dùng để gửi mã giảm giá sinh nhật qua Zalo / email.',
+          en: 'Used to send birthday discount codes via Zalo / email.',
+        },
+        date: {
+          pickerAppearance: 'dayOnly',
+          displayFormat: 'dd/MM/yyyy',
+        },
+      },
     },
     {
       name: 'preferredLocale',
