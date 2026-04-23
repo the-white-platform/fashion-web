@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.60.0](https://github.com/the-white-platform/fashion-web/compare/v0.59.2...v0.60.0) (2026-04-23)
+
+
+### Features
+
+* **zalo,seo:** unified notification chain, admin ZNS sender, SEO hardening ([c2ed929](https://github.com/the-white-platform/fashion-web/commit/c2ed9297ff176decf23093dc91c5b6a147ddae29))
+
+
+### Code Refactoring
+
+* **notify:** drop SMS fallback — Zalo is the VN SMS channel ([1cca4dc](https://github.com/the-white-platform/fashion-web/commit/1cca4dcb2e2e12bc2900e3fa4102e3ff11cfe94d))
+
 ### [0.59.2](https://github.com/the-white-platform/fashion-web/compare/v0.59.1...v0.59.2) (2026-04-23)
 
 
