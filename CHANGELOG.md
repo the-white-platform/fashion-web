@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.61.1](https://github.com/the-white-platform/fashion-web/compare/v0.61.0...v0.61.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* **zalo:** surface actionable hint on Zalo API errors ([d8abf3b](https://github.com/the-white-platform/fashion-web/commit/d8abf3b118822d96eb10dc87193113f0e9020f49))
+
 ## [0.61.0](https://github.com/the-white-platform/fashion-web/compare/v0.60.2...v0.61.0) (2026-04-23)
 
 
