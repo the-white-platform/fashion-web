@@ -6,9 +6,15 @@ import configPromise from '@payload-config'
 import { isSyntheticEmail } from '@/lib/identity'
 
 /**
- * Admin-only: thin user-search endpoint backing the Zalo sender
- * page. Matches against name, email, or phone (substring). Caps
- * output to 25 rows — this is a picker, not a full export.
+ * Admin-only: user picker backing the Zalo sender page. Supports
+ * free-text search across name / email / phone and pagination so
+ * the admin can scroll the whole customer list when looking for
+ * a specific person.
+ *
+ * Query params:
+ *   q      — optional substring match (name, email, phone).
+ *   limit  — page size, default 50, cap 200.
+ *   page   — 1-indexed.
  */
 export async function GET(request: Request) {
   const payload = await getPayload({ config: configPromise })
@@ -20,6 +26,10 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url)
   const q = (url.searchParams.get('q') ?? '').trim()
+  const limitRaw = Number.parseInt(url.searchParams.get('limit') ?? '50', 10)
+  const limit = Math.min(Math.max(Number.isFinite(limitRaw) ? limitRaw : 50, 1), 200)
+  const pageRaw = Number.parseInt(url.searchParams.get('page') ?? '1', 10)
+  const page = Math.max(Number.isFinite(pageRaw) ? pageRaw : 1, 1)
 
   const where: Where = q
     ? {
@@ -30,13 +40,18 @@ export async function GET(request: Request) {
   const result = await payload.find({
     collection: 'users',
     where,
-    limit: 25,
+    limit,
+    page,
     depth: 0,
     sort: '-updatedAt',
     overrideAccess: true,
   })
 
   return NextResponse.json({
+    page: result.page ?? page,
+    totalPages: result.totalPages,
+    totalDocs: result.totalDocs,
+    hasNextPage: result.hasNextPage,
     users: result.docs.map((u) => {
       const email = (u as { email?: string }).email ?? null
       return {

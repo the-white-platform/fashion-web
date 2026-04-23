@@ -386,6 +386,7 @@
   },
   "auth": {
     "login": "Login",
+    "signingIn": "Signing in…",
     "register": "Register",
     "registerNow": "Register Now",
     "welcomeBack": "Welcome back to TheWhite",

@@ -158,18 +158,37 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
     setHighlightIdx(-1)
   }, [users])
 
-  // Debounced user search.
+  // Page 1 on every query change. Later pages come in via the
+  // "Load more" button below the picker — saves both memory and
+  // network for the common case where the admin already typed
+  // enough to narrow the list.
+  const [pickerPage, setPickerPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [totalDocs, setTotalDocs] = useState(0)
+
+  useEffect(() => {
+    setPickerPage(1)
+  }, [query])
+
   useEffect(() => {
     let cancelled = false
     const handle = setTimeout(async () => {
       setSearchLoading(true)
       try {
-        const res = await fetch(`/api/admin/users/search?q=${encodeURIComponent(query)}`, {
-          credentials: 'include',
-        })
+        const res = await fetch(
+          `/api/admin/users/search?q=${encodeURIComponent(query)}&page=${pickerPage}&limit=50`,
+          { credentials: 'include' },
+        )
         if (!res.ok) return
-        const body = (await res.json()) as { users: AdminUser[] }
-        if (!cancelled) setUsers(body.users)
+        const body = (await res.json()) as {
+          users: AdminUser[]
+          hasNextPage?: boolean
+          totalDocs?: number
+        }
+        if (cancelled) return
+        setUsers((prev) => (pickerPage === 1 ? body.users : [...prev, ...body.users]))
+        setHasMore(Boolean(body.hasNextPage))
+        setTotalDocs(body.totalDocs ?? 0)
       } finally {
         if (!cancelled) setSearchLoading(false)
       }
@@ -178,7 +197,7 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
       cancelled = true
       clearTimeout(handle)
     }
-  }, [query])
+  }, [query, pickerPage])
 
   // Hydrate initial user from query string.
   useEffect(() => {
@@ -334,8 +353,14 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
             placeholder="Search by name, email, or phone"
             style={input}
           />
-          <div style={{ marginTop: 12, maxHeight: 360, overflowY: 'auto', color: '#111827' }}>
-            {searchLoading && <div style={{ color: '#6b7280' }}>Loading…</div>}
+          {totalDocs > 0 && (
+            <div style={{ marginTop: 8, fontSize: 12, color: '#6b7280' }}>
+              Showing {users.length} of {totalDocs} user{totalDocs === 1 ? '' : 's'}
+              {query ? ` matching "${query}"` : ''}
+            </div>
+          )}
+          <div style={{ marginTop: 12, maxHeight: 480, overflowY: 'auto', color: '#111827' }}>
+            {searchLoading && pickerPage === 1 && <div style={{ color: '#6b7280' }}>Loading…</div>}
             {!searchLoading && users.length === 0 && (
               <div style={{ color: '#6b7280' }}>No users found.</div>
             )}
@@ -373,6 +398,25 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
                 </button>
               )
             })}
+            {hasMore && (
+              <button
+                onClick={() => setPickerPage((p) => p + 1)}
+                disabled={searchLoading}
+                style={{
+                  width: '100%',
+                  marginTop: 8,
+                  padding: '8px 10px',
+                  border: '1px dashed #d1d5db',
+                  background: '#fff',
+                  borderRadius: 4,
+                  fontSize: 12,
+                  color: '#374151',
+                  cursor: searchLoading ? 'wait' : 'pointer',
+                }}
+              >
+                {searchLoading ? 'Loading…' : `Load more (${totalDocs - users.length} left)`}
+              </button>
+            )}
           </div>
 
           {/* Selected user status + Probe button */}

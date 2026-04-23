@@ -386,6 +386,7 @@
   },
   "auth": {
     "login": "Đăng Nhập",
+    "signingIn": "Đang đăng nhập…",
     "register": "Đăng Ký",
     "registerNow": "Đăng Ký Ngay",
     "welcomeBack": "Chào mừng bạn trở lại TheWhite",
