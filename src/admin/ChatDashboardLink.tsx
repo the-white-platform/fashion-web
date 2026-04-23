@@ -7,7 +7,7 @@ const ChatDashboardLink = () => {
   return (
     <div className="nav-group">
       <Link
-        href="/admin/chat-dashboard"
+        href="/admin/management/chat-dashboard"
         className="nav__link"
         style={{
           textDecoration: 'none',

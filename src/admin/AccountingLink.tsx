@@ -7,7 +7,7 @@ const AccountingLink = () => {
   return (
     <div className="nav-group">
       <Link
-        href="/admin/accounting"
+        href="/admin/management/accounting"
         className="nav__link"
         style={{
           textDecoration: 'none',

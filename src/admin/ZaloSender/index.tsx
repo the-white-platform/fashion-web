@@ -3,7 +3,7 @@ import type { AdminViewServerProps } from 'payload'
 import ZaloSenderClient from './ZaloSenderClient'
 
 /**
- * Payload custom admin view at /admin/zalo-sender. Thin server
+ * Payload custom admin view at /admin/management/zalo-sender. Thin server
  * shell that forwards query params (?userId=…&preset=…) down to
  * the client component — lets birthday widget / user admin pages
  * deep-link into a pre-filled send form.

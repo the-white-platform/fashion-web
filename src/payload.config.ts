@@ -95,23 +95,23 @@ export default buildConfig({
       views: {
         Accounting: {
           Component: '@/admin/AccountingView',
-          path: '/accounting',
+          path: '/management/accounting',
         },
         InventoryAlerts: {
           Component: '@/admin/InventoryAlerts',
-          path: '/inventory-alerts',
+          path: '/management/inventory-alerts',
         },
         BulkOrders: {
           Component: '@/admin/BulkOrderStatus',
-          path: '/bulk-orders',
+          path: '/management/bulk-orders',
         },
         ChatDashboard: {
           Component: '@/admin/ChatDashboard',
-          path: '/chat-dashboard',
+          path: '/management/chat-dashboard',
         },
         ZaloSender: {
           Component: '@/admin/ZaloSender',
-          path: '/zalo-sender',
+          path: '/management/zalo-sender',
         },
       },
     },

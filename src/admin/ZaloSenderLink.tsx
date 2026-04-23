@@ -7,7 +7,7 @@ const ZaloSenderLink = () => {
   return (
     <div className="nav-group">
       <Link
-        href="/admin/zalo-sender"
+        href="/admin/management/zalo-sender"
         className="nav__link"
         style={{
           textDecoration: 'none',

@@ -7,7 +7,7 @@ const BulkOrderStatusLink = () => {
   return (
     <div className="nav-group">
       <Link
-        href="/admin/bulk-orders"
+        href="/admin/management/bulk-orders"
         className="nav__link"
         style={{
           textDecoration: 'none',
