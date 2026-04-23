@@ -26,8 +26,38 @@ export const Users: CollectionConfig = {
   },
   auth: true,
   hooks: {
+    beforeLogin: [
+      async ({ user, req }) => {
+        // Prune expired sessions BEFORE Payload appends the new
+        // one. Without this, every login carries forward every
+        // past session — with a bad `expiresAt` in the mix, the
+        // server-side filter in Payload stalls 60-200s and the
+        // login times out. 2026-04-22 incident was "admin can't
+        // log in"; 2026-04-23 recurrence confirmed the
+        // `beforeChange` guard wasn't enough because partial
+        // user PATCHes don't include `sessions` in `data`.
+        const sessions = (user as { sessions?: Array<{ expiresAt?: string }> }).sessions
+        if (Array.isArray(sessions) && sessions.length > 0) {
+          const nowMs = Date.now()
+          const pruned = sessions.filter((s) => {
+            const exp = s?.expiresAt ? Date.parse(String(s.expiresAt)) : NaN
+            return Number.isFinite(exp) && exp > nowMs
+          })
+          if (pruned.length !== sessions.length) {
+            await req.payload.update({
+              collection: 'users',
+              id: (user as { id: number | string }).id,
+              data: { sessions: pruned },
+              req,
+              overrideAccess: true,
+            })
+          }
+        }
+        return user
+      },
+    ],
     beforeChange: [
-      async ({ data, operation }) => {
+      async ({ data, originalDoc, operation, req }) => {
         if ((operation === 'create' || data.password) && data.password) {
           if (data.password.length < 8) {
             throw new Error('Password must be at least 8 characters')
@@ -40,19 +70,31 @@ export const Users: CollectionConfig = {
           data.referralCode = `TW-${timestamp}-${random}`
         }
 
-        // Prune expired sessions on every user write. Payload's
-        // default login handler appends to `sessions` without ever
-        // expiring old rows, so the array grows unbounded. On
-        // 2026-04-22 admin login stalled 60-200s until the
-        // `users_sessions` rows were manually deleted — one
-        // malformed row was enough to hang the per-login filter
-        // step. Filtering here at write time keeps the array bounded
-        // and skips any row with a malformed `expiresAt`.
-        if (Array.isArray(data.sessions)) {
+        // Prune expired sessions on every user write. If the
+        // caller included `sessions` in `data`, filter that;
+        // otherwise inherit from `originalDoc` so partial PATCHes
+        // (name/phone/email) also shrink the array.
+        const existing = Array.isArray(data.sessions)
+          ? data.sessions
+          : (originalDoc as { sessions?: unknown[] } | undefined)?.sessions
+        if (Array.isArray(existing) && existing.length > 0) {
           const nowMs = Date.now()
-          data.sessions = data.sessions.filter((session) => {
+          const pruned = (existing as Array<{ expiresAt?: string }>).filter((session) => {
             const exp = session?.expiresAt ? Date.parse(String(session.expiresAt)) : NaN
             return Number.isFinite(exp) && exp > nowMs
+          })
+          if (pruned.length !== existing.length || Array.isArray(data.sessions)) {
+            data.sessions = pruned
+          }
+        }
+
+        // Fire-and-forget marker so we can confirm prune ran via
+        // Cloud Logging when diagnosing future stalls.
+        if (operation === 'update' && Array.isArray(data.sessions)) {
+          req.payload.logger.info({
+            msg: 'users.beforeChange: sessions pruned',
+            userId: (originalDoc as { id?: number | string } | undefined)?.id,
+            kept: data.sessions.length,
           })
         }
 
