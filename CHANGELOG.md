@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.63.0](https://github.com/the-white-platform/fashion-web/compare/v0.62.3...v0.63.0) (2026-04-23)
+
+
+### Features
+
+* **nav:** entry points into /management for staff users ([6deb471](https://github.com/the-white-platform/fashion-web/commit/6deb4717da318e1ebf596203cffeaf1b9cc63b77))
+
 ### [0.62.3](https://github.com/the-white-platform/fashion-web/compare/v0.62.2...v0.62.3) (2026-04-23)
 
 
