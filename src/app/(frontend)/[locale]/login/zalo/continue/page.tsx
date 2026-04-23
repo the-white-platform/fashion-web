@@ -88,7 +88,12 @@ export default function ZaloContinuePage() {
           return
         }
 
-        router.replace('/')
+        // Full reload so UserContext remounts and re-fetches
+        // /api/users/me against the freshly-set payload-token
+        // cookie. `router.replace` keeps the provider mounted
+        // and leaves the UI in a logged-out state.
+        window.location.replace('/')
+        return
       } catch (err) {
         if ((err as Error)?.name === 'AbortError') return
         setErrorDetail(err instanceof Error ? err.message : String(err))
