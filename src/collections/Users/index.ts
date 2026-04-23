@@ -3,6 +3,41 @@ import type { CollectionConfig } from 'payload'
 import { hasRole, isAdmin, adminFieldAccess } from '../../access/roles'
 import { notifyOnNewUser } from './hooks/notifyOnNewUser'
 
+// Hard cap on concurrent live sessions per user. Keeps the
+// users_sessions join table bounded so login reads/writes never
+// degrade into the 100+ second stalls that took admin auth
+// offline on 2026-04-22 and 2026-04-23. Picked to cover a power
+// user on ~5 devices with headroom for refresh churn.
+const MAX_SESSIONS_PER_USER = 20
+
+interface SessionLike {
+  id?: string
+  createdAt?: string
+  expiresAt?: string
+}
+
+function pruneAndCapSessions(sessions: SessionLike[]): SessionLike[] {
+  const nowMs = Date.now()
+  const live = sessions.filter((s) => {
+    const exp = s?.expiresAt ? Date.parse(String(s.expiresAt)) : NaN
+    return Number.isFinite(exp) && exp > nowMs
+  })
+  if (live.length <= MAX_SESSIONS_PER_USER) return live
+  // Keep newest MAX_SESSIONS_PER_USER by createdAt (fallback to
+  // expiresAt, fallback to existing order).
+  const withIdx = live.map((s, idx) => ({
+    s,
+    idx,
+    ts: s.createdAt
+      ? Date.parse(String(s.createdAt))
+      : s.expiresAt
+        ? Date.parse(String(s.expiresAt))
+        : 0,
+  }))
+  withIdx.sort((a, b) => (b.ts || 0) - (a.ts || 0) || b.idx - a.idx)
+  return withIdx.slice(0, MAX_SESSIONS_PER_USER).map((x) => x.s)
+}
+
 export const Users: CollectionConfig = {
   slug: 'users',
   access: {
@@ -28,28 +63,36 @@ export const Users: CollectionConfig = {
   hooks: {
     beforeLogin: [
       async ({ user, req }) => {
-        // Prune expired sessions BEFORE Payload appends the new
-        // one. Without this, every login carries forward every
-        // past session — with a bad `expiresAt` in the mix, the
-        // server-side filter in Payload stalls 60-200s and the
-        // login times out. 2026-04-22 incident was "admin can't
-        // log in"; 2026-04-23 recurrence confirmed the
-        // `beforeChange` guard wasn't enough because partial
-        // user PATCHes don't include `sessions` in `data`.
-        const sessions = (user as { sessions?: Array<{ expiresAt?: string }> }).sessions
+        // Prune + cap sessions BEFORE Payload appends the new
+        // one. Permanent guardrail against the bloat that caused
+        // the 2026-04-22 and 2026-04-23 admin-login stalls:
+        // `users_sessions` grew unbounded because (a) Payload's
+        // auth plugin only appends, never prunes, and (b) our
+        // earlier `beforeChange` hook only fired when callers
+        // included `sessions` in the payload, which partial
+        // PATCHes (name/phone/email) don't.
+        //
+        // Rule: hard cap at MAX_SESSIONS per user, keep the
+        // newest. A user logging in from 20 devices still works;
+        // the 21st quietly evicts the oldest. Mirrors the logic
+        // in `beforeChange` so every code path converges.
+        const sessions = (user as { sessions?: Array<{ createdAt?: string; expiresAt?: string }> })
+          .sessions
         if (Array.isArray(sessions) && sessions.length > 0) {
-          const nowMs = Date.now()
-          const pruned = sessions.filter((s) => {
-            const exp = s?.expiresAt ? Date.parse(String(s.expiresAt)) : NaN
-            return Number.isFinite(exp) && exp > nowMs
-          })
-          if (pruned.length !== sessions.length) {
+          const capped = pruneAndCapSessions(sessions)
+          if (capped.length !== sessions.length) {
             await req.payload.update({
               collection: 'users',
               id: (user as { id: number | string }).id,
-              data: { sessions: pruned },
+              data: { sessions: capped },
               req,
               overrideAccess: true,
+            })
+            req.payload.logger.info({
+              msg: 'users.beforeLogin: sessions pruned',
+              userId: (user as { id?: number | string }).id,
+              before: sessions.length,
+              after: capped.length,
             })
           }
         }
@@ -70,26 +113,20 @@ export const Users: CollectionConfig = {
           data.referralCode = `TW-${timestamp}-${random}`
         }
 
-        // Prune expired sessions on every user write. If the
-        // caller included `sessions` in `data`, filter that;
-        // otherwise inherit from `originalDoc` so partial PATCHes
-        // (name/phone/email) also shrink the array.
+        // Prune + cap sessions on EVERY user write, regardless
+        // of whether the caller included `sessions` in data.
         const existing = Array.isArray(data.sessions)
           ? data.sessions
           : (originalDoc as { sessions?: unknown[] } | undefined)?.sessions
         if (Array.isArray(existing) && existing.length > 0) {
-          const nowMs = Date.now()
-          const pruned = (existing as Array<{ expiresAt?: string }>).filter((session) => {
-            const exp = session?.expiresAt ? Date.parse(String(session.expiresAt)) : NaN
-            return Number.isFinite(exp) && exp > nowMs
-          })
-          if (pruned.length !== existing.length || Array.isArray(data.sessions)) {
-            data.sessions = pruned
+          const capped = pruneAndCapSessions(
+            existing as Array<{ createdAt?: string; expiresAt?: string }>,
+          )
+          if (capped.length !== existing.length || Array.isArray(data.sessions)) {
+            data.sessions = capped
           }
         }
 
-        // Fire-and-forget marker so we can confirm prune ran via
-        // Cloud Logging when diagnosing future stalls.
         if (operation === 'update' && Array.isArray(data.sessions)) {
           req.payload.logger.info({
             msg: 'users.beforeChange: sessions pruned',
