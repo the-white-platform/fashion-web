@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.59.0](https://github.com/the-white-platform/fashion-web/compare/v0.58.1...v0.59.0) (2026-04-23)
+
+
+### Features
+
+* **auth:** disable OTP login/reset flow ([13c6fac](https://github.com/the-white-platform/fashion-web/commit/13c6fac093f7436381ecb9c6e00b311fba8fd29e))
+* **profile:** hide synthetic emails, let phone/Zalo users add a real one ([70175e9](https://github.com/the-white-platform/fashion-web/commit/70175e9d845b09c7a62272116f64376e17e51465))
+
 ### [0.58.1](https://github.com/the-white-platform/fashion-web/compare/v0.58.0...v0.58.1) (2026-04-23)
 
 
