@@ -318,7 +318,7 @@ export default function ProfilePage() {
                         />
                         <p className="text-xs text-muted-foreground mt-1">
                           {t('profile.addEmailHint') ||
-                            'Add an email to receive order updates and OTPs.'}
+                            'Add an email to receive order updates and promotions.'}
                         </p>
                       </>
                     )}
