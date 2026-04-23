@@ -23,6 +23,7 @@ import { useUser } from '@/contexts/UserContext'
 import { useTranslations } from 'next-intl'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { toast } from 'sonner'
+import { isSyntheticEmail } from '@/lib/identity'
 
 type Tab = 'profile' | 'size' | 'vto' | 'shipping' | 'payment' | 'orders'
 
@@ -57,7 +58,15 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [editPhone, setEditPhone] = useState('')
+  const [editEmail, setEditEmail] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+
+  // Synthetic emails (`@phone.thewhite.cool`, `@zalo.thewhite.cool`)
+  // are backend-only placeholders for phone-only / Zalo-only
+  // signups — not a real inbox. Treat them as "no email on file"
+  // in the UI and let the user add a real one.
+  const hasRealEmail = !isSyntheticEmail(user?.email)
+  const displayEmail = hasRealEmail ? user?.email : ''
   const [activeTab, setActiveTab] = useState<Tab>('profile')
   const [orders, setOrders] = useState<any[]>([])
   const [loyalty, setLoyalty] = useState<LoyaltySummary | null>(null)
@@ -132,7 +141,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <h1 className="text-2xl md:text-3xl uppercase tracking-wide">{user.fullName}</h1>
-                <p className="text-muted-foreground">{user.email}</p>
+                <p className="text-muted-foreground">{displayEmail || user.phone || ''}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
@@ -225,6 +234,7 @@ export default function ProfilePage() {
                     onClick={() => {
                       setEditName(user?.fullName ?? '')
                       setEditPhone(user?.phone ?? '')
+                      setEditEmail(hasRealEmail ? (user?.email ?? '') : '')
                       setIsEditing(true)
                     }}
                     className="flex items-center gap-2 px-4 py-2 border border-border rounded-sm hover:bg-muted transition-colors text-sm uppercase tracking-wide"
@@ -240,11 +250,26 @@ export default function ProfilePage() {
                     e.preventDefault()
                     setIsSaving(true)
                     try {
-                      await updateProfile({ name: editName, phone: editPhone })
+                      // Only include email in the PATCH when the
+                      // user is claiming a real address over a
+                      // synthetic one. Real-email users can't
+                      // change it from this screen.
+                      const patch: { name: string; phone: string; email?: string } = {
+                        name: editName,
+                        phone: editPhone,
+                      }
+                      if (!hasRealEmail && editEmail.trim()) {
+                        patch.email = editEmail.trim().toLowerCase()
+                      }
+                      await updateProfile(patch)
                       toast.success(t('profile.updateSuccess') || 'Profile updated')
                       setIsEditing(false)
-                    } catch {
-                      toast.error(t('profile.updateError') || 'Failed to update profile')
+                    } catch (err) {
+                      toast.error(
+                        err instanceof Error && err.message
+                          ? err.message
+                          : t('profile.updateError') || 'Failed to update profile',
+                      )
                     } finally {
                       setIsSaving(false)
                     }
@@ -267,17 +292,35 @@ export default function ProfilePage() {
                     <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
                       Email
                     </label>
-                    <input
-                      type="email"
-                      value={user?.email ?? ''}
-                      disabled
-                      className="w-full px-4 py-3 border-2 border-border rounded-sm bg-muted text-muted-foreground cursor-not-allowed"
-                    />
-                    {user?.provider !== 'local' && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t('profile.emailReadOnly') ||
-                          'Email cannot be changed for social login accounts'}
-                      </p>
+                    {hasRealEmail ? (
+                      <>
+                        <input
+                          type="email"
+                          value={user?.email ?? ''}
+                          disabled
+                          className="w-full px-4 py-3 border-2 border-border rounded-sm bg-muted text-muted-foreground cursor-not-allowed"
+                        />
+                        {user?.provider !== 'local' && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {t('profile.emailReadOnly') ||
+                              'Email cannot be changed for social login accounts'}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <input
+                          type="email"
+                          value={editEmail}
+                          onChange={(e) => setEditEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          className="w-full px-4 py-3 border-2 border-border rounded-sm focus:outline-none focus:border-primary transition-colors bg-background"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('profile.addEmailHint') ||
+                            'Add an email to receive order updates and OTPs.'}
+                        </p>
+                      </>
                     )}
                   </div>
                   <div>
@@ -321,7 +364,9 @@ export default function ProfilePage() {
                     <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
                       Email
                     </label>
-                    <p className="text-foreground">{user?.email}</p>
+                    <p className="text-foreground">
+                      {displayEmail || t('profile.notUpdated') || 'Not updated'}
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm uppercase tracking-wide mb-2 text-muted-foreground">
