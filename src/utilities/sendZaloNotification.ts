@@ -5,6 +5,7 @@ import {
   writeZaloDeliveryStatus,
   writeZaloDeliveryStatusByPhone,
 } from './updateZaloDeliveryStatus'
+import { logZnsResult, logZnsSend } from './logZnsSend'
 
 /**
  * ZNS template IDs — configure via environment variables or constants.
@@ -87,30 +88,49 @@ export async function sendZaloNotification({
 
   if (!templateId) {
     console.info(`[sendZaloNotification] Skip "${template}" — template id not configured`)
+    await logZnsSend({
+      status: 'skipped',
+      templateId: template,
+      phone,
+      source: 'order-notification',
+      errorMessage: 'Template id not configured',
+    })
     return false
   }
 
   // Normalize phone: remove leading 0, add +84
   const normalizedPhone = phone.startsWith('0') ? `84${phone.slice(1)}` : phone.replace(/^\+/, '')
 
+  const templateData = formatOrderData(order)
+  const userRef = order.customerInfo?.user
+  const recipientId: string | number | null =
+    userRef && typeof userRef === 'object'
+      ? ((userRef as { id: string | number }).id ?? null)
+      : (userRef ?? null)
+
   try {
     const result = await zaloSendZNS({
       phone: normalizedPhone,
       templateId,
-      templateData: formatOrderData(order),
+      templateData,
       trackingId: `order-${order.id}-${template}`,
     })
     const derived = statusFromZnsResult(result)
     if (derived) {
-      const userRef = order.customerInfo?.user
-      const userId =
-        userRef && typeof userRef === 'object' ? (userRef as { id: string | number }).id : userRef
-      if (userId !== null && userId !== undefined) {
-        await writeZaloDeliveryStatus(userId, derived)
+      if (recipientId !== null && recipientId !== undefined) {
+        await writeZaloDeliveryStatus(recipientId, derived)
       } else {
         await writeZaloDeliveryStatusByPhone(phone, derived)
       }
     }
+    await logZnsResult({
+      templateId,
+      phone: normalizedPhone,
+      templateData,
+      recipientId,
+      source: 'order-notification',
+      result,
+    })
     if (result.ok) {
       console.info(
         `[sendZaloNotification] Sent "${template}" to ${normalizedPhone} (order ${order.orderNumber ?? order.id})`,
@@ -123,6 +143,15 @@ export async function sendZaloNotification({
     return false
   } catch (err) {
     console.error(`[sendZaloNotification] Failed to send ZNS (${template}):`, err)
+    await logZnsSend({
+      status: 'error',
+      templateId,
+      phone: normalizedPhone,
+      templateData,
+      recipientId,
+      source: 'order-notification',
+      errorMessage: err instanceof Error ? err.message : String(err),
+    })
     return false
   }
 }

@@ -150,6 +150,7 @@ export const Users: CollectionConfig = {
       defaultValue: 'customer',
       options: [
         { label: { vi: 'Quản trị viên', en: 'Admin' }, value: 'admin' },
+        { label: { vi: 'Quản lý', en: 'Manager' }, value: 'manager' },
         { label: { vi: 'Biên tập viên', en: 'Editor' }, value: 'editor' },
         { label: { vi: 'Nhân viên', en: 'Staff' }, value: 'staff' },
         { label: { vi: 'Khách hàng', en: 'Customer' }, value: 'customer' },

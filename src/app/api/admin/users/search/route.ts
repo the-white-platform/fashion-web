@@ -20,7 +20,8 @@ export async function GET(request: Request) {
   const payload = await getPayload({ config: configPromise })
   const headers = await getHeaders()
   const { user } = await payload.auth({ headers })
-  if (!user || user.collection !== 'users' || (user as { role?: string }).role !== 'admin') {
+  const role = (user as { role?: string } | null)?.role
+  if (!user || user.collection !== 'users' || !['admin', 'manager'].includes(role ?? '')) {
     return NextResponse.json({ error: 'Admin only' }, { status: 403 })
   }
 

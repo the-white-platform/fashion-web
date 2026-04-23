@@ -7,6 +7,7 @@ import {
   statusFromZnsResult,
   writeZaloDeliveryStatusByPhone,
 } from '@/utilities/updateZaloDeliveryStatus'
+import { logZnsResult, logZnsSend } from '@/utilities/logZnsSend'
 
 interface TestZnsBody {
   phone?: string
@@ -28,7 +29,11 @@ export async function POST(request: Request) {
   const payload = await getPayload({ config: configPromise })
   const headers = await getHeaders()
   const { user } = await payload.auth({ headers })
-  if (!user || user.collection !== 'users' || (user as { role?: string }).role !== 'admin') {
+  if (
+    !user ||
+    user.collection !== 'users' ||
+    !['admin', 'manager'].includes((user as { role?: string }).role ?? '')
+  ) {
     return NextResponse.json({ error: 'Admin only' }, { status: 403 })
   }
 
@@ -60,6 +65,14 @@ export async function POST(request: Request) {
     })
     const derived = statusFromZnsResult(result)
     if (derived) await writeZaloDeliveryStatusByPhone(phone, derived)
+    await logZnsResult({
+      templateId,
+      phone,
+      templateData,
+      initiatorId: user.id,
+      source: 'admin-test',
+      result,
+    })
     if (!result.ok) {
       payload.logger.warn({
         msg: 'admin/zalo/test-zns rejected',
@@ -75,6 +88,15 @@ export async function POST(request: Request) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     payload.logger.error({ msg: 'admin/zalo/test-zns failed', err: msg })
+    await logZnsSend({
+      status: 'error',
+      templateId,
+      phone,
+      templateData,
+      initiatorId: user.id,
+      source: 'admin-test',
+      errorMessage: msg,
+    })
     return NextResponse.json({ error: msg }, { status: 502 })
   }
 }

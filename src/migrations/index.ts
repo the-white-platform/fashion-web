@@ -20,6 +20,8 @@ import * as migration_20260422_213840_zalo_credentials_global from './20260422_2
 import * as migration_20260423_135608_users_date_of_birth from './20260423_135608_users_date_of_birth'
 import * as migration_20260423_140300_users_zalo_delivery_status from './20260423_140300_users_zalo_delivery_status'
 import * as migration_20260423_143632_users_referral_code_backfill from './20260423_143632_users_referral_code_backfill'
+import * as migration_20260423_215057_users_role_manager from './20260423_215057_users_role_manager'
+import * as migration_20260423_215941_zns_logs from './20260423_215941_zns_logs'
 
 export const migrations = [
   {
@@ -131,5 +133,15 @@ export const migrations = [
     up: migration_20260423_143632_users_referral_code_backfill.up,
     down: migration_20260423_143632_users_referral_code_backfill.down,
     name: '20260423_143632_users_referral_code_backfill',
+  },
+  {
+    up: migration_20260423_215057_users_role_manager.up,
+    down: migration_20260423_215057_users_role_manager.down,
+    name: '20260423_215057_users_role_manager',
+  },
+  {
+    up: migration_20260423_215941_zns_logs.up,
+    down: migration_20260423_215941_zns_logs.down,
+    name: '20260423_215941_zns_logs',
   },
 ]

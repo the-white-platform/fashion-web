@@ -1,5 +1,6 @@
 import { zaloSendZNS } from '@/lib/zalo'
 import { statusFromZnsResult, writeZaloDeliveryStatusByPhone } from './updateZaloDeliveryStatus'
+import { logZnsResult, logZnsSend } from './logZnsSend'
 
 /**
  * Send a CUSTOMER_DISCOUNT ZNS (template 572054). Used for
@@ -33,14 +34,39 @@ export interface CustomerDiscountParams {
 
 export async function sendCustomerDiscount(params: CustomerDiscountParams): Promise<boolean> {
   const templateId = process.env.ZALO_ZNS_CUSTOMER_DISCOUNT
+  const templateData = {
+    customer_name: params.customerName,
+    voucher_code: params.voucherCode,
+    voucher_discount: params.voucherDiscount,
+    expire_date: params.expireDate,
+    voucher_condition: params.voucherCondition,
+    reason: params.reason,
+  }
+
   if (!templateId) {
     console.info('[sendCustomerDiscount] Skip — ZALO_ZNS_CUSTOMER_DISCOUNT not configured')
+    await logZnsSend({
+      status: 'skipped',
+      templateId: 'customer_discount',
+      phone: params.phone,
+      templateData,
+      source: 'customer-discount',
+      errorMessage: 'ZALO_ZNS_CUSTOMER_DISCOUNT not configured',
+    })
     return false
   }
 
   const raw = params.phone.replace(/\D+/g, '')
   if (!raw) {
     console.warn('[sendCustomerDiscount] Skip — empty phone number')
+    await logZnsSend({
+      status: 'skipped',
+      templateId,
+      phone: params.phone,
+      templateData,
+      source: 'customer-discount',
+      errorMessage: 'Empty phone number',
+    })
     return false
   }
   const normalised = raw.startsWith('0') ? `84${raw.slice(1)}` : raw
@@ -49,18 +75,18 @@ export async function sendCustomerDiscount(params: CustomerDiscountParams): Prom
     const result = await zaloSendZNS({
       phone: normalised,
       templateId,
-      templateData: {
-        customer_name: params.customerName,
-        voucher_code: params.voucherCode,
-        voucher_discount: params.voucherDiscount,
-        expire_date: params.expireDate,
-        voucher_condition: params.voucherCondition,
-        reason: params.reason,
-      },
+      templateData,
       trackingId: `discount-${params.voucherCode}-${Date.now()}`,
     })
     const derived = statusFromZnsResult(result)
     if (derived) await writeZaloDeliveryStatusByPhone(params.phone, derived)
+    await logZnsResult({
+      templateId,
+      phone: normalised,
+      templateData,
+      source: 'customer-discount',
+      result,
+    })
     if (result.ok) {
       console.info(
         `[sendCustomerDiscount] Sent ${params.voucherCode} to ${normalised} (${params.voucherDiscount}, reason=${params.reason})`,
@@ -73,6 +99,14 @@ export async function sendCustomerDiscount(params: CustomerDiscountParams): Prom
     return false
   } catch (err) {
     console.error('[sendCustomerDiscount] Failed:', err)
+    await logZnsSend({
+      status: 'error',
+      templateId,
+      phone: normalised,
+      templateData,
+      source: 'customer-discount',
+      errorMessage: err instanceof Error ? err.message : String(err),
+    })
     return false
   }
 }

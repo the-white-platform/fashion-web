@@ -93,6 +93,7 @@ export interface Config {
     'loyalty-transactions': LoyaltyTransaction;
     referrals: Referral;
     'vto-generations': VtoGeneration;
+    'zns-logs': ZnsLog;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -130,6 +131,7 @@ export interface Config {
     'loyalty-transactions': LoyaltyTransactionsSelect<false> | LoyaltyTransactionsSelect<true>;
     referrals: ReferralsSelect<false> | ReferralsSelect<true>;
     'vto-generations': VtoGenerationsSelect<false> | VtoGenerationsSelect<true>;
+    'zns-logs': ZnsLogsSelect<false> | ZnsLogsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -535,7 +537,7 @@ export interface Post {
  */
 export interface User {
   id: number;
-  role: 'admin' | 'editor' | 'staff' | 'customer';
+  role: 'admin' | 'manager' | 'editor' | 'staff' | 'customer';
   name?: string | null;
   phone?: string | null;
   /**
@@ -1488,6 +1490,47 @@ export interface VtoGeneration {
   createdAt: string;
 }
 /**
+ * ZNS send history (auto-written on every API call).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "zns-logs".
+ */
+export interface ZnsLog {
+  id: number;
+  summary?: string | null;
+  status: 'sent' | 'rejected' | 'error' | 'skipped';
+  templateId: string;
+  phone: string;
+  /**
+   * User record matching the recipient phone, if any.
+   */
+  recipient?: (number | null) | User;
+  /**
+   * Admin who triggered a manual send. Empty for automatic sends.
+   */
+  initiator?: (number | null) | User;
+  templateData?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  errorCode?: number | null;
+  errorMessage?: string | null;
+  /**
+   * Coupon issued alongside this ZNS, if any.
+   */
+  coupon?: (number | null) | Coupon;
+  source?:
+    | ('order-notification' | 'customer-welcome' | 'customer-discount' | 'otp' | 'admin-send' | 'admin-test')
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
@@ -1687,6 +1730,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'vto-generations';
         value: number | VtoGeneration;
+      } | null)
+    | ({
+        relationTo: 'zns-logs';
+        value: number | ZnsLog;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -2556,6 +2603,25 @@ export interface VtoGenerationsSelect<T extends boolean = true> {
   resultData?: T;
   cacheHit?: T;
   provider?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "zns-logs_select".
+ */
+export interface ZnsLogsSelect<T extends boolean = true> {
+  summary?: T;
+  status?: T;
+  templateId?: T;
+  phone?: T;
+  recipient?: T;
+  initiator?: T;
+  templateData?: T;
+  errorCode?: T;
+  errorMessage?: T;
+  coupon?: T;
+  source?: T;
   updatedAt?: T;
   createdAt?: T;
 }

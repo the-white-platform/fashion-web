@@ -1,5 +1,6 @@
 import { zaloSendZNS } from '@/lib/zalo'
 import { statusFromZnsResult, writeZaloDeliveryStatusByPhone } from './updateZaloDeliveryStatus'
+import { logZnsResult, logZnsSend } from './logZnsSend'
 
 /**
  * Send a WELCOME ZNS (template 572063). Fired the first time a
@@ -23,14 +24,36 @@ export interface CustomerWelcomeParams {
 
 export async function sendCustomerWelcome(params: CustomerWelcomeParams): Promise<boolean> {
   const templateId = process.env.ZALO_ZNS_WELCOME
+  const templateData = {
+    customer_name: params.customerName,
+    company_name: params.companyName,
+    ...(params.extraData ?? {}),
+  }
+
   if (!templateId) {
     console.info('[sendCustomerWelcome] Skip — ZALO_ZNS_WELCOME not configured')
+    await logZnsSend({
+      status: 'skipped',
+      templateId: 'customer_welcome',
+      phone: params.phone,
+      templateData,
+      source: 'customer-welcome',
+      errorMessage: 'ZALO_ZNS_WELCOME not configured',
+    })
     return false
   }
 
   const raw = params.phone.replace(/\D+/g, '')
   if (!raw) {
     console.warn('[sendCustomerWelcome] Skip — empty phone number')
+    await logZnsSend({
+      status: 'skipped',
+      templateId,
+      phone: params.phone,
+      templateData,
+      source: 'customer-welcome',
+      errorMessage: 'Empty phone number',
+    })
     return false
   }
   const normalised = raw.startsWith('0') ? `84${raw.slice(1)}` : raw
@@ -39,15 +62,18 @@ export async function sendCustomerWelcome(params: CustomerWelcomeParams): Promis
     const result = await zaloSendZNS({
       phone: normalised,
       templateId,
-      templateData: {
-        customer_name: params.customerName,
-        company_name: params.companyName,
-        ...(params.extraData ?? {}),
-      },
+      templateData,
       trackingId: `welcome-${Date.now()}`,
     })
     const derived = statusFromZnsResult(result)
     if (derived) await writeZaloDeliveryStatusByPhone(params.phone, derived)
+    await logZnsResult({
+      templateId,
+      phone: normalised,
+      templateData,
+      source: 'customer-welcome',
+      result,
+    })
     if (result.ok) {
       console.info(`[sendCustomerWelcome] Sent welcome to ${normalised} (${params.customerName})`)
       return true
@@ -58,6 +84,14 @@ export async function sendCustomerWelcome(params: CustomerWelcomeParams): Promis
     return false
   } catch (err) {
     console.error('[sendCustomerWelcome] Failed:', err)
+    await logZnsSend({
+      status: 'error',
+      templateId,
+      phone: normalised,
+      templateData,
+      source: 'customer-welcome',
+      errorMessage: err instanceof Error ? err.message : String(err),
+    })
     return false
   }
 }

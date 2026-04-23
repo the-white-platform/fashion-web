@@ -213,7 +213,7 @@ export const BirthdayAlerts: React.FC = () => {
         <div style={{ display: 'grid', gap: 6 }}>
           {rows.map((r) => {
             const palette = statusPalette[r.zaloDeliveryStatus]
-            const href = `/admin/management/zalo-sender?userId=${encodeURIComponent(String(r.id))}&preset=customerDiscount`
+            const href = `/management/zalo-sender?userId=${encodeURIComponent(String(r.id))}&preset=customerDiscount`
             return (
               <div key={String(r.id)} style={row}>
                 <div style={{ flex: 1, minWidth: 0 }}>

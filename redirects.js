@@ -12,7 +12,14 @@ const redirects = async () => {
     source: '/:path((?!ie-incompatible.html$).*)', // all pages except the incompatibility page
   }
 
-  const redirects = [internetExplorerRedirect]
+  // Legacy Payload admin management paths → new standalone /management dashboard
+  const adminManagementRedirect = {
+    source: '/admin/management/:slug*',
+    destination: '/management/:slug*',
+    permanent: true,
+  }
+
+  const redirects = [internetExplorerRedirect, adminManagementRedirect]
 
   return redirects
 }

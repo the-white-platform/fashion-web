@@ -1,5 +1,6 @@
 import { zaloSendZNS } from '@/lib/zalo'
 import { statusFromZnsResult, writeZaloDeliveryStatusByPhone } from './updateZaloDeliveryStatus'
+import { logZnsResult, logZnsSend } from './logZnsSend'
 
 /**
  * Deliver a one-time passcode via Zalo ZNS to the customer's
@@ -20,12 +21,34 @@ export async function sendZaloOtp(args: {
   code: string
 }): Promise<{ delivered: true } | { delivered: false; reason: string }> {
   const templateId = process.env.ZALO_ZNS_OTP
+  // The actual OTP code is sensitive — don't persist it in the
+  // audit trail. Log a redacted marker instead.
+  const redactedData = { otp: '<redacted>' }
+
   if (!templateId) {
+    await logZnsSend({
+      status: 'skipped',
+      templateId: 'otp',
+      phone: args.phone,
+      templateData: redactedData,
+      source: 'otp',
+      errorMessage: 'ZALO_ZNS_OTP template id not configured',
+    })
     return { delivered: false, reason: 'ZALO_ZNS_OTP template id not configured' }
   }
 
   const raw = args.phone.replace(/\D+/g, '')
-  if (!raw) return { delivered: false, reason: 'Empty phone number' }
+  if (!raw) {
+    await logZnsSend({
+      status: 'skipped',
+      templateId,
+      phone: args.phone,
+      templateData: redactedData,
+      source: 'otp',
+      errorMessage: 'Empty phone number',
+    })
+    return { delivered: false, reason: 'Empty phone number' }
+  }
 
   // Zalo expects 84xxxxxxxxx (no leading +). `0xxxxxxxxx` →
   // strip leading 0, prepend 84. Already-84-prefixed numbers
@@ -41,12 +64,27 @@ export async function sendZaloOtp(args: {
     })
     const derived = statusFromZnsResult(result)
     if (derived) await writeZaloDeliveryStatusByPhone(args.phone, derived)
+    await logZnsResult({
+      templateId,
+      phone: normalised,
+      templateData: redactedData,
+      source: 'otp',
+      result,
+    })
     if (result.ok) return { delivered: true }
     return {
       delivered: false,
       reason: `Zalo rejected: ${result.errorCode} ${result.errorMessage}`,
     }
   } catch (err) {
+    await logZnsSend({
+      status: 'error',
+      templateId,
+      phone: normalised,
+      templateData: redactedData,
+      source: 'otp',
+      errorMessage: err instanceof Error ? err.message : String(err),
+    })
     return {
       delivered: false,
       reason: err instanceof Error ? err.message : String(err),

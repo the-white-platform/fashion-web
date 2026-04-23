@@ -1,7 +1,13 @@
 import type { Access, FieldAccess } from 'payload'
 import type { User } from '@/payload-types'
 
-type Role = 'admin' | 'editor' | 'staff' | 'customer'
+type Role = 'admin' | 'manager' | 'editor' | 'staff' | 'customer'
+
+// Allow `admin` and `manager` into the /management dashboard.
+// Payload admin access stays admin-only via `isAdmin`.
+export const isAdminOrManager: Access<User> = ({ req: { user } }) => {
+  return hasRole(user, ['admin', 'manager'])
+}
 
 export const hasRole = (user: User | null | undefined, roles: Role[]): boolean => {
   if (!user) return false

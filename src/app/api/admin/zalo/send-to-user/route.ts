@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import { zaloSendZNS } from '@/lib/zalo'
 import { statusFromZnsResult, writeZaloDeliveryStatus } from '@/utilities/updateZaloDeliveryStatus'
+import { logZnsResult, logZnsSend } from '@/utilities/logZnsSend'
 
 interface MintCoupon {
   discountPercent?: number
@@ -58,7 +59,8 @@ export async function POST(request: Request) {
   const payload = await getPayload({ config: configPromise })
   const headers = await getHeaders()
   const { user: actor } = await payload.auth({ headers })
-  if (!actor || actor.collection !== 'users' || (actor as { role?: string }).role !== 'admin') {
+  const actorRole = (actor as { role?: string } | null)?.role
+  if (!actor || actor.collection !== 'users' || !['admin', 'manager'].includes(actorRole ?? '')) {
     return NextResponse.json({ error: 'Admin only' }, { status: 403 })
   }
 
@@ -144,6 +146,17 @@ export async function POST(request: Request) {
     const derived = statusFromZnsResult(result)
     if (derived) await writeZaloDeliveryStatus(target.id, derived)
 
+    await logZnsResult({
+      templateId,
+      phone,
+      templateData,
+      recipientId: target.id,
+      initiatorId: actor.id,
+      couponId: mintedCoupon?.id ?? null,
+      source: 'admin-send',
+      result,
+    })
+
     if (!result.ok) {
       payload.logger.warn({
         msg: 'admin/zalo/send-to-user rejected',
@@ -190,6 +203,17 @@ export async function POST(request: Request) {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     payload.logger.error({ msg: 'admin/zalo/send-to-user failed', err: msg })
+    await logZnsSend({
+      status: 'error',
+      templateId,
+      phone,
+      templateData,
+      recipientId: target.id,
+      initiatorId: actor.id,
+      couponId: mintedCoupon?.id ?? null,
+      source: 'admin-send',
+      errorMessage: msg,
+    })
     return NextResponse.json({ error: msg }, { status: 502 })
   }
 }

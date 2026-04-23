@@ -30,6 +30,7 @@ import { Reviews } from './collections/Reviews'
 import { StockMovements } from './collections/StockMovements'
 import { Users } from './collections/Users'
 import { VtoGenerations } from './collections/VtoGenerations'
+import { ZnsLogs } from './collections/ZnsLogs'
 import { Provinces, Districts, Wards } from './collections/VietnamAddresses'
 import { seedHandler } from './endpoints/seedHandler'
 import { bulkOrderStatusHandler } from './endpoints/bulkOrderStatus'
@@ -84,36 +85,7 @@ export default buildConfig({
       // The `BeforeDashboard` component renders the 'welcome' block that you see after logging into your admin panel.
       // Feel free to delete this at any time. Simply remove the line below and the import `BeforeDashboard` statement on line 15.
       beforeDashboard: ['@/admin/BeforeDashboard'],
-      afterNavLinks: [
-        '@/admin/AccountingLink',
-        '@/admin/InventoryAlertsLink',
-        '@/admin/BulkOrderStatusLink',
-        '@/admin/NotificationBell',
-        '@/admin/ChatDashboardLink',
-        '@/admin/ZaloSenderLink',
-      ],
-      views: {
-        Accounting: {
-          Component: '@/admin/AccountingView',
-          path: '/management/accounting',
-        },
-        InventoryAlerts: {
-          Component: '@/admin/InventoryAlerts',
-          path: '/management/inventory-alerts',
-        },
-        BulkOrders: {
-          Component: '@/admin/BulkOrderStatus',
-          path: '/management/bulk-orders',
-        },
-        ChatDashboard: {
-          Component: '@/admin/ChatDashboard',
-          path: '/management/chat-dashboard',
-        },
-        ZaloSender: {
-          Component: '@/admin/ZaloSender',
-          path: '/management/zalo-sender',
-        },
-      },
+      afterNavLinks: ['@/admin/NotificationBell'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -181,6 +153,7 @@ export default buildConfig({
     LoyaltyTransactions,
     Referrals,
     VtoGenerations,
+    ZnsLogs,
   ],
   cors: [process.env.NEXT_PUBLIC_SERVER_URL || ''].filter(Boolean),
   endpoints: [
