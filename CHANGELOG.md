@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.62.0](https://github.com/the-white-platform/fashion-web/compare/v0.61.4...v0.62.0) (2026-04-23)
+
+
+### Features
+
+* **management,zns-logs:** standalone /management dashboard + audit trail ([420fcbb](https://github.com/the-white-platform/fashion-web/commit/420fcbb5a0d36173fdf40e8cf3fca50ef65bba3b))
+
 ### [0.61.4](https://github.com/the-white-platform/fashion-web/compare/v0.61.3...v0.61.4) (2026-04-23)
 
 
