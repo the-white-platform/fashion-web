@@ -152,11 +152,28 @@ export async function POST(request: Request) {
         errorCode: result.errorCode,
         errorMessage: result.errorMessage,
       })
+      // Translate opaque Zalo errors into admin-actionable hints.
+      // 404 "empty api" = OA app has no ZNS scope yet — the OA
+      // dashboard needs ZNS activation + business verification.
+      // -124 / -129 = phone isn't on Zalo (not our problem).
+      // -132 = template not approved by Zalo moderation.
+      let hint: string | undefined
+      if (result.errorCode === 404 && /empty api/i.test(result.errorMessage)) {
+        hint =
+          'Zalo OA chưa kích hoạt ZNS. Vào https://business.zalo.me → OA dashboard → Zalo Notification Service → Register + xác minh doanh nghiệp + nạp credit + duyệt template trước khi gửi.'
+      } else if ([-124, -129].includes(result.errorCode)) {
+        hint = 'Số điện thoại không đăng ký Zalo. Thử email thay thế.'
+      } else if (result.errorCode === -125) {
+        hint = 'User đã chặn OA. Không thể gửi ZNS.'
+      } else if (result.errorCode === -132) {
+        hint = 'Template chưa được Zalo duyệt. Kiểm tra trạng thái template trên OA dashboard.'
+      }
       return NextResponse.json(
         {
           ok: false,
           errorCode: result.errorCode,
           errorMessage: result.errorMessage || 'Zalo rejected the send',
+          hint,
           zaloDeliveryStatus: derived ?? 'unknown',
           coupon: mintedCoupon,
         },

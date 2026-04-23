@@ -108,6 +108,7 @@ interface SendResponse {
   ok?: boolean
   errorCode?: number
   errorMessage?: string
+  hint?: string
   zaloDeliveryStatus?: ZaloStatus
   error?: string
   coupon?: { id: string | number; code: string } | null
@@ -278,7 +279,8 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
       if (!res.ok || body.ok === false) {
         setStatus('error')
         const code = body.errorCode !== undefined ? ` (code ${body.errorCode})` : ''
-        setDetail(body.errorMessage || body.error || `HTTP ${res.status}${code}`)
+        const base = body.errorMessage || body.error || `HTTP ${res.status}${code}`
+        setDetail(body.hint ? `${base}\n\nFix: ${body.hint}` : base)
       } else {
         setStatus('ok')
         if (body.coupon) {
@@ -607,6 +609,7 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
                 fontSize: 13,
                 color: status === 'error' ? '#7f1d1d' : '#065f46',
                 background: status === 'error' ? '#fef2f2' : '#ecfdf5',
+                whiteSpace: 'pre-wrap',
               }}
             >
               {detail}
