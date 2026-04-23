@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.59.1](https://github.com/the-white-platform/fashion-web/compare/v0.59.0...v0.59.1) (2026-04-23)
+
+
+### Bug Fixes
+
+* **auth:** hard-cap user sessions at 20 + admin drain endpoint ([ef2ec27](https://github.com/the-white-platform/fashion-web/commit/ef2ec2704b8cb1401d4a028c16184d4c473a57b6))
+* **auth:** prune user sessions on beforeLogin, not just beforeChange ([5152fb5](https://github.com/the-white-platform/fashion-web/commit/5152fb5d58d4664683f5a492e8381f4832346b4e))
+* **auth:** tighten session cap to 5 per user + gitignore local permissions ([85d59a0](https://github.com/the-white-platform/fashion-web/commit/85d59a0faadaf0bae7a9e92d7d36969e5bf50288))
+
 ## [0.59.0](https://github.com/the-white-platform/fashion-web/compare/v0.58.1...v0.59.0) (2026-04-23)
 
 
