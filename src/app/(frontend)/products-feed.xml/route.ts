@@ -3,8 +3,12 @@ import { getPayload } from 'payload'
 import configPromise from '@payload-config'
 import type { Product } from '@/payload-types'
 
-// Revalidate the feed every hour. Merchant Center polls on its
-// own schedule; shorter TTLs just burn DB cycles for no gain.
+// Render on demand — the Docker build has no DB access, so any
+// attempt to prerender at build time fails with ECONNREFUSED to
+// localhost:5432. Skipping prerender is fine: Merchant Center
+// polls this URL directly and the response is still cached for
+// an hour via the Cache-Control header below.
+export const dynamic = 'force-dynamic'
 export const revalidate = 3600
 
 const BASE_URL = (process.env.NEXT_PUBLIC_SERVER_URL || 'https://thewhite.cool').replace(/\/+$/, '')
