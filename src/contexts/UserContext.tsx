@@ -14,6 +14,8 @@ interface User {
   // beforeChange). Shown to the user on /loyalty so they can
   // share it to earn a referral bonus.
   referralCode?: string
+  // Drives the "Management" pill in the header for staff users.
+  role?: 'admin' | 'manager' | 'editor' | 'staff' | 'customer'
   avatar?: string
   provider?: 'local' | 'google' | 'facebook'
   shippingAddresses: ShippingAddress[]
@@ -83,6 +85,7 @@ type PayloadUser = {
   phone?: string
   dateOfBirth?: string | null
   referralCode?: string | null
+  role?: 'admin' | 'manager' | 'editor' | 'staff' | 'customer'
   imageUrl?: string
   provider?: 'local' | 'google' | 'facebook'
   shippingAddresses?: PayloadAddress[] | null
@@ -107,6 +110,7 @@ function mapPayloadUser(payloadUser: PayloadUser): User {
       ? new Date(payloadUser.dateOfBirth).toISOString().slice(0, 10)
       : undefined,
     referralCode: payloadUser.referralCode ?? undefined,
+    role: payloadUser.role,
     avatar: payloadUser.imageUrl,
     provider: payloadUser.provider,
     shippingAddresses: (payloadUser.shippingAddresses ?? []).map((a) => ({

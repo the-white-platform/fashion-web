@@ -68,6 +68,18 @@ export const HeaderNav: React.FC<{
         >
           <User className="w-5 h-5" />
         </Link>
+        {user && (user.role === 'admin' || user.role === 'manager') && (
+          <a
+            href="/management"
+            className={cn(
+              'px-2 py-1 rounded-sm text-[11px] uppercase tracking-wider border border-foreground/40 hover:bg-accent transition-all hidden lg:inline-block',
+              !isScrolled && 'drop-shadow-lg',
+            )}
+            aria-label="Management dashboard"
+          >
+            Mgmt
+          </a>
+        )}
         <LoyaltyHeaderLink isScrolled={isScrolled} />
         <button
           onClick={() => setIsCartOpen(true)}
