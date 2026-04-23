@@ -146,15 +146,23 @@ export default function LoyaltyPage() {
       ? `${window.location.origin}/register?ref=${referralCode}`
       : ''
 
-  const copyReferralCode = () => {
+  const copyReferralCode = async () => {
     if (!referralCode) return
-    navigator.clipboard.writeText(referralCode)
-    toast.success(t('copiedReferral'))
+    try {
+      await navigator.clipboard.writeText(referralCode)
+      toast.success(t('copiedReferralCode'))
+    } catch {
+      toast.error(t('copyFailed'))
+    }
   }
-  const copyReferralLink = () => {
+  const copyReferralLink = async () => {
     if (!referralUrl) return
-    navigator.clipboard.writeText(referralUrl)
-    toast.success(t('copiedReferral'))
+    try {
+      await navigator.clipboard.writeText(referralUrl)
+      toast.success(t('copiedReferralLink'))
+    } catch {
+      toast.error(t('copyFailed'))
+    }
   }
 
   const getTransactionIcon = (type: string, points: number) => {

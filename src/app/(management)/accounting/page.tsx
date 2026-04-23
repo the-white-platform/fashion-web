@@ -1,5 +1,7 @@
 import AccountingView from '@/admin/AccountingView'
 
+export const dynamic = 'force-dynamic'
+
 interface Props {
   searchParams: Promise<{
     from?: string

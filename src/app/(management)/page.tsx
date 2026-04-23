@@ -1,6 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 
+export const dynamic = 'force-dynamic'
+
 const TOOLS = [
   {
     label: 'Accounting',

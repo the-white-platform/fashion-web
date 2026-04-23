@@ -1,5 +1,11 @@
 import ZaloSenderClient from '@/admin/ZaloSender/ZaloSenderClient'
 
+// Page reads `searchParams` — Next 16 treats that as dynamic and
+// tries to static-render anyway on the default edge. Mirror the
+// layout's force-dynamic so the render always gets a request
+// context (same for every page under /management).
+export const dynamic = 'force-dynamic'
+
 interface Props {
   searchParams: Promise<{
     userId?: string
