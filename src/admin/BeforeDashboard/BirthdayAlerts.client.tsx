@@ -32,11 +32,13 @@ const formatDob = (iso: string | null) => {
   return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
 }
 
-/** Compute dd/MM/yyyy label for now + expireDays. */
+/** Compute dd/MM/yyyy label (zero-padded) for now + expireDays. */
 const expireDateLabel = (expireDays: number) => {
   const d = new Date()
   d.setDate(d.getDate() + expireDays)
-  return d.toLocaleDateString('vi-VN')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  return `${dd}/${mm}/${d.getFullYear()}`
 }
 
 const CUSTOMER_DISCOUNT_TEMPLATE_ID = process.env.NEXT_PUBLIC_ZALO_ZNS_CUSTOMER_DISCOUNT ?? '572054'

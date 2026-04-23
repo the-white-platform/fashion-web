@@ -26,11 +26,21 @@ interface TemplatePreset {
   fromUser?: (u: AdminUser) => Record<string, string>
 }
 
-const todayVi = () => new Date().toLocaleDateString('vi-VN')
+// Zero-padded dd/MM/yyyy — matches the format Zalo expects for
+// `date` params in ZNS templates (and what vi-VN's Intl output
+// *should* be but isn't — some runtimes drop the day's leading
+// zero, which Zalo rejects on strict date-type params).
+const formatDdMmYyyy = (d: Date): string => {
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  return `${dd}/${mm}/${yyyy}`
+}
+const todayVi = () => formatDdMmYyyy(new Date())
 const inDaysVi = (days: number) => {
   const d = new Date()
   d.setDate(d.getDate() + days)
-  return d.toLocaleDateString('vi-VN')
+  return formatDdMmYyyy(d)
 }
 
 const PRESETS: TemplatePreset[] = [
@@ -154,6 +164,18 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
     setDataJson(JSON.stringify({ ...base, ...overlay }, null, 2))
   }, [preset, selected])
 
+  // Auto-fill the Phone override with the selected user's phone so
+  // the admin can confirm / tweak the delivery number without
+  // retyping. Only overwrites when the user truly changes — leaves
+  // admin-entered values alone on other state updates.
+  const lastSelectedIdRef = useRef<string | number | null>(null)
+  useEffect(() => {
+    if (!selected) return
+    if (lastSelectedIdRef.current === selected.id) return
+    lastSelectedIdRef.current = selected.id
+    setPhoneOverride(selected.phone ?? '')
+  }, [selected])
+
   // Reset highlight when users list changes
   useEffect(() => {
     setHighlightIdx(-1)
@@ -239,6 +261,11 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
     if (!selected) {
       setStatus('error')
       setDetail('Select a user first.')
+      return
+    }
+    if (!phoneOverride.trim()) {
+      setStatus('error')
+      setDetail('Phone number is required.')
       return
     }
     setStatus('sending')
@@ -494,13 +521,22 @@ export const ZaloSenderClient: React.FC<{ initialUserId?: string; initialPreset?
           </label>
 
           <label style={labelStyle}>
-            Phone override (optional)
+            Phone (required)
             <input
               value={phoneOverride}
               onChange={(e) => setPhoneOverride(e.target.value)}
-              placeholder={selected?.phone ?? '0901234567'}
-              style={input}
+              placeholder="0901234567"
+              style={{
+                ...input,
+                borderColor: phoneOverride.trim() ? '#d1d5db' : '#f87171',
+              }}
             />
+            {!phoneOverride.trim() && (
+              <span style={{ fontSize: 11, color: '#b91c1c' }}>
+                Phone number is required. Auto-filled from the selected user — edit if sending to a
+                different number.
+              </span>
+            )}
           </label>
 
           {/* Coupon minting block — only shown for customerDiscount preset */}
