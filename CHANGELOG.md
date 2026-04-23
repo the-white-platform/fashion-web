@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### [0.63.4](https://github.com/the-white-platform/fashion-web/compare/v0.63.3...v0.63.4) (2026-04-23)
+
+
+### Bug Fixes
+
+* **management:** make /management its own HTML doc + load globals.css ([cd36fe6](https://github.com/the-white-platform/fashion-web/commit/cd36fe691656c4890174a6c79000092c7afdf739))
+
 ### [0.63.3](https://github.com/the-white-platform/fashion-web/compare/v0.63.2...v0.63.3) (2026-04-23)
 
 ### [0.63.2](https://github.com/the-white-platform/fashion-web/compare/v0.63.1...v0.63.2) (2026-04-23)
